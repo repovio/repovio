@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { useNow } from '@vueuse/core';
+import { useIntervalFn, useNow } from '@vueuse/core';
 import { computed } from 'vue';
 
 import { defineProps } from 'vue';
@@ -85,7 +85,7 @@ import { syncErrorKind } from '~/util/sync-error';
 const props = defineProps<{ repository: RepositoryDetail }>();
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
-const now = useNow({ interval: 60_000 });
+const now = useNow({ scheduler: (callback) => useIntervalFn(callback, 60_000) });
 const ageMs = computed(() =>
   props.repository.lastSyncAt ? now.value.getTime() - Date.parse(props.repository.lastSyncAt) : 0,
 );

@@ -1,9 +1,10 @@
-FROM node:24-bookworm-slim AS build
+FROM node:26.13.0-bookworm-slim AS build
 WORKDIR /workspace
 RUN apt-get update && apt-get install --yes --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/package.json
-RUN corepack enable && pnpm install --frozen-lockfile
+COPY patches ./patches
+RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --frozen-lockfile
 COPY . .
 RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder \
   SHADOW_DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder_shadow \
@@ -11,7 +12,7 @@ RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
   && pnpm --filter @ezrepo/api build
 RUN pnpm --filter @ezrepo/api deploy --legacy --prod /production
 
-FROM node:24-bookworm-slim AS runtime
+FROM node:26.13.0-bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install --yes --no-install-recommends openssl python3 python3-pip \
   && python3 -m pip install --break-system-packages --no-cache-dir apprise==1.9.9 \

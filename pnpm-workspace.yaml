@@ -14,7 +14,6 @@ overrides:
   '@modelcontextprotocol/node>@hono/node-server': 2.1.6
   '@tiptap/core@>=3.7.0 <3.30.5': 3.31.4
   '@tiptap/pm@>=3.7.0 <3.31.3': 3.31.4
-  'axios@<1.20.0': 1.20.0
   'brace-expansion@<1.1.21': 1.1.21
   'brace-expansion@>=2.0.0 <2.1.7': 2.1.7
   'brace-expansion@>=4.0.0 <5.0.12': 5.0.12
@@ -29,7 +28,6 @@ overrides:
   'serialize-javascript@>=7.1.1 <7.1.2': 7.1.3
   'vitepress>vite': 6.4.5
   node-forge@<=1.4.0: 1.4.1
-  vite@>=5.0.0 <6.4.5: 6.4.5
   follow-redirects@>=1.16.0 <1.16.2: 1.16.2
   '@intlify/shared@>=11.0.0 <11.4.17': 11.4.17
   '@intlify/message-compiler@>=11.0.0 <11.4.17': 11.4.17
@@ -60,6 +58,8 @@ allowBuilds:
   workerd: false
 
 minimumReleaseAgeExclude:
+  - '@querry-kit/nuxt-ui@3.3.10'
+  - '@querry-kit/nuxt@0.2.10'
   - '@rollup/*'
   - autoprefixer@10.6.0
   - enhanced-resolve@5.25.0

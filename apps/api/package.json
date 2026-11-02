@@ -37,7 +37,7 @@
     "typescript": "6.0.3"
   },
   "dependencies": {
-    "@casl/ability": "^7.0.1",
+    "@casl/ability": "^7.1.0",
     "@casl/prisma": "^2.0.2",
     "@modelcontextprotocol/node": "^2.1.1",
     "@modelcontextprotocol/server": "^2.3.0",

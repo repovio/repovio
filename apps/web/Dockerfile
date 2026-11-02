@@ -1,12 +1,13 @@
-FROM node:24-bookworm-slim AS build
+FROM node:26.13.0-bookworm-slim AS build
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
-RUN corepack enable && pnpm install --frozen-lockfile
+COPY patches ./patches
+RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @ezrepo/web build
 
-FROM node:24-bookworm-slim AS runtime
+FROM node:26.13.0-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /workspace/apps/web/.output ./.output

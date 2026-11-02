@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- b864610: Update stable dependencies and security fixes, and move development, CI, and application images to Node.js 26 LTS. Application container runtimes use Node.js 26; published library and VS Code host compatibility is preserved. TypeScript 7 builds use the TypeScript 6 compatibility API for lint and test tooling.
+
+  Refresh compatible transitive security fixes without forcing incompatible Minimatch or Glob major versions into their upstream consumers.
+
 ## 0.8.2
 
 ### Patch Changes

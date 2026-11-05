@@ -19,7 +19,7 @@
     "@vite-pwa/assets-generator": "1.0.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.5",
-    "vue-tsc": "3.3.13",
+    "vue-tsc": "3.3.14",
     "@typescript/native": "npm:typescript@^7.0.2"
   },
   "dependencies": {

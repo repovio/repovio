@@ -15,7 +15,7 @@ describe('WorkItemSyncService', () => {
     const service = new WorkItemSyncService(prisma as unknown as PrismaService, notifications as never);
     await service.synchronize(
       { accessToken: 'token', baseUrl: null, providerAccountId: 'account' },
-      { id: 'repository', name: 'ezrepo', owner: 'ezrepo', providerAccountId: 'account', providerRepositoryId: '1' },
+      { id: 'repository', name: 'repovio', owner: 'repovio', providerAccountId: 'account', providerRepositoryId: '1' },
       adapter,
     );
     expect(prisma.workItemSyncCursor.upsert).toHaveBeenCalledTimes(2);
@@ -38,7 +38,13 @@ describe('WorkItemSyncService', () => {
     await expect(
       service.synchronize(
         { accessToken: 'token', baseUrl: null, providerAccountId: 'account' },
-        { id: 'repository', name: 'ezrepo', owner: 'ezrepo', providerAccountId: 'account', providerRepositoryId: '1' },
+        {
+          id: 'repository',
+          name: 'repovio',
+          owner: 'repovio',
+          providerAccountId: 'account',
+          providerRepositoryId: '1',
+        },
         adapter,
       ),
     ).rejects.toThrow('partial pagination failure');
@@ -59,7 +65,7 @@ describe('WorkItemSyncService', () => {
 
     await service.synchronize(
       { accessToken: 'token', baseUrl: null, providerAccountId: 'account' },
-      { id: 'repository', name: 'ezrepo', owner: 'ezrepo', providerAccountId: 'account', providerRepositoryId: '1' },
+      { id: 'repository', name: 'repovio', owner: 'repovio', providerAccountId: 'account', providerRepositoryId: '1' },
       adapter,
       ['ISSUES', 'PULL_REQUESTS'],
       reportProgress,
@@ -95,7 +101,7 @@ describe('WorkItemSyncService', () => {
       targetBranch: 'main',
       title: 'Version Packages',
       updatedAt: providerUpdatedAt,
-      url: 'https://github.com/octo/ezrepo/pull/1',
+      url: 'https://github.com/octo/repovio/pull/1',
       workflowApprovalRequired: true,
       workflowStatus: 'PENDING' as const,
     };
@@ -135,7 +141,7 @@ describe('WorkItemSyncService', () => {
           state: 'MERGED',
           targetBranch: 'main',
           title: 'Version Packages',
-          url: 'https://github.com/octo/ezrepo/pull/1',
+          url: 'https://github.com/octo/repovio/pull/1',
         },
       ]),
     } as unknown as ProviderAdapter;
@@ -143,7 +149,7 @@ describe('WorkItemSyncService', () => {
 
     await service.synchronize(
       { accessToken: 'token', baseUrl: null, providerAccountId: 'account' },
-      { id: 'repository', name: 'ezrepo', owner: 'octo', providerAccountId: 'account', providerRepositoryId: '1' },
+      { id: 'repository', name: 'repovio', owner: 'octo', providerAccountId: 'account', providerRepositoryId: '1' },
       adapter,
       ['PULL_REQUESTS'],
     );

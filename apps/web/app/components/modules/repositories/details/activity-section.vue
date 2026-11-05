@@ -62,7 +62,7 @@
 import { ref, watch } from 'vue';
 
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 
 type ActivityKind = 'issues' | 'pullRequests' | 'workflowRuns' | 'securityAlerts';
@@ -79,7 +79,7 @@ interface ActivityItem {
 
 const props = defineProps<{ kind: ActivityKind; repositoryId: string }>();
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const items = ref<ActivityItem[]>([]);
 const loading = ref(true);

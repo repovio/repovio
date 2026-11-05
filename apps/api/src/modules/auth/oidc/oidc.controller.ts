@@ -20,7 +20,7 @@ import { OidcCheckDto, OidcConfigDto, OidcExchangeDto, OidcStatusDto, UpdateOidc
 import type { AuthenticatedUser } from '../types.js';
 import { OidcService, type OidcExchangeResult } from './oidc.service.js';
 
-const bindingCookie = 'ezrepo_oidc_binding';
+const bindingCookie = 'repovio_oidc_binding';
 const callbackPath = '/api/v1/auth/oidc';
 
 /** Exposes public OIDC protocol routes and administrator-only provider configuration. */
@@ -108,7 +108,7 @@ export class OidcController {
   }
 
   /**
-   * Exchange the URL-fragment handoff code for the normal ezRepo bearer session.
+   * Exchange the URL-fragment handoff code for the normal Repovio bearer session.
    *
    * @param input - Validated one-time exchange code.
    * @returns The normal authentication result and internal return path.

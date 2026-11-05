@@ -191,8 +191,8 @@ describe('DashboardService', () => {
 
   it('ranks visible repository health by failures and success rate', async () => {
     const ability = {};
-    const repositoryA = { id: 'repository-a', name: 'alpha', owner: 'ezrepo', url: 'https://example.test/alpha' };
-    const repositoryB = { id: 'repository-b', name: 'beta', owner: 'ezrepo', url: 'https://example.test/beta' };
+    const repositoryA = { id: 'repository-a', name: 'alpha', owner: 'repovio', url: 'https://example.test/alpha' };
+    const repositoryB = { id: 'repository-b', name: 'beta', owner: 'repovio', url: 'https://example.test/beta' };
     const workflowRuns = {
       findMany: jest.fn().mockResolvedValue([
         { durationMs: 2_592_164_000n, repository: repositoryA, status: 'SUCCESS' },

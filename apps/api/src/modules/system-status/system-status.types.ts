@@ -14,7 +14,7 @@ export interface ProviderSyncActivity {
   workflowRunsTotal: number | null;
 }
 
-/** Global operational state sent to authenticated ezRepo clients. */
+/** Global operational state sent to authenticated Repovio clients. */
 export interface SystemStatusSnapshot {
   activity: ProviderSyncActivity | null;
   runningWorkflowCount: number;

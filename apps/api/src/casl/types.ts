@@ -1,7 +1,7 @@
 import type { Ability, ForcedSubject } from '@casl/ability';
 
 import type { CaslAction } from './casl-action.js';
-import type { EzRepoPrismaQuery } from './casl-prisma.js';
+import type { RepovioPrismaQuery } from './casl-prisma.js';
 import type { CaslSubject } from './casl-subject.js';
 
 /** Repository properties used by repository-scoped ability conditions. */
@@ -35,7 +35,7 @@ export type NotificationChannelAbilitySubject = ForcedSubject<CaslSubject.Notifi
 /** Delivery history protected through its workflow rule or direct test channel. */
 export type NotificationDeliveryAbilitySubject = ForcedSubject<CaslSubject.NotificationDelivery>;
 
-/** The CASL ability used by ezRepo API policies and query restrictions. */
+/** The CASL ability used by Repovio API policies and query restrictions. */
 export type AppAbility = Ability<
   [
     CaslAction,
@@ -50,7 +50,7 @@ export type AppAbility = Ability<
       | NotificationDeliveryAbilitySubject
     ),
   ],
-  EzRepoPrismaQuery
+  RepovioPrismaQuery
 >;
 
 /** Repository access resolved from a user's persisted membership. */

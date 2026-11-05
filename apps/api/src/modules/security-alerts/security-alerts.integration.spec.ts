@@ -25,19 +25,19 @@ describe('security-alert authorization integration', () => {
       prisma.repository.create({
         data: {
           name: 'visible',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: account.id,
           providerRepositoryId: 'visible',
-          url: 'https://github.test/ezrepo/visible',
+          url: 'https://github.test/repovio/visible',
         },
       }),
       prisma.repository.create({
         data: {
           name: 'hidden',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: account.id,
           providerRepositoryId: 'hidden',
-          url: 'https://github.test/ezrepo/hidden',
+          url: 'https://github.test/repovio/hidden',
         },
       }),
     ]);
@@ -104,7 +104,7 @@ describe('security-alert authorization integration', () => {
       unavailableRepositories: 1,
     });
     await expect(controller.filterOptions({ user: users.manager })).resolves.toMatchObject({
-      repositories: [{ name: 'visible', owner: 'ezrepo' }],
+      repositories: [{ name: 'visible', owner: 'repovio' }],
     });
     await expect(controller.findById({ user: users.manager }, visibleAlertId)).resolves.toMatchObject({
       description: null,

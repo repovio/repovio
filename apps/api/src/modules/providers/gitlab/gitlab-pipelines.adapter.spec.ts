@@ -33,12 +33,12 @@ describe('GitLabPipelinesAdapter', () => {
       {
         providerRepositoryId: '1',
         owner: 'group',
-        name: 'ezrepo',
-        url: 'https://gitlab.example.test/group/ezrepo',
+        name: 'repovio',
+        url: 'https://gitlab.example.test/group/repovio',
       },
     ]);
     await expect(
-      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'group', name: 'ezrepo' }),
+      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'group', name: 'repovio' }),
     ).resolves.toMatchObject([
       {
         displayTitle: 'main',
@@ -65,7 +65,7 @@ describe('GitLabPipelinesAdapter', () => {
       started_at: '2026-09-13T10:00:00Z',
       status: 'success',
       updated_at: '2026-09-13T10:01:00Z',
-      web_url: `https://gitlab.example.test/group/ezrepo/-/pipelines/${id}`,
+      web_url: `https://gitlab.example.test/group/repovio/-/pipelines/${id}`,
     });
     const fetchFn = jest
       .fn()
@@ -75,7 +75,7 @@ describe('GitLabPipelinesAdapter', () => {
     await expect(
       new GitLabPipelinesAdapter(fetchFn).listWorkflowRuns(
         context,
-        { providerRepositoryId: '1', owner: 'group', name: 'ezrepo' },
+        { providerRepositoryId: '1', owner: 'group', name: 'repovio' },
         new Date('2026-09-13T09:00:00Z'),
       ),
     ).resolves.toHaveLength(101);
@@ -98,7 +98,7 @@ describe('GitLabPipelinesAdapter', () => {
       new GitLabPipelinesAdapter(fetchFn).getRepository(context, {
         providerRepositoryId: '1',
         owner: 'group',
-        name: 'ezrepo',
+        name: 'repovio',
       }),
     ).resolves.toMatchObject({ providerRepositoryId: '1', owner: 'new-group', name: 'renamed' });
     expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/api/v4/projects/1'), expect.anything());
@@ -142,7 +142,7 @@ describe('GitLabPipelinesAdapter', () => {
             started_at: null,
             status: 'manual',
             updated_at: '2026-09-09T08:00:00Z',
-            web_url: 'https://gitlab.example.test/group/ezrepo/-/pipelines/8',
+            web_url: 'https://gitlab.example.test/group/repovio/-/pipelines/8',
           },
         ]),
       ),
@@ -150,11 +150,11 @@ describe('GitLabPipelinesAdapter', () => {
     const adapter = new GitLabPipelinesAdapter(fetchFn);
 
     await expect(
-      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'group', name: 'ezrepo' }),
+      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'group', name: 'repovio' }),
     ).resolves.toMatchObject([
       {
         awaitingApproval: true,
-        reviewUrl: 'https://gitlab.example.test/group/ezrepo/-/merge_requests/12',
+        reviewUrl: 'https://gitlab.example.test/group/repovio/-/merge_requests/12',
         status: 'QUEUED',
       },
     ]);
@@ -164,7 +164,7 @@ describe('GitLabPipelinesAdapter', () => {
 
 describe('GitLabPipelinesAdapter change requests', () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
   it.each([
     ['opened', null, 'OPEN'],
@@ -208,7 +208,7 @@ describe('GitLabPipelinesAdapter change requests', () => {
 
 describe('GitLabPipelinesAdapter security alerts', () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'group', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'group', providerRepositoryId: '1' };
 
   it('paginates and normalizes supported report types', async () => {
     const page = (nodes: object[], hasNextPage: boolean, endCursor: string | null) =>
@@ -276,7 +276,7 @@ describe('GitLabPipelinesAdapter security alerts', () => {
             kind: 'DEPENDENCY',
             manifest: 'package-lock.json',
             packageName: 'vite',
-            providerUrl: 'https://gitlab.example.test/group/ezrepo/-/security/vulnerability_report',
+            providerUrl: 'https://gitlab.example.test/group/repovio/-/security/vulnerability_report',
             state: 'OPEN',
             vulnerableRange: '7.0.0',
           },

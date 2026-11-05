@@ -5,7 +5,7 @@ const repository = {
   id: 'repository-1',
   lastSyncAt: null,
   members: [],
-  name: 'ezrepo',
+  name: 'repovio',
   owner: 'twaelde',
   providerAccountId: 'provider-1',
   providerRepositoryId: 'repository-1',
@@ -21,14 +21,14 @@ const repository = {
     startedAt: null,
     status: 'IDLE',
   },
-  url: 'https://github.com/tobiaswaelde/ezrepo',
+  url: 'https://github.com/repovio/repovio',
   workflowRunCount: 12,
   workflowRunRetentionDays: 30,
 };
 
 /** Configure the assigned repository list and detail for a non-administrative user. */
 async function mockViewerRepositories(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'playwright-viewer', role: 'VIEWER', username: 'playwright' } }),
   );
@@ -66,7 +66,7 @@ test('viewer cannot access repository webhook controls', async ({ page }) => {
   await page.goto('/repositories?repository=repository-1');
 
   await expect(page.getByRole('columnheader', { name: 'Webhook' })).toHaveCount(0);
-  const dialog = page.getByRole('dialog', { name: 'twaelde/ezrepo' });
+  const dialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toHaveCount(0);
 });
@@ -75,13 +75,13 @@ test('viewer browses assigned repositories without administration actions', asyn
   await mockViewerRepositories(page);
   await page.goto('/repositories');
 
-  await expect(page).toHaveTitle('Repositories · ezRepo');
-  const brandLink = page.getByRole('link', { name: 'ezRepo', exact: true });
-  await expect(brandLink).toHaveText('ezRepo');
+  await expect(page).toHaveTitle('Repositories · Repovio');
+  const brandLink = page.getByRole('link', { name: 'Repovio', exact: true });
+  await expect(brandLink).toHaveText('Repovio');
   await expect(brandLink).toHaveAttribute('href', '/');
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
     'href',
-    'https://github.com/tobiaswaelde/ezrepo',
+    'https://github.com/repovio/repovio',
   );
   const navigation = page.getByRole('navigation', { name: 'Primary navigation' });
   const repositoriesLink = navigation.getByRole('link', { name: 'Repositories' });
@@ -89,8 +89,8 @@ test('viewer browses assigned repositories without administration actions', asyn
   await expect(repositoriesLink).toHaveAttribute('aria-current', 'page');
   await expect(navigation.getByText('Administration', { exact: true })).toHaveCount(0);
   await expect(page.getByText('twaelde', { exact: true })).toBeVisible();
-  await expect(page.getByText('ezrepo', { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'ezrepo', exact: true })).toHaveAttribute(
+  await expect(page.getByText('repovio', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'repovio', exact: true })).toHaveAttribute(
     'href',
     '/repositories/repository-1',
   );
@@ -108,15 +108,15 @@ test('viewer browses assigned repositories without administration actions', asyn
   await expect(repositoriesLink).toHaveAttribute('aria-current', 'page');
   await page.screenshot({ path: testInfo.outputPath('viewer-repository-navigation-collapsed.png'), fullPage: true });
   await page.getByRole('button', { name: 'Expand sidebar' }).click();
-  await expect(brandLink).toHaveText('ezRepo');
+  await expect(brandLink).toHaveText('Repovio');
 
-  await page.getByPlaceholder('Search ezRepo').fill('repositories');
+  await page.getByPlaceholder('Search Repovio').fill('repositories');
   await expect(page.getByRole('link', { name: 'Repositories' }).last()).toHaveAttribute('href', '/repositories');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Open repository' }).click();
 
   await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/ezrepo' });
+  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
   await expect(repositoryDialog).toBeVisible();
   await expect(repositoryDialog.getByText('Enabled', { exact: true })).toBeVisible();
   await expect(repositoryDialog.getByRole('button', { name: 'Save' })).toHaveCount(0);
@@ -164,7 +164,7 @@ test('administrator refreshes renamed repository metadata from the provider', as
   const refreshResponse = new Promise<void>((resolve) => {
     releaseRefresh = resolve;
   });
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
   );
@@ -178,9 +178,9 @@ test('administrator refreshes renamed repository metadata from the provider', as
     await route.fulfill({
       json: {
         ...repository,
-        name: 'ezrepo',
+        name: 'repovio',
         owner: 'new-owner',
-        url: 'https://github.com/new-owner/ezrepo',
+        url: 'https://github.com/new-owner/repovio',
       },
     });
   });
@@ -190,7 +190,7 @@ test('administrator refreshes renamed repository metadata from the provider', as
     route.fulfill({
       json: [
         {
-          callbackUrl: 'https://ezrepo.example.test/api/webhooks/github/repository-1',
+          callbackUrl: 'https://repovio.example.test/api/webhooks/github/repository-1',
           configured: false,
           lastDeliveryAt: null,
           providerType: 'GITHUB',
@@ -222,10 +222,10 @@ test('administrator refreshes renamed repository metadata from the provider', as
   await page.screenshot({ path: testInfo.outputPath('repository-refresh-loading.png'), fullPage: true });
   releaseRefresh?.();
 
-  await expect(page.getByRole('dialog', { name: 'new-owner/ezrepo' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'new-owner/repovio' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Open in provider' })).toHaveAttribute(
     'href',
-    'https://github.com/new-owner/ezrepo',
+    'https://github.com/new-owner/repovio',
   );
   await expect(page.getByText('Repository data was refreshed from the provider.', { exact: true })).toBeVisible();
 
@@ -244,7 +244,7 @@ test('administrator configures a webhook for one repository', async ({ page }, t
     releaseSave = resolve;
   });
   const configuration = () => ({
-    callbackUrl: 'https://ezrepo.example.test/api/webhooks/github/repository-1',
+    callbackUrl: 'https://repovio.example.test/api/webhooks/github/repository-1',
     configured,
     lastDeliveryAt: configured ? '2026-09-13T12:00:00.000Z' : null,
     providerType: 'GITHUB',
@@ -252,7 +252,7 @@ test('administrator configures a webhook for one repository', async ({ page }, t
   });
 
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
   );
@@ -294,10 +294,10 @@ test('administrator configures a webhook for one repository', async ({ page }, t
   await expect(page.getByText('Not configured', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Edit repository' }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'twaelde/ezrepo' });
+  const dialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toBeVisible();
   await expect(
-    dialog.locator('input[value="https://ezrepo.example.test/api/webhooks/github/repository-1"]'),
+    dialog.locator('input[value="https://repovio.example.test/api/webhooks/github/repository-1"]'),
   ).toBeVisible();
   await expect(dialog.getByText(/Workflow runs \(workflow_run\)/)).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('repository-webhook-dark.png'), fullPage: true });

@@ -125,11 +125,11 @@ describe('ProviderAccountsService', () => {
     const listRepositories = jest.fn().mockResolvedValue([
       {
         name: 'Existing',
-        owner: 'ezrepo',
+        owner: 'repovio',
         providerRepositoryId: 'already-tracked',
         url: 'https://example.test/existing',
       },
-      { name: 'New', owner: 'ezrepo', providerRepositoryId: 'new', url: 'https://example.test/new' },
+      { name: 'New', owner: 'repovio', providerRepositoryId: 'new', url: 'https://example.test/new' },
     ]);
     adapters.get.mockReturnValue({ listRepositories } as never);
 
@@ -156,10 +156,10 @@ describe('ProviderAccountsService', () => {
     adapters.get.mockReturnValue({
       listRepositories: jest.fn().mockResolvedValue([
         {
-          name: 'ezRepo',
-          owner: 'ezrepo',
+          name: 'Repovio',
+          owner: 'repovio',
           providerRepositoryId: 'repository-id',
-          url: 'https://example.test/ezrepo',
+          url: 'https://example.test/repovio',
         },
       ]),
     } as never);
@@ -168,11 +168,11 @@ describe('ProviderAccountsService', () => {
 
     expect(prisma.repository.create).toHaveBeenCalledWith({
       data: {
-        name: 'ezRepo',
-        owner: 'ezrepo',
+        name: 'Repovio',
+        owner: 'repovio',
         providerAccountId: 'provider-id',
         providerRepositoryId: 'repository-id',
-        url: 'https://example.test/ezrepo',
+        url: 'https://example.test/repovio',
       },
     });
     expect(syncQueue.enqueueRepositorySync).toHaveBeenCalledWith('repository-id');

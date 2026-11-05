@@ -20,7 +20,7 @@ function listToolsRequest(id: number): Request {
       params: {
         _meta: {
           'io.modelcontextprotocol/clientCapabilities': {},
-          'io.modelcontextprotocol/clientInfo': { name: 'ezrepo-test', version: '1.0.0' },
+          'io.modelcontextprotocol/clientInfo': { name: 'repovio-test', version: '1.0.0' },
           'io.modelcontextprotocol/protocolVersion': '2026-07-28',
         },
       },
@@ -148,7 +148,7 @@ describe('McpServerFactory', () => {
           params: {
             _meta: {
               'io.modelcontextprotocol/clientCapabilities': {},
-              'io.modelcontextprotocol/clientInfo': { name: 'ezrepo-test', version: '1.0.0' },
+              'io.modelcontextprotocol/clientInfo': { name: 'repovio-test', version: '1.0.0' },
               'io.modelcontextprotocol/protocolVersion': '2026-07-28',
             },
             arguments: limit === undefined ? {} : { limit },

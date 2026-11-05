@@ -33,7 +33,7 @@ export async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('ezRepo API')
+      .setTitle('Repovio API')
       .setDescription('Read-only workflow status tracking API.')
       .setVersion('1.0')
       .addBearerAuth()
@@ -47,7 +47,7 @@ export async function bootstrap(): Promise<void> {
       content: document,
       hideClientButton: true,
       metaData: {
-        title: 'ezRepo API',
+        title: 'Repovio API',
       },
       telemetry: false,
     }),

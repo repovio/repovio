@@ -12,7 +12,7 @@ const jobs = [
     progressTotal: 12,
     providerName: 'GitHub',
     providerType: 'GITHUB',
-    repositoryName: 'ezrepo',
+    repositoryName: 'repovio',
     repositoryOwner: 'tobiaswaelde',
     requestedAt: '2026-09-13T04:00:00.000Z',
     runAfter: '2026-09-13T04:00:00.000Z',
@@ -58,7 +58,7 @@ const jobs = [
 ] as const;
 
 async function mockJobsPage(page: Page, onQuery: (url: string) => void = () => undefined): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'admin-id', role: 'SYSTEM_ADMIN', username: 'admin' } }),
   );
@@ -106,7 +106,7 @@ test('shows available jobs, progress, start actions, and root navigation section
 
   await expect(page.getByRole('heading', { name: 'Jobs' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Repository synchronization' })).toBeVisible();
-  await expect(page.getByText('tobiaswaelde/ezrepo')).toBeVisible();
+  await expect(page.getByText('repovio/repovio')).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Provider' })).toBeVisible();
   await expect(page.getByText('Processing workflows: 7/12')).toBeVisible();
   await expect(page.getByRole('progressbar', { name: '58%' })).toHaveAttribute('aria-valuenow', '7');
@@ -125,7 +125,7 @@ test('shows available jobs, progress, start actions, and root navigation section
   await page.getByRole('row').filter({ hasText: 'team/idle-repository' }).getByRole('button', { name: 'Run' }).click();
   await expect.poll(() => runRepositoryCount).toBe(1);
 
-  await page.screenshot({ path: resolve(process.cwd(), '../../docs/public/screenshots/jobs.png'), fullPage: true });
+  await page.screenshot({ path: resolve(process.cwd(), 'test-results/captures/jobs.png'), fullPage: true });
 
   await page.setViewportSize({ height: 844, width: 390 });
   await expect

@@ -68,7 +68,7 @@ export function validateOidcUrl(raw: unknown, allowHttp: boolean, code: OidcClie
  * Select a supported confidential- or public-client authentication method explicitly.
  *
  * @param advertised - Provider-advertised token endpoint methods.
- * @param hasSecret - Whether ezRepo has a configured client secret.
+ * @param hasSecret - Whether Repovio has a configured client secret.
  * @returns The explicit token endpoint authentication method.
  * @throws OidcClientError - When no supported confidential-client method is advertised.
  */
@@ -86,7 +86,7 @@ export function selectTokenAuthenticationMethod(
  * Select only an asymmetric ID-token signature algorithm.
  *
  * @param supported - Provider-advertised ID-token algorithms.
- * @returns The strongest supported algorithm according to ezRepo preference.
+ * @returns The strongest supported algorithm according to Repovio preference.
  * @throws OidcClientError - When the provider advertises no allowed asymmetric algorithm.
  */
 export function selectIdTokenAlgorithm(supported: unknown): string {
@@ -183,7 +183,7 @@ function boundedFetch(endpoints: () => { jwks?: string; token?: string; userinfo
  *
  * @param input - Saved issuer and client credentials.
  * @returns A validated openid-client handle and safe discovery details.
- * @throws OidcClientError - When discovery metadata violates ezRepo policy.
+ * @throws OidcClientError - When discovery metadata violates Repovio policy.
  */
 export async function buildOidcClient(input: {
   allowHttpIssuer: boolean;

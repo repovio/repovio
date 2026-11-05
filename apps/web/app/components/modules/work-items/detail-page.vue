@@ -90,13 +90,13 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { Issue, PullRequest } from '~/types/api/resources';
 
 const props = defineProps<{ id: string; kind: 'issue' | 'pull-request' }>();
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const item = ref<Issue | PullRequest | null>(null);
 const loading = ref(true);

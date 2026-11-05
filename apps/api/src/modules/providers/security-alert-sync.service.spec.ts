@@ -5,7 +5,7 @@ import { SecurityAlertSyncService } from './security-alert-sync.service.js';
 
 describe('SecurityAlertSyncService', () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
-  const repository = { id: 'repository', name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { id: 'repository', name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
   const dependencyAlert: ProviderSecurityAlert = {
     description: 'Safe description',
     ecosystem: 'npm',

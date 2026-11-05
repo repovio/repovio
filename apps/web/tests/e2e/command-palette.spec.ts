@@ -6,7 +6,7 @@ const emptyPage = {
 };
 const providerAccount = {
   baseUrl: null,
-  displayName: 'ezRepo GitHub',
+  displayName: 'Repovio GitHub',
   enabled: true,
   id: 'provider-1',
   lastSyncAt: null,
@@ -16,10 +16,10 @@ const repository = {
   enabled: true,
   id: 'repository-1',
   lastSyncAt: null,
-  name: 'ezrepo',
+  name: 'repovio',
   owner: 'tobiaswaelde',
   providerAccountId: 'provider-1',
-  url: 'https://github.com/tobiaswaelde/ezrepo',
+  url: 'https://github.com/repovio/repovio',
   workflowRunRetentionDays: null,
 };
 const workflowRun = {
@@ -31,17 +31,17 @@ const workflowRun = {
   providerRunId: '42',
   providerType: 'GITHUB',
   repositoryId: 'repository-1',
-  repositoryName: 'ezrepo',
+  repositoryName: 'repovio',
   repositoryOwner: 'tobiaswaelde',
   startedAt: '2026-09-10T00:00:00.000Z',
   status: 'SUCCESS',
-  url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/42',
-  workflowName: 'ezRepo deployment',
+  url: 'https://github.com/repovio/repovio/actions/runs/42',
+  workflowName: 'Repovio deployment',
 };
 
 /** Mock the authenticated shell and empty resource endpoints used by command-palette scenarios. */
 async function mockCommandPaletteShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: `playwright-${role.toLowerCase()}`, role, username: 'playwright' } }),
   );
@@ -134,14 +134,14 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
 
   await page.keyboard.press(shortcut);
   await paletteSearch.fill('flow');
-  await expect(palette.getByRole('option', { name: /ezRepo GitHub/ })).toBeVisible();
-  await expect(palette.getByRole('option', { name: /ezRepo deployment/ })).toBeVisible();
+  await expect(palette.getByRole('option', { name: /Repovio GitHub/ })).toBeVisible();
+  await expect(palette.getByRole('option', { name: /Repovio deployment/ })).toBeVisible();
   await palette
-    .getByRole('option', { name: /tobiaswaelde\/ezrepo/ })
+    .getByRole('option', { name: /tobiaswaelde\/repovio/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  const repositoryDialog = page.getByRole('dialog', { name: 'tobiaswaelde/ezrepo' });
+  const repositoryDialog = page.getByRole('dialog', { name: 'repovio/repovio' });
   await expect(repositoryDialog).toBeVisible();
   await repositoryDialog.getByRole('button', { name: 'Close' }).click();
   await expect(repositoryDialog).not.toBeVisible();

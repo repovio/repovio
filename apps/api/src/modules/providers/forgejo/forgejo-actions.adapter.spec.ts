@@ -177,7 +177,7 @@ describe('ForgejoActionsAdapter', () => {
 
 describe('ForgejoActionsAdapter change requests', () => {
   const context = { accessToken: 'token', baseUrl: 'https://forgejo.example.test', providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
   it.each([
     ['open', false, null, 'OPEN'],

@@ -8,9 +8,9 @@ RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --fr
 COPY . .
 RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder \
   SHADOW_DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder_shadow \
-  pnpm --filter @ezrepo/api db:generate \
-  && pnpm --filter @ezrepo/api build
-RUN pnpm --filter @ezrepo/api deploy --legacy --prod /production
+  pnpm --filter @repovio/api db:generate \
+  && pnpm --filter @repovio/api build
+RUN pnpm --filter @repovio/api deploy --legacy --prod /production
 
 FROM node:26.13.0-bookworm-slim AS runtime
 WORKDIR /app

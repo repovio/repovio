@@ -61,14 +61,14 @@
 import { ref, watch } from 'vue';
 
 import { defineModel, defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { McpAccessToken, McpAccessTokenStatus, User } from '~/types/api/resources';
 
 const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{ user: User | null }>();
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const tokens = ref<McpAccessToken[]>([]);
 const loading = ref(false);

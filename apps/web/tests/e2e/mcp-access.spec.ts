@@ -16,7 +16,7 @@ async function mockShell(page: Page): Promise<void> {
     items: [],
     meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 25 },
   };
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) => route.fulfill({ json: admin }));
   await page.route('**/api/v1/health', (route) =>
     route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
@@ -52,8 +52,8 @@ test('creates, reveals once, lists, and revokes a personal MCP token', async ({ 
         name: body.name,
         revokedAt: null,
         status: 'ACTIVE',
-        token: 'ezrepo_mcp_one_time_secret',
-        tokenPrefix: 'ezrepo_mcp_one_time',
+        token: 'repovio_mcp_one_time_secret',
+        tokenPrefix: 'repovio_mcp_one_time',
         userId: admin.id,
       };
       tokens = [{ ...created, token: undefined }];
@@ -79,7 +79,7 @@ test('creates, reveals once, lists, and revokes a personal MCP token', async ({ 
   await createButton.click();
   await expect(createButton).toBeDisabled();
   releaseCreation?.();
-  await expect(page.getByRole('textbox', { name: 'Bearer token' })).toHaveValue('ezrepo_mcp_one_time_secret');
+  await expect(page.getByRole('textbox', { name: 'Bearer token' })).toHaveValue('repovio_mcp_one_time_secret');
   await expect(page.getByText('Copy this token now. It will not be shown again.')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('mcp-token-created.png'), fullPage: true });
   await page.getByRole('button', { name: 'Done' }).click();
@@ -118,7 +118,7 @@ test('allows an administrator to inspect and revoke user token metadata', async 
           name: 'Automation',
           revokedAt: revoked ? '2026-09-12T11:00:00.000Z' : null,
           status: revoked ? 'REVOKED' : 'ACTIVE',
-          tokenPrefix: 'ezrepo_mcp_automat',
+          tokenPrefix: 'repovio_mcp_automat',
           userId: admin.id,
         },
       ],

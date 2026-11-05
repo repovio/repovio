@@ -12,7 +12,7 @@ function readFixture(name: string): unknown {
 
 describe('GiteaActionsAdapter', () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitea.example.test', providerAccountId: 'account' };
-  const repository = { providerRepositoryId: '42', owner: 'ezrepo', name: 'ezrepo' };
+  const repository = { providerRepositoryId: '42', owner: 'repovio', name: 'repovio' };
 
   it('retains Gitea rate-limit timing without exposing the response body', async () => {
     const adapter = new GiteaActionsAdapter(
@@ -38,13 +38,13 @@ describe('GiteaActionsAdapter', () => {
     });
     const adapter = new GiteaActionsAdapter(fetchFn);
 
-    await expect(adapter.validateAccount(context)).resolves.toEqual({ displayName: 'ezrepo-bot', valid: true });
+    await expect(adapter.validateAccount(context)).resolves.toEqual({ displayName: 'repovio-bot', valid: true });
     await expect(adapter.listRepositories(context)).resolves.toEqual([
       {
         providerRepositoryId: '42',
-        owner: 'ezrepo',
-        name: 'ezrepo',
-        url: 'https://gitea.example.test/ezrepo/ezrepo',
+        owner: 'repovio',
+        name: 'repovio',
+        url: 'https://gitea.example.test/repovio/repovio',
       },
     ]);
     await expect(adapter.getRepository(context, repository)).resolves.toMatchObject({ providerRepositoryId: '42' });
@@ -67,7 +67,7 @@ describe('GiteaActionsAdapter', () => {
     const workflowRun = (id: number) => ({
       completed_at: '2026-09-13T10:01:00Z',
       created_at: '2026-09-13T10:00:00Z',
-      html_url: `https://gitea.example.test/ezrepo/ezrepo/actions/runs/${id}`,
+      html_url: `https://gitea.example.test/repovio/repovio/actions/runs/${id}`,
       id,
       name: 'CI',
       status: 'success',
@@ -114,7 +114,7 @@ describe('GiteaActionsAdapter', () => {
 
 describe('GiteaActionsAdapter change requests', () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitea.example.test', providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
   it.each([
     ['open', false, null, 'OPEN'],

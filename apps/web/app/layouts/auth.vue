@@ -2,14 +2,11 @@
   <div class="flex min-h-screen flex-1 flex-col items-center justify-center gap-4 bg-default p-4">
     <NuxtLink
       to="/auth/signin"
-      aria-label="ezRepo"
+      aria-label="Repovio"
       class="mt-auto flex items-center gap-2 font-display text-2xl font-bold"
     >
-      <img src="/logo.svg" alt="" class="size-9 shrink-0" />
-      <span>
-        <span class="text-primary">ez</span>
-        <span class="tracking-tight text-highlighted">Repo</span>
-      </span>
+      <img src="/logo-wordmark-light.svg" alt="" class="h-10 w-auto dark:hidden" />
+      <img src="/logo-wordmark-dark.svg" alt="" class="hidden h-10 w-auto dark:block" />
     </NuxtLink>
 
     <UPageCard class="w-full max-w-md">

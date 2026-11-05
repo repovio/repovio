@@ -19,18 +19,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      DATABASE_URL: postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_test?schema=public
-      SHADOW_DATABASE_URL: postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_shadow?schema=public
+      DATABASE_URL: postgresql://repovio:repovio@localhost:5432/repovio_test?schema=public
+      SHADOW_DATABASE_URL: postgresql://repovio:repovio@localhost:5432/repovio_shadow?schema=public
 
     services:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: ezrepo_test
-          POSTGRES_USER: ezrepo
-          POSTGRES_PASSWORD: ezrepo
+          POSTGRES_DB: repovio_test
+          POSTGRES_USER: repovio
+          POSTGRES_PASSWORD: repovio
         options: >-
-          --health-cmd "pg_isready -U ezrepo -d ezrepo_test"
+          --health-cmd "pg_isready -U repovio -d repovio_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -39,17 +39,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
         with:
           version: 11.28.9
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26.13.0
           cache: pnpm
@@ -59,8 +59,8 @@ jobs:
 
       - name: Create Prisma shadow database
         run: >-
-          docker exec ${{ job.services.postgres.id }} psql -U ezrepo -d postgres
-          -c 'CREATE DATABASE ezrepo_shadow;'
+          docker exec ${{ job.services.postgres.id }} psql -U repovio -d postgres
+          -c 'CREATE DATABASE repovio_shadow;'
 
       - name: Fetch Changesets base branch
         if: github.event_name == 'pull_request'

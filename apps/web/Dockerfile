@@ -5,7 +5,7 @@ COPY apps/web/package.json apps/web/package.json
 COPY patches ./patches
 RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm --filter @ezrepo/web build
+RUN pnpm --filter @repovio/web build
 
 FROM node:26.13.0-bookworm-slim AS runtime
 WORKDIR /app

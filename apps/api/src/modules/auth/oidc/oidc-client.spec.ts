@@ -8,7 +8,7 @@ import {
 
 describe('OIDC client policy', () => {
   it('requires HTTPS unless the explicit lab exception is enabled', () => {
-    expect(validateOidcUrl('https://id.example/realms/ezrepo', false).href).toBe('https://id.example/realms/ezrepo');
+    expect(validateOidcUrl('https://id.example/realms/repovio', false).href).toBe('https://id.example/realms/repovio');
     expect(() => validateOidcUrl('http://id.example', false)).toThrow(new OidcClientError('endpoint_invalid'));
     expect(validateOidcUrl('http://id.example', true).protocol).toBe('http:');
     expect(() => validateOidcUrl('https://user:password@id.example', false)).toThrow(OidcClientError);

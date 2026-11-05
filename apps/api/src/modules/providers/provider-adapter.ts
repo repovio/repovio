@@ -25,7 +25,7 @@ export interface ProviderRepository {
   url: string;
 }
 
-/** Repository identity retained by ezRepo for provider run requests. */
+/** Repository identity retained by Repovio for provider run requests. */
 export interface ProviderRepositoryReference {
   name: string;
   owner: string;
@@ -55,7 +55,7 @@ export interface ProviderWorkItemQuery {
   updatedAfter: Date;
 }
 
-/** Provider issue normalized before persistence in ezRepo. */
+/** Provider issue normalized before persistence in Repovio. */
 export interface ProviderIssue {
   assignees: ProviderActor[];
   author: ProviderActor | null;
@@ -72,7 +72,7 @@ export interface ProviderIssue {
   url: string;
 }
 
-/** Provider pull or merge request normalized before persistence in ezRepo. */
+/** Provider pull or merge request normalized before persistence in Repovio. */
 export interface ProviderPullRequest {
   assignees: ProviderActor[];
   author: ProviderActor | null;
@@ -134,7 +134,7 @@ export interface ProviderChangeRequestState {
   targetBranch: string | null;
 }
 
-/** Provider workflow run normalized before persistence in ezRepo. */
+/** Provider workflow run normalized before persistence in Repovio. */
 export interface ProviderWorkflowRun {
   awaitingApproval: boolean;
   changeRequestNumber: string | null;
@@ -204,7 +204,7 @@ export function providerWebhookSyncScopes(event: string): ProviderSyncScope[] {
   return ['WORKFLOWS', 'ISSUES', 'PULL_REQUESTS', 'ALERTS'];
 }
 
-/** Read-only webhook request data received by ezRepo. */
+/** Read-only webhook request data received by Repovio. */
 export interface ProviderWebhookRequest {
   headers: Record<string, string | string[] | undefined>;
   payload: Uint8Array;

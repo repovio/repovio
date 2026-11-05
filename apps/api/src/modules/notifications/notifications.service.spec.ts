@@ -216,13 +216,13 @@ describe('NotificationsService', () => {
     const { delivery, prisma, service } = createService();
     prisma.repository.count.mockResolvedValue(1);
     prisma.repository.findMany.mockResolvedValue([
-      { id: 'repository-a', lastSyncAt: new Date(), name: 'ezrepo', owner: 'tobiaswaelde', syncRequest: null },
+      { id: 'repository-a', lastSyncAt: new Date(), name: 'repovio', owner: 'tobiaswaelde', syncRequest: null },
     ]);
     prisma.workflowRun.findMany.mockResolvedValue([
       {
         id: 'run-a',
         providerCreatedAt: new Date(),
-        repository: { name: 'ezrepo', owner: 'tobiaswaelde' },
+        repository: { name: 'repovio', owner: 'tobiaswaelde' },
         repositoryId: 'repository-a',
         scopeKey: 'refs/heads/main',
         status: 'FAILED',
@@ -247,13 +247,13 @@ describe('NotificationsService', () => {
   it('shows the recovered event when a success subscription matches a recovered run', async () => {
     const { prisma, service } = createService();
     prisma.repository.findMany.mockResolvedValue([
-      { id: 'repository-a', lastSyncAt: new Date(), name: 'ezrepo', owner: 'owner', syncRequest: null },
+      { id: 'repository-a', lastSyncAt: new Date(), name: 'repovio', owner: 'owner', syncRequest: null },
     ]);
     prisma.workflowRun.findMany.mockResolvedValue([
       {
         id: 'run-a',
         providerCreatedAt: new Date(),
-        repository: { name: 'ezrepo', owner: 'owner' },
+        repository: { name: 'repovio', owner: 'owner' },
         repositoryId: 'repository-a',
         scopeKey: 'refs/heads/main',
         status: 'SUCCESS',

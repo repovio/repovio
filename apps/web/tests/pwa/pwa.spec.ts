@@ -24,7 +24,7 @@ test('publishes an installable manifest without caching protected application da
   await page.goto('/auth/signin');
 
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/manifest.webmanifest');
-  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#0891b2');
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#4f46ff');
   await expect(page.locator('meta[name="mobile-web-app-capable"]')).toHaveAttribute('content', 'yes');
   await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute('content', 'yes');
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon-180x180.png');
@@ -39,7 +39,7 @@ test('publishes an installable manifest without caching protected application da
     scope: string;
     start_url: string;
   };
-  expect(manifest).toMatchObject({ display: 'standalone', name: 'ezRepo', scope: '/', start_url: '/' });
+  expect(manifest).toMatchObject({ display: 'standalone', name: 'Repovio', scope: '/', start_url: '/' });
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ sizes: '192x192', type: 'image/png' }),

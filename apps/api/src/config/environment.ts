@@ -37,8 +37,8 @@ const validators = {
   DATABASE_URL: str({ desc: 'PostgreSQL connection URL' }),
   SHADOW_DATABASE_URL: str({ desc: 'PostgreSQL shadow database URL for migrations' }),
   CORS_ORIGIN: str({ default: 'http://localhost:3000' }),
-  PUBLIC_URL: httpUrl({ default: 'http://localhost:3000', desc: 'Public ezRepo web URL' }),
-  AUTH_JWT_ISSUER: str({ default: 'ezrepo' }),
+  PUBLIC_URL: httpUrl({ default: 'http://localhost:3000', desc: 'Public Repovio web URL' }),
+  AUTH_JWT_ISSUER: str({ default: 'repovio' }),
   AUTH_JWT_SECRET: str({ desc: 'JWT signing secret' }),
   AUTH_JWT_EXPIRATION: str({ default: '7d' }),
   TOKEN_ENCRYPTION_KEY: base64Key({ desc: 'Base64-encoded 32-byte encryption key' }),
@@ -66,7 +66,7 @@ const validators = {
 };
 
 /** The validated API runtime configuration. */
-export type EzRepoEnvironment = CleanedEnv<typeof validators>;
+export type RepovioEnvironment = CleanedEnv<typeof validators>;
 
 /**
  * Report invalid environment keys without including their secret values.
@@ -82,18 +82,18 @@ function throwOnInvalidEnvironment<T>({ errors }: ReporterOptions<T>): void {
   );
 
   if (messages.length > 0) {
-    throw new Error(`Invalid ezRepo environment configuration: ${messages.join(', ')}`);
+    throw new Error(`Invalid Repovio environment configuration: ${messages.join(', ')}`);
   }
 }
 
 /**
- * Validate ezRepo environment variables without logging their values.
+ * Validate Repovio environment variables without logging their values.
  *
  * @param environment - Raw environment variables to validate.
  * @returns A read-only, typed configuration object.
  * @throws Error - When required values are missing or cross-field validation fails.
  */
-export function loadEnvironment(environment: NodeJS.ProcessEnv): EzRepoEnvironment {
+export function loadEnvironment(environment: NodeJS.ProcessEnv): RepovioEnvironment {
   const config = cleanEnv(environment, validators, { reporter: throwOnInvalidEnvironment });
 
   const oauthClients = [

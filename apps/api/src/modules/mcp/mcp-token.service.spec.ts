@@ -19,7 +19,7 @@ const persistedToken = {
   name: 'Editor',
   revokedAt: null,
   tokenHash: 'hash',
-  tokenPrefix: 'ezrepo_mcp_prefix',
+  tokenPrefix: 'repovio_mcp_prefix',
   updatedAt: new Date('2026-09-12T10:00:00.000Z'),
   userId: viewer.id,
 };
@@ -40,7 +40,7 @@ describe('McpTokenService', () => {
 
     const created = await service.create(viewer, { name: 'Editor' });
 
-    expect(created.token).toMatch(/^ezrepo_mcp_[A-Za-z0-9_-]{43}$/);
+    expect(created.token).toMatch(/^repovio_mcp_[A-Za-z0-9_-]{43}$/);
     expect(created.tokenPrefix).toBe(created.token.slice(0, 20));
     expect(mcpAccessToken.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
@@ -65,7 +65,7 @@ describe('McpTokenService', () => {
     mcpAccessToken.findUnique.mockResolvedValue({ ...persistedToken, user });
     mcpAccessToken.update.mockResolvedValue({ ...persistedToken, lastUsedAt: new Date() });
 
-    await expect(service.authenticate('ezrepo_mcp_valid')).resolves.toEqual(
+    await expect(service.authenticate('repovio_mcp_valid')).resolves.toEqual(
       expect.objectContaining({ user: viewer, record: expect.not.objectContaining({ user: expect.anything() }) }),
     );
     expect(mcpAccessToken.update).toHaveBeenCalledWith({
@@ -78,7 +78,7 @@ describe('McpTokenService', () => {
     'rejects inactive tokens',
     async (state) => {
       mcpAccessToken.findUnique.mockResolvedValue({ ...persistedToken, ...state, user: viewer });
-      await expect(service.authenticate('ezrepo_mcp_inactive')).rejects.toThrow(UnauthorizedException);
+      await expect(service.authenticate('repovio_mcp_inactive')).rejects.toThrow(UnauthorizedException);
       expect(mcpAccessToken.update).not.toHaveBeenCalled();
     },
   );
@@ -86,7 +86,7 @@ describe('McpTokenService', () => {
   it('rejects a token after its owning user has been deleted', async () => {
     mcpAccessToken.findUnique.mockResolvedValue(null);
 
-    await expect(service.authenticate('ezrepo_mcp_deleted_user')).rejects.toThrow(UnauthorizedException);
+    await expect(service.authenticate('repovio_mcp_deleted_user')).rejects.toThrow(UnauthorizedException);
     expect(mcpAccessToken.update).not.toHaveBeenCalled();
   });
 

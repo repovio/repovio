@@ -1,10 +1,10 @@
 import { computed, ref } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 
 /** Manage the authenticated user's PushSubscription for the current browser. */
 export function useBrowserPush() {
-  const api = useEzRepoApi();
+  const api = useRepovioApi();
   const available = ref(false);
   const currentDeviceEnabled = ref(false);
   const error = ref(false);

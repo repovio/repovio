@@ -12,7 +12,7 @@ import { onMounted } from 'vue';
 import { useAuthStore } from '~/store/auth';
 
 interface OidcHandoffWindow extends Window {
-  __ezrepoOidcHandoffFragment?: string;
+  __repovioOidcHandoffFragment?: string;
 }
 
 definePageMeta({ layout: 'auth' });
@@ -22,13 +22,13 @@ const router = useRouter();
 const { t } = useI18n();
 const handoffWindow = import.meta.client ? (window as OidcHandoffWindow) : null;
 const rawFragment =
-  handoffWindow?.__ezrepoOidcHandoffFragment ?? (import.meta.client ? window.location.hash.slice(1) : '');
+  handoffWindow?.__repovioOidcHandoffFragment ?? (import.meta.client ? window.location.hash.slice(1) : '');
 const fragment = new URLSearchParams(rawFragment);
 const code = fragment.get('code');
 const error = fragment.get('error');
 
 if (handoffWindow) {
-  delete handoffWindow.__ezrepoOidcHandoffFragment;
+  delete handoffWindow.__repovioOidcHandoffFragment;
   window.history.replaceState({}, '', '/auth/oidc/callback');
 }
 

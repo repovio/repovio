@@ -30,10 +30,10 @@ describe('GitHubActionsAdapter', () => {
     const adapter = new GitHubActionsAdapter(fetchFn);
 
     await expect(adapter.listRepositories(context)).resolves.toEqual([
-      { providerRepositoryId: '1', owner: 'octo', name: 'ezrepo', url: 'https://github.com/octo/ezrepo' },
+      { providerRepositoryId: '1', owner: 'octo', name: 'repovio', url: 'https://github.com/octo/repovio' },
     ]);
     await expect(
-      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'ezrepo' }),
+      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'repovio' }),
     ).resolves.toMatchObject([
       {
         displayTitle: 'CI',
@@ -60,7 +60,7 @@ describe('GitHubActionsAdapter', () => {
     const workflowRun = (id: number) => ({
       conclusion: 'success',
       created_at: '2026-09-13T10:00:00Z',
-      html_url: `https://github.com/octo/ezrepo/actions/runs/${id}`,
+      html_url: `https://github.com/octo/repovio/actions/runs/${id}`,
       id,
       name: 'CI',
       pull_requests: [],
@@ -79,7 +79,7 @@ describe('GitHubActionsAdapter', () => {
     await expect(
       new GitHubActionsAdapter(fetchFn).listWorkflowRuns(
         context,
-        { providerRepositoryId: '1', owner: 'octo', name: 'ezrepo' },
+        { providerRepositoryId: '1', owner: 'octo', name: 'repovio' },
         new Date('2026-09-13T09:00:00Z'),
       ),
     ).resolves.toHaveLength(101);
@@ -102,7 +102,7 @@ describe('GitHubActionsAdapter', () => {
       new GitHubActionsAdapter(fetchFn).getRepository(context, {
         providerRepositoryId: '1',
         owner: 'octo',
-        name: 'ezrepo',
+        name: 'repovio',
       }),
     ).resolves.toEqual({
       providerRepositoryId: '1',
@@ -110,7 +110,7 @@ describe('GitHubActionsAdapter', () => {
       name: 'renamed',
       url: 'https://github.com/new-owner/renamed',
     });
-    expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/repos/octo/ezrepo'), expect.anything());
+    expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/repos/octo/repovio'), expect.anything());
   });
 
   it('returns null when the tracked GitHub repository is unavailable', async () => {
@@ -142,7 +142,7 @@ describe('GitHubActionsAdapter', () => {
             {
               conclusion: null,
               created_at: '2026-09-09T08:00:00Z',
-              html_url: 'https://github.com/octo/ezrepo/actions/runs/8',
+              html_url: 'https://github.com/octo/repovio/actions/runs/8',
               id: 8,
               name: 'Deploy',
               workflow_id: 18,
@@ -163,13 +163,13 @@ describe('GitHubActionsAdapter', () => {
     const adapter = new GitHubActionsAdapter(fetchFn);
 
     await expect(
-      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'ezrepo' }),
+      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'repovio' }),
     ).resolves.toMatchObject([
       {
         awaitingApproval: true,
         changeRequestNumber: '42',
         displayTitle: 'Deploy pull request',
-        reviewUrl: 'https://github.com/octo/ezrepo/pull/42',
+        reviewUrl: 'https://github.com/octo/repovio/pull/42',
         scopeKey: 'change-request:42',
         status: 'QUEUED',
       },
@@ -191,7 +191,7 @@ describe('GitHubActionsAdapter', () => {
                 event: 'pull_request',
                 head_branch: 'dependabot/npm_and_yarn/jest-30.5.0',
                 head_sha: '3ad072db',
-                html_url: 'https://github.com/octo/ezrepo/actions/runs/9',
+                html_url: 'https://github.com/octo/repovio/actions/runs/9',
                 id: 9,
                 name: 'CI',
                 run_started_at: '2026-09-01T08:19:25Z',
@@ -207,19 +207,19 @@ describe('GitHubActionsAdapter', () => {
     const adapter = new GitHubActionsAdapter(fetchFn);
 
     await expect(
-      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'ezrepo' }),
+      adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'octo', name: 'repovio' }),
     ).resolves.toMatchObject([
       {
         awaitingApproval: true,
         changeRequestNumber: '14',
-        reviewUrl: 'https://github.com/octo/ezrepo/pull/14',
+        reviewUrl: 'https://github.com/octo/repovio/pull/14',
         scopeKey: 'change-request:14',
         status: 'QUEUED',
       },
     ]);
     expect(fetchFn).toHaveBeenNthCalledWith(
       2,
-      expect.stringContaining('/repos/octo/ezrepo/commits/3ad072db/pulls?per_page=1'),
+      expect.stringContaining('/repos/octo/repovio/commits/3ad072db/pulls?per_page=1'),
       expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer token' }) }),
     );
   });
@@ -236,7 +236,7 @@ describe('GitHubActionsAdapter', () => {
               event: 'dynamic',
               head_branch: 'main',
               head_sha: '3ba01f8e',
-              html_url: 'https://github.com/octo/ezrepo/actions/runs/34353631785',
+              html_url: 'https://github.com/octo/repovio/actions/runs/34353631785',
               id: 34353631785,
               name: 'npm_and_yarn in /. for brace-expansion - Update #1566127419',
               path: 'dynamic/dependabot/dependabot-updates',
@@ -253,7 +253,7 @@ describe('GitHubActionsAdapter', () => {
               event: 'dynamic',
               head_branch: 'main',
               head_sha: '53df4d60',
-              html_url: 'https://github.com/octo/ezrepo/actions/runs/34350764213',
+              html_url: 'https://github.com/octo/repovio/actions/runs/34350764213',
               id: 34350764213,
               name: 'npm_and_yarn in /. for brace-expansion - Update #1566075990',
               path: 'dynamic/dependabot/dependabot-updates',
@@ -269,7 +269,7 @@ describe('GitHubActionsAdapter', () => {
     );
 
     const runs = await new GitHubActionsAdapter(fetchFn).listWorkflowRuns(context, {
-      name: 'ezrepo',
+      name: 'repovio',
       owner: 'octo',
       providerRepositoryId: '1',
     });
@@ -287,7 +287,7 @@ describe('GitHubActionsAdapter', () => {
 
 describe('GitHubActionsAdapter change requests', () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
   it.each([
     ['open', null, 'OPEN'],
@@ -329,7 +329,7 @@ describe('GitHubActionsAdapter change requests', () => {
 
 describe('GitHubActionsAdapter security alerts', () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
-  const repository = { name: 'ezrepo', owner: 'octo', providerRepositoryId: '1' };
+  const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
   it('normalizes all three alert APIs without retaining secret material', async () => {
     const fetchFn = jest

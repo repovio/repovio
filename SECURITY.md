@@ -1,13 +1,11 @@
 # Security policy
 
-## Supported versions
+Report suspected Repovio vulnerabilities privately through
+[GitHub private vulnerability reporting](https://github.com/repovio/docs/security/advisories/new).
 
-ezRepo is currently developed on the `main` branch and released through the current `ezrepo` package line. Security fixes are made for the latest released version and, when necessary, the current development branch. Older releases are not supported unless a maintainer explicitly states otherwise in their release notes.
+Include the affected version or source revision, reproduction steps, deployment context and potential impact.
+Do not include working credentials, private customer data or secret values. Do not disclose exploit details publicly
+before coordinated disclosure. No response-time commitment is made.
 
-## Reporting a vulnerability
-
-Please do not open a public issue for an undisclosed vulnerability. Use GitHub's **Report a vulnerability** action in this repository's Security tab to submit a private vulnerability report to the ezRepo maintainers.
-
-Include a clear description, affected versions or commits, reproduction steps or a proof of concept, impact assessment, and any suggested mitigation. Do not include real credentials, access tokens, encryption keys, or personal data.
-
-Maintainers will acknowledge the report, assess its impact, coordinate a remediation and disclosure approach with the reporter, and provide status updates when there is meaningful progress. ezRepo does not promise fixed response or remediation timelines.
+Fixes target the latest supported application release and current website. Historical documentation is retained for
+reference, not as a promise of ongoing security support for old application versions.

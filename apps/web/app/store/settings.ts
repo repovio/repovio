@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import type { ApplicationSettings, UpdateApplicationSettings } from '~/types/api/resources';
 
 export const defaultApplicationSettings: ApplicationSettings = {
@@ -26,7 +26,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     loading.value = true;
     error.value = false;
-    activeLoad = useEzRepoApi()
+    activeLoad = useRepovioApi()
       .settings.get()
       .then((response) => {
         settings.value = response.data;
@@ -44,7 +44,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   /** Persist a complete valid settings payload and immediately update all consumers. */
   async function update(input: UpdateApplicationSettings): Promise<void> {
-    settings.value = (await useEzRepoApi().settings.update(input)).data;
+    settings.value = (await useRepovioApi().settings.update(input)).data;
     initialized.value = true;
     error.value = false;
   }

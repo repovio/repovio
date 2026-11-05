@@ -13,7 +13,7 @@ newest run in each workflow context. This corrects stale queued or running state
 - When an active run no longer exists at the provider, mark it as `UNKNOWN`, clear its approval state, and refresh any
   linked pull-request aggregate.
 - Keep the API, DTOs, database schema, and UI unchanged. Cleanup occurs during the repository's next successful sync.
-- Add one focused patch Changeset for `ezrepo` with the implementation.
+- Add one focused patch Changeset for `repovio` with the implementation.
 
 ## Tests
 
@@ -25,7 +25,7 @@ newest run in each workflow context. This corrects stale queued or running state
 
 ## Assumptions
 
-- Provider data remains authoritative; ezRepo neither deletes runs nor infers a terminal state from age or duplicate
+- Provider data remains authoritative; Repovio neither deletes runs nor infers a terminal state from age or duplicate
   names alone.
 - A missing run keeps its existing `completedAt` value because the provider supplies no reliable completion time.
 - Existing unrelated working-tree changes remain untouched.

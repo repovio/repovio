@@ -26,19 +26,19 @@ describe('repository synchronization jobs integration', () => {
       prisma.repository.create({
         data: {
           name: 'idle',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: providerAccount.id,
           providerRepositoryId: 'idle',
-          url: 'https://github.com/ezrepo/idle',
+          url: 'https://github.com/repovio/idle',
         },
       }),
       prisma.repository.create({
         data: {
           name: 'failed',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: providerAccount.id,
           providerRepositoryId: 'failed',
-          url: 'https://github.com/ezrepo/failed',
+          url: 'https://github.com/repovio/failed',
         },
       }),
     ]);

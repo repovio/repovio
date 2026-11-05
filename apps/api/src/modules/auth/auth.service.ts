@@ -150,7 +150,7 @@ export class AuthService {
   /**
    * Validate a bearer token supplied during a non-HTTP transport handshake.
    *
-   * @param accessToken - Encoded ezRepo access token.
+   * @param accessToken - Encoded Repovio access token.
    * @returns The current persisted user represented by the token.
    * @throws UnauthorizedException - When the bearer token is invalid, expired, or no longer matches the persisted user
    * authentication version.

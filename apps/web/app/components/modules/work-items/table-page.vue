@@ -150,7 +150,7 @@
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
@@ -176,7 +176,7 @@ type WorkItemTableColumn = ColumnDefinition<WorkItemRow> & { header: string; id:
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const { getLabel: getProviderTypeLabel } = useProviderType();
 const search = ref('');

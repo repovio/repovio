@@ -2,7 +2,7 @@
   <div data-sidebar-footer class="flex w-full flex-col gap-1" :class="collapsed ? 'items-center' : 'items-start'">
     <UButton
       data-sidebar-footer-item
-      to="https://github.com/tobiaswaelde/ezrepo"
+      to="https://github.com/repovio/repovio"
       target="_blank"
       color="neutral"
       variant="ghost"
@@ -15,7 +15,7 @@
     />
     <UButton
       data-sidebar-footer-item
-      to="https://tobiaswaelde.github.io/ezrepo/"
+      to="https://repovio.de/docs/"
       target="_blank"
       color="neutral"
       variant="ghost"

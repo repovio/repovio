@@ -15,7 +15,7 @@
         </section>
         <p v-if="releases.length === 0" class="text-sm text-muted">{{ $t('changelog.empty') }}</p>
         <UButton
-          to="https://github.com/tobiaswaelde/ezrepo/releases"
+          to="https://github.com/repovio/repovio/releases"
           target="_blank"
           color="neutral"
           variant="outline"

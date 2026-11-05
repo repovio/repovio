@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import type { ProviderRepository } from '../provider-adapter.js';
 
-/** A provider repository that can be added to ezRepo tracking. */
+/** A provider repository that can be added to Repovio tracking. */
 export class ProviderRepositoryDto {
   @ApiProperty()
   providerRepositoryId!: string;
@@ -12,7 +12,7 @@ export class ProviderRepositoryDto {
   name!: string;
   @ApiProperty({ format: 'uri' })
   url!: string;
-  @ApiProperty({ description: 'Whether this provider repository is already tracked by ezRepo.' })
+  @ApiProperty({ description: 'Whether this provider repository is already tracked by Repovio.' })
   tracked!: boolean;
 
   /**

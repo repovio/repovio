@@ -96,7 +96,7 @@ returned.
 - Verify manager and viewer behavior visually in a browser at desktop and narrow viewport sizes.
 - Run Prisma validation and generation, focused tests, API and web linting, type checking, complete test suites,
   builds, documentation checks, and `git diff --check`.
-- Add exactly one focused minor Changeset for `ezrepo` with the implementation.
+- Add exactly one focused minor Changeset for `repovio` with the implementation.
 
 ## Assumptions and exclusions
 

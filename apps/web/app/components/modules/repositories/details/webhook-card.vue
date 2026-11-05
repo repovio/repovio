@@ -169,7 +169,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 
 import { defineEmits, defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { RepositoryWebhookConfiguration } from '~/types/api/resources';
 
@@ -182,7 +182,7 @@ const props = defineProps<{
 const emit = defineEmits<{ updated: [configuration: RepositoryWebhookConfiguration] }>();
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const toast = useToast();
 const { formatDateTime } = useDateTime();
 const form = reactive({ secret: '' });

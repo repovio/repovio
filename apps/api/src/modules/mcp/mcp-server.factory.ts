@@ -137,13 +137,13 @@ export class McpServerFactory {
    * @returns A fresh MCP server whose read-only tools are bound to the supplied user.
    */
   create(user: AuthenticatedUser): McpServer {
-    const server = new McpServer({ name: 'ezrepo', version: '1.0.0' });
+    const server = new McpServer({ name: 'repovio', version: '1.0.0' });
 
     server.registerTool(
       'list_repositories',
       {
         annotations: readOnlyAnnotations,
-        description: 'List tracked repositories visible to the current ezRepo user.',
+        description: 'List tracked repositories visible to the current Repovio user.',
         inputSchema: repositoryFiltersSchema,
         outputSchema: paginatedRepositorySchema,
         title: 'List repositories',
@@ -154,7 +154,7 @@ export class McpServerFactory {
       'get_repository',
       {
         annotations: readOnlyAnnotations,
-        description: 'Get one tracked repository when it is visible to the current ezRepo user.',
+        description: 'Get one tracked repository when it is visible to the current Repovio user.',
         inputSchema: z.object({ repositoryId: z.uuid() }),
         outputSchema: repositorySchema,
         title: 'Get repository',
@@ -165,7 +165,7 @@ export class McpServerFactory {
       'list_workflow_runs',
       {
         annotations: readOnlyAnnotations,
-        description: 'List normalized workflow runs visible to the current ezRepo user.',
+        description: 'List normalized workflow runs visible to the current Repovio user.',
         inputSchema: workflowRunFiltersSchema,
         outputSchema: paginatedWorkflowRunSchema,
         title: 'List workflow runs',

@@ -214,7 +214,7 @@ export class AvatarService {
           headers: {
             Accept: 'image/jpeg, image/png, image/webp',
             Host: url.host,
-            'User-Agent': 'ezRepo-avatar-import/1.0',
+            'User-Agent': 'Repovio-avatar-import/1.0',
           },
         },
         (response) => {

@@ -80,7 +80,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import TrendChart from '~/components/modules/dashboard/trend-chart.vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import type {
   DashboardPeriodQuery,
   DashboardSummary,
@@ -93,7 +93,7 @@ import type {
 definePageMeta({ fullWidth: true });
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const failures = ref<DashboardWorkflowRun[]>([]);
 const latestRuns = ref<DashboardWorkflowRun[]>([]);
 const summary = ref<DashboardSummary | null>(null);

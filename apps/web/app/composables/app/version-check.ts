@@ -1,10 +1,10 @@
 import { computed } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 
-/** Load and compare the installed ezRepo version with the latest GitHub release. */
+/** Load and compare the installed Repovio version with the latest GitHub release. */
 export function useVersionCheck() {
-  const api = useEzRepoApi();
+  const api = useRepovioApi();
   const current = useRuntimeConfig().public.appVersion;
   const latest = useState<string | null>('latest-app-version', () => null);
   const loaded = useState('latest-app-version-loaded', () => false);

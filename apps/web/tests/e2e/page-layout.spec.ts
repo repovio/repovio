@@ -9,7 +9,7 @@ const emptyPage = {
 
 /** Mock authenticated application resources used across the page-shell scenarios. */
 async function mockApplication(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({
       json: {
@@ -60,10 +60,10 @@ async function mockApplication(page: Page): Promise<void> {
         enabled: true,
         id: 'repository-1',
         lastSyncAt: null,
-        name: 'ezrepo',
+        name: 'repovio',
         owner: 'tobiaswaelde',
         providerAccountId: 'provider-1',
-        url: 'https://github.com/tobiaswaelde/ezrepo',
+        url: 'https://github.com/repovio/repovio',
         workflowRunRetentionDays: 90,
       },
     }),
@@ -128,7 +128,7 @@ test('uses the shared page shell without introductory banners', async ({ page })
   await expect(page.locator('[data-page-introduction]')).toHaveCount(0);
   await expect(page.locator('[data-intro-banner-id]')).toHaveCount(0);
   await expect(page.locator('[data-sidebar-footer]')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'ezRepo' }).locator('img')).toHaveAttribute('src', '/logo.svg');
+  await expect(page.getByRole('link', { name: 'Repovio' }).locator('img')).toHaveAttribute('src', '/logo.svg');
   await expect(page.locator('link[rel="icon"][href="/favicon.svg"]')).toHaveAttribute('href', '/favicon.svg');
   await expect(page.getByRole('link', { name: 'GitHub' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Documentation' })).toBeVisible();
@@ -141,7 +141,7 @@ test('uses the shared page shell without introductory banners', async ({ page })
   await expect(workflowRunNavigation.locator('[data-slot="linkTrailingBadge"]')).toHaveCount(0);
   await expect(page.getByLabel('Collapse sidebar')).toBeVisible();
   await page.screenshot({
-    path: resolve(process.cwd(), '../../docs/public/screenshots/dashboard.png'),
+    path: resolve(process.cwd(), 'test-results/captures/dashboard.png'),
     fullPage: true,
   });
   await page.getByRole('button', { name: 'Open changelog' }).click();
@@ -157,7 +157,7 @@ test('uses the shared page shell without introductory banners', async ({ page })
     await page.goto(path);
     await expect(page.locator('[data-page-shell]')).toBeVisible();
     await page.screenshot({
-      path: resolve(process.cwd(), `../../docs/public/screenshots/${name}.png`),
+      path: resolve(process.cwd(), `test-results/captures/${name}.png`),
       fullPage: true,
     });
   }

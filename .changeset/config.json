@@ -7,7 +7,7 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@ezrepo/api", "@ezrepo/web"],
+  "ignore": ["@repovio/api", "@repovio/web"],
   "privatePackages": {
     "version": true,
     "tag": true

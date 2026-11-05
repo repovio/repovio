@@ -68,7 +68,7 @@
         <UInput
           v-model="form.issuer"
           class="w-full"
-          placeholder="https://auth.example.com/application/o/ezrepo/"
+          placeholder="https://auth.example.com/application/o/repovio/"
           :disabled="saving"
         />
       </UFormField>
@@ -174,10 +174,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import type { OidcCheckResult, OidcConfig, UpdateOidcConfig } from '~/types/api/auth';
 
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { t } = useI18n();
 const toast = useToast();
 const config = ref<OidcConfig | null>(null);

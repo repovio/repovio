@@ -26,7 +26,7 @@ test('repository and user administration render full-page Query Kit tables', asy
   const repositoryUpdateResponse = new Promise<void>((resolve) => {
     releaseRepositoryUpdate = resolve;
   });
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, async (route) => {
     expect(route.request().url()).toContain('fields=');
     expect(route.request().url()).toContain('workflowRunCount');
@@ -43,11 +43,11 @@ test('repository and user administration render full-page Query Kit tables', asy
               userId: `member-${index + 1}`,
               username: `member-${index + 1}`,
             })),
-            name: 'ezrepo',
+            name: 'repovio',
             owner: 'twaelde',
             providerAccountId: 'provider-1',
             providerRepositoryId: 'repository-1',
-            url: 'https://github.com/tobiaswaelde/ezrepo',
+            url: 'https://github.com/repovio/repovio',
             workflowRunCount: 12,
             workflowRunRetentionDays: 30,
           },
@@ -112,13 +112,13 @@ test('repository and user administration render full-page Query Kit tables', asy
   await expect(memberTooltip).toBeVisible();
   await page.mouse.move(0, 0);
   await expect(memberTooltip).toBeHidden();
-  await expect(page.locator('tbody').getByRole('link', { name: 'ezrepo', exact: true })).toHaveAttribute(
+  await expect(page.locator('tbody').getByRole('link', { name: 'repovio', exact: true })).toHaveAttribute(
     'href',
     '/repositories/repository-1',
   );
   await expect(page.getByRole('link', { name: 'Open in provider' })).toHaveAttribute(
     'href',
-    'https://github.com/tobiaswaelde/ezrepo',
+    'https://github.com/repovio/repovio',
   );
   const repositoryActionsHeader = page.getByRole('columnheader', { name: 'Actions' });
   await expect(repositoryActionsHeader).toHaveCSS('position', 'sticky');
@@ -165,7 +165,7 @@ test('adds multiple repositories selected from an enabled provider account', asy
   const repositoryAddResponses = new Promise<void>((resolve) => {
     releaseRepositoryAdds = resolve;
   });
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route(/\/api\/v1\/provider-accounts(?:\?.*)?$/, async (route) => {
     await route.fulfill({
       contentType: 'application/json',
@@ -195,24 +195,24 @@ test('adds multiple repositories selected from an enabled provider account', asy
       json: [
         {
           name: 'already-tracked',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerRepositoryId: 'repository-1',
           tracked: true,
-          url: 'https://github.com/ezrepo/already-tracked',
+          url: 'https://github.com/repovio/already-tracked',
         },
         {
           name: 'new-repository',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerRepositoryId: 'repository-2',
           tracked: false,
-          url: 'https://github.com/ezrepo/new-repository',
+          url: 'https://github.com/repovio/new-repository',
         },
         {
           name: 'another-repository',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerRepositoryId: 'repository-3',
           tracked: false,
-          url: 'https://github.com/ezrepo/another-repository',
+          url: 'https://github.com/repovio/another-repository',
         },
       ],
     });
@@ -229,9 +229,9 @@ test('adds multiple repositories selected from an enabled provider account', asy
         id: body.providerRepositoryId,
         lastSyncAt: null,
         name: body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository',
-        owner: 'ezrepo',
+        owner: 'repovio',
         providerAccountId: 'provider-1',
-        url: `https://github.com/ezrepo/${
+        url: `https://github.com/repovio/${
           body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository'
         }`,
         workflowRunRetentionDays: null,
@@ -265,10 +265,10 @@ test('adds multiple repositories selected from an enabled provider account', asy
   releaseRepositoryDiscovery?.();
   await expect(nextButton).toBeEnabled();
   await nextButton.click();
-  await expect(page.getByRole('checkbox', { name: 'Select ezrepo/already-tracked' })).toBeDisabled();
+  await expect(page.getByRole('checkbox', { name: 'Select repovio/already-tracked' })).toBeDisabled();
   await page.getByPlaceholder('Search repositories').fill('repository');
-  await page.getByRole('checkbox', { name: 'Select ezrepo/new-repository' }).click();
-  await page.getByRole('checkbox', { name: 'Select ezrepo/another-repository' }).click();
+  await page.getByRole('checkbox', { name: 'Select repovio/new-repository' }).click();
+  await page.getByRole('checkbox', { name: 'Select repovio/another-repository' }).click();
   await expect(page.getByText('Selected: 2', { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('multi-repository-selection.png'), fullPage: true });
   const addButton = page.getByRole('button', { name: 'Add selected (2)' });
@@ -287,7 +287,7 @@ test('repository dialog loads retention, filters, and members', async ({ page })
   const repositoryUpdates: unknown[] = [];
   const createdFilters: unknown[] = [];
   const createdMemberships: unknown[] = [];
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/repositories/repository-1', async (route) => {
     if (route.request().method() === 'PATCH') {
       repositoryUpdates.push(route.request().postDataJSON());
@@ -299,10 +299,10 @@ test('repository dialog loads retention, filters, and members', async ({ page })
         enabled: true,
         id: 'repository-1',
         lastSyncAt: null,
-        name: 'ezrepo',
+        name: 'repovio',
         owner: 'twaelde',
         providerAccountId: 'provider-1',
-        url: 'https://github.com/tobiaswaelde/ezrepo',
+        url: 'https://github.com/repovio/repovio',
         workflowRunRetentionDays: 30,
       },
     });
@@ -381,7 +381,7 @@ test('repository dialog loads retention, filters, and members', async ({ page })
 
   await page.goto('/repositories?repository=repository-1');
 
-  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/ezrepo' });
+  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
   await expect(repositoryDialog).toBeVisible();
   const workflowRunRetention = repositoryDialog.getByRole('spinbutton', {
     name: 'Workflow-run retention (days)',
@@ -424,7 +424,7 @@ test('repository dialog loads retention, filters, and members', async ({ page })
 /** Verify that workflow-run history is available as a child of the workflow-runs navigation group. */
 test('workflow runs render in a filterable and sortable full-page table', async ({ page }, testInfo) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token');
+    window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
     if (!window.localStorage.getItem('table:workflow-runs:filtering')) {
       window.localStorage.setItem(
         'table:workflow-runs:filtering',
@@ -478,11 +478,11 @@ test('workflow runs render in a filterable and sortable full-page table', async 
             providerRunId: '42',
             providerType: 'GITHUB',
             repositoryId: 'repository-1',
-            repositoryName: 'ezrepo',
+            repositoryName: 'repovio',
             repositoryOwner: 'twaelde',
             startedAt: '2026-09-08T08:00:00.000Z',
             status: 'SUCCESS',
-            url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/42',
+            url: 'https://github.com/repovio/repovio/actions/runs/42',
             workflowName: 'Build',
           },
         ],
@@ -498,7 +498,7 @@ test('workflow runs render in a filterable and sortable full-page table', async 
     await route.fulfill({
       contentType: 'application/json',
       json: {
-        items: [{ id: 'repository-1', name: 'ezrepo', owner: 'twaelde' }],
+        items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
         meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
       },
     });
@@ -525,7 +525,7 @@ test('workflow runs render in a filterable and sortable full-page table', async 
   await expect(page.locator('tbody').getByText('Build on main', { exact: true })).toBeVisible();
   await expect(page.locator('tbody').getByText('Build', { exact: true })).toBeVisible();
   await expect(page.locator('tbody').getByRole('link', { name: 'Build on main', exact: true })).toHaveCount(0);
-  await expect(page.getByText('twaelde/ezrepo', { exact: true })).toBeVisible();
+  await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
   await expect(page.locator('#main-content').getByText('GitHub', { exact: true })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Provider time' })).toHaveCount(0);
   await expect(page.getByRole('columnheader', { name: 'Started' })).toHaveCount(0);
@@ -534,7 +534,7 @@ test('workflow runs render in a filterable and sortable full-page table', async 
   await expect(page.getByRole('columnheader', { name: 'Actions' })).toHaveCSS('position', 'sticky');
   await expect(page.locator('tbody')).not.toContainText(/\b(?:AM|PM)\b/);
   const externalLink = page.getByRole('link', { name: 'Open in provider' });
-  await expect(externalLink).toHaveAttribute('href', 'https://github.com/tobiaswaelde/ezrepo/actions/runs/42');
+  await expect(externalLink).toHaveAttribute('href', 'https://github.com/repovio/repovio/actions/runs/42');
   await expect(externalLink.locator('[aria-hidden="true"]')).toBeVisible();
   await expectActionTooltip(page, externalLink, 'Open in provider');
   await expect(page.getByText('Success', { exact: true })).toBeVisible();
@@ -593,7 +593,7 @@ test('workflow runs render in a filterable and sortable full-page table', async 
   const requestCountBeforeReload = workflowRunRequestUrls.length;
   await page.reload();
   await expect(page.getByText('Repository filter options could not be loaded.', { exact: true })).toBeVisible();
-  await expect(page.getByText('twaelde/ezrepo', { exact: true })).toBeVisible();
+  await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
   await expect.poll(() => workflowRunRequestUrls.length).toBeGreaterThan(requestCountBeforeReload);
   await expect.poll(() => new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('perPage')).toBe('100');
   await expect

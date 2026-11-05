@@ -1,10 +1,10 @@
 [
   {
     "id": 42,
-    "name": "ezrepo",
-    "html_url": "https://gitea.example.test/ezrepo/ezrepo",
+    "name": "repovio",
+    "html_url": "https://gitea.example.test/repovio/repovio",
     "owner": {
-      "login": "ezrepo"
+      "login": "repovio"
     }
   }
 ]

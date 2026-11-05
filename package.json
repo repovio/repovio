@@ -1,5 +1,5 @@
 {
-  "name": "ezrepo",
+  "name": "repovio",
   "version": "1.0.1",
   "private": true,
   "description": "Read-only workflow status dashboard for GitHub, GitLab, Forgejo, and Gitea.",
@@ -10,24 +10,20 @@
     "pnpm": "11.28.9"
   },
   "scripts": {
-    "build": "nx run-many -t build --all --exclude=ezrepo --parallel=2",
+    "build": "nx run-many -t build --all --exclude=repovio --parallel=2",
     "changeset": "changeset",
     "db:generate": "nx run api:db:generate",
-    "dev": "nx run-many -t dev --all --exclude=ezrepo --parallel=2",
-    "docker:build": "nx run-many -t docker:build --all --exclude=ezrepo --parallel=2",
-    "docs:build": "vitepress build docs",
-    "docs:check": "tsx scripts/check-docs.ts",
-    "docs:dev": "vitepress dev docs",
-    "docs:preview": "vitepress preview docs",
+    "dev": "nx run-many -t dev --all --exclude=repovio --parallel=2",
+    "docker:build": "nx run-many -t docker:build --all --exclude=repovio --parallel=2",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "nx run-many -t lint --all --exclude=ezrepo --parallel=2",
+    "lint": "nx run-many -t lint --all --exclude=repovio --parallel=2",
     "nx": "nx",
     "release": "changeset tag",
-    "test": "nx run-many -t test --all --exclude=ezrepo --parallel=2",
-    "test:docs:e2e": "playwright test --config playwright.docs.config.ts",
-    "typecheck": "nx run-many -t typecheck --all --exclude=ezrepo --parallel=2",
-    "version-packages": "changeset version"
+    "test": "nx run-many -t test --all --exclude=repovio --parallel=2",
+    "typecheck": "nx run-many -t typecheck --all --exclude=repovio --parallel=2",
+    "version-packages": "changeset version",
+    "branding:check": "node scripts/check-branding.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
@@ -43,7 +39,6 @@
     "tsx": "^4.23.15",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.72.1",
-    "vitepress": "^1.6.4",
     "@typescript/native": "npm:typescript@^7.0.2"
   }
 }

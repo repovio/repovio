@@ -9,18 +9,18 @@ const workflowRun = {
   providerRunId: '42',
   providerType: 'GITHUB',
   repositoryId: 'repository-1',
-  repositoryName: 'ezrepo',
+  repositoryName: 'repovio',
   repositoryOwner: 'twaelde',
   startedAt: '2026-09-09T08:00:00.000Z',
   status: 'FAILED',
-  url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/42',
+  url: 'https://github.com/repovio/repovio/actions/runs/42',
   workflowName: 'Build',
 };
 
 /** Configure stable authenticated shell resources for needs-attention browser scenarios. */
 async function mockApplication(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token');
+    window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
     window.localStorage.setItem(
       'table:workflow-runs-needs-attention:sort',
       JSON.stringify([{ desc: false, id: 'completedAt' }]),
@@ -56,7 +56,7 @@ async function mockApplication(page: Page): Promise<void> {
   await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
     route.fulfill({
       json: {
-        items: [{ id: 'repository-1', name: 'ezrepo', owner: 'twaelde' }],
+        items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
         meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
       },
     }),
@@ -121,7 +121,7 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
   await expect(needsAttentionLink).toHaveAttribute('aria-current', 'page');
   await expect(needsAttentionLink.locator('[data-slot="linkTrailingBadge"]')).toHaveText('26');
   await expect(needsAttentionLink.locator('[data-slot="linkTrailingBadge"]')).toHaveClass(/text-error/);
-  await page.getByPlaceholder('Search ezRepo').fill('approval');
+  await page.getByPlaceholder('Search Repovio').fill('approval');
   await expect(page.getByRole('link', { name: 'Awaiting approval' }).last()).toHaveAttribute(
     'href',
     '/workflows/awaiting-approval',
@@ -131,7 +131,7 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
   await expect(page.getByRole('button', { name: 'Refresh' })).toBeDisabled();
   await page.screenshot({ path: testInfo.outputPath('needs-attention-loading.png'), fullPage: true });
   releaseInitialRequest?.();
-  await expect(page.getByText('twaelde/ezrepo', { exact: true })).toBeVisible();
+  await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Title' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Workflow' })).toBeVisible();
   await expect(page.locator('tbody').getByText('Build on main', { exact: true })).toBeVisible();

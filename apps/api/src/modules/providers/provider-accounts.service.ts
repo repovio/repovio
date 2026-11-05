@@ -8,7 +8,7 @@ import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import { ProviderCredentialService } from './provider-credential.service.js';
 import { ProviderSyncQueueService } from './sync-queue.service.js';
 
-/** Admin-only persistence service for ezRepo provider accounts. */
+/** Admin-only persistence service for Repovio provider accounts. */
 @Injectable()
 export class ProviderAccountsService {
   /**
@@ -158,7 +158,7 @@ export class ProviderAccountsService {
    *
    * @param user - System administrator requesting the provider's read-only repository list.
    * @param providerAccountId - Configured provider account to inspect.
-   * @returns Provider repositories and whether each is already tracked by ezRepo.
+   * @returns Provider repositories and whether each is already tracked by Repovio.
    * @throws ForbiddenException - System administrator access is required.
    * @throws BadRequestException - Provider account is disabled.
    * @throws NotFoundException - Provider account not found.

@@ -47,7 +47,7 @@ describe('McpController', () => {
     await controller.handle(
       {
         body: {},
-        headers: { authorization: 'Bearer ezrepo_mcp_secret', origin: 'https://untrusted.example' },
+        headers: { authorization: 'Bearer repovio_mcp_secret', origin: 'https://untrusted.example' },
         originalUrl: '/mcp',
       } as never,
       res,
@@ -61,7 +61,7 @@ describe('McpController', () => {
     authenticate.mockResolvedValue({ expiresAt: null, record: { id: 'token-id' }, user });
     const request = {
       body: { jsonrpc: '2.0' },
-      headers: { authorization: 'Bearer ezrepo_mcp_secret' },
+      headers: { authorization: 'Bearer repovio_mcp_secret' },
       originalUrl: '/mcp',
     } as never;
     const res = response();
@@ -70,7 +70,7 @@ describe('McpController', () => {
 
     expect(nodeHandler).toHaveBeenCalledWith(
       expect.objectContaining({
-        auth: expect.objectContaining({ clientId: 'token-id', extra: { user }, scopes: ['ezrepo:read'] }),
+        auth: expect.objectContaining({ clientId: 'token-id', extra: { user }, scopes: ['repovio:read'] }),
       }),
       res,
       { jsonrpc: '2.0' },

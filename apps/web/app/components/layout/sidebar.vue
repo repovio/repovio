@@ -1,6 +1,6 @@
 <template>
   <UDashboardSidebar
-    id="ezrepo"
+    id="repovio"
     collapsible
     resizable
     class="bg-elevated/25"
@@ -12,15 +12,15 @@
     <template #header="{ collapsed }">
       <NuxtLink
         to="/"
-        aria-label="ezRepo"
+        aria-label="Repovio"
         class="flex items-center gap-2 font-display text-xl font-bold"
         :class="collapsed ? 'mx-auto' : undefined"
       >
-        <img src="/logo.svg" alt="" class="size-7 shrink-0" />
-        <span v-if="!collapsed">
-          <span class="text-primary">ez</span>
-          <span class="tracking-tight text-highlighted">Repo</span>
-        </span>
+        <img v-if="collapsed" src="/logo.svg" alt="" class="size-7 shrink-0" />
+        <template v-else>
+          <img src="/logo-wordmark-light.svg" alt="" class="h-8 w-auto dark:hidden" />
+          <img src="/logo-wordmark-dark.svg" alt="" class="hidden h-8 w-auto dark:block" />
+        </template>
       </NuxtLink>
     </template>
 
@@ -44,14 +44,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
 import { useModuleApi } from '~/composables/api/module-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useSystemStatusState } from '~/composables/api/system-status';
 import { useNavigationItems } from '~/composables/app/navigation-items';
 
 const { t } = useI18n();
 const route = useRoute();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { snapshot: systemStatus } = useSystemStatusState();
 const needsAttentionApi = useModuleApi('workflow-runs/needs-attention');
 const awaitingApprovalCount = ref<number | null>(null);

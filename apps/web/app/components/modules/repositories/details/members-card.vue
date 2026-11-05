@@ -111,7 +111,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { usePendingActions } from '~/composables/use-pending-actions';
 import type { RepositoryMembership, RepositoryRole, User } from '~/types/api/resources';
 import { getUserDisplayName, getUserIdentityLabel } from '~/utils/user-identity';
@@ -121,7 +121,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { isPending, run: runPendingAction } = usePendingActions();
 const memberships = ref<RepositoryMembership[]>([]);
 const users = ref<User[]>([]);

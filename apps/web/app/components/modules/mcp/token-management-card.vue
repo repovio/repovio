@@ -113,12 +113,12 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { McpAccessToken, McpAccessTokenStatus } from '~/types/api/resources';
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const tokens = ref<McpAccessToken[]>([]);
 const loading = ref(false);

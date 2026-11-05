@@ -21,7 +21,7 @@ jest.mock('@prisma/adapter-pg', () => ({
 
 jest.mock('../config/env.js', () => ({
   ENV: {
-    DATABASE_URL: 'postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_test',
+    DATABASE_URL: 'postgresql://repovio:repovio@localhost:5432/repovio_test',
   },
 }));
 
@@ -36,7 +36,7 @@ describe('PrismaService', () => {
     new PrismaService();
 
     expect(mockPrismaPg).toHaveBeenCalledWith({
-      connectionString: 'postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_test',
+      connectionString: 'postgresql://repovio:repovio@localhost:5432/repovio_test',
     });
   });
 

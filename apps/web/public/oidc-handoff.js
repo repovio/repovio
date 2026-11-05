@@ -1,6 +1,6 @@
 (() => {
   if (window.location.pathname !== '/auth/oidc/callback' || !window.location.hash) return;
-  Object.defineProperty(window, '__ezrepoOidcHandoffFragment', {
+  Object.defineProperty(window, '__repovioOidcHandoffFragment', {
     configurable: true,
     value: window.location.hash.slice(1),
   });

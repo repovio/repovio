@@ -145,7 +145,7 @@
 
 - 652b7ac: Refresh failed workflow runs, preserve synchronization cursors, and fully paginate provider results so resolved
   failures leave Needs attention reliably.
-- 90d79c4: Expand the VitePress user guide and add ezRepo branding to the documentation landing page.
+- 90d79c4: Expand the VitePress user guide and add Repovio branding to the documentation landing page.
 
 ## 0.2.6
 
@@ -160,7 +160,7 @@
 
 ### Patch Changes
 
-- b082487: Add the ezRepo logo and favicon, and recognize Changesets release tags in the update check.
+- b082487: Add the Repovio logo and favicon, and recognize Changesets release tags in the update check.
 
 ## 0.2.4
 
@@ -210,7 +210,7 @@
 
 ### Patch Changes
 
-- 5c9f126: Rename the visible application branding to ezRepo and point users to the renamed GitHub repository.
+- 5c9f126: Rename the visible application branding to Repovio and point users to the renamed GitHub repository.
 - c57496a: Retry failed notification deliveries with bounded exponential backoff and persisted attempt history.
 - 4fd5744: Upgrade Changesets CLI and release action together with the v3 workflow inputs.
 - bc0c144: Encrypt provider credentials through a dedicated AES-GCM service.
@@ -252,7 +252,7 @@
 - 08e7319: Add uploadable, cropped user avatars and repository member avatar groups.
 - 8119ca9: Add scheduled incremental provider synchronization with bounded retries.
 - 0743cf2: Add CodeQL security analysis for application source and GitHub Actions workflows.
-- 3434800: Document all ezRepo API environment variables and their validation constraints.
+- 3434800: Document all Repovio API environment variables and their validation constraints.
 - c92a3e7: Report database and persisted provider synchronization status from the health endpoint.
 - 725a9f7: Make full workspace validation exclude the recursive root project and always run API tests in test mode.
 - 0ddc7d8: Exclude superseded workflow runs from approval queues, active dashboard counts, and provider refreshes.
@@ -317,4 +317,4 @@
 - 4b1c711: Localize web administration and notification screens in English and German.
 - c578682: Add the Nuxt 4 dashboard application foundation with UI, state, i18n, and Query Kit dependencies.
 
-All notable changes to ezRepo are documented in this file by Changesets.
+All notable changes to Repovio are documented in this file by Changesets.

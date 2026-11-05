@@ -1,4 +1,4 @@
-/** Shared Nuxt UI presentation configuration for the ezRepo web application. */
+/** Shared Nuxt UI presentation configuration for the Repovio web application. */
 export default defineAppConfig({
   ui: {
     breadcrumb: {
@@ -10,7 +10,8 @@ export default defineAppConfig({
     },
     colors: {
       neutral: 'zinc',
-      primary: 'sky',
+      primary: 'indigo',
+      secondary: 'emerald',
     },
     table: {
       slots: {

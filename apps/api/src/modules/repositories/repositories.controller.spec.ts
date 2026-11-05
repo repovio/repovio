@@ -74,13 +74,13 @@ describe('RepositoriesController', () => {
           userId: 'member-1',
         },
       ],
-      name: 'ezrepo',
+      name: 'repovio',
       owner: 'twaelde',
       providerAccountId: 'provider-1',
       providerRepositoryId: '42',
       pullRequestRetentionDays: null,
       updatedAt: new Date('2026-09-09T08:00:00.000Z'),
-      url: 'https://github.com/tobiaswaelde/ezrepo',
+      url: 'https://github.com/repovio/repovio',
       retainedRunDurationMs: 0n,
       workflowRunRetentionDays: 30,
     } satisfies RepositoryResourceModel;
@@ -129,7 +129,7 @@ describe('RepositoriesController', () => {
             username: 'member',
           },
         ],
-        name: 'ezrepo',
+        name: 'repovio',
         workflowRunCount: 12,
       },
     ]);
@@ -141,7 +141,7 @@ describe('RepositoriesController', () => {
       enabled: true,
       id: 'repository-1',
       lastSyncAt: null,
-      name: 'ezrepo',
+      name: 'repovio',
       owner: 'twaelde',
       providerAccountId: 'provider-1',
       providerRepositoryId: '42',
@@ -167,7 +167,7 @@ describe('RepositoriesController', () => {
         syncWorkflows: true,
         updatedAt: new Date('2026-09-29T08:01:00.000Z'),
       },
-      url: 'https://github.com/tobiaswaelde/ezrepo',
+      url: 'https://github.com/repovio/repovio',
       workflowRunRetentionDays: null,
     } as RepositoryResourceModel;
     const repositories = {

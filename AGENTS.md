@@ -1,4 +1,4 @@
-# ezRepo Agent Guidelines
+# Repovio Agent Guidelines
 
 ## Working Style
 
@@ -20,20 +20,20 @@
   start later work opportunistically.
 - Preserve unrelated work. Inspect `git status` and the relevant diff before
   every edit, test, and commit.
-- The ezRepo application is read-only with respect to GitHub, GitLab, and
+- The Repovio application is read-only with respect to GitHub, GitLab, and
   Forgejo. Never add provider calls that create, modify, dispatch, rerun,
   cancel, or delete provider resources.
 - Agents may create GitHub Issues, sub-issues, and milestones only when the
   user explicitly requests it. This exception applies to agent tooling, not to
-  ezRepo's provider integrations.
+  Repovio's provider integrations.
 
 ## Repository conventions
 
 - Use American English in source code, tests, comments, documentation, and
   Changesets.
-- Use TypeScript `6.0.3` exactly. Do not widen, downgrade, or upgrade the
-  TypeScript range without an explicit request and compatibility validation.
-- Use Node.js 24 and pnpm. Run package commands through Corepack when pnpm is
+- Preserve the TypeScript compiler aliases and version ranges in the workspace manifests.
+  Toolchain changes require an explicit request and compatibility validation.
+- Use Node.js 26.13.0 and the pinned pnpm 11.28.9. Run package commands through Corepack when pnpm is
   not already the pinned workspace version.
 - Format TypeScript, JSON, YAML, and Markdown with 120-character lines, single
   quotes, semicolons, and trailing commas where applicable.
@@ -99,7 +99,7 @@
 - Before committing, run `git diff --check`, inspect the staged diff, and
   stage only the files in scope.
 - Every substantive implementation commit requires exactly one focused
-  Changeset for the `ezrepo` package. Do not add Changesets for generated
+  Changeset for the `repovio` package. Do not add Changesets for generated
   version-release output.
 - Push the current branch to its configured remote after every commit unless
   the user explicitly requests a local-only commit or a different remote

@@ -13,7 +13,7 @@ describe('RepositorySyncJobsService', () => {
         findMany: jest.fn().mockResolvedValue([
           {
             id: 'repository-id',
-            name: 'ezrepo',
+            name: 'repovio',
             owner: 'tobiaswaelde',
             providerAccount: { displayName: 'GitHub', providerType: 'GITHUB' },
             syncRequest: null,

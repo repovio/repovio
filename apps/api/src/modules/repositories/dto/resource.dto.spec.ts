@@ -72,9 +72,9 @@ describe('resource DTO mappings', () => {
     const dto = RepositoryDto.fromModel({
       id: 'repository',
       providerRepositoryId: '42',
-      owner: 'ezrepo',
-      name: 'ezrepo',
-      url: 'https://example.test/ezrepo',
+      owner: 'repovio',
+      name: 'repovio',
+      url: 'https://example.test/repovio',
       enabled: true,
       encryptedWebhookSecret: 'must-not-appear',
       lastSyncAt: null,
@@ -102,9 +102,9 @@ describe('resource DTO mappings', () => {
     expect(dto).toEqual({
       id: 'repository',
       providerRepositoryId: '42',
-      owner: 'ezrepo',
-      name: 'ezrepo',
-      url: 'https://example.test/ezrepo',
+      owner: 'repovio',
+      name: 'repovio',
+      url: 'https://example.test/repovio',
       enabled: true,
       lastSyncAt: null,
       issueRetentionDays: 14,
@@ -161,7 +161,7 @@ describe('resource DTO mappings', () => {
       rawStatus: 'in_progress',
       repositoryId: 'repo',
       repository: {
-        name: 'ezrepo',
+        name: 'repovio',
         owner: 'twaelde',
         providerAccount: { providerType: 'GITHUB' },
       },
@@ -175,7 +175,7 @@ describe('resource DTO mappings', () => {
       displayTitle: 'Build on main',
       durationMs: 2_592_164_000,
       providerType: 'GITHUB',
-      repositoryName: 'ezrepo',
+      repositoryName: 'repovio',
       repositoryOwner: 'twaelde',
     });
   });

@@ -1,11 +1,11 @@
 {
-  "name": "@ezrepo/web",
+  "name": "@repovio/web",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --port 3000",
-    "docker:build": "docker build -f Dockerfile -t ezrepo-web:local ../..",
+    "docker:build": "docker build -f Dockerfile -t repovio-web:local ../..",
     "e2e": "playwright test",
     "e2e:pwa": "pnpm build && playwright test --config playwright.pwa.config.ts",
     "e2e:providers": "playwright test tests/e2e/providers.spec.ts",

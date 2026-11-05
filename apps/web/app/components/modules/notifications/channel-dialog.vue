@@ -243,7 +243,7 @@ import { localizeFormSchema } from '@repovio/schemas';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiCreateNotificationChannelSchema, ApiUpdateNotificationChannelSchema } from '@repovio/schemas';
 import { isAxiosError } from 'axios';
-import { computed, reactive, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { z } from 'zod';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -290,7 +290,7 @@ const eventTypes: NotificationEventType[] = [
   'SECRET_ALERT_OPENED',
   'SECRET_ALERT_RESOLVED',
 ];
-const eventStates = reactive(
+const eventStates = ref(
   Object.fromEntries(
     eventTypes.map((eventType) => [
       eventType,
@@ -298,11 +298,11 @@ const eventStates = reactive(
     ]),
   ) as Record<NotificationEventType, { repositoryIds: string[]; selected: boolean; workflowPatterns: string }>,
 );
-const form = reactive({
+const form = ref({
   appriseUrl: '',
   browserRecipientUserIds: [] as string[],
   enabled: true,
-  eventStates,
+  eventStates: eventStates.value,
   replaceConfiguration: false,
   from: '',
   name: '',
@@ -437,20 +437,22 @@ const securityOptions = computed(() =>
 );
 const gotifyPriorityOptions = ['low', 'moderate', 'normal', 'high'];
 const ntfyPriorityOptions = ['min', 'low', 'default', 'high', 'max'];
-const showConfiguration = computed(() => form.type !== 'BROWSER_PUSH' && (!props.channel || form.replaceConfiguration));
+const showConfiguration = computed(
+  () => form.value.type !== 'BROWSER_PUSH' && (!props.channel || form.value.replaceConfiguration),
+);
 const canSave = computed(
   () =>
-    form.name.trim().length > 0 &&
-    eventTypes.some((eventType) => eventStates[eventType].selected) &&
-    (form.type !== 'BROWSER_PUSH' || form.browserRecipientUserIds.length > 0),
+    form.value.name.trim().length > 0 &&
+    eventTypes.some((eventType) => eventStates.value[eventType].selected) &&
+    (form.value.type !== 'BROWSER_PUSH' || form.value.browserRecipientUserIds.length > 0),
 );
 const canPreview = computed(() =>
-  eventTypes.some((eventType) => eventType.startsWith('WORKFLOW_RUN_') && eventStates[eventType].selected),
+  eventTypes.some((eventType) => eventType.startsWith('WORKFLOW_RUN_') && eventStates.value[eventType].selected),
 );
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  Object.assign(form, {
+  Object.assign(form.value, {
     appriseUrl: '',
     browserRecipientUserIds: props.channel?.browserRecipients.map(({ id }) => id) ?? [],
     enabled: props.channel?.enabled ?? true,
@@ -472,13 +474,13 @@ watch(open, (isOpen) => {
   });
   for (const eventType of eventTypes) {
     const subscription = props.channel?.eventSubscriptions.find((item) => item.eventType === eventType);
-    Object.assign(eventStates[eventType], {
+    Object.assign(eventStates.value[eventType], {
       repositoryIds: subscription?.repositoryIds ?? [],
       selected: Boolean(subscription),
       workflowPatterns: subscription?.workflowPatterns.join(', ') ?? '',
     });
   }
-  form.replaceConfiguration = false;
+  form.value.replaceConfiguration = false;
   preview.value = null;
   previewStatus.value = null;
   saveError.value = false;

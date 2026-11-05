@@ -20,6 +20,8 @@
     "lint": "nx run-many -t lint --all --exclude=repovio --parallel=2",
     "nx": "nx",
     "release": "changeset tag",
+    "test:postgres-upgrade": "node --test scripts/check-postgres-upgrade.test.mjs",
+    "test:dependencies": "node --test scripts/check-dependency-security.test.mjs",
     "test": "nx run-many -t test --all --exclude=repovio --parallel=2",
     "typecheck": "nx run-many -t typecheck --all --exclude=repovio --parallel=2",
     "version-packages": "changeset version",

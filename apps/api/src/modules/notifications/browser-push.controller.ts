@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Post, Req } from '@nestjs/common';
 import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -32,6 +33,7 @@ export class BrowserPushController {
    * @param request - Incoming request with the authentication or webhook context required by this endpoint.
    * @returns Push availability, the non-secret public key, and the user subscription count.
    */
+  @ZodSerializerDto(BrowserPushStatusDto)
   @Get()
   @ApiOperation({ summary: 'Get browser-push availability and enrollment status' })
   @ApiOkResponse({ type: BrowserPushStatusDto })

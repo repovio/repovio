@@ -1,27 +1,5 @@
-import { Transform } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { ApiUpdateProfileSchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
 /** Editable personal identity fields for the current authenticated user. */
-export class UpdateProfileDto {
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @ValidateIf((_object, value) => value !== null)
-  @IsString()
-  @MaxLength(255)
-  firstName!: string | null;
-
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @ValidateIf((_object, value) => value !== null)
-  @IsString()
-  @MaxLength(255)
-  lastName!: string | null;
-
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @IsString()
-  @MinLength(1)
-  @MaxLength(255)
-  username!: string;
-
-  @IsOptional()
-  @IsString()
-  currentPassword?: string;
-}
+export class UpdateProfileDto extends createZodDto(ApiUpdateProfileSchema) {}

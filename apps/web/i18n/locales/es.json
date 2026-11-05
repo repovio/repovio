@@ -48,6 +48,7 @@
     "waitingSince": "En espera desde"
   },
   "forms": {
+    "invalidValue": "Introduce un valor válido.",
     "unsavedChanges": "Tienes cambios sin guardar. ¿Quieres salir de esta página de todos modos?"
   },
   "commandPalette": {

@@ -5,7 +5,12 @@
       <p class="text-sm text-muted">{{ $t('auth.signInDescription') }}</p>
     </div>
 
-    <UForm class="space-y-5" :schema="signInRequestSchema" :state="credentials" @submit="signIn">
+    <UForm
+      class="space-y-5"
+      :schema="localizeFormSchema(signInRequestSchema, $t('forms.invalidValue'))"
+      :state="credentials"
+      @submit="signIn"
+    >
       <UAlert
         v-if="errorMessage"
         color="error"
@@ -62,6 +67,7 @@
 
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
+import { localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useApi } from '~/composables/api/api';

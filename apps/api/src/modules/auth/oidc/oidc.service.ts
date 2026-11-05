@@ -374,7 +374,7 @@ export class OidcService {
       scopes: config.scopes,
       secretDecryptable,
       systemAdministratorGroups: config.systemAdministratorGroups,
-      updatedAt: config.updatedAt,
+      updatedAt: config.updatedAt.toISOString(),
       viewerGroups: config.viewerGroups,
     };
   }

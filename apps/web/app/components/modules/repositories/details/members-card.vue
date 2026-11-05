@@ -14,35 +14,44 @@
       variant="subtle"
       :title="$t('repositoryDetails.saveError')"
     />
-    <div class="flex flex-col gap-2 sm:flex-row">
-      <USelectMenu
-        v-model="form.userId"
-        class="flex-1"
-        value-key="value"
-        :items="availableUserOptions"
-        :placeholder="$t('repositoryDetails.memberPlaceholder')"
-        searchable
-      >
-        <template #item-leading="{ item }">
-          <CommonUserAvatar
-            size="2xs"
-            :avatar-updated-at="item.avatarUpdatedAt"
-            :first-name="item.firstName"
-            :last-name="item.lastName"
-            :user-id="item.userId"
-            :username="item.username"
-          />
-        </template>
-      </USelectMenu>
-      <USelect v-model="form.role" class="sm:w-48" :items="membershipRoleOptions" />
+    <UForm
+      class="flex flex-col gap-2 sm:flex-row"
+      :schema="localizeFormSchema(membershipFormSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="addMember"
+    >
+      <UFormField name="userId" class="flex-1" :label="$t('repositoryDetails.user')" :ui="{ label: 'sr-only' }">
+        <USelectMenu
+          v-model="form.userId"
+          class="w-full"
+          value-key="value"
+          :items="availableUserOptions"
+          :placeholder="$t('repositoryDetails.memberPlaceholder')"
+          searchable
+        >
+          <template #item-leading="{ item }">
+            <CommonUserAvatar
+              size="2xs"
+              :avatar-updated-at="item.avatarUpdatedAt"
+              :first-name="item.firstName"
+              :last-name="item.lastName"
+              :user-id="item.userId"
+              :username="item.username"
+            />
+          </template>
+        </USelectMenu>
+      </UFormField>
+      <UFormField name="role" :label="$t('repositoryDetails.role')" :ui="{ label: 'sr-only' }">
+        <USelect v-model="form.role" class="w-full sm:w-48" :items="membershipRoleOptions" />
+      </UFormField>
       <UButton
+        type="submit"
         icon="i-lucide-user-plus"
         :aria-label="$t('repositoryDetails.addMember')"
         :disabled="!form.userId"
         :loading="adding"
-        @click="addMember"
       />
-    </div>
+    </UForm>
 
     <UTable
       sticky
@@ -74,14 +83,19 @@
         </div>
       </template>
       <template #role-cell="{ row }">
-        <USelect
-          class="w-44"
-          :items="membershipRoleOptions"
-          :disabled="isMembershipPending(row.original.userId)"
-          :loading="isPending(memberActionKey('role', row.original.userId))"
-          :model-value="row.original.role"
-          @update:model-value="updateMemberRole(row.original, $event as RepositoryRole)"
-        />
+        <UFormField
+          :name="`memberRole.${row.original.userId}`"
+          :error="invalidRoleUserId === row.original.userId ? $t('forms.invalidValue') : undefined"
+        >
+          <USelect
+            class="w-44"
+            :items="membershipRoleOptions"
+            :disabled="isMembershipPending(row.original.userId)"
+            :loading="isPending(memberActionKey('role', row.original.userId))"
+            :model-value="row.original.role"
+            @update:model-value="updateMemberRole(row.original, $event as RepositoryRole)"
+          />
+        </UFormField>
       </template>
       <template #actions-header="{ column }">
         <span class="flex justify-end">{{ column.columnDef.header }}</span>
@@ -108,7 +122,10 @@
 </template>
 
 <script setup lang="ts">
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiUpsertRepositoryMembershipSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
+import { z } from 'zod';
 
 import { defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -128,6 +145,13 @@ const users = ref<User[]>([]);
 const loading = ref(true);
 const adding = ref(false);
 const error = ref(false);
+const invalidRoleUserId = ref<string>();
+const membershipFormSchema = computed(() =>
+  ApiUpsertRepositoryMembershipSchema.extend({
+    userId: z.string({ error: () => t('forms.invalidValue') }).min(1, { error: () => t('forms.invalidValue') }),
+  }),
+);
+type MembershipForm = z.output<typeof membershipFormSchema.value>;
 const form = reactive<{ role: RepositoryRole; userId: string | undefined }>({ role: 'VIEWER', userId: undefined });
 const membershipRoleOptions = computed(() => [
   { label: t('roles.VIEWER'), value: 'VIEWER' },
@@ -182,13 +206,13 @@ async function load(): Promise<void> {
 }
 
 /** Grant the selected system user explicit repository access. */
-async function addMember(): Promise<void> {
-  if (!form.userId) return;
-
+async function addMember(event: FormSubmitEvent<MembershipForm>): Promise<void> {
   adding.value = true;
   error.value = false;
   try {
-    const { data } = await api.repositories.upsertMembership(props.repositoryId, form.userId, { role: form.role });
+    const { data } = await api.repositories.upsertMembership(props.repositoryId, event.data.userId, {
+      role: event.data.role,
+    });
     memberships.value = [...memberships.value, data].sort((left, right) =>
       left.user.username.localeCompare(right.user.username),
     );
@@ -203,10 +227,16 @@ async function addMember(): Promise<void> {
 
 /** Change a repository member's explicit access role. */
 async function updateMemberRole(membership: RepositoryMembership, role: RepositoryRole): Promise<void> {
+  const input = ApiUpsertRepositoryMembershipSchema.safeParse({ role });
+  if (!input.success) {
+    invalidRoleUserId.value = membership.userId;
+    return;
+  }
+  invalidRoleUserId.value = undefined;
   await runPendingAction(memberActionKey('role', membership.userId), async () => {
     error.value = false;
     try {
-      const { data } = await api.repositories.upsertMembership(props.repositoryId, membership.userId, { role });
+      const { data } = await api.repositories.upsertMembership(props.repositoryId, membership.userId, input.data);
       memberships.value = memberships.value.map((current) => (current.id === membership.id ? data : current));
     } catch {
       error.value = true;

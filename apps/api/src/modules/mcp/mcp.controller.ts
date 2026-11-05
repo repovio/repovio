@@ -1,14 +1,14 @@
 import type { AuthInfo } from '@modelcontextprotocol/server';
 import { Controller, HttpStatus, Post, Req, Res, VERSION_NEUTRAL, Version } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ENV } from '../../config/env.js';
 import { getCorsOrigins } from '../../config/http.js';
 import { McpHttpService } from './mcp-http.service.js';
 import { McpTokenService } from './mcp-token.service.js';
 
-type AuthenticatedMcpRequest = Request & { auth?: AuthInfo };
+type AuthenticatedMcpRequest = FastifyRequest & { raw: FastifyRequest['raw'] & { auth?: AuthInfo } };
 
 /** Serves authenticated stateless MCP requests outside the versioned REST API prefix. */
 @ApiExcludeController()
@@ -34,13 +34,13 @@ export class McpController {
    */
   @Post()
   @Version(VERSION_NEUTRAL)
-  async handle(@Req() request: AuthenticatedMcpRequest, @Res() response: Response): Promise<void> {
-    if (request.originalUrl.includes('?')) {
-      response.status(HttpStatus.BAD_REQUEST).json({ message: 'MCP query parameters are not supported.' });
+  async handle(@Req() request: AuthenticatedMcpRequest, @Res() response: FastifyReply): Promise<void> {
+    if (request.url.includes('?')) {
+      response.code(HttpStatus.BAD_REQUEST).send({ message: 'MCP query parameters are not supported.' });
       return;
     }
     if (!this.isAllowedOrigin(request.headers.origin)) {
-      response.status(HttpStatus.FORBIDDEN).json({ message: 'Origin is not allowed.' });
+      response.code(HttpStatus.FORBIDDEN).send({ message: 'Origin is not allowed.' });
       return;
     }
 
@@ -56,14 +56,18 @@ export class McpController {
       return;
     }
 
-    request.auth = {
+    request.raw.auth = {
       clientId: authenticated.record.id,
       ...(authenticated.expiresAt ? { expiresAt: Math.floor(authenticated.expiresAt.getTime() / 1000) } : {}),
       extra: { user: authenticated.user },
       scopes: ['repovio:read'],
       token,
     };
-    await this.http.nodeHandler(request, response, request.body);
+    for (const [name, value] of Object.entries(response.getHeaders())) {
+      if (value !== undefined) response.raw.setHeader(name, value);
+    }
+    response.hijack();
+    await this.http.nodeHandler(request.raw, response.raw, request.body);
   }
 
   /**
@@ -95,8 +99,8 @@ export class McpController {
    * @param response - HTTP response being validated, decoded, or written.
    * @returns No return value.
    */
-  private unauthorized(response: Response): void {
-    response.setHeader('WWW-Authenticate', 'Bearer');
-    response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Unauthorized.' });
+  private unauthorized(response: FastifyReply): void {
+    response.header('WWW-Authenticate', 'Bearer');
+    response.code(HttpStatus.UNAUTHORIZED).send({ message: 'Unauthorized.' });
   }
 }

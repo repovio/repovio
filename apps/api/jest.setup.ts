@@ -1,4 +1,6 @@
+import { jest } from '@jest/globals';
 import 'reflect-metadata';
+(globalThis as unknown as { jest: typeof jest }).jest = jest;
 
 process.env.NODE_ENV ??= 'test';
 process.env.AUTH_JWT_SECRET ??= 'test-jwt-secret';

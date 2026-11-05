@@ -1,4 +1,4 @@
-import { createCaslAccessibleWhere } from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
 
 import { CaslAbilityFactory } from './casl-ability.factory.js';
 import { CaslAction } from './casl-action.js';

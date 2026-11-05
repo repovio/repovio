@@ -22,15 +22,18 @@
     },
     "lint": {
       "cache": true,
-      "inputs": ["default", "^default"]
+      "inputs": ["default", "^default"],
+      "dependsOn": ["^build"]
     },
     "test": {
       "cache": true,
-      "inputs": ["default", "^default"]
+      "inputs": ["default", "^default"],
+      "dependsOn": ["^build"]
     },
     "typecheck": {
       "cache": true,
-      "inputs": ["default", "^default"]
+      "inputs": ["default", "^default"],
+      "dependsOn": ["^build"]
     }
   },
   "analytics": false

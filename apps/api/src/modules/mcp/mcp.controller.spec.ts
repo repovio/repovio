@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { McpHttpService } from './mcp-http.service.js';
@@ -15,31 +15,36 @@ describe('McpController', () => {
     { authenticate } as unknown as McpTokenService,
   );
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => jest.resetAllMocks());
 
-  function response(): Response {
+  function response(): FastifyReply {
     const result = {
-      headersSent: false,
-      json: jest.fn(),
-      setHeader: jest.fn(),
-      status: jest.fn(),
+      code: jest.fn(),
+      getHeaders: jest.fn().mockReturnValue({ 'access-control-allow-origin': 'http://localhost:3000' }),
+      header: jest.fn(),
+      hijack: jest.fn(),
+      raw: { setHeader: jest.fn() },
+      send: jest.fn(),
     };
-    result.status.mockReturnValue(result);
-    return result as unknown as Response;
+    result.code.mockReturnValue(result);
+    return result as unknown as FastifyReply;
   }
 
   it('rejects credentials supplied through a query string', async () => {
     const res = response();
-    await controller.handle({ body: {}, headers: {}, originalUrl: '/mcp?token=secret' } as never, res);
-    expect(res.status).toHaveBeenCalledWith(400);
+    await controller.handle({ body: {}, headers: {}, url: '/mcp?token=secret' } as never, res);
+    expect(res.code).toHaveBeenCalledWith(400);
     expect(authenticate).not.toHaveBeenCalled();
+    expect(res.hijack).not.toHaveBeenCalled();
+    expect(nodeHandler).not.toHaveBeenCalled();
   });
 
   it('returns a bearer challenge for missing or invalid authorization', async () => {
     const res = response();
-    await controller.handle({ body: {}, headers: {}, originalUrl: '/mcp' } as never, res);
-    expect(res.setHeader).toHaveBeenCalledWith('WWW-Authenticate', 'Bearer');
-    expect(res.status).toHaveBeenCalledWith(401);
+    await controller.handle({ body: {}, headers: {}, url: '/mcp' } as never, res);
+    expect(res.header).toHaveBeenCalledWith('WWW-Authenticate', 'Bearer');
+    expect(res.code).toHaveBeenCalledWith(401);
+    expect(res.hijack).not.toHaveBeenCalled();
   });
 
   it('rejects an untrusted Origin before authenticating the bearer token', async () => {
@@ -48,13 +53,30 @@ describe('McpController', () => {
       {
         body: {},
         headers: { authorization: 'Bearer repovio_mcp_secret', origin: 'https://untrusted.example' },
-        originalUrl: '/mcp',
+        url: '/mcp',
       } as never,
       res,
     );
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.code).toHaveBeenCalledWith(403);
     expect(authenticate).not.toHaveBeenCalled();
+    expect(res.hijack).not.toHaveBeenCalled();
+  });
+
+  it('keeps failed bearer authentication in the normal Fastify response lifecycle', async () => {
+    authenticate.mockRejectedValue(new Error('Token lookup failed'));
+    const res = response();
+
+    await controller.handle(
+      { body: {}, headers: { authorization: 'Bearer invalid' }, raw: {}, url: '/mcp' } as never,
+      res,
+    );
+
+    expect(res.code).toHaveBeenCalledWith(401);
+    expect(res.header).toHaveBeenCalledWith('WWW-Authenticate', 'Bearer');
+    expect(res.send).toHaveBeenCalledWith({ message: 'Unauthorized.' });
+    expect(res.hijack).not.toHaveBeenCalled();
+    expect(nodeHandler).not.toHaveBeenCalled();
   });
 
   it('passes validated token and current user context to the MCP handler', async () => {
@@ -62,18 +84,21 @@ describe('McpController', () => {
     const request = {
       body: { jsonrpc: '2.0' },
       headers: { authorization: 'Bearer repovio_mcp_secret' },
-      originalUrl: '/mcp',
-    } as never;
+      raw: {},
+      url: '/mcp',
+    };
     const res = response();
 
-    await controller.handle(request, res);
+    await controller.handle(request as never, res);
 
-    expect(nodeHandler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        auth: expect.objectContaining({ clientId: 'token-id', extra: { user }, scopes: ['repovio:read'] }),
-      }),
-      res,
-      { jsonrpc: '2.0' },
+    expect(request.raw).toEqual({
+      auth: expect.objectContaining({ clientId: 'token-id', extra: { user }, scopes: ['repovio:read'] }),
+    });
+    expect(res.raw.setHeader).toHaveBeenCalledWith('access-control-allow-origin', 'http://localhost:3000');
+    expect(res.hijack).toHaveBeenCalledTimes(1);
+    expect((res.hijack as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      nodeHandler.mock.invocationCallOrder[0]!,
     );
+    expect(nodeHandler).toHaveBeenCalledWith(request.raw, res.raw, request.body);
   });
 });

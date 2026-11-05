@@ -1,12 +1,13 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ZodSerializerDto } from 'nestjs-zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
+  resourceFields,
+} from '../../util/resource-contract.js';
 
 import type { Prisma, SecurityAlertKind, SecurityAlertSeverity } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -53,17 +54,14 @@ export class SecurityAlertsController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible normalized security alerts.', model: SecurityAlertDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid security-alert query.' })
-  async query(
-    @Req() request: { user: AuthenticatedUser },
-    @Query(new QueryTransformPipe()) query: SecurityAlertQueryDto,
-  ) {
+  async query(@Req() request: { user: AuthenticatedUser }, @Query() query: SecurityAlertQueryDto) {
     const ability = await this.alerts.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
       include: securityAlertInclude,
       map: (alert: SecurityAlertResourceModel) => SecurityAlertDto.fromModel(alert, false, ability),
       query: this.alerts.toQueryOptions(query),
-      schema: SecurityAlertDto,
+      schema: resourceFields(SecurityAlertDto),
       service: this.alerts,
     });
   }
@@ -74,6 +72,7 @@ export class SecurityAlertsController {
    * @param request - Authenticated request.
    * @returns Permission-scoped alert summary.
    */
+  @ZodSerializerDto(SecurityAlertSummaryDto)
   @Get('summary')
   @ApiOkResponse({ type: SecurityAlertSummaryDto })
   async summary(@Req() request: { user: AuthenticatedUser }): Promise<SecurityAlertSummaryDto> {
@@ -119,6 +118,7 @@ export class SecurityAlertsController {
    * @param request - Authenticated request.
    * @returns Permission-scoped repositories, metadata, and availability.
    */
+  @ZodSerializerDto(SecurityAlertFilterOptionsDto)
   @Get('filter-options')
   @ApiOkResponse({ type: SecurityAlertFilterOptionsDto })
   async filterOptions(@Req() request: { user: AuthenticatedUser }): Promise<SecurityAlertFilterOptionsDto> {
@@ -167,7 +167,10 @@ export class SecurityAlertsController {
       ),
     ].sort();
     return {
-      availability,
+      availability: availability.map((item) => ({
+        ...item,
+        lastSuccessfulSyncAt: item.lastSuccessfulSyncAt?.toISOString() ?? null,
+      })),
       ecosystems: values('ecosystem'),
       manifests: values('manifest'),
       packages: values('packageName'),
@@ -187,6 +190,7 @@ export class SecurityAlertsController {
    * @param id - Local alert identifier.
    * @returns Safe permission-scoped alert detail.
    */
+  @ZodSerializerDto(SecurityAlertDto)
   @Get(':id')
   @ApiOkResponse({ type: SecurityAlertDto })
   async findById(@Req() request: { user: AuthenticatedUser }, @Param('id') id: string): Promise<SecurityAlertDto> {

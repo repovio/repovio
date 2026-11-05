@@ -14,17 +14,26 @@
       variant="subtle"
       :title="$t('repositoryDetails.saveError')"
     />
-    <div class="flex flex-col gap-2 sm:flex-row">
-      <USelect v-model="form.mode" class="sm:w-36" :items="filterModeOptions" />
-      <UInput v-model="form.pattern" class="flex-1" :placeholder="$t('repositoryDetails.filterPlaceholder')" />
+    <UForm
+      class="flex flex-col gap-2 sm:flex-row"
+      :schema="localizeFormSchema(filterSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="addWorkflowFilter"
+    >
+      <UFormField name="mode" :label="$t('repositoryDetails.mode')" :ui="{ label: 'sr-only' }">
+        <USelect v-model="form.mode" class="sm:w-36" :items="filterModeOptions" />
+      </UFormField>
+      <UFormField name="pattern" class="flex-1" :label="$t('repositoryDetails.pattern')" :ui="{ label: 'sr-only' }">
+        <UInput v-model="form.pattern" class="w-full" :placeholder="$t('repositoryDetails.filterPlaceholder')" />
+      </UFormField>
       <UButton
         icon="i-lucide-plus"
+        type="submit"
         :aria-label="$t('repositoryDetails.addFilter')"
-        :disabled="!form.pattern.trim()"
+        :disabled="adding"
         :loading="adding"
-        @click="addWorkflowFilter"
       />
-    </div>
+    </UForm>
 
     <UTable
       sticky
@@ -64,7 +73,10 @@
 </template>
 
 <script setup lang="ts">
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiCreateWorkflowFilterSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
+import { z } from 'zod';
 
 import { defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -83,6 +95,25 @@ const loading = ref(true);
 const adding = ref(false);
 const error = ref(false);
 const form = reactive<{ mode: WorkflowFilter['mode']; pattern: string }>({ mode: 'ALLOW', pattern: '' });
+const filterSchema = computed(() =>
+  ApiCreateWorkflowFilterSchema.extend({
+    mode: z.unknown(),
+    pattern: z.unknown(),
+  }).transform((value, context) => {
+    const parsed = ApiCreateWorkflowFilterSchema.safeParse(value, { error: () => t('forms.invalidValue') });
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues)
+        context.addIssue({ code: 'custom', path: issue.path, message: t('forms.invalidValue') });
+      return z.NEVER;
+    }
+    if (!parsed.data.pattern.trim()) {
+      context.addIssue({ code: 'custom', path: ['pattern'], message: t('forms.invalidValue') });
+      return z.NEVER;
+    }
+    return parsed.data;
+  }),
+);
+type WorkflowFilterValues = z.output<typeof filterSchema.value>;
 const filterModeOptions = computed(() => [
   { label: t('repositoryDetails.allow'), value: 'ALLOW' },
   { label: t('repositoryDetails.deny'), value: 'DENY' },
@@ -108,15 +139,13 @@ async function load(): Promise<void> {
 }
 
 /** Validate and create a repository-scoped workflow filter. */
-async function addWorkflowFilter(): Promise<void> {
-  if (!form.pattern.trim()) return;
-
+async function addWorkflowFilter(event: FormSubmitEvent<WorkflowFilterValues>): Promise<void> {
   adding.value = true;
   error.value = false;
   try {
     const { data } = await api.repositories.createWorkflowFilter(props.repositoryId, {
-      mode: form.mode,
-      pattern: form.pattern,
+      mode: event.data.mode,
+      pattern: event.data.pattern,
     });
     filters.value = [...filters.value, data].sort((left, right) => left.pattern.localeCompare(right.pattern));
     form.pattern = '';

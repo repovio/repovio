@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 
 import { Prisma } from '../generated/prisma/client.js';
 
@@ -55,10 +55,10 @@ export class PrismaExceptionFilter implements ExceptionFilter {
    * @returns No return value.
    */
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost): void {
-    const response = host.switchToHttp().getResponse<Response>();
+    const response = host.switchToHttp().getResponse<FastifyReply>();
     const mapped = mapPrismaException(exception);
 
-    response.status(mapped.status).json({
+    response.code(mapped.status).send({
       error: mapped.error,
       message: mapped.message,
       statusCode: mapped.status,

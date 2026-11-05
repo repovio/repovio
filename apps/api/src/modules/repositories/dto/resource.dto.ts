@@ -1,4 +1,17 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ApiProviderAccountSchema,
+  ApiRepositoryDetailSchema,
+  ApiRepositoryMembershipSchema,
+  ApiRepositoryMemberSummarySchema,
+  ApiRepositorySchema,
+  ApiRepositorySyncStateSchema,
+  ApiWorkflowFilterSchema,
+  ApiWorkflowRunSchema,
+} from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
+
+import { toWire } from '../../../util/to-wire.js';
+
 import { filterCaslFields } from '@querry-kit/nest/casl';
 
 import { CaslAction } from '../../../casl/casl-action.js';
@@ -15,20 +28,7 @@ import type {
 } from '../../../generated/prisma/client.js';
 
 /** Public provider-account representation that deliberately excludes its access token. */
-export class ProviderAccountDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty({ enum: ['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA'] })
-  providerType!: ProviderAccount['providerType'];
-  @ApiProperty({ maxLength: 255 })
-  displayName!: string;
-  @ApiPropertyOptional({ format: 'uri', nullable: true })
-  baseUrl!: string | null;
-  @ApiProperty()
-  enabled!: boolean;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  lastSyncAt!: Date | null;
-
+export class ProviderAccountDto extends createZodDto(ApiProviderAccountSchema) {
   /**
    * Convert a provider account to its safe public representation.
    *
@@ -37,65 +37,31 @@ export class ProviderAccountDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: ProviderAccount, ability?: AppAbility): ProviderAccountDto {
-    return filterCaslFields(
-      {
-        id: model.id,
-        providerType: model.providerType,
-        displayName: model.displayName,
-        baseUrl: model.baseUrl,
-        enabled: model.enabled,
-        lastSyncAt: model.lastSyncAt,
-      },
-      CaslSubject.ProviderAccount,
-      ability,
-      { action: CaslAction.Read },
+    return toWire(
+      filterCaslFields(
+        ProviderAccountDto.schema.parse(
+          toWire({
+            id: model.id,
+            providerType: model.providerType,
+            displayName: model.displayName,
+            baseUrl: model.baseUrl,
+            enabled: model.enabled,
+            lastSyncAt: model.lastSyncAt,
+          }),
+        ),
+        CaslSubject.ProviderAccount,
+        ability,
+        { action: CaslAction.Read },
+      ),
     );
   }
 }
 
 /** Minimal safe user identity rendered in repository member avatar groups. */
-export class RepositoryMemberSummaryDto {
-  @ApiProperty({ format: 'date-time', nullable: true })
-  avatarUpdatedAt!: Date | null;
-  @ApiProperty({ maxLength: 255, nullable: true })
-  firstName!: string | null;
-  @ApiProperty({ maxLength: 255, nullable: true })
-  lastName!: string | null;
-  @ApiProperty({ format: 'uuid' })
-  userId!: string;
-  @ApiProperty({ maxLength: 255 })
-  username!: string;
-}
+export class RepositoryMemberSummaryDto extends createZodDto(ApiRepositoryMemberSummarySchema) {}
 
 /** Public tracked-repository representation. */
-export class RepositoryDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty()
-  providerRepositoryId!: string;
-  @ApiProperty()
-  owner!: string;
-  @ApiProperty()
-  name!: string;
-  @ApiProperty({ format: 'uri' })
-  url!: string;
-  @ApiProperty()
-  enabled!: boolean;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  lastSyncAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true })
-  issueRetentionDays!: number | null;
-  @ApiPropertyOptional({ nullable: true })
-  pullRequestRetentionDays!: number | null;
-  @ApiPropertyOptional({ nullable: true })
-  workflowRunRetentionDays!: number | null;
-  @ApiProperty({ format: 'uuid' })
-  providerAccountId!: string;
-  @ApiPropertyOptional({ minimum: 0 })
-  workflowRunCount?: number;
-  @ApiProperty({ isArray: true, type: () => RepositoryMemberSummaryDto })
-  members!: RepositoryMemberSummaryDto[];
-
+export class RepositoryDto extends createZodDto(ApiRepositorySchema) {
   /**
    * Convert a tracked repository to a permission-filtered API response.
    *
@@ -104,66 +70,44 @@ export class RepositoryDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: RepositoryResourceModel, ability?: AppAbility): RepositoryDto {
-    return filterCaslFields(
-      {
-        id: model.id,
-        providerRepositoryId: model.providerRepositoryId,
-        owner: model.owner,
-        name: model.name,
-        url: model.url,
-        enabled: model.enabled,
-        lastSyncAt: model.lastSyncAt,
-        issueRetentionDays: model.issueRetentionDays,
-        pullRequestRetentionDays: model.pullRequestRetentionDays,
-        workflowRunRetentionDays: model.workflowRunRetentionDays,
-        providerAccountId: model.providerAccountId,
-        members: (model.memberships ?? []).map((membership) => ({
-          avatarUpdatedAt: membership.user.avatar?.updatedAt ?? null,
-          firstName: membership.user.firstName,
-          lastName: membership.user.lastName,
-          userId: membership.userId,
-          username: membership.user.username,
-        })),
-        ...(model._count ? { workflowRunCount: model._count.workflowRuns } : {}),
-      },
-      CaslSubject.Repository,
-      ability,
-      { action: CaslAction.Read },
+    return toWire(
+      filterCaslFields(
+        RepositoryDto.schema.parse(
+          toWire({
+            id: model.id,
+            providerRepositoryId: model.providerRepositoryId,
+            owner: model.owner,
+            name: model.name,
+            url: model.url,
+            enabled: model.enabled,
+            lastSyncAt: model.lastSyncAt,
+            issueRetentionDays: model.issueRetentionDays,
+            pullRequestRetentionDays: model.pullRequestRetentionDays,
+            workflowRunRetentionDays: model.workflowRunRetentionDays,
+            providerAccountId: model.providerAccountId,
+            members: (model.memberships ?? []).map((membership) => ({
+              avatarUpdatedAt: membership.user.avatar?.updatedAt ?? null,
+              firstName: membership.user.firstName,
+              lastName: membership.user.lastName,
+              userId: membership.userId,
+              username: membership.user.username,
+            })),
+            ...(model._count ? { workflowRunCount: model._count.workflowRuns } : {}),
+          }),
+        ),
+        CaslSubject.Repository,
+        ability,
+        { action: CaslAction.Read },
+      ),
     );
   }
 }
 
 /** Safe synchronization state displayed on one repository detail page. */
-export class RepositorySyncStateDto {
-  @ApiProperty()
-  attempt!: number;
-  @ApiPropertyOptional({ nullable: true })
-  lastError!: string | null;
-  @ApiPropertyOptional({ nullable: true })
-  progressCurrent!: number | null;
-  @ApiPropertyOptional({ nullable: true })
-  progressPhase!: RepositorySyncRequest['progressPhase'];
-  @ApiPropertyOptional({ nullable: true })
-  progressTotal!: number | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  requestedAt!: Date | null;
-  @ApiProperty({ enum: ['WORKFLOWS', 'ISSUES', 'PULL_REQUESTS', 'ALERTS'], isArray: true })
-  scopes!: Array<'WORKFLOWS' | 'ISSUES' | 'PULL_REQUESTS' | 'ALERTS'>;
-  @ApiProperty({ enum: ['DEPENDENCY', 'CODE', 'SECRET'], isArray: true })
-  warningKinds!: string[];
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  startedAt!: Date | null;
-  @ApiProperty({ enum: ['IDLE', 'PENDING', 'RUNNING', 'FAILED', 'WARNING'] })
-  status!: 'IDLE' | RepositorySyncRequest['status'];
-}
+export class RepositorySyncStateDto extends createZodDto(ApiRepositorySyncStateSchema) {}
 
 /** Permission-filtered repository detail with safe synchronization metadata. */
-export class RepositoryDetailDto extends RepositoryDto {
-  @ApiProperty({ minimum: 1 })
-  syncIntervalSeconds!: number;
-  @ApiProperty({ type: RepositorySyncStateDto })
-  syncState!: RepositorySyncStateDto;
-
+export class RepositoryDetailDto extends createZodDto(ApiRepositoryDetailSchema) {
   /**
    * Convert a visible repository and its queue request into the detail response.
    *
@@ -178,7 +122,7 @@ export class RepositoryDetailDto extends RepositoryDto {
     ability?: AppAbility,
   ): RepositoryDetailDto {
     const request = model.syncRequest;
-    return {
+    return toWire({
       ...RepositoryDto.fromModel(model, ability),
       syncIntervalSeconds,
       syncState: {
@@ -202,7 +146,7 @@ export class RepositoryDetailDto extends RepositoryDto {
           .filter(({ availability }) => availability === 'UNAVAILABLE')
           .map(({ kind }) => kind),
       },
-    };
+    });
   }
 }
 
@@ -218,36 +162,7 @@ export type RepositoryResourceModel = Repository & {
 };
 
 /** Public workflow-run representation used by dashboard and history endpoints. */
-export class WorkflowRunDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty()
-  providerRunId!: string;
-  @ApiProperty()
-  workflowName!: string;
-  @ApiProperty()
-  displayTitle!: string;
-  @ApiProperty({ format: 'uri' })
-  url!: string;
-  @ApiProperty({ format: 'date-time' })
-  providerCreatedAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  startedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
-  completedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true })
-  durationMs!: number | null;
-  @ApiProperty({ enum: ['QUEUED', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED', 'SKIPPED', 'UNKNOWN'] })
-  status!: WorkflowRun['status'];
-  @ApiProperty({ format: 'uuid' })
-  repositoryId!: string;
-  @ApiProperty()
-  repositoryName!: string;
-  @ApiProperty()
-  repositoryOwner!: string;
-  @ApiProperty({ enum: ['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA'] })
-  providerType!: ProviderAccount['providerType'];
-
+export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
   /**
    * Convert a normalized provider run to a permission-filtered API response.
    *
@@ -256,26 +171,30 @@ export class WorkflowRunDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: WorkflowRunResourceModel, ability?: AppAbility): WorkflowRunDto {
-    return filterCaslFields(
-      {
-        id: model.id,
-        providerRunId: model.providerRunId,
-        workflowName: model.workflowName,
-        displayTitle: model.displayTitle,
-        url: model.url,
-        providerCreatedAt: model.providerCreatedAt,
-        startedAt: model.startedAt,
-        completedAt: model.completedAt,
-        durationMs: model.durationMs === null ? null : Number(model.durationMs),
-        status: model.status,
-        repositoryId: model.repositoryId,
-        repositoryName: model.repository.name,
-        repositoryOwner: model.repository.owner,
-        providerType: model.repository.providerAccount.providerType,
-      },
-      CaslSubject.WorkflowRun,
-      ability,
-      { action: CaslAction.Read },
+    return toWire(
+      filterCaslFields(
+        WorkflowRunDto.schema.parse(
+          toWire({
+            id: model.id,
+            providerRunId: model.providerRunId,
+            workflowName: model.workflowName,
+            displayTitle: model.displayTitle,
+            url: model.url,
+            providerCreatedAt: model.providerCreatedAt,
+            startedAt: model.startedAt,
+            completedAt: model.completedAt,
+            durationMs: model.durationMs === null ? null : Number(model.durationMs),
+            status: model.status,
+            repositoryId: model.repositoryId,
+            repositoryName: model.repository.name,
+            repositoryOwner: model.repository.owner,
+            providerType: model.repository.providerAccount.providerType,
+          }),
+        ),
+        CaslSubject.WorkflowRun,
+        ability,
+        { action: CaslAction.Read },
+      ),
     );
   }
 }
@@ -295,16 +214,7 @@ export type WorkflowRunResourceModel = Omit<
 };
 
 /** Public workflow filter representation. */
-export class WorkflowFilterDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty({ maxLength: 1024 })
-  pattern!: string;
-  @ApiProperty({ enum: ['ALLOW', 'DENY'] })
-  mode!: WorkflowFilter['mode'];
-  @ApiProperty({ format: 'uuid' })
-  repositoryId!: string;
-
+export class WorkflowFilterDto extends createZodDto(ApiWorkflowFilterSchema) {
   /**
    * Convert a workflow filter to a repository-scoped API response.
    *
@@ -313,28 +223,21 @@ export class WorkflowFilterDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: WorkflowFilter, ability?: AppAbility): WorkflowFilterDto {
-    return filterCaslFields(
-      { id: model.id, pattern: model.pattern, mode: model.mode, repositoryId: model.repositoryId },
-      CaslSubject.Repository,
-      ability,
-      { action: CaslAction.Read },
+    return toWire(
+      filterCaslFields(
+        WorkflowFilterDto.schema.parse(
+          toWire({ id: model.id, pattern: model.pattern, mode: model.mode, repositoryId: model.repositoryId }),
+        ),
+        CaslSubject.Repository,
+        ability,
+        { action: CaslAction.Read },
+      ),
     );
   }
 }
 
 /** Safe repository member representation without credential material. */
-export class RepositoryMembershipDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty({ enum: ['VIEWER', 'MANAGER'] })
-  role!: RepositoryMembership['role'];
-  @ApiProperty({ format: 'uuid' })
-  repositoryId!: string;
-  @ApiProperty({ format: 'uuid' })
-  userId!: string;
-  @ApiProperty()
-  user!: Pick<User, 'firstName' | 'id' | 'lastName' | 'role' | 'username'> & { avatarUpdatedAt: Date | null };
-
+export class RepositoryMembershipDto extends createZodDto(ApiRepositoryMembershipSchema) {
   /**
    * Convert a membership and its safe user relation into a public representation.
    *
@@ -348,19 +251,21 @@ export class RepositoryMembershipDto {
       };
     },
   ): RepositoryMembershipDto {
-    return {
-      id: model.id,
-      repositoryId: model.repositoryId,
-      role: model.role,
-      user: {
-        avatarUpdatedAt: model.user.avatar?.updatedAt ?? null,
-        firstName: model.user.firstName,
-        id: model.user.id,
-        lastName: model.user.lastName,
-        role: model.user.role,
-        username: model.user.username,
-      },
-      userId: model.userId,
-    };
+    return RepositoryMembershipDto.schema.parse(
+      toWire({
+        id: model.id,
+        repositoryId: model.repositoryId,
+        role: model.role,
+        user: {
+          avatarUpdatedAt: model.user.avatar?.updatedAt ?? null,
+          firstName: model.user.firstName,
+          id: model.user.id,
+          lastName: model.user.lastName,
+          role: model.user.role,
+          username: model.user.username,
+        },
+        userId: model.userId,
+      }),
+    );
   }
 }

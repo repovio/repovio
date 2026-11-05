@@ -48,11 +48,10 @@
 
 <script setup lang="ts">
 import Cropper from 'cropperjs';
-import { defineEmits, defineModel, defineProps, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { defineModel, defineProps, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
-defineProps<{ source: string }>();
+const props = defineProps<{ source: string; save: (file: File) => Promise<void> }>();
 const open = defineModel<boolean>('open', { required: true });
-const emit = defineEmits<{ cropped: [file: File] }>();
 const { t } = useI18n();
 const cropContainer = ref<HTMLElement>();
 const image = ref<HTMLImageElement>();
@@ -105,7 +104,7 @@ async function apply(): Promise<void> {
         0.9,
       ),
     );
-    emit('cropped', new File([blob], 'avatar.webp', { type: 'image/webp' }));
+    await props.save(new File([blob], 'avatar.webp', { type: 'image/webp' }));
     open.value = false;
   } catch {
     cropError.value = t('settings.avatarCropError');

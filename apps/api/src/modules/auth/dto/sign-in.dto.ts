@@ -1,11 +1,4 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiSignInSchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
-export class SignInDto {
-  @IsString()
-  @MaxLength(255)
-  username!: string;
-
-  @IsString()
-  @MinLength(1)
-  password!: string;
-}
+export class SignInDto extends createZodDto(ApiSignInSchema) {}

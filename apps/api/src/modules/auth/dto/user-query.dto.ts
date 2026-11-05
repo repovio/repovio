@@ -1,6 +1,5 @@
-import { QueryDTO } from '@querry-kit/nest';
-
-import type { UserTypeMap } from '../users-query.service.js';
+import { ApiUserQuerySchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
 /** Paginated Query Kit request for system-user administration. */
-export class UserQueryDto extends QueryDTO<UserTypeMap> {}
+export class UserQueryDto extends createZodDto(ApiUserQuerySchema) {}

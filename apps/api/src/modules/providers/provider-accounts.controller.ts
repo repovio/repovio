@@ -1,13 +1,26 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import {
+  ApiCreateProviderAccountSchema,
+  ApiCreateTrackedRepositorySchema,
+  ApiProviderAccountSchema,
+  ApiProviderRepositorySchema,
+  ApiRepositorySchema,
+  ApiUpdateProviderAccountSchema,
+  ProviderAuthenticationOptionsSchema,
+  ProviderOAuthAuthorizationSchema,
+} from '@repovio/schemas';
+import { createZodDto } from '../../util/schema-dto.js';
+
+import { z } from 'zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
+  resourceFields,
+  SchemaResponse,
+} from '../../util/resource-contract.js';
 
-import { IsBoolean, IsEnum, IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
 import type { ProviderAccount } from '../../generated/prisma/client.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
@@ -20,24 +33,11 @@ import { ProviderAccountsQueryService } from './provider-accounts-query.service.
 import { ProviderAccountsService } from './provider-accounts.service.js';
 import { ProviderOAuthService } from './provider-oauth.service.js';
 
-class CreateProviderAccountDto {
-  @IsEnum(['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA']) providerType!: 'GITHUB' | 'GITLAB' | 'FORGEJO' | 'GITEA';
-  @IsString() @MaxLength(255) displayName!: string;
-  @IsString() @MinLength(1) @MaxLength(4096) accessToken!: string;
-  @IsOptional() @IsUrl() baseUrl?: string;
-  @IsOptional() @IsBoolean() enabled?: boolean;
-}
+class CreateProviderAccountDto extends createZodDto(ApiCreateProviderAccountSchema) {}
 
-class UpdateProviderAccountDto {
-  @IsOptional() @IsString() @MaxLength(255) displayName?: string;
-  @IsOptional() @IsUrl() baseUrl?: string | null;
-  @IsOptional() @IsBoolean() enabled?: boolean;
-  @IsOptional() @IsString() @MinLength(1) @MaxLength(4096) accessToken?: string;
-}
+class UpdateProviderAccountDto extends createZodDto(ApiUpdateProviderAccountSchema) {}
 
-class CreateTrackedRepositoryDto {
-  @IsString() @MinLength(1) @MaxLength(255) providerRepositoryId!: string;
-}
+class CreateTrackedRepositoryDto extends createZodDto(ApiCreateTrackedRepositorySchema) {}
 @Authenticated()
 @Controller('provider-accounts')
 export class ProviderAccountsController {
@@ -66,16 +66,13 @@ export class ProviderAccountsController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Configured provider accounts.', model: ProviderAccountDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid provider-account query.' })
-  async query(
-    @Req() req: { user: AuthenticatedUser },
-    @Query(new QueryTransformPipe()) query: ProviderAccountQueryDto,
-  ) {
+  async query(@Req() req: { user: AuthenticatedUser }, @Query() query: ProviderAccountQueryDto) {
     const ability = this.accountQueries.getReadAbility(req.user);
     return ResourceQuery.query({
       ability,
       map: (account: ProviderAccount, currentAbility) => ProviderAccountDto.fromModel(account, currentAbility),
       query: this.accountQueries.toQueryOptions(query),
-      schema: ProviderAccountDto,
+      schema: resourceFields(ProviderAccountDto),
       service: this.accountQueries,
     });
   }
@@ -86,7 +83,9 @@ export class ProviderAccountsController {
    * @returns The provider types with OAuth credentials configured.
    * @throws ForbiddenException - System administrator access is required.
    */
-  @Get('authentication-options') authenticationOptions(@Req() req: { user: AuthenticatedUser }): {
+  @SchemaResponse(ProviderAuthenticationOptionsSchema)
+  @Get('authentication-options')
+  authenticationOptions(@Req() req: { user: AuthenticatedUser }): {
     oauthProviderTypes: Array<'GITHUB' | 'GITLAB' | 'FORGEJO'>;
   } {
     this.accounts.assertAdmin(req.user);
@@ -106,6 +105,7 @@ export class ProviderAccountsController {
    * @throws TypeError - When the provider request fails at the network layer.
    * @throws Error - When no adapter is registered for the requested provider type.
    */
+  @SchemaResponse(z.array(ApiProviderRepositorySchema))
   @Get(':id/repositories')
   async listRepositories(
     @Req() req: { user: AuthenticatedUser },
@@ -128,7 +128,9 @@ export class ProviderAccountsController {
    * @throws TypeError - When the provider request fails at the network layer.
    * @throws Error - When no adapter is registered for the requested provider type.
    */
-  @Post() async create(
+  @SchemaResponse(ApiProviderAccountSchema)
+  @Post()
+  async create(
     @Req() req: { user: AuthenticatedUser },
     @Body() body: CreateProviderAccountDto,
   ): Promise<ProviderAccountDto> {
@@ -149,6 +151,7 @@ export class ProviderAccountsController {
    * @throws TypeError - When the provider request fails at the network layer.
    * @throws Error - When no adapter is registered for the requested provider type.
    */
+  @SchemaResponse(ApiRepositorySchema)
   @Post(':id/repositories')
   async addRepository(
     @Req() req: { user: AuthenticatedUser },
@@ -168,7 +171,9 @@ export class ProviderAccountsController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws BadRequestException - OAuth is not configured for this provider.
    */
-  @Post('oauth/authorize') async authorize(
+  @SchemaResponse(ProviderOAuthAuthorizationSchema)
+  @Post('oauth/authorize')
+  async authorize(
     @Req() req: { user: AuthenticatedUser },
     @Body() body: StartProviderOAuthDto,
   ): Promise<ProviderOAuthAuthorizationDto> {
@@ -185,7 +190,9 @@ export class ProviderAccountsController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws NotFoundException - Provider account not found.
    */
-  @Patch(':id') async update(
+  @SchemaResponse(ApiProviderAccountSchema)
+  @Patch(':id')
+  async update(
     @Req() req: { user: AuthenticatedUser },
     @Param('id') id: string,
     @Body() body: UpdateProviderAccountDto,

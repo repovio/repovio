@@ -16,7 +16,12 @@
       :title="$t('settings.passwordChanged')"
     />
 
-    <UForm class="space-y-5" :schema="localizedPasswordFormSchema" :state="form" @submit="save">
+    <UForm
+      class="space-y-5"
+      :schema="localizeFormSchema(localizedPasswordFormSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="save"
+    >
       <UFormField name="currentPassword" :label="$t('settings.currentPassword')" required>
         <UInput
           v-model="form.currentPassword"
@@ -63,6 +68,7 @@
 
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
+import { localizeFormSchema } from '@repovio/schemas';
 import { isAxiosError } from 'axios';
 import { computed, nextTick, reactive, ref } from 'vue';
 

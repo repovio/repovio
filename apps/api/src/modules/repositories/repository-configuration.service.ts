@@ -308,7 +308,7 @@ export class RepositoryConfigurationService {
         ENV.PUBLIC_URL,
       ).toString(),
       configured,
-      lastDeliveryAt,
+      lastDeliveryAt: lastDeliveryAt?.toISOString() ?? null,
       providerType,
       repositoryId,
     };

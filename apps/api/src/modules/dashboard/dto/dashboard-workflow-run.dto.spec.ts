@@ -37,12 +37,12 @@ describe('DashboardWorkflowRunDto', () => {
 
     expect(dto).toEqual({
       awaitingApproval: true,
-      completedAt: new Date('2026-08-26T10:01:00.000Z'),
+      completedAt: '2026-08-26T10:01:00.000Z',
       displayTitle: 'Test pull request',
       durationMs: 2_592_164_000,
       id: 'run-id',
       provider: { displayName: 'Repovio GitHub', id: 'provider-id', providerType: 'GITHUB' },
-      providerCreatedAt: new Date('2026-08-26T10:00:00.000Z'),
+      providerCreatedAt: '2026-08-26T10:00:00.000Z',
       providerRunId: 'provider-run-id',
       reviewUrl: 'https://github.com/repovio/repovio/pull/12',
       repository: {
@@ -51,7 +51,7 @@ describe('DashboardWorkflowRunDto', () => {
         owner: 'repovio',
         url: 'https://github.com/repovio/repovio',
       },
-      startedAt: new Date('2026-08-26T10:00:00.000Z'),
+      startedAt: '2026-08-26T10:00:00.000Z',
       status: 'FAILED',
       url: 'https://github.com/repovio/repovio/actions/runs/1',
       workflowName: 'Test',

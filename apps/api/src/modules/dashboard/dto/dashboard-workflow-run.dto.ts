@@ -1,78 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  ApiDashboardProviderSchema,
+  ApiDashboardRepositorySchema,
+  ApiDashboardWorkflowRunSchema,
+} from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
+
+import { toWire } from '../../../util/to-wire.js';
 
 import type { ProviderAccount, Repository, WorkflowRun } from '../../../generated/prisma/client.js';
 
 /** Safe provider identity displayed alongside a dashboard workflow run. */
-export class DashboardProviderDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty({ enum: ['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA'] })
-  providerType!: ProviderAccount['providerType'];
-
-  @ApiProperty()
-  displayName!: string;
-}
+export class DashboardProviderDto extends createZodDto(ApiDashboardProviderSchema) {}
 
 /** Safe repository identity and link displayed alongside a dashboard workflow run. */
-export class DashboardRepositoryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  owner!: string;
-
-  @ApiProperty()
-  name!: string;
-
-  @ApiProperty()
-  url!: string;
-}
+export class DashboardRepositoryDto extends createZodDto(ApiDashboardRepositorySchema) {}
 
 /** Dashboard representation of a workflow run with repository and provider context. */
-export class DashboardWorkflowRunDto {
-  @ApiProperty()
-  awaitingApproval!: boolean;
-
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  providerRunId!: string;
-
-  @ApiProperty()
-  workflowName!: string;
-
-  @ApiProperty()
-  displayTitle!: string;
-
-  @ApiProperty()
-  url!: string;
-
-  @ApiProperty()
-  providerCreatedAt!: Date;
-
-  @ApiProperty({ nullable: true })
-  startedAt!: Date | null;
-
-  @ApiProperty({ nullable: true })
-  completedAt!: Date | null;
-
-  @ApiProperty({ nullable: true })
-  durationMs!: number | null;
-
-  @ApiProperty({ nullable: true })
-  reviewUrl!: string | null;
-
-  @ApiProperty({ enum: ['QUEUED', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED', 'SKIPPED', 'UNKNOWN'] })
-  status!: WorkflowRun['status'];
-
-  @ApiProperty({ type: DashboardRepositoryDto })
-  repository!: DashboardRepositoryDto;
-
-  @ApiProperty({ type: DashboardProviderDto })
-  provider!: DashboardProviderDto;
-
+export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRunSchema) {
   /**
    * Map a loaded dashboard workflow run to its explicit safe public representation.
    *
@@ -80,31 +24,33 @@ export class DashboardWorkflowRunDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: DashboardWorkflowRunModel): DashboardWorkflowRunDto {
-    return {
-      awaitingApproval: model.awaitingApproval,
-      id: model.id,
-      providerRunId: model.providerRunId,
-      workflowName: model.workflowName,
-      displayTitle: model.displayTitle,
-      url: model.url,
-      providerCreatedAt: model.providerCreatedAt,
-      startedAt: model.startedAt,
-      completedAt: model.completedAt,
-      durationMs: model.durationMs === null ? null : Number(model.durationMs),
-      reviewUrl: model.reviewUrl,
-      status: model.status,
-      repository: {
-        id: model.repository.id,
-        owner: model.repository.owner,
-        name: model.repository.name,
-        url: model.repository.url,
-      },
-      provider: {
-        id: model.repository.providerAccount.id,
-        providerType: model.repository.providerAccount.providerType,
-        displayName: model.repository.providerAccount.displayName,
-      },
-    };
+    return DashboardWorkflowRunDto.schema.parse(
+      toWire({
+        awaitingApproval: model.awaitingApproval,
+        id: model.id,
+        providerRunId: model.providerRunId,
+        workflowName: model.workflowName,
+        displayTitle: model.displayTitle,
+        url: model.url,
+        providerCreatedAt: model.providerCreatedAt,
+        startedAt: model.startedAt,
+        completedAt: model.completedAt,
+        durationMs: model.durationMs === null ? null : Number(model.durationMs),
+        reviewUrl: model.reviewUrl,
+        status: model.status,
+        repository: {
+          id: model.repository.id,
+          owner: model.repository.owner,
+          name: model.repository.name,
+          url: model.repository.url,
+        },
+        provider: {
+          id: model.repository.providerAccount.id,
+          providerType: model.repository.providerAccount.providerType,
+          displayName: model.repository.providerAccount.displayName,
+        },
+      }),
+    );
   }
 }
 

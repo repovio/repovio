@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { QueryOptionsMap } from '@querry-kit/nest';
+import { QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAction } from '../../casl/casl-action.js';
 import { accessibleBy } from '../../casl/casl-prisma.js';

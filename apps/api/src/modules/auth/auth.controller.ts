@@ -13,8 +13,10 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-fastify';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { AuthResultSchema, AuthenticatedUserSchema, SetupStatusSchema } from '@repovio/schemas';
+import { SchemaResponse } from '../../util/resource-contract.js';
 
 import { AuthService } from './auth.service.js';
 import { Authenticated } from './authenticated.decorator.js';
@@ -47,6 +49,7 @@ export class AuthController {
    * @returns The authenticated identity and its newly signed access token.
    * @throws UnauthorizedException - Invalid credentials.
    */
+  @SchemaResponse(AuthResultSchema)
   @Post('signin')
   @HttpCode(200)
   signIn(@Body() body: SignInDto) {
@@ -58,6 +61,7 @@ export class AuthController {
    *
    * @returns Whether first-user setup has already completed.
    */
+  @SchemaResponse(SetupStatusSchema)
   @Get('setup-status')
   setupStatus(): Promise<{ initialized: boolean }> {
     return this.auth.getSetupStatus();
@@ -70,6 +74,7 @@ export class AuthController {
    * @returns The first administrator identity and its access token.
    * @throws ConflictException - The application is already initialized.
    */
+  @SchemaResponse(AuthResultSchema)
   @Post('setup')
   @HttpCode(200)
   setup(@Body() body: SetupDto): Promise<AuthResult> {
@@ -82,6 +87,7 @@ export class AuthController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns The safe identity of the authenticated user.
    */
+  @SchemaResponse(AuthenticatedUserSchema)
   @Get('me')
   @Authenticated()
   me(@Req() request: { user: AuthenticatedUser }) {
@@ -96,6 +102,7 @@ export class AuthController {
    * @returns The updated safe user identity.
    * @throws UnauthorizedException - When the user no longer exists or a username change lacks valid credentials.
    */
+  @SchemaResponse(AuthenticatedUserSchema)
   @Patch('me')
   @Authenticated()
   updateProfile(
@@ -114,6 +121,7 @@ export class AuthController {
    * @throws BadRequestException - An avatar image is required.
    * @throws PayloadTooLargeException - When the supplied image exceeds 2 MB.
    */
+  @SchemaResponse(AuthenticatedUserSchema)
   @Put('me/avatar')
   @Authenticated()
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 2 * 1024 * 1024, files: 1 } }))
@@ -136,6 +144,7 @@ export class AuthController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns The authenticated identity with its avatar removed.
    */
+  @SchemaResponse(AuthenticatedUserSchema)
   @Delete('me/avatar')
   @Authenticated()
   async deleteAvatar(@Req() request: { user: AuthenticatedUser }): Promise<AuthenticatedUser> {
@@ -179,6 +188,7 @@ export class AuthController {
    * @returns The updated user identity and replacement access token.
    * @throws UnauthorizedException - Invalid credentials.
    */
+  @SchemaResponse(AuthResultSchema)
   @Post('password')
   @Authenticated()
   updatePassword(@Req() request: { user: AuthenticatedUser }, @Body() body: UpdatePasswordDto): Promise<AuthResult> {

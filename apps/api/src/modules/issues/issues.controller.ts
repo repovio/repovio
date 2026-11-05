@@ -1,12 +1,13 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ZodSerializerDto } from 'nestjs-zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
+  resourceFields,
+} from '../../util/resource-contract.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -51,14 +52,14 @@ export class IssuesController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible provider issues.', model: IssueDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid issue query.' })
-  async query(@Req() request: { user: AuthenticatedUser }, @Query(new QueryTransformPipe()) query: IssueQueryDto) {
+  async query(@Req() request: { user: AuthenticatedUser }, @Query() query: IssueQueryDto) {
     const ability = await this.issues.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
       include: issueInclude,
       map: (issue: IssueResourceModel) => IssueDto.fromModel(issue, false, ability),
       query: this.issues.toQueryOptions(query),
-      schema: IssueDto,
+      schema: resourceFields(IssueDto),
       service: this.issues,
     });
   }
@@ -69,6 +70,7 @@ export class IssuesController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns State counts restricted to the resources visible to the caller.
    */
+  @ZodSerializerDto(IssueSummaryDto)
   @Get('summary')
   @ApiOkResponse({ type: IssueSummaryDto })
   async summary(@Req() request: { user: AuthenticatedUser }): Promise<IssueSummaryDto> {
@@ -96,6 +98,7 @@ export class IssuesController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns Sorted filter choices from visible work items.
    */
+  @ZodSerializerDto(WorkItemFilterOptionsDto)
   @Get('filter-options')
   @ApiOkResponse({ type: WorkItemFilterOptionsDto })
   async filterOptions(@Req() request: { user: AuthenticatedUser }): Promise<WorkItemFilterOptionsDto> {
@@ -120,6 +123,7 @@ export class IssuesController {
    * @returns The safe detail DTO for the visible resource.
    * @throws NotFoundException - When the resource is missing or not visible to the authenticated user.
    */
+  @ZodSerializerDto(IssueDto)
   @Get(':id')
   @ApiOkResponse({ type: IssueDto })
   async findById(@Req() request: { user: AuthenticatedUser }, @Param('id') id: string): Promise<IssueDto> {

@@ -48,6 +48,7 @@
     "waitingSince": "Oczekuje od"
   },
   "forms": {
+    "invalidValue": "Wprowadź prawidłową wartość.",
     "unsavedChanges": "Masz niezapisane zmiany. Czy mimo to chcesz opuścić tę stronę?"
   },
   "commandPalette": {

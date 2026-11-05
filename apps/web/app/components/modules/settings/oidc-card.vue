@@ -24,7 +24,14 @@
       <USkeleton class="h-24 w-full" />
       <USkeleton class="h-24 w-full" />
     </div>
-    <UForm v-else class="space-y-6" :state="form" @submit="save">
+    <UForm
+      v-else
+      ref="oidcForm"
+      class="space-y-6"
+      :schema="localizeFormSchema(oidcFormSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="save"
+    >
       <UAlert
         v-if="config?.clientSecretConfigured && !config.secretDecryptable"
         color="error"
@@ -56,15 +63,15 @@
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
-        <UFormField :label="$t('settings.oidc.providerName')">
+        <UFormField name="providerName" :label="$t('settings.oidc.providerName')">
           <UInput v-model="form.providerName" class="w-full" :disabled="saving" />
         </UFormField>
-        <UFormField :label="$t('settings.oidc.clientId')" required>
+        <UFormField name="clientId" :label="$t('settings.oidc.clientId')" required>
           <UInput v-model="form.clientId" class="w-full" autocomplete="off" :disabled="saving" />
         </UFormField>
       </div>
 
-      <UFormField :help="$t('settings.oidc.issuerHelp')" :label="$t('settings.oidc.issuer')" required>
+      <UFormField name="issuer" :help="$t('settings.oidc.issuerHelp')" :label="$t('settings.oidc.issuer')" required>
         <UInput
           v-model="form.issuer"
           class="w-full"
@@ -73,7 +80,7 @@
         />
       </UFormField>
 
-      <UFormField :help="$t('settings.oidc.callbackHelp')" :label="$t('settings.oidc.callbackUrl')">
+      <UFormField name="callbackUrl" :help="$t('settings.oidc.callbackHelp')" :label="$t('settings.oidc.callbackUrl')">
         <UInput class="w-full font-mono" :model-value="config?.callbackUrl" readonly>
           <template #trailing>
             <UButton
@@ -89,7 +96,7 @@
         </UInput>
       </UFormField>
 
-      <UFormField :help="secretHelp" :label="$t('settings.oidc.clientSecret')">
+      <UFormField name="clientSecret" :help="secretHelp" :label="$t('settings.oidc.clientSecret')">
         <UInput
           v-model="form.clientSecret"
           class="w-full"
@@ -104,21 +111,25 @@
         :label="$t('settings.oidc.clearSecret')"
       />
 
-      <UFormField :help="$t('settings.oidc.scopesHelp')" :label="$t('settings.oidc.scopes')">
+      <UFormField name="scopes" :help="$t('settings.oidc.scopesHelp')" :label="$t('settings.oidc.scopes')">
         <UInput v-model="form.scopes" class="w-full" :disabled="saving" />
       </UFormField>
-      <UFormField :help="$t('settings.oidc.groupsClaimHelp')" :label="$t('settings.oidc.groupsClaim')">
+      <UFormField
+        name="groupsClaim"
+        :help="$t('settings.oidc.groupsClaimHelp')"
+        :label="$t('settings.oidc.groupsClaim')"
+      >
         <UInput v-model="form.groupsClaim" class="w-full" :disabled="saving" />
       </UFormField>
 
       <div class="grid gap-4 lg:grid-cols-3">
-        <UFormField :label="$t('settings.oidc.systemAdministratorGroups')">
+        <UFormField name="systemAdministratorGroups" :label="$t('settings.oidc.systemAdministratorGroups')">
           <UTextarea v-model="form.systemAdministratorGroups" class="w-full" :disabled="saving" :rows="4" />
         </UFormField>
-        <UFormField :label="$t('settings.oidc.managerGroups')">
+        <UFormField name="managerGroups" :label="$t('settings.oidc.managerGroups')">
           <UTextarea v-model="form.managerGroups" class="w-full" :disabled="saving" :rows="4" />
         </UFormField>
-        <UFormField :label="$t('settings.oidc.viewerGroups')">
+        <UFormField name="viewerGroups" :label="$t('settings.oidc.viewerGroups')">
           <UTextarea v-model="form.viewerGroups" class="w-full" :disabled="saving" :rows="4" />
         </UFormField>
       </div>
@@ -172,12 +183,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { localizeFormSchema } from '@repovio/schemas';
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiUpdateOidcConfigSchema } from '@repovio/schemas';
+import { computed, onMounted, reactive, ref, useTemplateRef } from 'vue';
+import { z } from 'zod';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import type { OidcCheckResult, OidcConfig, UpdateOidcConfig } from '~/types/api/auth';
 
 const api = useRepovioApi();
+const oidcForm = useTemplateRef('oidcForm');
 const { t } = useI18n();
 const toast = useToast();
 const config = ref<OidcConfig | null>(null);
@@ -204,6 +220,67 @@ const form = reactive({
   systemAdministratorGroups: '',
   viewerGroups: '',
 });
+/** Editable text values are normalized into the shared OIDC request contract before submission. */
+const oidcFormBaseSchema = ApiUpdateOidcConfigSchema.pick({
+  allowHttpIssuer: true,
+  allowUnmatchedViewer: true,
+  clientSecretClear: true,
+  enabled: true,
+}).extend({
+  allowHttpIssuer: z.boolean(),
+  allowUnmatchedViewer: z.boolean(),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  clientSecretClear: z.boolean(),
+  enabled: z.boolean(),
+  groupsClaim: z.string(),
+  issuer: z.string(),
+  managerGroups: z.string(),
+  providerName: z.string(),
+  scopes: z.string(),
+  systemAdministratorGroups: z.string(),
+  viewerGroups: z.string(),
+});
+type OidcForm = z.output<typeof oidcFormBaseSchema>;
+const oidcFormSchema = computed(() =>
+  oidcFormBaseSchema.superRefine((data, context) => {
+    const fail = (path: string): void =>
+      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
+    const parsed = ApiUpdateOidcConfigSchema.safeParse(oidcInput(data));
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) fail(String(issue.path[0] ?? 'issuer'));
+    }
+    if (data.enabled) {
+      if (!data.clientId.trim()) fail('clientId');
+      if (!data.issuer.trim()) fail('issuer');
+    }
+    if (data.issuer.trim()) {
+      const issuer = z.url({ protocol: data.allowHttpIssuer ? /^https?$/ : /^https$/ }).safeParse(data.issuer.trim());
+      if (!issuer.success) fail('issuer');
+    }
+  }),
+);
+
+/** Build the write-only request without sending an unchanged stored client secret. */
+function oidcInput(data: OidcForm): UpdateOidcConfig {
+  const input: UpdateOidcConfig = {
+    allowHttpIssuer: data.allowHttpIssuer,
+    allowUnmatchedViewer: data.allowUnmatchedViewer,
+    clientId: data.clientId.trim() || null,
+    enabled: data.enabled,
+    groupsClaim: data.groupsClaim.trim(),
+    issuer: data.issuer.trim() || null,
+    managerGroups: lines(data.managerGroups),
+    providerName: data.providerName.trim() || null,
+    scopes: data.scopes.split(/\s+/).filter(Boolean),
+    systemAdministratorGroups: lines(data.systemAdministratorGroups),
+    viewerGroups: lines(data.viewerGroups),
+  };
+  if (data.clientSecretClear) input.clientSecretClear = true;
+  else if (data.clientSecret) input.clientSecret = data.clientSecret;
+  return input;
+}
+
 const serialized = computed(() => JSON.stringify(form));
 const dirty = computed(() => serialized.value !== baseline.value);
 const secretHelp = computed(() =>
@@ -256,26 +333,12 @@ async function load(): Promise<void> {
   }
 }
 
-async function save(): Promise<void> {
+async function save(event: FormSubmitEvent<OidcForm>): Promise<void> {
   saving.value = true;
   saveError.value = false;
   saved.value = false;
   checkResult.value = null;
-  const input: UpdateOidcConfig = {
-    allowHttpIssuer: form.allowHttpIssuer,
-    allowUnmatchedViewer: form.allowUnmatchedViewer,
-    clientId: form.clientId.trim() || null,
-    enabled: form.enabled,
-    groupsClaim: form.groupsClaim.trim(),
-    issuer: form.issuer.trim() || null,
-    managerGroups: lines(form.managerGroups),
-    providerName: form.providerName.trim() || null,
-    scopes: form.scopes.split(/\s+/).filter(Boolean),
-    systemAdministratorGroups: lines(form.systemAdministratorGroups),
-    viewerGroups: lines(form.viewerGroups),
-  };
-  if (form.clientSecretClear) input.clientSecretClear = true;
-  else if (form.clientSecret) input.clientSecret = form.clientSecret;
+  const input = oidcInput(event.data);
   try {
     apply((await api.oidc.update(input)).data);
     saved.value = true;
@@ -287,6 +350,7 @@ async function save(): Promise<void> {
 }
 
 async function check(): Promise<void> {
+  if (!(await oidcForm.value?.validate({ silent: true }))) return;
   checking.value = true;
   checkResult.value = null;
   try {

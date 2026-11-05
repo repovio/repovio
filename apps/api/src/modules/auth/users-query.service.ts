@@ -1,10 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import {
-  QueryService,
-  createCaslAccessibleWhere,
-  type BaseDelegateTypeMap,
-  type QueryOptionsMap,
-} from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
+import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -77,6 +73,9 @@ export class UsersQueryService extends QueryService<
    * @returns Query Kit options with explicit relation loading and stable default sorting.
    */
   toQueryOptions(query: UserQueryDto): QueryOptionsMap<UserTypeMap>['query'] {
-    return { ...query, orderBy: query.orderBy ?? [{ username: 'asc' }, { id: 'asc' }] };
+    return {
+      ...query,
+      orderBy: query.orderBy ?? [{ username: 'asc' }, { id: 'asc' }],
+    } as QueryOptionsMap<UserTypeMap>['query'];
   }
 }

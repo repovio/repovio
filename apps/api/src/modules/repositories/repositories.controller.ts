@@ -14,14 +14,21 @@ import {
 } from '@nestjs/common';
 import { ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
-  ApiErrorResponses,
-  ApiPaginatedResponse,
-  ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+  ApiCreateWorkflowFilterSchema,
+  ApiRepositoryMembershipSchema,
+  ApiRepositorySchema,
+  ApiSetRepositoryWebhookSecretSchema,
+  ApiUpdateRepositorySchema,
+  ApiUpsertRepositoryMembershipSchema,
+  ApiWorkflowFilterSchema,
+} from '@repovio/schemas';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { SchemaResponse } from '../../util/resource-contract.js';
+import { createZodDto } from '../../util/schema-dto.js';
+
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ApiErrorResponses, ApiPaginatedResponse, ApiResourceQuery } from '../../util/resource-contract.js';
 
 import { ENV } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -39,29 +46,13 @@ import {
 import { RepositoriesQueryService } from './repositories-query.service.js';
 import { RepositoryConfigurationService } from './repository-configuration.service.js';
 
-export class UpdateRepositoryDto {
-  @IsOptional() @IsBoolean() enabled?: boolean;
-  @IsOptional() @IsInt() @Min(1) @Max(3650) issueRetentionDays?: number | null;
-  @IsOptional() @IsInt() @Min(1) @Max(3650) pullRequestRetentionDays?: number | null;
-  @IsOptional() @IsInt() @Min(1) @Max(3650) workflowRunRetentionDays?: number | null;
-}
+export class UpdateRepositoryDto extends createZodDto(ApiUpdateRepositorySchema) {}
 
-class CreateWorkflowFilterDto {
-  @IsEnum(['ALLOW', 'DENY']) mode!: 'ALLOW' | 'DENY';
-  @IsString() @MaxLength(1024) pattern!: string;
-}
+class CreateWorkflowFilterDto extends createZodDto(ApiCreateWorkflowFilterSchema) {}
 
-class UpsertRepositoryMembershipDto {
-  @IsEnum(['VIEWER', 'MANAGER']) role!: 'VIEWER' | 'MANAGER';
-}
+class UpsertRepositoryMembershipDto extends createZodDto(ApiUpsertRepositoryMembershipSchema) {}
 
-class SetRepositoryWebhookSecretDto {
-  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
-  @IsString()
-  @MinLength(1)
-  @MaxLength(4096)
-  webhookSecret!: string;
-}
+class SetRepositoryWebhookSecretDto extends createZodDto(ApiSetRepositoryWebhookSecretSchema) {}
 
 const repositoryFieldSchema = {
   enabled: true,
@@ -107,7 +98,7 @@ export class RepositoriesController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Tracked repositories.', model: RepositoryDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid repository query.' })
-  async query(@Req() request: { user: AuthenticatedUser }, @Query(new QueryTransformPipe()) query: RepositoryQueryDto) {
+  async query(@Req() request: { user: AuthenticatedUser }, @Query() query: RepositoryQueryDto) {
     const ability = await this.repositories.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
@@ -137,6 +128,7 @@ export class RepositoriesController {
    * @returns Webhook setup metadata without signing secrets.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @ZodSerializerDto([RepositoryWebhookConfigurationDto])
   @Get('webhook-configurations')
   @ApiOkResponse({ type: RepositoryWebhookConfigurationDto, isArray: true })
   async webhookConfigurations(
@@ -153,6 +145,7 @@ export class RepositoriesController {
    * @returns The safe detail DTO for the visible resource.
    * @throws NotFoundException - When the resource is missing or not visible to the authenticated user.
    */
+  @ZodSerializerDto(RepositoryDetailDto)
   @Get(':id')
   @ApiOkResponse({ type: RepositoryDetailDto })
   async findById(@Req() request: { user: AuthenticatedUser }, @Param('id') id: string): Promise<RepositoryDetailDto> {
@@ -192,6 +185,7 @@ export class RepositoriesController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws NotFoundException - Repository not found.
    */
+  @SchemaResponse(z.array(ApiWorkflowFilterSchema))
   @Get(':id/workflow-filters')
   async listWorkflowFilters(
     @Req() request: { user: AuthenticatedUser },
@@ -213,6 +207,7 @@ export class RepositoriesController {
    * @throws NotFoundException - Repository not found.
    * @throws BadRequestException - Workflow filter patterns must not be empty. Workflow filter pattern is invalid.
    */
+  @SchemaResponse(ApiWorkflowFilterSchema)
   @Post(':id/workflow-filters')
   async createWorkflowFilter(
     @Req() request: { user: AuthenticatedUser },
@@ -251,6 +246,7 @@ export class RepositoriesController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws NotFoundException - Repository not found.
    */
+  @SchemaResponse(z.array(ApiRepositoryMembershipSchema))
   @Get(':id/memberships')
   async listMemberships(
     @Req() request: { user: AuthenticatedUser },
@@ -272,6 +268,7 @@ export class RepositoriesController {
    * @throws NotFoundException - User not found.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @SchemaResponse(ApiRepositoryMembershipSchema)
   @Put(':id/memberships/:userId')
   async upsertMembership(
     @Req() request: { user: AuthenticatedUser },
@@ -314,6 +311,7 @@ export class RepositoriesController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws NotFoundException - Repository not found.
    */
+  @ZodSerializerDto(RepositoryWebhookConfigurationDto)
   @Put(':id/webhook-configuration')
   @ApiOkResponse({ type: RepositoryWebhookConfigurationDto })
   async setWebhookSecret(
@@ -352,7 +350,9 @@ export class RepositoriesController {
    * @returns The updated resource projected into its public representation.
    * @throws ForbiddenException - System administrator access is required.
    */
-  @Patch(':id') async update(
+  @SchemaResponse(ApiRepositorySchema)
+  @Patch(':id')
+  async update(
     @Req() request: { user: AuthenticatedUser },
     @Param('id') id: string,
     @Body() body: UpdateRepositoryDto,

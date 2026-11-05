@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  QueryService,
-  createCaslAccessibleWhere,
-  type BaseDelegateTypeMap,
-  type QueryOptionsMap,
-} from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
+import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -121,7 +117,7 @@ export class WorkflowRunsQueryService extends QueryService<
       ...options,
       where: searchWhere ? { AND: [where ?? {}, searchWhere] } : where,
       orderBy: query.orderBy ?? [{ providerCreatedAt: 'desc' }, { id: 'desc' }],
-    };
+    } as QueryOptionsMap<WorkflowRunTypeMap>['query'];
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Body, Controller, ForbiddenException, Get, Patch, Req } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -23,6 +24,7 @@ export class SettingsController {
    *
    * @returns The current persisted application settings or their defaults.
    */
+  @ZodSerializerDto(ApplicationSettingsDto)
   @Get()
   @ApiOperation({ summary: 'Get global application settings' })
   @ApiOkResponse({ type: ApplicationSettingsDto })
@@ -38,6 +40,7 @@ export class SettingsController {
    * @returns The persisted application settings.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @ZodSerializerDto(ApplicationSettingsDto)
   @Patch()
   @ApiOperation({ summary: 'Update global application settings' })
   @ApiOkResponse({ type: ApplicationSettingsDto })

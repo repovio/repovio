@@ -1,14 +1,5 @@
-import { QueryDTO } from '@querry-kit/nest';
-import { Transform } from 'class-transformer';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
-
-import type { RepositoryTypeMap } from '../repositories-query.service.js';
+import { ApiRepositoryQuerySchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
 /** Paginated Query Kit request for repository administration. */
-export class RepositoryQueryDto extends QueryDTO<RepositoryTypeMap> {
-  @IsOptional()
-  @IsString()
-  @MaxLength(1024)
-  @Transform(({ value }: { value: string }) => value.trim())
-  search?: string;
-}
+export class RepositoryQueryDto extends createZodDto(ApiRepositoryQuerySchema) {}

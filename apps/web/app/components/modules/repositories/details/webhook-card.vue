@@ -78,15 +78,20 @@
         :title="$t('repositories.webhook.providerSetup')"
       />
 
-      <UForm class="space-y-4" :state="form" @submit="save">
+      <UForm
+        class="space-y-4"
+        :schema="localizeFormSchema(webhookFormSchema, $t('forms.invalidValue'))"
+        :state="form"
+        @submit="save"
+      >
         <UFormField
-          name="secret"
+          name="webhookSecret"
           :help="$t('repositories.webhook.secretHelp')"
           :label="$t('repositories.webhook.secret')"
           required
         >
           <UInput
-            v-model="form.secret"
+            v-model="form.webhookSecret"
             autocomplete="new-password"
             class="w-full font-mono"
             :type="revealSecret ? 'text' : 'password'"
@@ -107,9 +112,9 @@
                   size="xs"
                   variant="ghost"
                   :aria-label="$t('repositories.webhook.copySecret')"
-                  :disabled="!form.secret"
+                  :disabled="!form.webhookSecret"
                   :icon="secretCopied ? 'i-lucide-check' : 'i-lucide-copy'"
-                  @click="copy(form.secret, 'secret')"
+                  @click="copy(form.webhookSecret, 'secret')"
                 />
               </div>
             </template>
@@ -166,7 +171,10 @@
 </template>
 
 <script setup lang="ts">
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiSetRepositoryWebhookSecretSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, reactive, ref, watch } from 'vue';
+import { z } from 'zod';
 
 import { defineEmits, defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -185,7 +193,19 @@ const { t } = useI18n();
 const api = useRepovioApi();
 const toast = useToast();
 const { formatDateTime } = useDateTime();
-const form = reactive({ secret: '' });
+const form = reactive({ webhookSecret: '' });
+const webhookFormSchema = computed(() =>
+  z.object({ webhookSecret: z.string() }).transform((data, context) => {
+    const parsed = ApiSetRepositoryWebhookSecretSchema.safeParse(data);
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
+      }
+      return z.NEVER;
+    }
+    return parsed.data;
+  }),
+);
 const revealSecret = ref(false);
 const rotationConfirmed = ref(false);
 const saveError = ref(false);
@@ -196,7 +216,10 @@ const secretCopied = ref(false);
 const urlCopied = ref(false);
 const busy = computed(() => saving.value || removing.value);
 const canSave = computed(
-  () => !busy.value && form.secret.trim().length > 0 && (!props.configuration?.configured || rotationConfirmed.value),
+  () =>
+    !busy.value &&
+    form.webhookSecret.trim().length > 0 &&
+    (!props.configuration?.configured || rotationConfirmed.value),
 );
 const lastDelivery = computed(() =>
   props.configuration?.lastDeliveryAt
@@ -214,7 +237,7 @@ watch(() => props.repositoryId, resetSensitiveState);
 /** Create a high-entropy Base64 signing secret without contacting the server. */
 function generateSecret(): void {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  form.secret = btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''));
+  form.webhookSecret = btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''));
   revealSecret.value = true;
   saved.value = false;
   secretCopied.value = false;
@@ -232,13 +255,13 @@ async function copy(value: string, target: 'secret' | 'url'): Promise<void> {
 }
 
 /** Encrypt and persist a newly configured or rotated repository signing secret. */
-async function save(): Promise<void> {
+async function save(event: FormSubmitEvent<z.output<typeof ApiSetRepositoryWebhookSecretSchema>>): Promise<void> {
   if (!canSave.value) return;
   saving.value = true;
   saveError.value = false;
   saved.value = false;
   try {
-    const { data } = await api.repositories.setWebhookSecret(props.repositoryId, form.secret.trim());
+    const { data } = await api.repositories.setWebhookSecret(props.repositoryId, event.data.webhookSecret);
     saved.value = true;
     rotationConfirmed.value = false;
     emit('updated', data);
@@ -268,7 +291,7 @@ async function remove(): Promise<void> {
 
 /** Remove plaintext secret material and transient UI state. */
 function resetSensitiveState(): void {
-  form.secret = '';
+  form.webhookSecret = '';
   revealSecret.value = false;
   rotationConfirmed.value = false;
   saveError.value = false;

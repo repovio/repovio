@@ -1,10 +1,11 @@
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { GiteaActionsAdapter, GiteaActionsUnsupportedError } from './gitea-actions.adapter.js';
 
-const fixtureDirectory = resolve(__dirname, 'fixtures');
+const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
 
 function readFixture(name: string): unknown {
   return JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));

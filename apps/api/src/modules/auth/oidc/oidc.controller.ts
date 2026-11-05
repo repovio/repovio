@@ -12,7 +12,14 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import {
+  ApiOidcCheckSchema,
+  ApiOidcConfigSchema,
+  ApiOidcStatusSchema,
+  OidcExchangeResultSchema,
+} from '@repovio/schemas';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { SchemaResponse } from '../../../util/resource-contract.js';
 
 import { ENV } from '../../../config/env.js';
 import { Authenticated } from '../authenticated.decorator.js';
@@ -39,6 +46,7 @@ export class OidcController {
    *
    * @returns Public effective OIDC availability.
    */
+  @SchemaResponse(ApiOidcStatusSchema)
   @Get('status')
   status(): Promise<OidcStatusDto> {
     return this.oidc.status();
@@ -55,26 +63,26 @@ export class OidcController {
    */
   @Get('start')
   async start(
-    @Req() request: Request,
-    @Res() response: Response,
+    @Req() request: FastifyRequest,
+    @Res() response: FastifyReply,
     @Query('return_to') returnTo?: string,
   ): Promise<void> {
-    response.setHeader('Cache-Control', 'no-store');
+    response.header('Cache-Control', 'no-store');
     try {
       const result = await this.oidc.begin(this.readCookie(request, bindingCookie), returnTo);
       if (result.bindingIsNew) {
-        response.cookie(bindingCookie, result.bindingValue, {
+        response.setCookie(bindingCookie, result.bindingValue, {
           httpOnly: true,
-          maxAge: 24 * 60 * 60 * 1000,
+          maxAge: 24 * 60 * 60,
           path: callbackPath,
           sameSite: 'lax',
           secure: ENV.OIDC_CALLBACK_URL.startsWith('https://'),
         });
       }
-      response.redirect(302, result.redirectUrl);
+      response.redirect(result.redirectUrl, 302);
     } catch (error) {
       if (error instanceof HttpException && error.getStatus() === 429) throw error;
-      response.redirect(302, this.webCallback('error', 'oidc_unavailable'));
+      response.redirect(this.webCallback('error', 'oidc_unavailable'), 302);
     }
   }
 
@@ -86,24 +94,24 @@ export class OidcController {
    * @returns Nothing after sending the redirect.
    */
   @Get('callback')
-  async callback(@Req() request: Request, @Res() response: Response): Promise<void> {
-    response.setHeader('Cache-Control', 'no-store');
-    const url = new URL(request.originalUrl, ENV.OIDC_CALLBACK_URL);
+  async callback(@Req() request: FastifyRequest, @Res() response: FastifyReply): Promise<void> {
+    response.header('Cache-Control', 'no-store');
+    const url = new URL(request.url, ENV.OIDC_CALLBACK_URL);
     for (const key of ['code', 'state', 'error', 'error_description', 'iss']) {
       if (url.searchParams.getAll(key).length > 1) {
-        response.redirect(302, this.webCallback('error', 'oidc_invalid_request'));
+        response.redirect(this.webCallback('error', 'oidc_invalid_request'), 302);
         return;
       }
     }
     if (url.search.length > 8_192 || (url.searchParams.get('code')?.length ?? 0) > 4_096) {
-      response.redirect(302, this.webCallback('error', 'oidc_invalid_request'));
+      response.redirect(this.webCallback('error', 'oidc_invalid_request'), 302);
       return;
     }
     try {
       const result = await this.oidc.callback(url.searchParams, this.readCookie(request, bindingCookie));
-      response.redirect(302, this.webCallback(result.code ? 'code' : 'error', result.code ?? result.error!));
+      response.redirect(this.webCallback(result.code ? 'code' : 'error', result.code ?? result.error!), 302);
     } catch {
-      response.redirect(302, this.webCallback('error', 'oidc_unavailable'));
+      response.redirect(this.webCallback('error', 'oidc_unavailable'), 302);
     }
   }
 
@@ -113,6 +121,7 @@ export class OidcController {
    * @param input - Validated one-time exchange code.
    * @returns The normal authentication result and internal return path.
    */
+  @SchemaResponse(OidcExchangeResultSchema)
   @Post('exchange')
   @HttpCode(200)
   exchange(@Body() input: OidcExchangeDto): Promise<OidcExchangeResult> {
@@ -125,6 +134,7 @@ export class OidcController {
    * @param request - Authenticated administrator request.
    * @returns The secret-free OIDC configuration.
    */
+  @SchemaResponse(ApiOidcConfigSchema)
   @Get('config')
   @Authenticated()
   config(@Req() request: { user: AuthenticatedUser }): Promise<OidcConfigDto> {
@@ -139,6 +149,7 @@ export class OidcController {
    * @param input - Validated configuration changes.
    * @returns The updated secret-free OIDC configuration.
    */
+  @SchemaResponse(ApiOidcConfigSchema)
   @Put('config')
   @Authenticated()
   updateConfig(
@@ -155,6 +166,7 @@ export class OidcController {
    * @param request - Authenticated administrator request.
    * @returns Safe discovery compatibility details.
    */
+  @SchemaResponse(ApiOidcCheckSchema)
   @Post('check')
   @HttpCode(200)
   @Authenticated()
@@ -181,7 +193,7 @@ export class OidcController {
    * @param name - Exact cookie name.
    * @returns The decoded cookie value when present.
    */
-  private readCookie(request: Request, name: string): string | undefined {
+  private readCookie(request: FastifyRequest, name: string): string | undefined {
     const pair = request.headers.cookie
       ?.split(';')
       .map((value) => value.trim().split('='))

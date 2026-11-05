@@ -1,11 +1,4 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiUpdatePasswordSchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
-export class UpdatePasswordDto {
-  @IsString()
-  currentPassword!: string;
-
-  @IsString()
-  @MinLength(12)
-  @MaxLength(256)
-  newPassword!: string;
-}
+export class UpdatePasswordDto extends createZodDto(ApiUpdatePasswordSchema) {}

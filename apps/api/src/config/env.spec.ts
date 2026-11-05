@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { loadEnvironment } from './environment.js';
 
@@ -55,7 +56,10 @@ describe('environment configuration', () => {
   });
 
   it('uses deliberately unusable secret placeholders in the environment template', () => {
-    const template = readFileSync(resolve(__dirname, '../../../../.env.example'), 'utf8');
+    const template = readFileSync(
+      resolve(fileURLToPath(new URL('.', import.meta.url)), '../../../../.env.example'),
+      'utf8',
+    );
 
     expect(template).toContain('POSTGRES_PASSWORD=replace-with-a-unique-postgresql-password');
     expect(template).not.toContain('INITIAL_ADMIN_PASSWORD');

@@ -151,7 +151,8 @@ auditable justification in GitHub.
 
 ## Architecture
 
-- `apps/api`: NestJS, Prisma, PostgreSQL, CASL, and `@querry-kit/nest`.
+- `apps/api`: NestJS with Fastify, Prisma, PostgreSQL, CASL, and the Query Kit core/Zod integrations.
+- `libs/schemas`: shared Zod request, query, response, and form contracts; no server dependencies.
 - `/mcp`: permission-aware, read-only MCP v2 endpoint using user-owned bearer tokens.
 - `apps/web`: Nuxt 4 SPA, Pinia, Nuxt UI, and `@querry-kit/nuxt`.
 - [Documentation](https://repovio.de/docs/): deployment, MCP access, providers, notifications, repositories, and localization.
@@ -159,6 +160,11 @@ auditable justification in GitHub.
 - [GitHub Issues](https://github.com/repovio/repovio/issues): ordered
   implementation epics and tasks.
 - `AGENTS.md`: repository-specific instructions for coding agents.
+
+Schema changes belong in `libs/schemas`; API DTO classes are thin Nest metadata bridges. Use inferred schema types in
+clients and derive form schemas from the request contract. Keep UI-only fields out of request payloads. Public mapping
+functions normalize dates to ISO strings before response validation and retain CASL filtering and field projection.
+Application scripts build the schema package before starting, testing, typechecking, or building either application.
 
 ## Development toolchain
 

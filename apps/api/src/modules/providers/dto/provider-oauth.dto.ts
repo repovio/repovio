@@ -1,14 +1,8 @@
-import { IsEnum, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { ApiProviderOAuthCallbackSchema, ApiStartProviderOAuthSchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
 /** Payload used to start a provider OAuth authorization. */
-export class StartProviderOAuthDto {
-  @IsEnum(['GITHUB', 'GITLAB', 'FORGEJO']) providerType!: 'GITHUB' | 'GITLAB' | 'FORGEJO';
-
-  @IsString() @MaxLength(255) displayName!: string;
-
-  /** Optional base URL used for this provider account after authorization completes. */
-  @IsOptional() @IsUrl() baseUrl?: string;
-}
+export class StartProviderOAuthDto extends createZodDto(ApiStartProviderOAuthSchema) {}
 
 /** A browser destination returned when an OAuth authorization is started. */
 export interface ProviderOAuthAuthorizationDto {
@@ -16,14 +10,4 @@ export interface ProviderOAuthAuthorizationDto {
 }
 
 /** Query parameters returned by an OAuth provider after an authorization attempt. */
-export class ProviderOAuthCallbackDto {
-  @IsString() @MaxLength(4096) state!: string;
-
-  @IsOptional() @IsString() @MaxLength(4096) code?: string;
-
-  @IsOptional() @IsString() @MaxLength(255) error?: string;
-
-  @IsOptional() @IsString() @MaxLength(4096) error_description?: string;
-
-  @IsOptional() @IsString() @MaxLength(4096) error_uri?: string;
-}
+export class ProviderOAuthCallbackDto extends createZodDto(ApiProviderOAuthCallbackSchema) {}

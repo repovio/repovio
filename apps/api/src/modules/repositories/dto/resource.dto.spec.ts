@@ -1,5 +1,6 @@
-import { Fields, buildFieldSchemaFromDto } from '@querry-kit/nest';
+import { Fields } from '@querry-kit/nest/core';
 import type { ProviderAccount, Repository } from '../../../generated/prisma/client.js';
+import { resourceFields } from '../../../util/resource-contract.js';
 import { ProviderAccountDto, RepositoryDto, WorkflowRunDto, type WorkflowRunResourceModel } from './resource.dto.js';
 
 describe('resource DTO mappings', () => {
@@ -32,7 +33,7 @@ describe('resource DTO mappings', () => {
   });
 
   it('allows Query Kit to project every provider-table field', () => {
-    const schema = buildFieldSchemaFromDto(ProviderAccountDto);
+    const schema = resourceFields(ProviderAccountDto);
 
     expect(schema).toEqual({
       baseUrl: true,
@@ -46,7 +47,7 @@ describe('resource DTO mappings', () => {
   });
 
   it('allows Query Kit to project every repository-table field', () => {
-    const schema = buildFieldSchemaFromDto(RepositoryDto);
+    const schema = resourceFields(RepositoryDto);
 
     expect(
       Fields.parseAndValidate(
@@ -86,7 +87,7 @@ describe('resource DTO mappings', () => {
         {
           userId: 'user-1',
           user: {
-            avatar: { updatedAt: new Date('2026-09-12T10:00:00.000Z') },
+            avatar: { updatedAt: '2026-09-12T10:00:00.000Z' },
             firstName: 'Vera',
             lastName: 'Viewer',
             username: 'viewer',
@@ -110,7 +111,7 @@ describe('resource DTO mappings', () => {
       issueRetentionDays: 14,
       members: [
         {
-          avatarUpdatedAt: new Date('2026-09-12T10:00:00.000Z'),
+          avatarUpdatedAt: '2026-09-12T10:00:00.000Z',
           firstName: 'Vera',
           lastName: 'Viewer',
           userId: 'user-1',
@@ -125,7 +126,7 @@ describe('resource DTO mappings', () => {
   });
 
   it('allows Query Kit to project every workflow-run table field', () => {
-    const schema = buildFieldSchemaFromDto(WorkflowRunDto);
+    const schema = resourceFields(WorkflowRunDto);
 
     expect(
       Fields.parseAndValidate(

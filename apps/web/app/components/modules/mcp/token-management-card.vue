@@ -95,7 +95,13 @@
           <UButton color="neutral" variant="soft" :label="$t('mcp.done')" @click="closeCreateDialog" />
         </div>
       </div>
-      <UForm v-else class="space-y-4" :state="form" @submit="createToken">
+      <UForm
+        v-else
+        class="space-y-4"
+        :schema="localizeFormSchema(mcpTokenFormSchema, $t('forms.invalidValue'))"
+        :state="form"
+        @submit="createToken"
+      >
         <UFormField name="name" :label="$t('mcp.name')" required>
           <UInput v-model="form.name" class="w-full" maxlength="100" :placeholder="$t('mcp.namePlaceholder')" />
         </UFormField>
@@ -111,7 +117,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiCreateMcpAccessTokenSchema, localizeFormSchema } from '@repovio/schemas';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { z } from 'zod';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
@@ -130,6 +139,23 @@ const createdToken = ref('');
 const copied = ref(false);
 const revokingId = ref<string>();
 const form = reactive({ expiresAt: '', name: '' });
+const mcpTokenFormSchema = computed(() =>
+  z.object({ expiresAt: z.string(), name: z.string() }).transform((data, context) => {
+    const expiration = data.expiresAt ? new Date(data.expiresAt) : null;
+    const parsed = ApiCreateMcpAccessTokenSchema.safeParse({
+      expiresAt:
+        expiration && Number.isFinite(expiration.getTime()) ? expiration.toISOString() : data.expiresAt || null,
+      name: data.name,
+    });
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
+      }
+      return z.NEVER;
+    }
+    return parsed.data;
+  }),
+);
 
 watch(createDialogOpen, (open) => {
   if (!open) return;
@@ -161,14 +187,11 @@ async function load(): Promise<void> {
   }
 }
 
-async function createToken(): Promise<void> {
+async function createToken(event: FormSubmitEvent<z.output<typeof ApiCreateMcpAccessTokenSchema>>): Promise<void> {
   creating.value = true;
   createError.value = false;
   try {
-    const { data } = await api.mcpTokens.create({
-      expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
-      name: form.name.trim(),
-    });
+    const { data } = await api.mcpTokens.create(event.data);
     createdToken.value = data.token;
     await load();
   } catch {

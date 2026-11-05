@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PageMetaDTO } from '@querry-kit/nest';
+import { PageMeta } from '@querry-kit/nest/core';
 
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -63,7 +63,7 @@ export class RepositorySyncJobsService {
     ]);
     return {
       items: (repositories as RepositorySyncJobModel[]).map(RepositorySyncJobDto.fromModel),
-      meta: new PageMetaDTO({ itemCount, pageOptions: query }),
+      meta: new PageMeta({ itemCount, pageOptions: query }),
     };
   }
 

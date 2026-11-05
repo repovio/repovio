@@ -1,10 +1,11 @@
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { ForgejoActionsAdapter, ForgejoActionsUnsupportedError } from './forgejo-actions.adapter.js';
 
-const fixtureDirectory = resolve(__dirname, 'fixtures');
+const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
 const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));
 
 describe('ForgejoActionsAdapter', () => {

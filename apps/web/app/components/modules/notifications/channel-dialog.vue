@@ -14,26 +14,32 @@
         variant="subtle"
         :title="$t('notifications.channels.saveError')"
       />
-      <UForm class="space-y-5" :state="form" @submit="save">
+      <UForm
+        ref="channelForm"
+        class="space-y-5"
+        :schema="localizeFormSchema(channelFormSchema, $t('forms.invalidValue'))"
+        :state="form"
+        @submit="save"
+      >
         <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField :label="$t('notifications.fields.name')" required>
+          <UFormField name="name" :label="$t('notifications.fields.name')" required>
             <UInput v-model="form.name" class="w-full" />
           </UFormField>
-          <UFormField :label="$t('notifications.fields.type')" required>
+          <UFormField name="type" :label="$t('notifications.fields.type')" required>
             <USelect v-model="form.type" class="w-full" :disabled="Boolean(channel)" :items="typeOptions" />
           </UFormField>
-          <UFormField :label="$t('notifications.fields.enabled')">
+          <UFormField name="enabled" :label="$t('notifications.fields.enabled')">
             <USwitch v-model="form.enabled" />
           </UFormField>
         </div>
 
         <UCheckbox
           v-if="channel && form.type !== 'BROWSER_PUSH'"
-          v-model="replaceConfiguration"
+          v-model="form.replaceConfiguration"
           :label="$t('notifications.channels.replaceConfiguration')"
         />
         <UAlert
-          v-if="channel && form.type !== 'BROWSER_PUSH' && !replaceConfiguration"
+          v-if="channel && form.type !== 'BROWSER_PUSH' && !form.replaceConfiguration"
           color="neutral"
           variant="subtle"
           :description="$t('notifications.channels.secretPreserved')"
@@ -42,26 +48,26 @@
         <div v-if="showConfiguration" class="space-y-4 rounded-lg border border-default p-4">
           <template v-if="form.type === 'EMAIL'">
             <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField :label="$t('notifications.fields.smtpHost')" required>
+              <UFormField name="smtpHost" :label="$t('notifications.fields.smtpHost')" required>
                 <UInput v-model="form.smtpHost" class="w-full" placeholder="smtp.example.com" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.port')">
+              <UFormField name="port" :label="$t('notifications.fields.port')">
                 <UInput v-model.number="form.port" class="w-full" type="number" min="1" max="65535" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.security')" required>
+              <UFormField name="security" :label="$t('notifications.fields.security')" required>
                 <USelect v-model="form.security" class="w-full" :items="securityOptions" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.from')" required>
+              <UFormField name="from" :label="$t('notifications.fields.from')" required>
                 <UInput v-model="form.from" class="w-full" type="email" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.username')">
+              <UFormField name="username" :label="$t('notifications.fields.username')">
                 <UInput v-model="form.username" autocomplete="username" class="w-full" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.password')">
+              <UFormField name="password" :label="$t('notifications.fields.password')">
                 <UInput v-model="form.password" autocomplete="new-password" class="w-full" type="password" />
               </UFormField>
             </div>
-            <UFormField :label="$t('notifications.fields.recipients')" required>
+            <UFormField name="recipients" :label="$t('notifications.fields.recipients')" required>
               <UTextarea
                 v-model="form.recipients"
                 class="w-full"
@@ -71,14 +77,14 @@
           </template>
 
           <template v-else-if="form.type === 'GOTIFY'">
-            <UFormField :label="$t('notifications.fields.serverUrl')" required>
+            <UFormField name="serverUrl" :label="$t('notifications.fields.serverUrl')" required>
               <UInput v-model="form.serverUrl" class="w-full" type="url" placeholder="https://gotify.example.com" />
             </UFormField>
             <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField :label="$t('notifications.fields.applicationToken')" required>
+              <UFormField name="token" :label="$t('notifications.fields.applicationToken')" required>
                 <UInput v-model="form.token" autocomplete="off" class="w-full" type="password" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.priority')">
+              <UFormField name="priority" :label="$t('notifications.fields.priority')">
                 <USelect v-model="form.priority" class="w-full" :items="gotifyPriorityOptions" />
               </UFormField>
             </div>
@@ -86,33 +92,39 @@
 
           <template v-else-if="form.type === 'NTFY'">
             <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField :label="$t('notifications.fields.serverUrl')">
+              <UFormField name="serverUrl" :label="$t('notifications.fields.serverUrl')">
                 <UInput v-model="form.serverUrl" class="w-full" type="url" placeholder="https://ntfy.sh" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.topic')" required>
+              <UFormField name="topic" :label="$t('notifications.fields.topic')" required>
                 <UInput v-model="form.topic" class="w-full" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.username')">
+              <UFormField name="username" :label="$t('notifications.fields.username')">
                 <UInput v-model="form.username" autocomplete="username" class="w-full" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.password')">
+              <UFormField name="password" :label="$t('notifications.fields.password')">
                 <UInput v-model="form.password" autocomplete="new-password" class="w-full" type="password" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.accessToken')">
+              <UFormField name="token" :label="$t('notifications.fields.accessToken')">
                 <UInput v-model="form.token" autocomplete="off" class="w-full" type="password" />
               </UFormField>
-              <UFormField :label="$t('notifications.fields.priority')">
+              <UFormField name="ntfyPriority" :label="$t('notifications.fields.priority')">
                 <USelect v-model="form.ntfyPriority" class="w-full" :items="ntfyPriorityOptions" />
               </UFormField>
             </div>
           </template>
 
-          <UFormField v-else-if="form.type === 'DISCORD'" :label="$t('notifications.fields.webhookUrl')" required>
+          <UFormField
+            v-else-if="form.type === 'DISCORD'"
+            name="webhookUrl"
+            :label="$t('notifications.fields.webhookUrl')"
+            required
+          >
             <UInput v-model="form.webhookUrl" autocomplete="off" class="w-full" type="url" />
           </UFormField>
 
           <UFormField
             v-else-if="form.type === 'CUSTOM_APPRISE'"
+            name="appriseUrl"
             :label="$t('notifications.fields.appriseUrl')"
             required
           >
@@ -127,7 +139,12 @@
           variant="subtle"
           :description="$t('notifications.channels.browserOwnerHint')"
         />
-        <UFormField v-if="form.type === 'BROWSER_PUSH'" :label="$t('notifications.fields.browserRecipients')" required>
+        <UFormField
+          v-if="form.type === 'BROWSER_PUSH'"
+          name="browserRecipientUserIds"
+          :label="$t('notifications.fields.browserRecipients')"
+          required
+        >
           <USelectMenu
             v-model="form.browserRecipientUserIds"
             multiple
@@ -137,37 +154,47 @@
           />
         </UFormField>
 
-        <div class="space-y-3 rounded-lg border border-default p-4">
-          <div>
-            <h3 class="font-semibold">{{ $t('notifications.fields.events') }}</h3>
-            <p class="text-sm text-muted">{{ $t('notifications.channels.eventsDescription') }}</p>
-          </div>
-          <div v-for="eventType in eventTypes" :key="eventType" class="space-y-3 rounded-md bg-elevated p-3">
-            <UCheckbox v-model="eventStates[eventType].selected" :label="$t(`notifications.events.${eventType}`)" />
-            <div v-if="eventStates[eventType].selected" class="grid gap-3 pl-7 sm:grid-cols-2">
-              <UFormField :label="$t('notifications.fields.repositoryFilters')">
-                <USelectMenu
-                  v-model="eventStates[eventType].repositoryIds"
-                  multiple
-                  class="w-full"
-                  value-key="value"
-                  :items="repositoryOptions"
-                  :placeholder="$t('notifications.fields.allRepositories')"
-                />
-              </UFormField>
-              <UFormField
-                v-if="eventType.startsWith('WORKFLOW_RUN_')"
-                :label="$t('notifications.fields.workflowPatterns')"
-              >
-                <UInput
-                  v-model="eventStates[eventType].workflowPatterns"
-                  class="w-full"
-                  placeholder="ci-*, release-*"
-                />
-              </UFormField>
+        <UFormField name="eventStates">
+          <div class="space-y-3 rounded-lg border border-default p-4">
+            <div>
+              <h3 class="font-semibold">{{ $t('notifications.fields.events') }}</h3>
+              <p class="text-sm text-muted">{{ $t('notifications.channels.eventsDescription') }}</p>
+            </div>
+            <div v-for="eventType in eventTypes" :key="eventType" class="space-y-3 rounded-md bg-elevated p-3">
+              <UCheckbox
+                v-model="eventStates[eventType].selected"
+                :id="`notification-event-${eventType}`"
+                :label="$t(`notifications.events.${eventType}`)"
+              />
+              <div v-if="eventStates[eventType].selected" class="grid gap-3 pl-7 sm:grid-cols-2">
+                <UFormField
+                  :name="`eventStates.${eventType}.repositoryIds`"
+                  :label="$t('notifications.fields.repositoryFilters')"
+                >
+                  <USelectMenu
+                    v-model="eventStates[eventType].repositoryIds"
+                    multiple
+                    class="w-full"
+                    value-key="value"
+                    :items="repositoryOptions"
+                    :placeholder="$t('notifications.fields.allRepositories')"
+                  />
+                </UFormField>
+                <UFormField
+                  v-if="eventType.startsWith('WORKFLOW_RUN_')"
+                  :name="`eventStates.${eventType}.workflowPatterns`"
+                  :label="$t('notifications.fields.workflowPatterns')"
+                >
+                  <UInput
+                    v-model="eventStates[eventType].workflowPatterns"
+                    class="w-full"
+                    placeholder="ci-*, release-*"
+                  />
+                </UFormField>
+              </div>
             </div>
           </div>
-        </div>
+        </UFormField>
 
         <UAlert
           v-if="previewStatus"
@@ -212,8 +239,12 @@
 </template>
 
 <script setup lang="ts">
+import { localizeFormSchema } from '@repovio/schemas';
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiCreateNotificationChannelSchema, ApiUpdateNotificationChannelSchema } from '@repovio/schemas';
 import { isAxiosError } from 'axios';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, useTemplateRef, watch } from 'vue';
+import { z } from 'zod';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import type {
@@ -237,7 +268,7 @@ const { t } = useI18n();
 const api = useRepovioApi();
 const submitting = ref(false);
 const saveError = ref(false);
-const replaceConfiguration = ref(false);
+const channelForm = useTemplateRef('channelForm');
 const preview = ref<NotificationRulePreview | null>(null);
 const previewStatus = ref<NotificationRulePreview['status'] | 'INSUFFICIENT_PERMISSION' | 'ERROR' | null>(null);
 const previewing = ref(false);
@@ -271,6 +302,8 @@ const form = reactive({
   appriseUrl: '',
   browserRecipientUserIds: [] as string[],
   enabled: true,
+  eventStates,
+  replaceConfiguration: false,
   from: '',
   name: '',
   ntfyPriority: 'default' as 'min' | 'low' | 'default' | 'high' | 'max',
@@ -287,6 +320,105 @@ const form = reactive({
   username: '',
   webhookUrl: '',
 });
+/** Form state keeps editable destination fields separate from the write-only request configuration. */
+const channelFormBaseSchema = ApiCreateNotificationChannelSchema.pick({ name: true, enabled: true }).extend({
+  appriseUrl: z.string(),
+  browserRecipientUserIds: z.array(z.string()),
+  enabled: z.boolean(),
+  eventStates: z.record(
+    z.string(),
+    z.object({
+      repositoryIds: z.array(z.string()),
+      selected: z.boolean(),
+      workflowPatterns: z.string(),
+    }),
+  ),
+  from: z.string(),
+  name: z.string(),
+  ntfyPriority: z.enum(['min', 'low', 'default', 'high', 'max']),
+  password: z.string(),
+  port: z.number({ error: () => t('forms.invalidValue') }),
+  priority: z.enum(['low', 'moderate', 'normal', 'high']),
+  recipients: z.string(),
+  replaceConfiguration: z.boolean(),
+  security: z.enum(['NONE', 'STARTTLS', 'TLS']),
+  serverUrl: z.string(),
+  smtpHost: z.string(),
+  token: z.string(),
+  topic: z.string(),
+  type: ApiCreateNotificationChannelSchema.shape.type.unwrap(),
+  username: z.string(),
+  webhookUrl: z.string(),
+});
+type ChannelForm = z.output<typeof channelFormBaseSchema>;
+const channelFormSchema = computed(() =>
+  channelFormBaseSchema.superRefine((data, context) => {
+    const fail = (path: string): void =>
+      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
+    const input = {
+      browserRecipientUserIds: data.type === 'BROWSER_PUSH' ? data.browserRecipientUserIds : [],
+      configuration: configuration(data),
+      enabled: data.enabled,
+      eventSubscriptions: eventSubscriptions(data.eventStates),
+      name: data.name.trim(),
+    };
+    const parsed = props.channel
+      ? ApiUpdateNotificationChannelSchema.safeParse(input)
+      : ApiCreateNotificationChannelSchema.safeParse({ ...input, type: data.type });
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const root = String(issue.path[0] ?? 'name');
+        if (root === 'eventSubscriptions') {
+          const subscription = input.eventSubscriptions[Number(issue.path[1])];
+          const field = issue.path[2];
+          fail(subscription && field ? `eventStates.${subscription.eventType}.${String(field)}` : 'eventStates');
+        } else if (root === 'configuration') {
+          fail(String(issue.path[1] ?? 'type'));
+        } else fail(root);
+      }
+    }
+    if (!data.name.trim()) fail('name');
+    if (data.type === 'BROWSER_PUSH' && !data.browserRecipientUserIds.length) fail('browserRecipientUserIds');
+    if (data.type === 'BROWSER_PUSH' || (props.channel && !data.replaceConfiguration)) return;
+    const httpUrl = (value: string): boolean => z.url({ protocol: /^https?$/ }).safeParse(value.trim()).success;
+    if (data.type === 'EMAIL') {
+      if (!data.smtpHost.trim()) fail('smtpHost');
+      if (!z.email().safeParse(data.from.trim()).success) fail('from');
+      const recipients = data.recipients
+        .split(/[\n,;]/)
+        .map((value) => value.trim())
+        .filter(Boolean);
+      if (!recipients.length || recipients.some((value) => !z.email().safeParse(value).success)) fail('recipients');
+      if (!Number.isInteger(data.port) || data.port < 1 || data.port > 65_535) fail('port');
+    } else if (data.type === 'GOTIFY') {
+      if (!httpUrl(data.serverUrl)) fail('serverUrl');
+      if (!data.token.trim()) fail('token');
+    } else if (data.type === 'NTFY') {
+      if (data.serverUrl.trim() && !httpUrl(data.serverUrl)) fail('serverUrl');
+      if (!data.topic.trim()) fail('topic');
+    } else if (data.type === 'DISCORD') {
+      if (!httpUrl(data.webhookUrl)) fail('webhookUrl');
+      else {
+        const webhook = new URL(data.webhookUrl.trim());
+        if (
+          !['discord.com', 'discordapp.com'].some(
+            (domain) => webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`),
+          ) ||
+          !/\/api\/webhooks\/[^/]+\/[^/]+/.test(webhook.pathname)
+        )
+          fail('webhookUrl');
+      }
+    } else if (data.type === 'CUSTOM_APPRISE') {
+      if (
+        !z.url().safeParse(data.appriseUrl.trim()).success ||
+        /\s/.test(data.appriseUrl.trim()) ||
+        data.appriseUrl.trim().startsWith('file:')
+      )
+        fail('appriseUrl');
+    }
+  }),
+);
+
 const repositoryOptions = computed(() =>
   props.repositories.map((repository) => ({ label: `${repository.owner}/${repository.name}`, value: repository.id })),
 );
@@ -305,9 +437,7 @@ const securityOptions = computed(() =>
 );
 const gotifyPriorityOptions = ['low', 'moderate', 'normal', 'high'];
 const ntfyPriorityOptions = ['min', 'low', 'default', 'high', 'max'];
-const showConfiguration = computed(
-  () => form.type !== 'BROWSER_PUSH' && (!props.channel || replaceConfiguration.value),
-);
+const showConfiguration = computed(() => form.type !== 'BROWSER_PUSH' && (!props.channel || form.replaceConfiguration));
 const canSave = computed(
   () =>
     form.name.trim().length > 0 &&
@@ -348,7 +478,7 @@ watch(open, (isOpen) => {
       workflowPatterns: subscription?.workflowPatterns.join(', ') ?? '',
     });
   }
-  replaceConfiguration.value = false;
+  form.replaceConfiguration = false;
   preview.value = null;
   previewStatus.value = null;
   saveError.value = false;
@@ -363,15 +493,14 @@ watch(
   { deep: true },
 );
 
-function eventSubscriptions(): NotificationEventSubscription[] {
+function eventSubscriptions(states: ChannelForm['eventStates']): NotificationEventSubscription[] {
   return eventTypes
-    .filter((eventType) => eventStates[eventType].selected)
+    .filter((eventType) => states[eventType]!.selected)
     .map((eventType) => ({
       eventType,
-      repositoryIds: eventStates[eventType].repositoryIds,
+      repositoryIds: states[eventType]!.repositoryIds,
       workflowPatterns: eventType.startsWith('WORKFLOW_RUN_')
-        ? eventStates[eventType].workflowPatterns
-            .split(',')
+        ? states[eventType]!.workflowPatterns.split(',')
             .map((value) => value.trim())
             .filter(Boolean)
         : [],
@@ -379,11 +508,13 @@ function eventSubscriptions(): NotificationEventSubscription[] {
 }
 
 async function runPreview(): Promise<void> {
+  const data = await channelForm.value?.validate({ silent: true });
+  if (!data) return;
   previewing.value = true;
   preview.value = null;
   previewStatus.value = null;
   try {
-    preview.value = (await api.notificationChannels.preview(eventSubscriptions())).data;
+    preview.value = (await api.notificationChannels.preview(eventSubscriptions(data.eventStates))).data;
     previewStatus.value = preview.value.status;
   } catch (error) {
     previewStatus.value = isAxiosError(error) && error.response?.status === 403 ? 'INSUFFICIENT_PERMISSION' : 'ERROR';
@@ -392,59 +523,60 @@ async function runPreview(): Promise<void> {
   }
 }
 
-function configuration(): NotificationChannelConfiguration | undefined {
-  if (!showConfiguration.value) return undefined;
-  if (form.type === 'EMAIL') {
+function configuration(data: ChannelForm): NotificationChannelConfiguration | undefined {
+  if (data.type === 'BROWSER_PUSH' || (props.channel && !data.replaceConfiguration)) return undefined;
+  if (data.type === 'EMAIL') {
     return {
-      from: form.from.trim(),
-      password: form.password || undefined,
-      port: form.port || undefined,
-      recipients: form.recipients
+      from: data.from.trim(),
+      password: data.password || undefined,
+      port: data.port || undefined,
+      recipients: data.recipients
         .split(/[\n,;]/)
         .map((value) => value.trim())
         .filter(Boolean),
-      security: form.security,
-      smtpHost: form.smtpHost.trim(),
-      username: form.username.trim() || undefined,
+      security: data.security,
+      smtpHost: data.smtpHost.trim(),
+      username: data.username.trim() || undefined,
     };
   }
-  if (form.type === 'GOTIFY') return { priority: form.priority, serverUrl: form.serverUrl.trim(), token: form.token };
-  if (form.type === 'NTFY') {
+  if (data.type === 'GOTIFY') return { priority: data.priority, serverUrl: data.serverUrl.trim(), token: data.token };
+  if (data.type === 'NTFY') {
     return {
-      password: form.password || undefined,
-      priority: form.ntfyPriority,
-      serverUrl: form.serverUrl.trim() || undefined,
-      token: form.token || undefined,
-      topic: form.topic.trim(),
-      username: form.username.trim() || undefined,
+      password: data.password || undefined,
+      priority: data.ntfyPriority,
+      serverUrl: data.serverUrl.trim() || undefined,
+      token: data.token || undefined,
+      topic: data.topic.trim(),
+      username: data.username.trim() || undefined,
     };
   }
-  if (form.type === 'DISCORD') return { webhookUrl: form.webhookUrl.trim() };
-  if (form.type === 'CUSTOM_APPRISE') return { url: form.appriseUrl.trim() };
+  if (data.type === 'DISCORD') return { webhookUrl: data.webhookUrl.trim() };
+  if (data.type === 'CUSTOM_APPRISE') return { url: data.appriseUrl.trim() };
   return undefined;
 }
 
-async function save(): Promise<void> {
+async function save(event: FormSubmitEvent<ChannelForm>): Promise<void> {
+  const data = event.data;
   submitting.value = true;
   saveError.value = false;
   try {
-    const subscriptions = eventSubscriptions();
+    const subscriptions = eventSubscriptions(data.eventStates);
     if (props.channel) {
       await api.notificationChannels.update(props.channel.id, {
-        browserRecipientUserIds: form.type === 'BROWSER_PUSH' ? form.browserRecipientUserIds : [],
-        configuration: configuration(),
-        enabled: form.enabled,
+        browserRecipientUserIds: data.type === 'BROWSER_PUSH' ? data.browserRecipientUserIds : [],
+        configuration: configuration(data),
+        enabled: data.enabled,
         eventSubscriptions: subscriptions,
-        name: form.name.trim(),
+        name: data.name.trim(),
       });
     } else {
       await api.notificationChannels.create({
-        browserRecipientUserIds: form.type === 'BROWSER_PUSH' ? form.browserRecipientUserIds : [],
-        configuration: configuration(),
-        enabled: form.enabled,
+        browserRecipientUserIds: data.type === 'BROWSER_PUSH' ? data.browserRecipientUserIds : [],
+        configuration: configuration(data),
+        enabled: data.enabled,
         eventSubscriptions: subscriptions,
-        name: form.name.trim(),
-        type: form.type,
+        name: data.name.trim(),
+        type: data.type,
       });
     }
     open.value = false;

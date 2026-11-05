@@ -1,6 +1,7 @@
 import type { Config } from 'jest';
 
 const config: Config = {
+  extensionsToTreatAsEsm: ['.ts'],
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   setupFiles: ['<rootDir>/jest.setup.ts'],
@@ -10,7 +11,7 @@ const config: Config = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
-    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json', useESM: true }],
   },
 };
 

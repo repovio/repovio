@@ -4,7 +4,8 @@
 
 Build Repovio as a pnpm/Nx monorepo with:
 
-- `apps/api`: NestJS REST API with Prisma, PostgreSQL, CASL, and `@querry-kit/nest`.
+- `apps/api`: NestJS REST API with Fastify, shared Zod contracts, Prisma, PostgreSQL, CASL, and `@querry-kit/nest`.
+- `libs/schemas`: Framework-independent Zod request, query, response, and derived form contracts.
 - `apps/web`: Nuxt 4 single-page dashboard with Pinia, Nuxt UI, and `@querry-kit/nuxt`.
 - A Docker Compose production stack containing API, web, and PostgreSQL.
 - GitHub Actions for linting, testing, and Changesets-driven Docker releases.
@@ -29,19 +30,19 @@ Do not copy Machine Admin domain models or endpoints.
 
 - Use a versioned REST API under `/api/v1`, Swagger/Scalar documentation under `/docs`, and a health endpoint under `/api/health`. The health response must later report the API/database state and the last known connection or sync status for configured GitHub, GitLab, and Forgejo accounts, without exposing credentials or triggering provider requests.
 - Maintain an `apps/api/bruno` collection with documented environments and request examples for manual API verification. Keep credentials in Bruno secret variables, and update the collection as protected endpoints are added.
-- Structure every feature as a Nest module with module, service, controller, DTOs/types, and tests.
+- Structure every feature as a Nest module with module, service, controller, shared Zod schemas, inferred types, and tests.
 - Split Prisma schemas by domain, following the Machine Admin API layout.
 - Use `@querry-kit/nest` for:
   - `QueryService`-based resource services;
   - pagination, filtering, sorting, and field selection;
   - `ResourceQuery.query` and `ResourceQuery.findById`;
-  - DTO mapping with the active CASL ability.
+  - Explicit response mapping with the active CASL ability.
 - Use JWT bearer authentication with local username/password accounts and an initial admin created from environment variables.
 - Define CASL roles and capabilities:
   - `SYSTEM_ADMIN`: unrestricted Repovio administration.
   - `VIEWER`: read-only access to explicitly assigned repositories.
   - `MANAGER`: viewer access plus configuration access for assigned repositories.
-- Enforce repository permissions in database queries, not only in DTO serialization.
+- Enforce repository permissions in database queries, not only in response serialization.
 
 Implement these feature modules:
 

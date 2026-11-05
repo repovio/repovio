@@ -1,24 +1,17 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
-  ArrayUnique,
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MaxLength,
-  ValidateNested,
-} from 'class-validator';
+  ApiCreateNotificationChannelSchema,
+  ApiNotificationChannelSchema,
+  ApiNotificationEventSubscriptionInputSchema,
+  ApiNotificationRulePreviewInputSchema,
+  ApiNotificationRulePreviewMatchSchema,
+  ApiNotificationRulePreviewSchema,
+  ApiUpdateNotificationChannelSchema,
+} from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
-import {
-  NotificationChannelType,
-  NotificationEventType,
-  type NotificationChannel,
-} from '../../../generated/prisma/client.js';
+import { toWire } from '../../../util/to-wire.js';
+
+import { NotificationEventType, type NotificationChannel } from '../../../generated/prisma/client.js';
 
 export interface EmailNotificationConfigurationInput {
   from: string;
@@ -61,60 +54,16 @@ export type NotificationConfigurationInput =
   | CustomAppriseNotificationConfigurationInput;
 
 /** One global event subscription with optional repository and workflow filters. */
-export class NotificationEventSubscriptionInputDto {
-  @ApiProperty({ enum: NotificationEventType })
-  @IsEnum(NotificationEventType)
-  eventType!: NotificationEventType;
-
-  @ApiPropertyOptional({ type: [String], format: 'uuid' })
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsUUID(undefined, { each: true })
-  repositoryIds?: string[];
-
-  @ApiPropertyOptional({ type: [String], example: ['ci-*'] })
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  @MaxLength(1024, { each: true })
-  workflowPatterns?: string[];
-}
+export class NotificationEventSubscriptionInputDto extends createZodDto(ApiNotificationEventSubscriptionInputSchema) {}
 
 /** Input accepted when previewing workflow notification subscriptions. */
-export class NotificationRulePreviewInputDto {
-  @ApiProperty({ type: [NotificationEventSubscriptionInputDto] })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => NotificationEventSubscriptionInputDto)
-  eventSubscriptions!: NotificationEventSubscriptionInputDto[];
-}
+export class NotificationRulePreviewInputDto extends createZodDto(ApiNotificationRulePreviewInputSchema) {}
 
 /** One existing workflow run matched by a notification-rule preview. */
-export class NotificationRulePreviewMatchDto {
-  @ApiProperty({ enum: NotificationEventType })
-  eventType!: NotificationEventType;
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty()
-  repositoryName!: string;
-  @ApiProperty()
-  repositoryOwner!: string;
-  @ApiProperty({ format: 'uri' })
-  url!: string;
-  @ApiProperty()
-  workflowName!: string;
-}
+export class NotificationRulePreviewMatchDto extends createZodDto(ApiNotificationRulePreviewMatchSchema) {}
 
 /** Read-only preview result for workflow notification subscriptions. */
-export class NotificationRulePreviewDto {
-  @ApiProperty({ type: [NotificationRulePreviewMatchDto] })
-  matches!: NotificationRulePreviewMatchDto[];
-  @ApiProperty({ enum: ['MATCHES', 'NO_RESULTS', 'NEVER_SYNCHRONIZED', 'SYNCHRONIZATION_FAILED', 'PARTIAL'] })
-  status!: 'MATCHES' | 'NO_RESULTS' | 'NEVER_SYNCHRONIZED' | 'SYNCHRONIZATION_FAILED' | 'PARTIAL';
-}
+export class NotificationRulePreviewDto extends createZodDto(ApiNotificationRulePreviewSchema) {}
 
 export interface NotificationChannelWithRelations extends NotificationChannel {
   eventSubscriptions: Array<{
@@ -126,34 +75,7 @@ export interface NotificationChannelWithRelations extends NotificationChannel {
 }
 
 /** Safe response representation of a global notification channel. */
-export class NotificationChannelDto {
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-  @ApiProperty()
-  name!: string;
-  @ApiProperty({ enum: NotificationChannelType })
-  type!: NotificationChannelType;
-  @ApiProperty()
-  enabled!: boolean;
-  @ApiPropertyOptional({ example: 'discord' })
-  urlScheme!: string | null;
-  @ApiProperty({ type: [Object] })
-  eventSubscriptions!: Array<{
-    eventType: NotificationEventType;
-    repositoryIds: string[];
-    workflowPatterns: string[];
-  }>;
-  @ApiProperty({ type: [Object] })
-  browserRecipients!: Array<{ id: string; username: string }>;
-  @ApiProperty()
-  canManage!: boolean;
-  @ApiProperty()
-  requiresReconfiguration!: boolean;
-  @ApiProperty()
-  createdAt!: Date;
-  @ApiProperty()
-  updatedAt!: Date;
-
+export class NotificationChannelDto extends createZodDto(ApiNotificationChannelSchema) {
   /**
    * Convert a database model without exposing encrypted credentials.
    *
@@ -162,109 +84,30 @@ export class NotificationChannelDto {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: NotificationChannelWithRelations, canManage = false): NotificationChannelDto {
-    return {
-      id: model.id,
-      name: model.name,
-      type: model.type,
-      enabled: model.enabled,
-      urlScheme: model.urlScheme,
-      eventSubscriptions: model.eventSubscriptions.map((subscription) => ({
-        eventType: subscription.eventType,
-        repositoryIds: subscription.repositories.map(({ repositoryId }) => repositoryId),
-        workflowPatterns: subscription.workflowPatterns,
-      })),
-      browserRecipients: model.recipients.map(({ user }) => user),
-      canManage,
-      requiresReconfiguration: model.requiresReconfiguration,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    };
+    return NotificationChannelDto.schema.parse(
+      toWire({
+        id: model.id,
+        name: model.name,
+        type: model.type,
+        enabled: model.enabled,
+        urlScheme: model.urlScheme,
+        eventSubscriptions: model.eventSubscriptions.map((subscription) => ({
+          eventType: subscription.eventType,
+          repositoryIds: subscription.repositories.map(({ repositoryId }) => repositoryId),
+          workflowPatterns: subscription.workflowPatterns,
+        })),
+        browserRecipients: model.recipients.map(({ user }) => user),
+        canManage,
+        requiresReconfiguration: model.requiresReconfiguration,
+        createdAt: model.createdAt,
+        updatedAt: model.updatedAt,
+      }),
+    );
   }
 }
 
 /** Input accepted when creating a global notification channel. */
-export class CreateNotificationChannelDto {
-  @ApiProperty({ maxLength: 255 })
-  @IsString()
-  @MaxLength(255)
-  name!: string;
-
-  @ApiPropertyOptional({ enum: NotificationChannelType, default: NotificationChannelType.CUSTOM_APPRISE })
-  @IsOptional()
-  @IsEnum(NotificationChannelType)
-  type?: NotificationChannelType;
-
-  @ApiProperty({ type: [NotificationEventSubscriptionInputDto] })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => NotificationEventSubscriptionInputDto)
-  eventSubscriptions!: NotificationEventSubscriptionInputDto[];
-
-  @ApiPropertyOptional({ type: [String], format: 'uuid' })
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsUUID(undefined, { each: true })
-  browserRecipientUserIds?: string[];
-
-  /** Write-only structured destination configuration. */
-  @ApiPropertyOptional({ writeOnly: true, type: 'object', additionalProperties: true })
-  @IsOptional()
-  @IsObject()
-  configuration?: NotificationConfigurationInput;
-
-  /** Legacy write-only custom Apprise URL accepted for API compatibility. */
-  @ApiPropertyOptional({ deprecated: true, writeOnly: true, maxLength: 4096 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(4096)
-  url?: string;
-
-  @ApiPropertyOptional({ default: true })
-  @IsOptional()
-  @IsBoolean()
-  enabled?: boolean;
-}
+export class CreateNotificationChannelDto extends createZodDto(ApiCreateNotificationChannelSchema) {}
 
 /** Input accepted when updating a global notification channel. */
-export class UpdateNotificationChannelDto {
-  @ApiPropertyOptional({ maxLength: 255 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  name?: string;
-
-  @ApiPropertyOptional({ type: [NotificationEventSubscriptionInputDto] })
-  @IsOptional()
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => NotificationEventSubscriptionInputDto)
-  eventSubscriptions?: NotificationEventSubscriptionInputDto[];
-
-  @ApiPropertyOptional({ type: [String], format: 'uuid' })
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsUUID(undefined, { each: true })
-  browserRecipientUserIds?: string[];
-
-  /** Complete write-only replacement destination configuration. */
-  @ApiPropertyOptional({ writeOnly: true, type: 'object', additionalProperties: true })
-  @IsOptional()
-  @IsObject()
-  configuration?: NotificationConfigurationInput;
-
-  /** Legacy write-only custom Apprise URL accepted for API compatibility. */
-  @ApiPropertyOptional({ deprecated: true, writeOnly: true, maxLength: 4096 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(4096)
-  url?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  enabled?: boolean;
-}
+export class UpdateNotificationChannelDto extends createZodDto(ApiUpdateNotificationChannelSchema) {}

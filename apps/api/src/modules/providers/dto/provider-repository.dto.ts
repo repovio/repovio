@@ -1,20 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProviderRepositorySchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
+
+import { toWire } from '../../../util/to-wire.js';
 
 import type { ProviderRepository } from '../provider-adapter.js';
 
 /** A provider repository that can be added to Repovio tracking. */
-export class ProviderRepositoryDto {
-  @ApiProperty()
-  providerRepositoryId!: string;
-  @ApiProperty()
-  owner!: string;
-  @ApiProperty()
-  name!: string;
-  @ApiProperty({ format: 'uri' })
-  url!: string;
-  @ApiProperty({ description: 'Whether this provider repository is already tracked by Repovio.' })
-  tracked!: boolean;
-
+export class ProviderRepositoryDto extends createZodDto(ApiProviderRepositorySchema) {
   /**
    * Map a provider response and local tracking state to a safe API response.
    *
@@ -23,6 +15,6 @@ export class ProviderRepositoryDto {
    * @returns The provider repository DTO with its local tracking state.
    */
   static fromProvider(repository: ProviderRepository, tracked: boolean): ProviderRepositoryDto {
-    return { ...repository, tracked };
+    return ProviderRepositoryDto.schema.parse(toWire({ ...repository, tracked }));
   }
 }

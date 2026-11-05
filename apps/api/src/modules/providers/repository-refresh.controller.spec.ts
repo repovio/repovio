@@ -4,6 +4,8 @@ describe('RepositoryRefreshController', () => {
   it('returns refreshed repository metadata from the administrator service', async () => {
     const repository = {
       enabled: true,
+      issueRetentionDays: null,
+      pullRequestRetentionDays: null,
       id: 'repository-id',
       lastSyncAt: null,
       name: 'renamed',

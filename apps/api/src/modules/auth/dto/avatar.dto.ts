@@ -1,8 +1,5 @@
-import { IsUrl, MaxLength } from 'class-validator';
+import { ApiRemoteAvatarSchema } from '@repovio/schemas';
+import { createZodDto } from '../../../util/schema-dto.js';
 
 /** Remote avatar source accepted for a protected preview download. */
-export class RemoteAvatarDto {
-  @IsUrl({ protocols: ['https'], require_protocol: true })
-  @MaxLength(2048)
-  url!: string;
-}
+export class RemoteAvatarDto extends createZodDto(ApiRemoteAvatarSchema) {}

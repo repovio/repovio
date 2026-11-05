@@ -1,6 +1,7 @@
 import { Controller, ForbiddenException, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiErrorResponses, ApiPaginatedResponse, QueryTransformPipe } from '@querry-kit/nest';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { ApiErrorResponses, ApiPaginatedResponse } from '../../util/resource-contract.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -35,10 +36,7 @@ export class RepositorySyncJobsController {
   @ApiOperation({ summary: 'Query visible repository synchronization jobs' })
   @ApiPaginatedResponse({ description: 'Visible repository synchronization jobs.', model: RepositorySyncJobDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid repository synchronization job query.' })
-  query(
-    @Req() request: { user: AuthenticatedUser },
-    @Query(new QueryTransformPipe()) query: RepositorySyncJobQueryDto,
-  ) {
+  query(@Req() request: { user: AuthenticatedUser }, @Query() query: RepositorySyncJobQueryDto) {
     return this.jobs.query(request.user, query);
   }
 
@@ -48,6 +46,7 @@ export class RepositorySyncJobsController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns State counts restricted to the resources visible to the caller.
    */
+  @ZodSerializerDto(RepositorySyncJobSummaryDto)
   @Get('summary')
   @ApiOkResponse({ type: RepositorySyncJobSummaryDto })
   summary(@Req() request: { user: AuthenticatedUser }): Promise<RepositorySyncJobSummaryDto> {
@@ -61,6 +60,7 @@ export class RepositorySyncJobsController {
    * @returns A response containing the number of repositories queued for synchronization.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @ZodSerializerDto(RepositorySyncJobStartDto)
   @Post('run')
   @HttpCode(202)
   @ApiAcceptedResponse({ type: RepositorySyncJobStartDto })
@@ -78,6 +78,7 @@ export class RepositorySyncJobsController {
    * @throws ForbiddenException - System administrator access is required.
    * @throws NotFoundException - Repository synchronization job not found.
    */
+  @ZodSerializerDto(RepositorySyncJobStartDto)
   @Post(':repositoryId/run')
   @HttpCode(202)
   @ApiAcceptedResponse({ type: RepositorySyncJobStartDto })

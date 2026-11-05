@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiPaginatedResponse, ApiResourceQuery, QueryTransformPipe, ResourceQuery } from '@querry-kit/nest';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { ApiPaginatedResponse, ApiResourceQuery } from '../../util/resource-contract.js';
 
 import { CaslAction } from '../../casl/casl-action.js';
 import { CaslSubject } from '../../casl/casl-subject.js';
@@ -60,6 +62,7 @@ export class NotificationsController {
    * @returns Matching workflow runs and the completeness of the available data.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @ZodSerializerDto(NotificationRulePreviewDto)
   @Post('preview')
   @ApiOperation({ summary: 'Preview workflow notification subscriptions' })
   @ApiOkResponse({ type: NotificationRulePreviewDto })
@@ -80,10 +83,7 @@ export class NotificationsController {
   @Get('query')
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible notification channels.', model: NotificationChannelDto })
-  async query(
-    @Req() request: AuthenticatedRequest,
-    @Query(new QueryTransformPipe()) query: NotificationChannelQueryDto,
-  ) {
+  async query(@Req() request: AuthenticatedRequest, @Query() query: NotificationChannelQueryDto) {
     const ability = await this.channelQueries.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
@@ -128,6 +128,7 @@ export class NotificationsController {
    * @param request - Incoming request with the authentication or webhook context required by this endpoint.
    * @returns Safe global notification channel DTOs.
    */
+  @ZodSerializerDto([NotificationChannelDto])
   @Get()
   @ApiOperation({ summary: 'List visible notification channels' })
   @ApiOkResponse({ type: NotificationChannelDto, isArray: true })
@@ -148,6 +149,7 @@ export class NotificationsController {
    * @throws BadRequestException - Notification events must not be repeated. One or more repository filters are invalid.
    * Workflow patterns are only supported for workflow events.
    */
+  @ZodSerializerDto(NotificationChannelDto)
   @Post()
   @ApiOperation({ summary: 'Create a notification channel' })
   @ApiOkResponse({ type: NotificationChannelDto })
@@ -168,6 +170,7 @@ export class NotificationsController {
    * @throws NotFoundException - Notification channel not found.
    * @throws Error - When an event delivery lacks its repository, event type, or source work item.
    */
+  @ZodSerializerDto(NotificationDeliveryDto)
   @Post(':id/test')
   @ApiOperation({ summary: 'Test one notification channel' })
   @ApiOkResponse({ type: NotificationDeliveryDto })
@@ -188,6 +191,7 @@ export class NotificationsController {
    * @throws BadRequestException - Notification events must not be repeated. One or more repository filters are invalid.
    * Workflow patterns are only supported for workflow events.
    */
+  @ZodSerializerDto(NotificationChannelDto)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a notification channel' })
   @ApiOkResponse({ type: NotificationChannelDto })

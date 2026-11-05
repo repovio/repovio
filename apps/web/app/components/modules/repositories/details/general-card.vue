@@ -53,25 +53,46 @@
       variant="subtle"
       :title="$t('repositoryDetails.saveError')"
     />
-    <div v-if="editable" class="grid gap-4 lg:grid-cols-3">
-      <UFormField :help="$t('repositoryDetails.retentionHelp')" :label="$t('repositoryDetails.retention')">
-        <UInput v-model="retentionDays.workflowRuns" max="3650" min="1" type="number" :disabled="saving" />
+    <UForm
+      v-if="editable"
+      class="grid gap-4 lg:grid-cols-3"
+      :schema="localizeFormSchema(retentionSchema, $t('forms.invalidValue'))"
+      :state="retentionDays"
+      @submit="saveRetention"
+    >
+      <UFormField
+        name="workflowRunRetentionDays"
+        :help="$t('repositoryDetails.retentionHelp')"
+        :label="$t('repositoryDetails.retention')"
+      >
+        <UInput v-model="retentionDays.workflowRunRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
       </UFormField>
-      <UFormField :help="$t('repositoryDetails.retentionHelp')" :label="$t('repositoryDetails.issueRetention')">
-        <UInput v-model="retentionDays.issues" max="3650" min="1" type="number" :disabled="saving" />
+      <UFormField
+        name="issueRetentionDays"
+        :help="$t('repositoryDetails.retentionHelp')"
+        :label="$t('repositoryDetails.issueRetention')"
+      >
+        <UInput v-model="retentionDays.issueRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
       </UFormField>
-      <UFormField :help="$t('repositoryDetails.retentionHelp')" :label="$t('repositoryDetails.pullRequestRetention')">
-        <UInput v-model="retentionDays.pullRequests" max="3650" min="1" type="number" :disabled="saving" />
+      <UFormField
+        name="pullRequestRetentionDays"
+        :help="$t('repositoryDetails.retentionHelp')"
+        :label="$t('repositoryDetails.pullRequestRetention')"
+      >
+        <UInput v-model="retentionDays.pullRequestRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
       </UFormField>
       <div class="flex justify-end lg:col-span-3">
-        <UButton :disabled="saving" :label="$t('repositoryDetails.save')" :loading="saving" @click="saveRetention" />
+        <UButton type="submit" :disabled="saving" :label="$t('repositoryDetails.save')" :loading="saving" />
       </div>
-    </div>
+    </UForm>
   </UCard>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiUpdateRepositorySchema, localizeFormSchema } from '@repovio/schemas';
+import { computed, reactive, ref, watch } from 'vue';
+import { z } from 'zod';
 
 import { defineEmits, defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -89,16 +110,40 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
-const retentionDays = reactive({ issues: '', pullRequests: '', workflowRuns: '' });
+const retentionDays = reactive({ issueRetentionDays: '', pullRequestRetentionDays: '', workflowRunRetentionDays: '' });
+/** Normalize form controls before validating the shared nullable retention contract. */
+function retentionValue() {
+  return z.unknown().transform((value, context) => {
+    const normalized = typeof value === 'string' ? (value.trim() === '' ? null : Number(value)) : value;
+    const parsed = ApiUpdateRepositorySchema.shape.issueRetentionDays.unwrap().safeParse(normalized);
+    if (!parsed.success) {
+      context.addIssue({ code: 'custom', message: t('forms.invalidValue') });
+      return z.NEVER;
+    }
+    return parsed.data;
+  });
+}
+const retentionSchema = computed(() =>
+  ApiUpdateRepositorySchema.pick({
+    issueRetentionDays: true,
+    pullRequestRetentionDays: true,
+    workflowRunRetentionDays: true,
+  }).extend({
+    issueRetentionDays: retentionValue(),
+    pullRequestRetentionDays: retentionValue(),
+    workflowRunRetentionDays: retentionValue(),
+  }),
+);
+type RetentionValues = z.output<typeof retentionSchema.value>;
 const saving = ref(false);
 const saveError = ref(false);
 
 watch(
   () => props.repository,
   (repository) => {
-    retentionDays.issues = repository.issueRetentionDays?.toString() ?? '';
-    retentionDays.pullRequests = repository.pullRequestRetentionDays?.toString() ?? '';
-    retentionDays.workflowRuns = repository.workflowRunRetentionDays?.toString() ?? '';
+    retentionDays.issueRetentionDays = repository.issueRetentionDays?.toString() ?? '';
+    retentionDays.pullRequestRetentionDays = repository.pullRequestRetentionDays?.toString() ?? '';
+    retentionDays.workflowRunRetentionDays = repository.workflowRunRetentionDays?.toString() ?? '';
   },
   { immediate: true },
 );
@@ -109,14 +154,8 @@ function formatLastSync(lastSyncAt: string | null): string {
 }
 
 /** Persist a valid explicit retention override or restore the provider default. */
-async function saveRetention(): Promise<void> {
-  const parseRetention = (value: string | number): number | null =>
-    String(value).trim() === '' ? null : Number(value);
-  const issueRetentionDays = parseRetention(retentionDays.issues);
-  const pullRequestRetentionDays = parseRetention(retentionDays.pullRequests);
-  const workflowRunRetentionDays = parseRetention(retentionDays.workflowRuns);
-  const values = [issueRetentionDays, pullRequestRetentionDays, workflowRunRetentionDays];
-  if (values.some((value) => value !== null && (!Number.isInteger(value) || value < 1 || value > 3650))) return;
+async function saveRetention(event: FormSubmitEvent<RetentionValues>): Promise<void> {
+  const { issueRetentionDays, pullRequestRetentionDays, workflowRunRetentionDays } = event.data;
 
   saving.value = true;
   saveError.value = false;

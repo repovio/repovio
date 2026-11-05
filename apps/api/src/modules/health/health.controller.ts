@@ -1,5 +1,7 @@
 import { Controller, Get, Version, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { HealthResponseSchema } from '@repovio/schemas';
+import { SchemaResponse } from '../../util/resource-contract.js';
 
 import { HealthService, type HealthResponse } from './health.service.js';
 
@@ -18,6 +20,7 @@ export class HealthController {
    *
    * @returns Database health and safe persisted provider synchronization summaries.
    */
+  @SchemaResponse(HealthResponseSchema)
   @Get()
   @Version(VERSION_NEUTRAL)
   @ApiOperation({ summary: 'Get application health status' })

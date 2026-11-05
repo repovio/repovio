@@ -16,7 +16,12 @@
       :title="$t('settings.profileSaved')"
     />
 
-    <UForm class="space-y-5" :schema="updateProfileRequestSchema" :state="form" @submit="save">
+    <UForm
+      class="space-y-5"
+      :schema="localizeFormSchema(updateProfileRequestSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="save"
+    >
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField name="firstName" :label="$t('settings.firstName')">
           <UInput v-model="form.firstName" class="w-full" autocomplete="given-name" :disabled="saving" />
@@ -61,6 +66,7 @@
 
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
+import { localizeFormSchema } from '@repovio/schemas';
 import { isAxiosError } from 'axios';
 import { computed, nextTick, reactive, ref } from 'vue';
 

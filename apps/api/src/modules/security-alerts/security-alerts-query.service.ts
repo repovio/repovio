@@ -1,11 +1,7 @@
 import { accessibleBy } from '@casl/prisma';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import {
-  createCaslAccessibleWhere,
-  QueryService,
-  type BaseDelegateTypeMap,
-  type QueryOptionsMap,
-} from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
+import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -118,7 +114,7 @@ export class SecurityAlertsQueryService extends QueryService<
       ...options,
       orderBy: query.orderBy ?? [{ providerUpdatedAt: 'desc' }, { id: 'desc' }],
       where: searchWhere ? { AND: [where ?? {}, searchWhere] } : where,
-    };
+    } as QueryOptionsMap<SecurityAlertTypeMap>['query'];
   }
 
   /**

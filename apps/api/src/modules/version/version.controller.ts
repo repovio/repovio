@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { LatestVersionResponseSchema } from '@repovio/schemas';
+import { SchemaResponse } from '../../util/resource-contract.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import { VersionService } from './version.service.js';
@@ -21,6 +23,7 @@ export class VersionController {
    *
    * @returns The latest published version, or null when a valid version is unavailable.
    */
+  @SchemaResponse(LatestVersionResponseSchema)
   @Get('latest')
   @ApiOperation({ summary: 'Get the latest released Repovio version' })
   @ApiOkResponse({ schema: { example: { latest: '0.1.2' } } })

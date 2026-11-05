@@ -57,7 +57,7 @@ describe('RepositoryConfigurationService', () => {
       {
         callbackUrl: 'http://localhost:3000/api/webhooks/github/repository-id',
         configured: true,
-        lastDeliveryAt: new Date('2026-09-13T12:00:00.000Z'),
+        lastDeliveryAt: '2026-09-13T12:00:00.000Z',
         providerType: 'GITHUB',
         repositoryId: repository.id,
       },

@@ -1,14 +1,3 @@
-import type { ValidationPipeOptions } from '@nestjs/common';
-
-/** Nest validation settings used for every request DTO. */
-export const validationOptions: ValidationPipeOptions = {
-  forbidNonWhitelisted: true,
-  transform: true,
-  transformOptions: { enableImplicitConversion: false },
-  validationError: { target: false, value: false },
-  whitelist: true,
-};
-
 /**
  * Convert the CORS environment value into Nest's allowed-origin setting.
  *

@@ -1,25 +1,10 @@
-/** Socket.IO event used to publish the current global API status. */
-export const SYSTEM_STATUS_EVENT = 'system-status';
+import type { ProviderSyncActivity } from '@repovio/schemas';
+
+export { systemStatusEvent as SYSTEM_STATUS_EVENT } from '@repovio/schemas';
+export type { ProviderSyncActivity, SystemStatusSnapshot } from '@repovio/schemas';
 
 /** Detailed phase of a read-only provider workflow synchronization. */
-export type ProviderSyncPhase = 'LOADING_REPOSITORIES' | 'FETCHING_WORKFLOWS' | 'PROCESSING_WORKFLOWS';
-
-/** Safe aggregate progress for one provider synchronization without repository identifiers. */
-export interface ProviderSyncActivity {
-  kind: 'PROVIDER_SYNC';
-  phase: ProviderSyncPhase;
-  repositoriesCompleted: number;
-  repositoriesTotal: number;
-  workflowRunsCompleted: number | null;
-  workflowRunsTotal: number | null;
-}
-
-/** Global operational state sent to authenticated Repovio clients. */
-export interface SystemStatusSnapshot {
-  activity: ProviderSyncActivity | null;
-  runningWorkflowCount: number;
-  updatedAt: string;
-}
+export type ProviderSyncPhase = ProviderSyncActivity['phase'];
 
 /** Complete update for an active provider synchronization. */
 export type ProviderSyncActivityUpdate = Omit<ProviderSyncActivity, 'kind'>;

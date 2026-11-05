@@ -1,12 +1,13 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ZodSerializerDto } from 'nestjs-zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
+  resourceFields,
+} from '../../util/resource-contract.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -56,17 +57,14 @@ export class PullRequestsController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible provider pull requests.', model: PullRequestDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid pull-request query.' })
-  async query(
-    @Req() request: { user: AuthenticatedUser },
-    @Query(new QueryTransformPipe()) query: PullRequestQueryDto,
-  ) {
+  async query(@Req() request: { user: AuthenticatedUser }, @Query() query: PullRequestQueryDto) {
     const ability = await this.pullRequests.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
       include: pullRequestInclude,
       map: (pullRequest: PullRequestResourceModel) => PullRequestDto.fromModel(pullRequest, false, ability),
       query: this.pullRequests.toQueryOptions(query),
-      schema: PullRequestDto,
+      schema: resourceFields(PullRequestDto),
       service: this.pullRequests,
     });
   }
@@ -77,6 +75,7 @@ export class PullRequestsController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns State counts restricted to the resources visible to the caller.
    */
+  @ZodSerializerDto(PullRequestSummaryDto)
   @Get('summary')
   @ApiOkResponse({ type: PullRequestSummaryDto })
   async summary(@Req() request: { user: AuthenticatedUser }): Promise<PullRequestSummaryDto> {
@@ -97,6 +96,7 @@ export class PullRequestsController {
    * @param request - HTTP request carrying the authenticated application user.
    * @returns Sorted filter choices from visible work items.
    */
+  @ZodSerializerDto(WorkItemFilterOptionsDto)
   @Get('filter-options')
   @ApiOkResponse({ type: WorkItemFilterOptionsDto })
   async filterOptions(@Req() request: { user: AuthenticatedUser }): Promise<WorkItemFilterOptionsDto> {
@@ -136,6 +136,7 @@ export class PullRequestsController {
    * @returns The safe detail DTO for the visible resource.
    * @throws NotFoundException - When the resource is missing or not visible to the authenticated user.
    */
+  @ZodSerializerDto(PullRequestDto)
   @Get(':id')
   @ApiOkResponse({ type: PullRequestDto })
   async findById(@Req() request: { user: AuthenticatedUser }, @Param('id') id: string): Promise<PullRequestDto> {

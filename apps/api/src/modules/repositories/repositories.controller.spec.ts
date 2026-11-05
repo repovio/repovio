@@ -1,5 +1,9 @@
 import { ForbiddenException } from '@nestjs/common';
-import { validate } from 'class-validator';
+/** Inspect bounded repository request validation without class-based decorators. */
+async function validateSchema(input: unknown) {
+  const result = UpdateRepositoryDto.schema.safeParse(input);
+  return result.success ? [] : result.error.issues.map((issue) => ({ property: String(issue.path[0]) }));
+}
 
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { RepositoryQueryDto } from './dto/repository-query.dto.js';
@@ -11,7 +15,7 @@ import type { RepositoryConfigurationService } from './repository-configuration.
 describe('RepositoriesController', () => {
   it('validates bounded repository retention overrides while allowing global defaults', async () => {
     await expect(
-      validate(
+      validateSchema(
         Object.assign(new UpdateRepositoryDto(), {
           issueRetentionDays: null,
           pullRequestRetentionDays: 3650,
@@ -20,7 +24,7 @@ describe('RepositoriesController', () => {
       ),
     ).resolves.toHaveLength(0);
 
-    const errors = await validate(
+    const errors = await validateSchema(
       Object.assign(new UpdateRepositoryDto(), {
         issueRetentionDays: 0,
         pullRequestRetentionDays: 3651,
@@ -122,7 +126,7 @@ describe('RepositoriesController', () => {
         id: 'repository-1',
         members: [
           {
-            avatarUpdatedAt: new Date('2026-09-12T10:00:00.000Z'),
+            avatarUpdatedAt: '2026-09-12T10:00:00.000Z',
             firstName: 'Marie',
             lastName: 'Member',
             userId: 'member-1',
@@ -139,6 +143,8 @@ describe('RepositoriesController', () => {
     const ability = undefined;
     const repository = {
       enabled: true,
+      issueRetentionDays: null,
+      pullRequestRetentionDays: null,
       id: 'repository-1',
       lastSyncAt: null,
       name: 'repovio',

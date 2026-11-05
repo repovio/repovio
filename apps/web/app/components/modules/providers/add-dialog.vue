@@ -13,7 +13,12 @@
         variant="subtle"
         :title="$t(usePat ? 'providers.credentialsError' : 'providers.oauthError')"
       />
-      <UForm class="mt-4 space-y-6" :schema="providerFormSchema" :state="form" @submit="addProvider">
+      <UForm
+        class="mt-4 space-y-6"
+        :schema="localizeFormSchema(providerFormSchema, $t('forms.invalidValue'))"
+        :state="form"
+        @submit="addProvider"
+      >
         <div class="grid gap-4 sm:grid-cols-2">
           <UFormField name="displayName" :label="$t('providers.name')">
             <UInput v-model="form.displayName" class="w-full" :placeholder="$t('providers.namePlaceholder')" />
@@ -66,7 +71,10 @@
 </template>
 
 <script setup lang="ts">
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiCreateProviderAccountSchema, ApiStartProviderOAuthSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, reactive, ref, watch } from 'vue';
+import { z } from 'zod';
 
 import { defineEmits, defineModel } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -120,14 +128,15 @@ watch(open, async (isOpen) => {
 });
 
 /** Validate and persist a PAT account, or begin the provider-controlled OAuth flow. */
-async function addProvider(): Promise<void> {
+async function addProvider(
+  event: FormSubmitEvent<z.output<typeof providerPatFormSchema> | z.output<typeof providerOAuthFormSchema>>,
+): Promise<void> {
   submitting.value = true;
   connectionError.value = false;
   try {
     if (usePat.value) {
       await api.providerAccounts.create({
-        ...form,
-        baseUrl: form.baseUrl.trim() || undefined,
+        ...ApiCreateProviderAccountSchema.parse({ ...event.data, baseUrl: event.data.baseUrl?.trim() || undefined }),
       });
       open.value = false;
       resetDirtyState();
@@ -135,11 +144,13 @@ async function addProvider(): Promise<void> {
       return;
     }
 
-    const { data } = await api.providerAccounts.authorize({
-      baseUrl: form.baseUrl.trim() || undefined,
-      displayName: form.displayName,
-      providerType: form.providerType,
-    });
+    const { data } = await api.providerAccounts.authorize(
+      ApiStartProviderOAuthSchema.parse({
+        baseUrl: event.data.baseUrl?.trim() || undefined,
+        displayName: event.data.displayName,
+        providerType: event.data.providerType,
+      }),
+    );
     resetDirtyState();
     window.location.assign(data.authorizationUrl);
   } catch {

@@ -1,6 +1,8 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiPaginatedResponse, ApiResourceQuery, QueryTransformPipe, ResourceQuery } from '@querry-kit/nest';
+import { ResourceQuery } from '@querry-kit/nest/core';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { ApiPaginatedResponse, ApiResourceQuery } from '../../util/resource-contract.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -39,10 +41,7 @@ export class NotificationDeliveriesController {
   @Get('query')
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Authorized notification delivery history.', model: NotificationDeliveryDto })
-  async query(
-    @Req() request: AuthenticatedRequest,
-    @Query(new QueryTransformPipe()) query: NotificationDeliveryQueryDto,
-  ) {
+  async query(@Req() request: AuthenticatedRequest, @Query() query: NotificationDeliveryQueryDto) {
     const ability = await this.deliveryQueries.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
@@ -96,6 +95,7 @@ export class NotificationDeliveriesController {
    * @returns Safe delivery history with attempt outcomes and event context.
    * @throws ForbiddenException - System administrator access is required.
    */
+  @ZodSerializerDto([NotificationDeliveryDto])
   @Get()
   @ApiOperation({ summary: 'List visible notification delivery history' })
   @ApiOkResponse({ type: NotificationDeliveryDto, isArray: true })

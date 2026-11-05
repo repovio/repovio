@@ -1,17 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { ApiListMcpAccessTokensQuerySchema } from '@repovio/schemas';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { createZodDto } from '../../util/schema-dto.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import { CreatedMcpAccessTokenDto, CreateMcpAccessTokenDto, McpAccessTokenDto } from './dto/mcp-access-token.dto.js';
 import { McpTokenService } from './mcp-token.service.js';
 
-class ListMcpAccessTokensQueryDto {
-  @IsOptional()
-  @IsUUID()
-  userId?: string;
-}
+class ListMcpAccessTokensQueryDto extends createZodDto(ApiListMcpAccessTokensQuerySchema) {}
 
 /** Provides self-service MCP token management and administrator revocation. */
 @ApiTags('mcp-tokens')
@@ -33,6 +31,7 @@ export class McpTokensController {
    * @returns Safe token metadata without bearer values or token hashes.
    * @throws ForbiddenException - When the requester neither owns the token nor has the system administrator role.
    */
+  @ZodSerializerDto([McpAccessTokenDto])
   @Get()
   @ApiOperation({ summary: 'List safe MCP token metadata' })
   @ApiOkResponse({ type: McpAccessTokenDto, isArray: true })
@@ -51,6 +50,7 @@ export class McpTokensController {
    * @returns The new token and safe metadata; the plaintext is returned only at creation.
    * @throws BadRequestException - Token expiration must be in the future.
    */
+  @ZodSerializerDto(CreatedMcpAccessTokenDto)
   @Post()
   @ApiOperation({ summary: 'Create a user-owned MCP token' })
   @ApiCreatedResponse({ type: CreatedMcpAccessTokenDto })

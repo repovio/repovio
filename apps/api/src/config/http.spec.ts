@@ -1,4 +1,4 @@
-import { getCorsOrigins, validationOptions } from './http.js';
+import { getCorsOrigins } from './http.js';
 
 describe('HTTP configuration', () => {
   it('parses and trims explicit CORS origins', () => {
@@ -10,7 +10,5 @@ describe('HTTP configuration', () => {
 
   it('allows all origins only when explicitly configured', () => {
     expect(getCorsOrigins('*')).toBe(true);
-    expect(validationOptions.whitelist).toBe(true);
-    expect(validationOptions.forbidNonWhitelisted).toBe(true);
   });
 });

@@ -36,44 +36,58 @@
       />
     </div>
 
-    <UFileUpload
-      v-model="selectedFile"
-      accept="image/jpeg,image/png,image/webp"
-      :description="$t('settings.avatarUploadDescription')"
-      :disabled="busy"
-      :label="$t('settings.avatarUpload')"
-      @update:model-value="handleSelectedFile"
-    />
+    <UForm :schema="localizeFormSchema(avatarUploadSchema, $t('forms.invalidValue'))" :state="{ file: selectedFile }">
+      <UFormField name="file" :error="fileValidationError || undefined">
+        <UFileUpload
+          v-model="selectedFile"
+          accept="image/jpeg,image/png,image/webp"
+          :description="$t('settings.avatarUploadDescription')"
+          :disabled="busy"
+          :label="$t('settings.avatarUpload')"
+          @update:model-value="handleSelectedFile"
+        />
+      </UFormField>
+    </UForm>
 
-    <div class="flex flex-col gap-2 sm:flex-row">
-      <UInput
-        v-model="remoteUrl"
-        class="flex-1"
-        type="url"
-        :disabled="busy"
-        :placeholder="$t('settings.avatarUrlPlaceholder')"
-      />
+    <UForm
+      class="flex flex-col gap-2 sm:flex-row"
+      :schema="localizeFormSchema(remoteAvatarSchema, $t('forms.invalidValue'))"
+      :state="remoteForm"
+      @submit="importRemote"
+    >
+      <UFormField name="url" class="flex-1" :label="$t('settings.avatarImport')" :ui="{ label: 'sr-only' }">
+        <UInput
+          v-model="remoteForm.url"
+          class="w-full"
+          type="url"
+          :disabled="busy"
+          :placeholder="$t('settings.avatarUrlPlaceholder')"
+        />
+      </UFormField>
       <UButton
+        type="submit"
         icon="i-lucide-download"
-        :disabled="!remoteUrl.trim()"
+        :disabled="busy || !remoteForm.url.trim()"
         :label="$t('settings.avatarImport')"
         :loading="importing"
-        @click="importRemote"
       />
-    </div>
+    </UForm>
 
     <ModulesSettingsAvatarCropDialog
       v-if="sourceUrl"
       :open="cropOpen"
       :source="sourceUrl"
-      @cropped="save"
+      :save="save"
       @update:open="handleCropOpen"
     />
   </UCard>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiRemoteAvatarSchema, localizeFormSchema } from '@repovio/schemas';
+import { computed, onBeforeUnmount, reactive, ref } from 'vue';
+import { z } from 'zod';
 
 import { useApi } from '~/composables/api/api';
 import { useAuthStore } from '~/store/auth';
@@ -85,7 +99,27 @@ const { t } = useI18n();
 const api = useApi();
 const auth = useAuthStore();
 const selectedFile = ref<File | null>();
-const remoteUrl = ref('');
+const remoteForm = reactive({ url: '' });
+const fileValidationError = ref('');
+/** Validate browser files without referencing File during server rendering. */
+const avatarFileSchema = computed(() =>
+  z
+    .custom<File>((value) => typeof File !== 'undefined' && value instanceof File, {
+      error: () => t('forms.invalidValue'),
+    })
+    .refine((file) => file.size <= maximumBytes, { error: () => t('settings.avatarTooLarge') })
+    .refine((file) => supportedTypes.includes(file.type), { error: () => t('settings.avatarInvalidType') }),
+);
+const avatarUploadSchema = computed(() => z.object({ file: avatarFileSchema.value }));
+const remoteAvatarBaseSchema = ApiRemoteAvatarSchema.pick({ url: true }).extend({ url: z.string().trim() });
+const remoteAvatarSchema = computed(() =>
+  remoteAvatarBaseSchema.superRefine((input, context) => {
+    if (!ApiRemoteAvatarSchema.safeParse(input).success) {
+      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: ['url'] });
+    }
+  }),
+);
+type RemoteAvatarForm = z.output<typeof remoteAvatarBaseSchema>;
 const sourceUrl = ref<string>();
 const cropOpen = ref(false);
 const importing = ref(false);
@@ -100,21 +134,11 @@ async function handleSelectedFile(file?: File | null): Promise<void> {
   if (!file) return;
   error.value = '';
   saved.value = false;
-  if (file.size > maximumBytes) {
-    error.value = t('settings.avatarTooLarge');
-    selectedFile.value = null;
-    return;
-  }
-  if (!supportedTypes.includes(file.type)) {
-    error.value = t('settings.avatarInvalidType');
-    selectedFile.value = null;
-    return;
-  }
   await prepare(file);
 }
 
 /** Import one protected HTTPS source through the API before applying the local crop workflow. */
-async function importRemote(): Promise<void> {
+async function importRemote(event: FormSubmitEvent<RemoteAvatarForm>): Promise<void> {
   if (importing.value) return;
   error.value = '';
   saved.value = false;
@@ -122,7 +146,7 @@ async function importRemote(): Promise<void> {
   try {
     const { data } = await api.post<Blob>(
       '/auth/me/avatar/remote-preview',
-      { url: remoteUrl.value.trim() },
+      { url: event.data.url },
       { responseType: 'blob' },
     );
     await prepare(new File([data], 'remote-avatar', { type: data.type }));
@@ -133,8 +157,17 @@ async function importRemote(): Promise<void> {
   }
 }
 
+/** Reject unsupported, oversized, or missing source and cropped files before any upload. */
+function validateFile(file: File): boolean {
+  const parsed = avatarFileSchema.value.safeParse(file);
+  fileValidationError.value = parsed.success ? '' : (parsed.error.issues[0]?.message ?? t('forms.invalidValue'));
+  if (!parsed.success) selectedFile.value = null;
+  return parsed.success;
+}
+
 /** Detect source geometry and require an explicit crop only for non-square images. */
 async function prepare(file: File): Promise<void> {
+  if (!validateFile(file)) return;
   try {
     const { height, width } = await readImageDimensions(file);
     const isSquare = width === height;
@@ -166,6 +199,7 @@ async function readImageDimensions(file: File): Promise<{ height: number; width:
 
 /** Persist a square source and immediately refresh every current-user avatar surface. */
 async function save(file: File): Promise<void> {
+  if (!validateFile(file)) return;
   saving.value = true;
   error.value = '';
   saved.value = false;
@@ -175,7 +209,7 @@ async function save(file: File): Promise<void> {
     const { data } = await api.put<AuthenticatedUser>('/auth/me/avatar', form);
     auth.updateUser(data);
     selectedFile.value = null;
-    remoteUrl.value = '';
+    remoteForm.url = '';
     saved.value = true;
   } catch {
     error.value = t('settings.avatarSaveError');

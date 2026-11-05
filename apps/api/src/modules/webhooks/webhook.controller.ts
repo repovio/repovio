@@ -1,11 +1,19 @@
-import { BadRequestException, Controller, HttpCode, Param, Post, Req, VERSION_NEUTRAL, Version } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+  VERSION_NEUTRAL,
+  Version,
+  type RawBodyRequest,
+} from '@nestjs/common';
 import { ApiAcceptedResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 
 import type { ProviderType } from '../../generated/prisma/client.js';
 import { WebhookService, type WebhookAcceptance } from './webhook.service.js';
-
-type RawBodyRequest = Request & { rawBody?: Buffer };
 
 /** Accepts signed GitHub, GitLab, Forgejo, and Gitea webhook deliveries. */
 @ApiTags('webhooks')
@@ -34,7 +42,10 @@ export class WebhookController {
   @ApiOperation({ summary: 'Accept a signed GitHub webhook delivery' })
   @ApiParam({ name: 'repositoryId', format: 'uuid' })
   @ApiAcceptedResponse({ description: 'The delivery was accepted for asynchronous synchronization.' })
-  github(@Param('repositoryId') repositoryId: string, @Req() request: RawBodyRequest): Promise<WebhookAcceptance> {
+  github(
+    @Param('repositoryId') repositoryId: string,
+    @Req() request: RawBodyRequest<FastifyRequest>,
+  ): Promise<WebhookAcceptance> {
     return this.receive('GITHUB', repositoryId, request);
   }
 
@@ -54,7 +65,10 @@ export class WebhookController {
   @ApiOperation({ summary: 'Accept a signed GitLab webhook delivery' })
   @ApiParam({ name: 'repositoryId', format: 'uuid' })
   @ApiAcceptedResponse({ description: 'The delivery was accepted for asynchronous synchronization.' })
-  gitlab(@Param('repositoryId') repositoryId: string, @Req() request: RawBodyRequest): Promise<WebhookAcceptance> {
+  gitlab(
+    @Param('repositoryId') repositoryId: string,
+    @Req() request: RawBodyRequest<FastifyRequest>,
+  ): Promise<WebhookAcceptance> {
     return this.receive('GITLAB', repositoryId, request);
   }
 
@@ -74,7 +88,10 @@ export class WebhookController {
   @ApiOperation({ summary: 'Accept a signed Forgejo webhook delivery' })
   @ApiParam({ name: 'repositoryId', format: 'uuid' })
   @ApiAcceptedResponse({ description: 'The delivery was accepted for asynchronous synchronization.' })
-  forgejo(@Param('repositoryId') repositoryId: string, @Req() request: RawBodyRequest): Promise<WebhookAcceptance> {
+  forgejo(
+    @Param('repositoryId') repositoryId: string,
+    @Req() request: RawBodyRequest<FastifyRequest>,
+  ): Promise<WebhookAcceptance> {
     return this.receive('FORGEJO', repositoryId, request);
   }
 
@@ -94,7 +111,10 @@ export class WebhookController {
   @ApiOperation({ summary: 'Accept a signed Gitea webhook delivery' })
   @ApiParam({ name: 'repositoryId', format: 'uuid' })
   @ApiAcceptedResponse({ description: 'The delivery was accepted for asynchronous synchronization.' })
-  gitea(@Param('repositoryId') repositoryId: string, @Req() request: RawBodyRequest): Promise<WebhookAcceptance> {
+  gitea(
+    @Param('repositoryId') repositoryId: string,
+    @Req() request: RawBodyRequest<FastifyRequest>,
+  ): Promise<WebhookAcceptance> {
     return this.receive('GITEA', repositoryId, request);
   }
 
@@ -112,7 +132,7 @@ export class WebhookController {
   private receive(
     providerType: ProviderType,
     repositoryId: string,
-    request: RawBodyRequest,
+    request: RawBodyRequest<FastifyRequest>,
   ): Promise<WebhookAcceptance> {
     if (!request.rawBody) throw new BadRequestException('The webhook request body is required.');
     return this.webhooks.receive(providerType, repositoryId, {

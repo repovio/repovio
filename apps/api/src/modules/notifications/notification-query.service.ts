@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  QueryService,
-  createCaslAccessibleWhere,
-  type BaseDelegateTypeMap,
-  type QueryOptionsMap,
-} from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
+import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -117,7 +113,7 @@ export class NotificationChannelsQueryService extends QueryService<
       ...options,
       where: searchWhere ? { AND: [where ?? {}, searchWhere] } : where,
       orderBy: query.orderBy ?? [{ name: 'asc' }, { id: 'asc' }],
-    };
+    } as QueryOptionsMap<NotificationChannelTypeMap>['query'];
   }
 }
 
@@ -182,6 +178,6 @@ export class NotificationDeliveriesQueryService extends QueryService<
       ...options,
       where: searchWhere ? { AND: [where ?? {}, searchWhere] } : where,
       orderBy: query.orderBy ?? [{ createdAt: 'desc' }, { id: 'desc' }],
-    };
+    } as QueryOptionsMap<NotificationDeliveryTypeMap>['query'];
   }
 }

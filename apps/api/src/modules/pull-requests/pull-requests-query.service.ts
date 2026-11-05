@@ -1,11 +1,7 @@
 import { accessibleBy } from '@casl/prisma';
 import { Injectable } from '@nestjs/common';
-import {
-  createCaslAccessibleWhere,
-  QueryService,
-  type BaseDelegateTypeMap,
-  type QueryOptionsMap,
-} from '@querry-kit/nest';
+import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
+import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -94,7 +90,7 @@ export class PullRequestsQueryService extends QueryService<
       ...options,
       orderBy: query.orderBy ?? [{ providerUpdatedAt: 'desc' }, { id: 'desc' }],
       where: { AND: constraints },
-    };
+    } as QueryOptionsMap<PullRequestTypeMap>['query'];
   }
   /**
    * Build the database restriction for resources readable through the supplied ability.

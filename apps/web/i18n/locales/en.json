@@ -48,6 +48,7 @@
     "waitingSince": "Waiting since"
   },
   "forms": {
+    "invalidValue": "Enter a valid value.",
     "unsavedChanges": "You have unsaved changes. Leave this page anyway?"
   },
   "commandPalette": {

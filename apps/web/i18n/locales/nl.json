@@ -48,6 +48,7 @@
     "waitingSince": "Wacht sinds"
   },
   "forms": {
+    "invalidValue": "Voer een geldige waarde in.",
     "unsavedChanges": "Je hebt niet-opgeslagen wijzigingen. Wil je deze pagina toch verlaten?"
   },
   "commandPalette": {

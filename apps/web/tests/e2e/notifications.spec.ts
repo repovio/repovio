@@ -159,6 +159,10 @@ test('shows global channel events and system-wide delivery history', async ({ pa
   await expect(dialog.getByRole('checkbox', { name: 'Dependency alert opened' })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: 'Secret scanning alert resolved' })).toBeVisible();
   await expect(dialog.locator(':focus')).toHaveCount(1);
+  await dialog.getByRole('textbox', { name: /^Name\*?$/ }).fill('Operations');
+  await dialog.getByRole('textbox', { name: 'SMTP server' }).fill('smtp.example.com');
+  await dialog.getByRole('textbox', { name: 'From address' }).fill('repovio@example.com');
+  await dialog.getByRole('textbox', { name: 'Recipients' }).fill('operations@example.com');
   await dialog.getByRole('checkbox', { name: 'Workflow failed' }).check();
   await expect(dialog.getByText('Repository filters')).toBeVisible();
   await expect(dialog.getByText('Workflow patterns')).toBeVisible();
@@ -192,3 +196,117 @@ test('redirects the removed rules route to global channels', async ({ page }) =>
 
   await expect(page).toHaveURL(/\/notifications$/);
 });
+
+for (const locale of ['en', 'de'] as const) {
+  test(`validates notification destinations before save and preview (${locale})`, async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    if (locale === 'de') await page.setViewportSize({ height: 844, width: 390 });
+    const labels =
+      locale === 'de'
+        ? {
+            add: 'Kanal hinzufügen',
+            error: 'Gib einen gültigen Wert ein.',
+            from: 'Absenderadresse',
+            preview: 'Passende Läufe anzeigen',
+            recipients: 'Empfänger',
+            save: 'Speichern',
+            smtp: 'SMTP-Server',
+            workflow: 'Workflow fehlgeschlagen',
+          }
+        : {
+            add: 'Add channel',
+            error: 'Enter a valid value.',
+            from: 'From address',
+            preview: 'Preview matching runs',
+            recipients: 'Recipients',
+            save: 'Save',
+            smtp: 'SMTP server',
+            workflow: 'Workflow failed',
+          };
+    let createRequests = 0;
+    let previewRequests = 0;
+    let releaseCreation: (() => void) | undefined;
+    const creationGate = new Promise<void>((resolve) => {
+      releaseCreation = resolve;
+    });
+    await page.route('**/api/v1/notification-channels/query**', (route) =>
+      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+    );
+    await page.route('**/api/v1/notification-channels/preview', async (route) => {
+      previewRequests++;
+      await route.fulfill({ json: { matches: [], status: 'NO_RESULTS' } });
+    });
+    await page.route('**/api/v1/notification-channels', async (route) => {
+      if (route.request().method() !== 'POST') return route.fulfill({ json: [] });
+      createRequests++;
+      expect(route.request().postDataJSON()).toEqual({
+        browserRecipientUserIds: [],
+        configuration: {
+          from: 'repovio@example.com',
+          port: 587,
+          recipients: ['operations@example.com'],
+          security: 'STARTTLS',
+          smtpHost: 'smtp.example.com',
+        },
+        enabled: true,
+        eventSubscriptions: [{ eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: [] }],
+        name: 'Operations',
+        type: 'EMAIL',
+      });
+      await creationGate;
+      await route.fulfill({
+        json: {
+          browserRecipients: [],
+          canManage: true,
+          createdAt: '2026-11-05T10:00:00.000Z',
+          enabled: true,
+          eventSubscriptions: [],
+          id: 'validated-channel',
+          name: 'Operations',
+          requiresReconfiguration: false,
+          type: 'EMAIL',
+          updatedAt: '2026-11-05T10:00:00.000Z',
+          urlScheme: 'mailtos',
+        },
+      });
+    });
+
+    const ready = page.waitForResponse((response) => response.url().includes('/api/v1/notification-channels/query'));
+    await page.goto('/notifications');
+    await ready;
+    await page.getByRole('button', { name: labels.add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('textbox', { name: /^Name\*?$/ }).fill('  Operations  ');
+    await dialog.getByRole('textbox', { name: labels.smtp }).fill('smtp.example.com');
+    await dialog.getByRole('textbox', { name: labels.from }).fill('repovio@example.com');
+    const recipients = dialog.getByRole('textbox', { name: labels.recipients });
+    await recipients.fill('invalid-address');
+    await recipients.press('Tab');
+    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
+    const workflow = dialog.getByRole('checkbox', { name: labels.workflow, exact: true });
+    await workflow.click();
+    await expect(workflow).toBeChecked();
+    const save = dialog.getByRole('button', { name: labels.save, exact: true });
+    await save.click();
+    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
+    expect(createRequests).toBe(0);
+    await dialog.getByRole('button', { name: labels.preview, exact: true }).click();
+    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
+    expect(previewRequests).toBe(0);
+    await recipients.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath(`notification-validation-${locale}.png`), fullPage: true });
+
+    await recipients.fill('operations@example.com');
+    await save.click();
+    await expect.poll(() => createRequests).toBe(1);
+    await expect(save).toBeDisabled();
+    await expect(dialog).toBeVisible();
+    releaseCreation?.();
+    await expect(dialog).not.toBeVisible();
+  });
+}

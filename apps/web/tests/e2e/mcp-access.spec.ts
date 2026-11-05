@@ -136,3 +136,72 @@ test('allows an administrator to inspect and revoke user token metadata', async 
   await page.getByRole('dialog').getByRole('button', { name: 'Revoke' }).click();
   await expect.poll(() => page.getByRole('dialog').getByRole('button', { name: 'Revoke' }).isDisabled()).toBe(true);
 });
+
+for (const locale of ['en', 'de'] as const) {
+  test(`validates the MCP token form before creating a token (${locale})`, async ({ page, baseURL }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    if (locale === 'de') await page.setViewportSize({ height: 844, width: 390 });
+    const labels =
+      locale === 'de'
+        ? {
+            create: 'Token erstellen',
+            error: 'Gib einen gültigen Wert ein.',
+            name: 'Token-Name',
+            token: 'Bearer-Token',
+          }
+        : { create: 'Create token', error: 'Enter a valid value.', name: 'Token name', token: 'Bearer token' };
+    let createRequests = 0;
+    let releaseCreation: (() => void) | undefined;
+    const creationGate = new Promise<void>((resolve) => {
+      releaseCreation = resolve;
+    });
+    await page.route(/\/api\/v1\/mcp-tokens(?:\?.*)?$/, async (route) => {
+      if (route.request().method() !== 'POST') return route.fulfill({ json: [] });
+      createRequests++;
+      expect(route.request().postDataJSON()).toEqual({ expiresAt: null, name: 'Browser client' });
+      await creationGate;
+      await route.fulfill({
+        json: {
+          createdAt: '2026-11-05T10:00:00.000Z',
+          expiresAt: null,
+          id: 'validated-token',
+          lastUsedAt: null,
+          name: 'Browser client',
+          revokedAt: null,
+          status: 'ACTIVE',
+          token: 'repovio_mcp_validated_browser_secret',
+          tokenPrefix: 'repovio_mcp_validated',
+          userId: admin.id,
+        },
+      });
+    });
+
+    const ready = page.waitForResponse(
+      (response) => response.url().includes('/api/v1/mcp-tokens') && response.request().method() === 'GET',
+    );
+    await page.goto('/admin/settings/mcp');
+    await ready;
+    await page.getByRole('button', { name: labels.create, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    const name = dialog.getByRole('textbox', { name: labels.name });
+    await name.fill('   ');
+    await name.press('Tab');
+    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    expect(createRequests).toBe(0);
+    const create = dialog.getByRole('button', { name: labels.create, exact: true });
+    await expect(create).toBeDisabled();
+    await page.screenshot({ path: testInfo.outputPath(`mcp-validation-${locale}.png`), fullPage: true });
+
+    await name.fill('  Browser client  ');
+    await create.click();
+    await expect.poll(() => createRequests).toBe(1);
+    await expect(create).toBeDisabled();
+    await expect(dialog).toBeVisible();
+    releaseCreation?.();
+    await expect(dialog.getByRole('textbox', { name: labels.token, exact: true })).toHaveValue(
+      'repovio_mcp_validated_browser_secret',
+    );
+  });
+}

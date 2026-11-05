@@ -1,12 +1,12 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResourceQuery } from '@querry-kit/nest/core';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
-  QueryTransformPipe,
-  ResourceQuery,
-} from '@querry-kit/nest';
+  resourceFields,
+} from '../../util/resource-contract.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { Authenticated } from '../auth/authenticated.decorator.js';
@@ -53,7 +53,7 @@ export class WorkflowRunsController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible workflow runs.', model: WorkflowRunDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid workflow-run query.' })
-  async query(@Req() request: AuthenticatedRequest, @Query(new QueryTransformPipe()) query: WorkflowRunQueryDto) {
+  async query(@Req() request: AuthenticatedRequest, @Query() query: WorkflowRunQueryDto) {
     const ability = await this.workflowRuns.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
@@ -61,7 +61,7 @@ export class WorkflowRunsController {
       map: (workflowRun: WorkflowRunResourceModel, currentAbility) =>
         WorkflowRunDto.fromModel(workflowRun, currentAbility),
       query: this.workflowRuns.toQueryOptions(query),
-      schema: WorkflowRunDto,
+      schema: resourceFields(WorkflowRunDto),
       service: this.workflowRuns,
     });
   }
@@ -78,10 +78,7 @@ export class WorkflowRunsController {
   @ApiResourceQuery()
   @ApiPaginatedResponse({ description: 'Visible latest terminal workflow failures.', model: WorkflowRunDto })
   @ApiErrorResponses({ badRequestDescription: 'Invalid needs-attention workflow-run query.' })
-  async queryNeedsAttention(
-    @Req() request: AuthenticatedRequest,
-    @Query(new QueryTransformPipe()) query: WorkflowRunQueryDto,
-  ) {
+  async queryNeedsAttention(@Req() request: AuthenticatedRequest, @Query() query: WorkflowRunQueryDto) {
     const ability = await this.workflowRuns.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
@@ -89,7 +86,7 @@ export class WorkflowRunsController {
       map: (workflowRun: WorkflowRunResourceModel, currentAbility) =>
         WorkflowRunDto.fromModel(workflowRun, currentAbility),
       query: await this.workflowRuns.toNeedsAttentionQueryOptions(query, ability),
-      schema: WorkflowRunDto,
+      schema: resourceFields(WorkflowRunDto),
       service: this.workflowRuns,
     });
   }

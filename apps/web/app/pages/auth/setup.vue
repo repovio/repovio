@@ -5,7 +5,12 @@
       <p class="text-sm text-muted">{{ $t('auth.setupDescription') }}</p>
     </div>
 
-    <UForm class="space-y-5" :schema="localizedSetupFormSchema" :state="form" @submit="setup">
+    <UForm
+      class="space-y-5"
+      :schema="localizeFormSchema(localizedSetupFormSchema, $t('forms.invalidValue'))"
+      :state="form"
+      @submit="setup"
+    >
       <UAlert v-if="error" color="error" icon="i-lucide-circle-alert" variant="subtle" :title="$t(error)" />
 
       <div class="grid gap-4 sm:grid-cols-2">
@@ -56,6 +61,7 @@
 
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
+import { localizeFormSchema } from '@repovio/schemas';
 import { isAxiosError } from 'axios';
 import { computed, reactive, ref } from 'vue';
 

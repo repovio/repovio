@@ -1,4 +1,6 @@
 import { Controller, ForbiddenException, HttpCode, Param, Post, Req } from '@nestjs/common';
+import { ApiRepositorySchema } from '@repovio/schemas';
+import { SchemaResponse } from '../../util/resource-contract.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -36,6 +38,7 @@ export class RepositoryRefreshController {
    * preserved.
    * @throws TypeError - When the provider request fails at the network layer.
    */
+  @SchemaResponse(ApiRepositorySchema)
   @Post(':id/refresh')
   async refresh(
     @Req() request: { user: AuthenticatedUser },

@@ -2,6 +2,7 @@ FROM node:26.13.0-bookworm-slim AS build
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
+COPY libs/schemas/package.json libs/schemas/package.json
 COPY patches ./patches
 RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --frozen-lockfile
 COPY . .

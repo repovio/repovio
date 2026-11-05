@@ -1,9 +1,10 @@
+import { jest } from '@jest/globals';
 const mockConnect = jest.fn();
 const mockDisconnect = jest.fn();
-const mockTransaction = jest.fn();
+const mockTransaction = jest.fn<(callback: (transaction: { id: string }) => Promise<unknown>) => Promise<unknown>>();
 const mockPrismaPg = jest.fn();
 
-jest.mock('../generated/prisma/client.js', () => ({
+jest.unstable_mockModule(new URL('../generated/prisma/client.ts', import.meta.url).pathname, () => ({
   PrismaClient: class {
     $connect = mockConnect;
     $disconnect = mockDisconnect;
@@ -11,7 +12,7 @@ jest.mock('../generated/prisma/client.js', () => ({
   },
 }));
 
-jest.mock('@prisma/adapter-pg', () => ({
+jest.unstable_mockModule('@prisma/adapter-pg', () => ({
   PrismaPg: class {
     constructor(options: unknown) {
       mockPrismaPg(options);
@@ -19,13 +20,13 @@ jest.mock('@prisma/adapter-pg', () => ({
   },
 }));
 
-jest.mock('../config/env.js', () => ({
+jest.unstable_mockModule(new URL('../config/env.ts', import.meta.url).pathname, () => ({
   ENV: {
     DATABASE_URL: 'postgresql://repovio:repovio@localhost:5432/repovio_test',
   },
 }));
 
-import { PrismaService } from './prisma.service.js';
+const { PrismaService } = await import('./prisma.service.js');
 
 describe('PrismaService', () => {
   beforeEach(() => {
@@ -52,7 +53,7 @@ describe('PrismaService', () => {
 
   it('executes a callback through an interactive transaction', async () => {
     const service = new PrismaService();
-    const callback = jest.fn().mockResolvedValue('completed');
+    const callback = jest.fn<() => Promise<string>>().mockResolvedValue('completed');
     mockTransaction.mockImplementation((transactionCallback) => transactionCallback({ id: 'transaction' }));
 
     await expect(service.transaction(callback)).resolves.toBe('completed');

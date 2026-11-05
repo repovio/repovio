@@ -71,7 +71,7 @@ describe('WorkflowRunsController', () => {
     );
     expect(response.items).toEqual([
       {
-        completedAt: workflowRun.completedAt,
+        completedAt: workflowRun.completedAt?.toISOString(),
         displayTitle: 'Build on main',
         durationMs: 150_000,
         id: 'run-1',

@@ -22,92 +22,103 @@
         :title="$t('repositories.providerLoadError')"
       />
 
-      <UStepper ref="stepper" class="mt-4" color="neutral" size="sm" :items="stepperItems">
-        <template #provider>
-          <div class="space-y-4">
-            <p class="text-sm text-muted">{{ $t('repositories.providerDescription') }}</p>
-            <UFormField :label="$t('repositories.provider')" required>
-              <USelectMenu
-                v-model="selectedProviderAccountId"
-                class="w-full"
-                value-key="value"
-                :items="providerOptions"
-                :loading="providerAccountsLoading"
-                :placeholder="$t('repositories.providerPlaceholder')"
-                searchable
+      <UForm
+        :schema="localizeFormSchema(selectionSchema, $t('forms.invalidValue'))"
+        :state="selection"
+        @submit="submitSelection"
+      >
+        <UStepper ref="stepper" class="mt-4" color="neutral" size="sm" :items="stepperItems">
+          <template #provider>
+            <div class="space-y-4">
+              <p class="text-sm text-muted">{{ $t('repositories.providerDescription') }}</p>
+              <UFormField name="providerAccountId" :label="$t('repositories.provider')" required>
+                <USelectMenu
+                  v-model="selectedProviderAccountId"
+                  class="w-full"
+                  value-key="value"
+                  :items="providerOptions"
+                  :loading="providerAccountsLoading"
+                  :placeholder="$t('repositories.providerPlaceholder')"
+                  searchable
+                />
+              </UFormField>
+              <UAlert
+                v-if="!providerAccountsLoading && !providerAccountsError && providerOptions.length === 0"
+                color="warning"
+                :title="$t('repositories.noEnabledProviders')"
               />
-            </UFormField>
-            <UAlert
-              v-if="!providerAccountsLoading && !providerAccountsError && providerOptions.length === 0"
-              color="warning"
-              :title="$t('repositories.noEnabledProviders')"
-            />
-          </div>
-        </template>
+            </div>
+          </template>
 
-        <template #repository>
-          <div class="space-y-4">
-            <p class="text-sm text-muted">{{ $t('repositories.repositoryDescription') }}</p>
-            <UAlert
-              v-if="repositoriesError"
-              color="error"
-              icon="i-lucide-circle-alert"
-              variant="subtle"
-              :title="$t('repositories.repositoryLoadError')"
-            />
-            <ModulesRepositoriesRepositorySelectionTable
-              :key="selectedProviderAccountId"
-              v-model:selected-repository-ids="selectedProviderRepositoryIds"
-              :loading="repositoriesLoading"
-              :repositories="availableRepositories"
-            />
-            <UAlert
-              v-if="
-                !repositoriesLoading &&
-                !repositoriesError &&
-                selectedProviderAccountId &&
-                selectableRepositories.length === 0
-              "
-              color="info"
-              :title="$t('repositories.noAvailableRepositories')"
-            />
-          </div>
-        </template>
-      </UStepper>
+          <template #repository>
+            <div class="space-y-4">
+              <p class="text-sm text-muted">{{ $t('repositories.repositoryDescription') }}</p>
+              <UAlert
+                v-if="repositoriesError"
+                color="error"
+                icon="i-lucide-circle-alert"
+                variant="subtle"
+                :title="$t('repositories.repositoryLoadError')"
+              />
+              <UFormField name="providerRepositoryIds" :error="selectionError || undefined">
+                <ModulesRepositoriesRepositorySelectionTable
+                  :key="selectedProviderAccountId"
+                  v-model:selected-repository-ids="selectedProviderRepositoryIds"
+                  :loading="repositoriesLoading"
+                  :repositories="availableRepositories"
+                />
+              </UFormField>
+              <UAlert
+                v-if="
+                  !repositoriesLoading &&
+                  !repositoriesError &&
+                  selectedProviderAccountId &&
+                  selectableRepositories.length === 0
+                "
+                color="info"
+                :title="$t('repositories.noAvailableRepositories')"
+              />
+            </div>
+          </template>
+        </UStepper>
 
-      <div class="mt-6 flex justify-between border-t border-default pt-4">
-        <UButton
-          color="neutral"
-          icon="i-lucide-arrow-left"
-          variant="soft"
-          :label="$t('repositories.back')"
-          :disabled="addingRepository || !stepper?.hasPrev"
-          @click="stepper?.prev()"
-        />
-        <UButton
-          v-if="stepper?.hasNext"
-          color="neutral"
-          trailing-icon="i-lucide-arrow-right"
-          variant="soft"
-          :disabled="!selectedProviderAccountId || providerAccountsLoading || repositoriesLoading"
-          :label="$t('repositories.next')"
-          :loading="providerAccountsLoading || repositoriesLoading"
-          @click="stepper?.next()"
-        />
-        <UButton
-          v-else
-          :disabled="selectedProviderRepositoryIds.length === 0 || addingRepository"
-          :label="$t('repositories.addSelected', { count: selectedProviderRepositoryIds.length })"
-          :loading="addingRepository"
-          @click="addRepositories"
-        />
-      </div>
+        <div class="mt-6 flex justify-between border-t border-default pt-4">
+          <UButton
+            color="neutral"
+            icon="i-lucide-arrow-left"
+            variant="soft"
+            :label="$t('repositories.back')"
+            :disabled="addingRepository || !stepper?.hasPrev"
+            @click="stepper?.prev()"
+          />
+          <UButton
+            v-if="stepper?.hasNext"
+            type="submit"
+            color="neutral"
+            trailing-icon="i-lucide-arrow-right"
+            variant="soft"
+            :disabled="!selectedProviderAccountId || providerAccountsLoading || repositoriesLoading"
+            :label="$t('repositories.next')"
+            :loading="providerAccountsLoading || repositoriesLoading"
+          />
+          <UButton
+            v-else
+            type="submit"
+            :disabled="selectedProviderRepositoryIds.length === 0 || addingRepository"
+            :label="$t('repositories.addSelected', { count: selectedProviderRepositoryIds.length })"
+            :loading="addingRepository"
+          />
+        </div>
+      </UForm>
     </template>
   </UModal>
 </template>
 
 <script setup lang="ts">
+import type { FormSubmitEvent } from '@nuxt/ui';
+import { ApiCreateTrackedRepositorySchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, ref, watch } from 'vue';
+import { z } from 'zod';
 
 import { defineEmits, defineModel } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -133,6 +144,36 @@ const addingRepositoryError = ref(false);
 const selectedProviderAccountId = ref<string>();
 const selectedProviderRepositoryIds = ref<string[]>([]);
 const stepper = useTemplateRef('stepper');
+const selectionError = ref('');
+const selection = computed(() => ({
+  providerAccountId: selectedProviderAccountId.value,
+  providerRepositoryIds: selectedProviderRepositoryIds.value,
+}));
+const selectionSchema = computed(() =>
+  z.strictObject({
+    providerAccountId: z.string({ error: t('forms.invalidValue') }).min(1, t('forms.invalidValue')),
+    providerRepositoryIds: z
+      .array(ApiCreateTrackedRepositorySchema.shape.providerRepositoryId)
+      .min(stepper.value?.hasNext ? 0 : 1, t('forms.invalidValue')),
+  }),
+);
+/** Validate each wizard stage before navigation or repository enrollment. */
+async function submitSelection(
+  event: FormSubmitEvent<{ providerAccountId: string; providerRepositoryIds: string[] }>,
+): Promise<void> {
+  selectionError.value = '';
+  if (stepper.value?.hasNext) {
+    stepper.value.next();
+    return;
+  }
+  const visibleIds = new Set(selectableRepositories.value.map((repository) => repository.providerRepositoryId));
+  if (!event.data.providerRepositoryIds.every((id) => visibleIds.has(id))) {
+    selectionError.value = t('forms.invalidValue');
+    return;
+  }
+  await addRepositories(event.data);
+}
+
 const stepperItems = computed(() => [
   { icon: 'i-lucide-plug-zap', slot: 'provider', title: t('repositories.addSteps.provider') },
   { icon: 'i-lucide-git-branch', slot: 'repository', title: t('repositories.addSteps.repository') },
@@ -192,9 +233,9 @@ async function loadAvailableRepositories(providerAccountId: string): Promise<voi
 }
 
 /** Add all selected provider repositories and retain any failed selections for retry. */
-async function addRepositories(): Promise<void> {
-  const providerAccountId = selectedProviderAccountId.value;
-  const repositoryIds = [...selectedProviderRepositoryIds.value];
+async function addRepositories(input: { providerAccountId: string; providerRepositoryIds: string[] }): Promise<void> {
+  const providerAccountId = input.providerAccountId;
+  const repositoryIds = [...input.providerRepositoryIds];
   if (!providerAccountId || repositoryIds.length === 0) return;
 
   addingRepository.value = true;

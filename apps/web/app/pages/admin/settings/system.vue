@@ -31,7 +31,13 @@
         <USkeleton class="h-16 w-full" />
         <USkeleton class="h-20 w-full" />
       </div>
-      <UForm v-else class="space-y-6" :schema="applicationSettingsSchema" :state="form" @submit="saveSettings">
+      <UForm
+        v-else
+        class="space-y-6"
+        :schema="localizeFormSchema(applicationSettingsSchema, $t('forms.invalidValue'))"
+        :state="form"
+        @submit="saveSettings"
+      >
         <UAlert
           v-if="saveError"
           color="error"
@@ -139,6 +145,7 @@
 
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
+import { localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useUnsavedChangesGuard } from '~/composables/use-unsaved-changes-guard';

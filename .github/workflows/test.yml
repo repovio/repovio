@@ -70,6 +70,12 @@ jobs:
         if: github.event_name != 'pull_request' || github.head_ref != 'changeset-release/main'
         run: pnpm changeset status
 
+      - name: Build shared schema contracts
+        run: pnpm --filter @repovio/schemas build
+
+      - name: Test shared schema contracts
+        run: pnpm --filter @repovio/schemas test
+
       - name: Generate Prisma client
         if: hashFiles('apps/api/prisma/schema.prisma') != ''
         run: pnpm nx run api:db:generate

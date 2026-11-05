@@ -1,5 +1,7 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { toWire } from '../../util/to-wire.js';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
@@ -35,6 +37,7 @@ export class DashboardController {
    * @param request - Authenticated request user.
    * @returns Approval-gated workflow runs ordered newest first.
    */
+  @ZodSerializerDto([DashboardWorkflowRunDto])
   @Get('awaiting-approval')
   @ApiOperation({ summary: 'List workflow runs awaiting provider approval' })
   @ApiOkResponse({
@@ -53,6 +56,7 @@ export class DashboardController {
    * @param request - Authenticated request user.
    * @returns Current terminal failures ordered newest first.
    */
+  @ZodSerializerDto([DashboardWorkflowRunDto])
   @Get('failures')
   @ApiOperation({ summary: 'List the 15 newest workflow contexts whose latest terminal run failed' })
   @ApiOkResponse({ description: 'Visible latest failed workflow runs.', type: DashboardWorkflowRunDto, isArray: true })
@@ -67,6 +71,7 @@ export class DashboardController {
    * @param request - Authenticated request user.
    * @returns The ten most recently created visible provider runs.
    */
+  @ZodSerializerDto([DashboardWorkflowRunDto])
   @Get('latest-runs')
   @ApiOperation({ summary: 'List the ten newest visible workflow runs' })
   @ApiOkResponse({ description: 'The ten newest visible workflow runs.', type: DashboardWorkflowRunDto, isArray: true })
@@ -83,6 +88,7 @@ export class DashboardController {
    * @returns Period metrics and current visible workflow state.
    * @throws BadRequestException - The dashboard start timestamp must not be after the end timestamp.
    */
+  @ZodSerializerDto(DashboardSummaryDto)
   @Get('summary')
   @ApiOperation({ summary: 'Get visible workflow health summary' })
   @ApiOkResponse({ description: 'Permission-aware workflow health summary.', type: DashboardSummaryDto })
@@ -101,6 +107,7 @@ export class DashboardController {
    * @returns Repositories with the most relevant health aggregates first.
    * @throws BadRequestException - The dashboard start timestamp must not be after the end timestamp.
    */
+  @ZodSerializerDto([RepositoryHealthDto])
   @Get('repositories')
   @ApiOperation({ summary: 'Get visible repository workflow health' })
   @ApiOkResponse({
@@ -123,6 +130,7 @@ export class DashboardController {
    * @returns Continuous success and error trend buckets.
    * @throws BadRequestException - When the requested range is invalid.
    */
+  @ZodSerializerDto([WorkflowRunTrendBucketDto])
   @Get('trend')
   @ApiOperation({ summary: 'Get success and error workflow-run trend buckets' })
   @ApiOkResponse({ description: 'Visible workflow-run trend buckets.', type: WorkflowRunTrendBucketDto, isArray: true })
@@ -130,6 +138,6 @@ export class DashboardController {
     @Req() request: AuthenticatedRequest,
     @Query() query: WorkflowRunTrendQueryDto,
   ): Promise<WorkflowRunTrendBucketDto[]> {
-    return this.dashboard.getTrend(request.user, query);
+    return toWire(await this.dashboard.getTrend(request.user, query));
   }
 }

@@ -94,7 +94,7 @@
 import axios from 'axios';
 import { computed, ref, watch } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useAuthStore } from '~/store/auth';
 import type { Repository, RepositoryDetail, RepositoryWebhookConfiguration } from '~/types/api/resources';
 
@@ -102,7 +102,7 @@ definePageMeta({ fullWidth: true });
 
 const route = useRoute();
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const auth = useAuthStore();
 const toast = useToast();
 const repositoryId = computed(() => String(route.params.id));

@@ -10,7 +10,7 @@ describe('AppriseNotificationAdapter', () => {
         eventType: 'WORKFLOW_RUN_FAILED',
         occurredAt: new Date('2026-09-14T10:00:00.000Z'),
         provider: 'GITHUB',
-        repository: 'ezrepo/ezrepo',
+        repository: 'repovio/repovio',
         subject: 'CI',
         subjectUrl: 'https://example.test/run/1',
       }),

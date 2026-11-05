@@ -26,7 +26,6 @@ overrides:
   'mysql2@<=3.23.0': 3.23.1
   'nx>smol-toml': 1.9.0
   'serialize-javascript@>=7.1.1 <7.1.2': 7.1.3
-  'vitepress>vite': 6.4.5
   node-forge@<=1.4.0: 1.4.1
   follow-redirects@>=1.16.0 <1.16.2: 1.16.2
   '@intlify/shared@>=11.0.0 <11.4.17': 11.4.17

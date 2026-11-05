@@ -9,7 +9,7 @@ describe('VersionService', () => {
 
   it('returns the latest GitHub release without its tag prefix and caches it', async () => {
     const fetchMock = jest.fn().mockResolvedValue({
-      json: jest.fn().mockResolvedValue({ tag_name: 'ezrepo@1.2.3' }),
+      json: jest.fn().mockResolvedValue({ tag_name: 'repovio@1.2.3' }),
       ok: true,
     });
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -19,8 +19,8 @@ describe('VersionService', () => {
     await expect(service.getLatest()).resolves.toEqual({ latest: '1.2.3' });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith('https://api.github.com/repos/tobiaswaelde/ezrepo/releases/latest', {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'ezrepo' },
+    expect(fetchMock).toHaveBeenCalledWith('https://api.github.com/repos/repovio/repovio/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'repovio' },
     });
   });
 
@@ -33,8 +33,8 @@ describe('VersionService', () => {
   it.each([
     ['v1.2.3', '1.2.3'],
     ['1.2.3', '1.2.3'],
-    ['ezrepo@1.2.3', '1.2.3'],
-    ['@ezrepo/app@v1.2.3-beta.1', '1.2.3-beta.1'],
+    ['repovio@1.2.3', '1.2.3'],
+    ['@repovio/app@v1.2.3-beta.1', '1.2.3-beta.1'],
     ['release-1.2.3', null],
     [undefined, null],
   ])('parses release tag %s as %s', (tagName, expected) => {
@@ -45,7 +45,7 @@ describe('VersionService', () => {
     const fetchMock = jest
       .fn()
       .mockRejectedValueOnce(new Error('offline'))
-      .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue({ tag_name: 'ezrepo@1.2.3' }), ok: true });
+      .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue({ tag_name: 'repovio@1.2.3' }), ok: true });
     global.fetch = fetchMock as unknown as typeof fetch;
     const service = new VersionService();
 

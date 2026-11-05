@@ -69,7 +69,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 
 import { defineEmits, defineModel } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useUnsavedChangesGuard } from '~/composables/use-unsaved-changes-guard';
 import { providerOAuthFormSchema, providerPatFormSchema, type ProviderType } from '~/types/api/resources';
 
@@ -81,7 +81,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const submitting = ref(false);
 const loadingAuthenticationOptions = ref(false);
 const connectionError = ref(false);

@@ -60,7 +60,7 @@ export class McpController {
       clientId: authenticated.record.id,
       ...(authenticated.expiresAt ? { expiresAt: Math.floor(authenticated.expiresAt.getTime() / 1000) } : {}),
       extra: { user: authenticated.user },
-      scopes: ['ezrepo:read'],
+      scopes: ['repovio:read'],
       token,
     };
     await this.http.nodeHandler(request, response, request.body);

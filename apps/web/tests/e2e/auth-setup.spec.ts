@@ -39,7 +39,7 @@ test('creates and signs in the first administrator from the guided setup', async
 
   await expect(page).toHaveURL('/');
   await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem('ezrepo.access-token')))
+    .poll(() => page.evaluate(() => window.localStorage.getItem('repovio.access-token')))
     .toBe('setup-access-token');
 });
 
@@ -50,6 +50,9 @@ test('redirects an initialized installation away from setup', async ({ page }) =
 
   await expect(page).toHaveURL('/auth/signin');
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'ezRepo' }).locator('img')).toHaveAttribute('src', '/logo.svg');
-  await page.screenshot({ path: resolve(process.cwd(), '../../docs/public/screenshots/sign-in.png'), fullPage: true });
+  await expect(page.getByRole('link', { name: 'Repovio' }).locator('img:visible')).toHaveAttribute(
+    'src',
+    /\/logo-wordmark-(?:light|dark)\.svg/,
+  );
+  await page.screenshot({ path: resolve(process.cwd(), 'test-results/captures/sign-in.png'), fullPage: true });
 });

@@ -292,8 +292,8 @@ export class NotificationDeliveryService {
         eventType: 'TEST',
         occurredAt: delivery.createdAt,
         provider: 'GITHUB',
-        repository: 'ezRepo',
-        subject: 'ezRepo test notification',
+        repository: 'Repovio',
+        subject: 'Repovio test notification',
         subjectUrl: '',
       };
     }

@@ -32,19 +32,19 @@ describe('work-item authorization integration', () => {
       prisma.repository.create({
         data: {
           name: 'visible',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: account.id,
           providerRepositoryId: 'visible',
-          url: 'https://github.com/ezrepo/visible',
+          url: 'https://github.com/repovio/visible',
         },
       }),
       prisma.repository.create({
         data: {
           name: 'hidden',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: account.id,
           providerRepositoryId: 'hidden',
-          url: 'https://github.com/ezrepo/hidden',
+          url: 'https://github.com/repovio/hidden',
         },
       }),
     ]);
@@ -102,7 +102,7 @@ describe('work-item authorization integration', () => {
           repositoryId: visibleRepository.id,
           state: 'OPEN',
           title: 'Visible issue',
-          url: 'https://github.com/ezrepo/visible/issues/204',
+          url: 'https://github.com/repovio/visible/issues/204',
         },
       }),
       prisma.issue.create({
@@ -117,7 +117,7 @@ describe('work-item authorization integration', () => {
           repositoryId: hiddenRepository.id,
           state: 'OPEN',
           title: 'Hidden issue',
-          url: 'https://github.com/ezrepo/hidden/issues/1',
+          url: 'https://github.com/repovio/hidden/issues/1',
         },
       }),
     ]);
@@ -134,7 +134,7 @@ describe('work-item authorization integration', () => {
           state: 'OPEN',
           targetBranch: 'main',
           title: 'Visible pull request',
-          url: 'https://github.com/ezrepo/visible/pull/213',
+          url: 'https://github.com/repovio/visible/pull/213',
           workflowApprovalRequired: true,
           workflowStatus: 'FAILED',
         },
@@ -151,7 +151,7 @@ describe('work-item authorization integration', () => {
           state: 'OPEN',
           targetBranch: 'main',
           title: 'Hidden pull request',
-          url: 'https://github.com/ezrepo/hidden/pull/2',
+          url: 'https://github.com/repovio/hidden/pull/2',
         },
       }),
     ]);

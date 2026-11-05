@@ -7,7 +7,7 @@ const emptyPage = {
 
 /** Mock authenticated shell requests so search behavior can be exercised without a live API. */
 async function mockApplicationShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: `playwright-${role.toLowerCase()}`, role, username: 'playwright' } }),
   );
@@ -62,7 +62,7 @@ test('groups authorized global results and keeps stale responses from replacing 
         items: [
           {
             baseUrl: null,
-            displayName: 'ezRepo GitHub',
+            displayName: 'Repovio GitHub',
             enabled: true,
             id: 'provider-1',
             lastSyncAt: null,
@@ -86,10 +86,10 @@ test('groups authorized global results and keeps stale responses from replacing 
             enabled: true,
             id: 'repository-1',
             lastSyncAt: null,
-            name: 'ezrepo',
+            name: 'repovio',
             owner: 'tobiaswaelde',
             providerAccountId: 'provider-1',
-            url: 'https://github.com/tobiaswaelde/ezrepo',
+            url: 'https://github.com/repovio/repovio',
             workflowRunRetentionDays: null,
           },
         ],
@@ -114,12 +114,12 @@ test('groups authorized global results and keeps stale responses from replacing 
             providerRunId: '42',
             providerType: 'GITHUB',
             repositoryId: 'repository-1',
-            repositoryName: 'ezrepo',
+            repositoryName: 'repovio',
             repositoryOwner: 'tobiaswaelde',
             startedAt: '2026-09-10T00:00:00.000Z',
             status: 'SUCCESS',
-            url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/42',
-            workflowName: 'ezRepo deployment',
+            url: 'https://github.com/repovio/repovio/actions/runs/42',
+            workflowName: 'Repovio deployment',
           },
         ],
       },
@@ -131,10 +131,10 @@ test('groups authorized global results and keeps stale responses from replacing 
         enabled: true,
         id: 'repository-1',
         lastSyncAt: null,
-        name: 'ezrepo',
+        name: 'repovio',
         owner: 'tobiaswaelde',
         providerAccountId: 'provider-1',
-        url: 'https://github.com/tobiaswaelde/ezrepo',
+        url: 'https://github.com/repovio/repovio',
         workflowRunRetentionDays: null,
       },
     }),
@@ -151,19 +151,19 @@ test('groups authorized global results and keeps stale responses from replacing 
 
   const results = page.getByRole('listbox', { name: 'Search results' });
   await expect(results.getByText('Provider accounts', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'ezRepo GitHub, GITHUB' })).toHaveAttribute(
+  await expect(results.getByRole('option', { name: 'Repovio GitHub, GITHUB' })).toHaveAttribute(
     'href',
     '/admin/providers',
   );
   await expect(results.getByText('Repositories', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'tobiaswaelde/ezrepo', exact: true })).toHaveAttribute(
+  await expect(results.getByRole('option', { name: 'repovio/repovio', exact: true })).toHaveAttribute(
     'href',
     '/repositories?repository=repository-1',
   );
   await expect(results.getByText('Workflow runs', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'ezRepo deployment, tobiaswaelde/ezrepo' })).toHaveAttribute(
+  await expect(results.getByRole('option', { name: 'Repovio deployment, repovio/repovio' })).toHaveAttribute(
     'href',
-    'https://github.com/tobiaswaelde/ezrepo/actions/runs/42',
+    'https://github.com/repovio/repovio/actions/runs/42',
   );
   await expect(results).not.toContainText('obsolete');
   expect(requestedSearchUrls.filter((url) => url.includes('search=flow'))).toHaveLength(3);
@@ -182,9 +182,9 @@ test('groups authorized global results and keeps stale responses from replacing 
   await expect(search).toBeFocused();
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await search.click();
-  await results.getByRole('option', { name: 'tobiaswaelde/ezrepo', exact: true }).click();
+  await results.getByRole('option', { name: 'repovio/repovio', exact: true }).click();
   await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  await expect(page.getByRole('dialog', { name: 'tobiaswaelde/ezrepo' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'repovio/repovio' })).toBeVisible();
 });
 
 test('does not request or expose provider accounts to a viewer and preserves successful groups on partial failure', async ({
@@ -205,10 +205,10 @@ test('does not request or expose provider accounts to a viewer and preserves suc
             enabled: true,
             id: 'repository-1',
             lastSyncAt: null,
-            name: 'ezrepo',
+            name: 'repovio',
             owner: 'tobiaswaelde',
             providerAccountId: 'provider-1',
-            url: 'https://github.com/tobiaswaelde/ezrepo',
+            url: 'https://github.com/repovio/repovio',
             workflowRunRetentionDays: null,
           },
         ],
@@ -220,7 +220,7 @@ test('does not request or expose provider accounts to a viewer and preserves suc
   await page.goto('/');
   await page.getByRole('combobox', { name: 'Search' }).fill('flow');
   const results = page.getByRole('listbox', { name: 'Search results' });
-  await expect(results.getByRole('option', { name: 'tobiaswaelde/ezrepo', exact: true })).toBeVisible();
+  await expect(results.getByRole('option', { name: 'repovio/repovio', exact: true })).toBeVisible();
   await expect(results.getByText('Some result groups could not be loaded.')).toBeVisible();
   await expect(results.getByText('Workflow runs', { exact: true })).toBeVisible();
   expect(providerRequestCount).toBe(0);

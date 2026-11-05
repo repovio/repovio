@@ -16,11 +16,11 @@ const issue = {
   providerType: 'GITHUB',
   providerUpdatedAt: '2026-09-12T08:00:00.000Z',
   repositoryId: 'repository-1',
-  repositoryName: 'ezrepo',
+  repositoryName: 'repovio',
   repositoryOwner: 'tobiaswaelde',
   state: 'OPEN',
   title: 'Track provider issues',
-  url: 'https://github.com/tobiaswaelde/ezrepo/issues/204',
+  url: 'https://github.com/repovio/repovio/issues/204',
 };
 
 const pullRequest = {
@@ -34,13 +34,13 @@ const pullRequest = {
   sourceBranch: 'feature/work-items',
   targetBranch: 'main',
   title: 'Track merge requests',
-  url: 'https://gitlab.example.test/ezrepo/-/merge_requests/213',
+  url: 'https://gitlab.example.test/repovio/-/merge_requests/213',
   workflowApprovalRequired: true,
   workflowStatus: 'FAILED',
 };
 
 async function mockShell(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'viewer', role: 'VIEWER', username: 'viewer' } }),
   );
@@ -53,7 +53,7 @@ async function mockShell(page: Page): Promise<void> {
   await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
     route.fulfill({
       json: {
-        items: [{ id: 'repository-1', name: 'ezrepo', owner: 'tobiaswaelde' }],
+        items: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
         meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
       },
     }),

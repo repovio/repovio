@@ -67,7 +67,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { usePendingActions } from '~/composables/use-pending-actions';
 import type { WorkflowFilter } from '~/types/api/resources';
 
@@ -76,7 +76,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { isPending, run: runPendingAction } = usePendingActions();
 const filters = ref<WorkflowFilter[]>([]);
 const loading = ref(true);

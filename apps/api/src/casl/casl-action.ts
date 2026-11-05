@@ -1,4 +1,4 @@
-/** Actions available to ezRepo authorization policies. */
+/** Actions available to Repovio authorization policies. */
 export enum CaslAction {
   Manage = 'manage',
   Create = 'create',

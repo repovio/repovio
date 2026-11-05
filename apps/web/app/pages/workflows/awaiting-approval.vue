@@ -113,14 +113,14 @@
 import type { TableColumn } from '#ui/types';
 import { computed, onMounted, ref } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { DashboardWorkflowRun } from '~/types/api/resources';
 
 definePageMeta({ fullWidth: true });
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const loadError = ref(false);
 const loading = ref(true);

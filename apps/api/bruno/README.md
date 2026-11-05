@@ -1,7 +1,7 @@
-# ezRepo API Bruno Collection
+# Repovio API Bruno Collection
 
 This collection contains version-controlled requests for manually verifying the
-ezRepo API. Open `apps/api/bruno` as a collection in [Bruno](https://www.usebruno.com/).
+Repovio API. Open `apps/api/bruno` as a collection in [Bruno](https://www.usebruno.com/).
 
 ## Development environment
 

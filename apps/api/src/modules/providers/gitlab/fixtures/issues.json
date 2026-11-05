@@ -5,7 +5,7 @@
     "title": "Tracked issue",
     "description": "Issue body",
     "state": "opened",
-    "web_url": "https://gitlab.example.test/group/ezrepo/-/issues/7",
+    "web_url": "https://gitlab.example.test/group/repovio/-/issues/7",
     "created_at": "2026-09-01T10:00:00Z",
     "updated_at": "2026-09-02T10:00:00Z",
     "closed_at": null,

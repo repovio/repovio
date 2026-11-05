@@ -1,6 +1,6 @@
 import { version as appVersion } from '../../package.json';
 
-/** Nuxt configuration for the ezRepo single-page dashboard. */
+/** Nuxt configuration for the Repovio single-page dashboard. */
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   css: ['~/assets/css/main.css'],
@@ -24,14 +24,14 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon-180x180.png' },
       ],
       meta: [
-        { name: 'theme-color', content: '#0891b2' },
+        { name: 'theme-color', content: '#4f46ff' },
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       ],
       script: [{ src: '/oidc-handoff.js' }],
-      title: 'ezRepo',
-      titleTemplate: '%s · ezRepo',
+      title: 'Repovio',
+      titleTemplate: '%s · Repovio',
     },
   },
   colorMode: {
@@ -70,7 +70,7 @@ export default defineNuxtConfig({
   },
   i18n: {
     detectBrowserLanguage: {
-      cookieKey: 'ezrepo-locale',
+      cookieKey: 'repovio-locale',
       fallbackLocale: 'en',
       redirectOn: 'root',
       useCookie: true,
@@ -97,7 +97,7 @@ export default defineNuxtConfig({
       registerPlugin: true,
     },
     manifest: {
-      background_color: '#020617',
+      background_color: '#0b1238',
       description: 'Read-only workflow status dashboard for GitHub, GitLab, Forgejo, and Gitea.',
       display: 'standalone',
       id: '/',
@@ -108,11 +108,11 @@ export default defineNuxtConfig({
         { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
       lang: 'en',
-      name: 'ezRepo',
+      name: 'Repovio',
       scope: '/',
-      short_name: 'ezRepo',
+      short_name: 'Repovio',
       start_url: '/',
-      theme_color: '#0891b2',
+      theme_color: '#4f46ff',
     },
     registerType: 'prompt',
     workbox: {

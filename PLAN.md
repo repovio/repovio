@@ -1,8 +1,8 @@
-# ezRepo Monorepo and Release Plan
+# Repovio Monorepo and Release Plan
 
 ## Summary
 
-Build ezRepo as a pnpm/Nx monorepo with:
+Build Repovio as a pnpm/Nx monorepo with:
 
 - `apps/api`: NestJS REST API with Prisma, PostgreSQL, CASL, and `@querry-kit/nest`.
 - `apps/web`: Nuxt 4 single-page dashboard with Pinia, Nuxt UI, and `@querry-kit/nuxt`.
@@ -18,9 +18,9 @@ Do not copy Machine Admin domain models or endpoints.
 
 ## Technical Baseline
 
-- Use Node.js 24, pnpm via Corepack, and TypeScript pinned exactly to `6.0.3`.
+- Use Node.js 26.13.0, pnpm 11.28.9 via Corepack, and the existing TypeScript compiler aliases.
 - Load and validate API environment variables with `envalid`; use `dotenv` only to load local environment files before validation.
-- Configure TypeScript 6 at the workspace root and verify it in CI with API and web typechecks. Re-evaluate
+- Configure the existing TypeScript compiler aliases at the workspace root and verify it in CI with API and web typechecks. Re-evaluate
   TypeScript 7 when the lint and import-organization toolchain supports its compiler API.
 - Use strict TypeScript settings unless a framework-generated configuration requires an explicit compatibility override.
 - Use Prettier, ESLint, JSDoc/TSDoc, and explicit types for exported APIs.
@@ -38,7 +38,7 @@ Do not copy Machine Admin domain models or endpoints.
   - DTO mapping with the active CASL ability.
 - Use JWT bearer authentication with local username/password accounts and an initial admin created from environment variables.
 - Define CASL roles and capabilities:
-  - `SYSTEM_ADMIN`: unrestricted ezRepo administration.
+  - `SYSTEM_ADMIN`: unrestricted Repovio administration.
   - `VIEWER`: read-only access to explicitly assigned repositories.
   - `MANAGER`: viewer access plus configuration access for assigned repositories.
 - Enforce repository permissions in database queries, not only in DTO serialization.
@@ -68,7 +68,7 @@ Provider integration must be read-only:
 - Never create, modify, start, stop, or rerun provider workflows.
 - Poll tracked repositories on a configurable schedule.
 - Accept manually configured, signature-validated provider webhooks to trigger targeted syncs.
-- Do not create or modify provider webhooks through ezRepo credentials.
+- Do not create or modify provider webhooks through Repovio credentials.
 
 Encrypt provider tokens and Gotify/ntfy credentials at rest. Never return secrets from API responses.
 
@@ -135,15 +135,15 @@ Create these GitHub Actions workflows:
   - Run on pushes to `main` and by manual dispatch.
   - Use `changesets/action` to create or update a release pull request.
   - Release only after that Changesets release pull request is merged.
-  - Use one private root package named `ezrepo`; each Changeset increments the single application version.
+  - Use one private root package named `repovio`; each Changeset increments the single application version.
   - Create a GitHub release and version tag after the release pull request merge.
   - Build and publish both images to GHCR:
-    - `ghcr.io/<owner>/ezrepo-api`
-    - `ghcr.io/<owner>/ezrepo-web`
+    - `ghcr.io/<owner>/repovio-api`
+    - `ghcr.io/<owner>/repovio-web`
   - Publish the exact SemVer version and `latest` tags for both images.
   - Grant only `contents: write`, `pull-requests: write`, and `packages: write`.
 
-Use one shared `EZREPO_VERSION` in Docker Compose so API and web always deploy from the same release.
+Use one shared `REPOVIO_VERSION` in Docker Compose so API and web always deploy from the same release.
 
 ## Validation
 

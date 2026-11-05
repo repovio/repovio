@@ -73,12 +73,12 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { SecurityAlert } from '~/types/api/resources';
 
 const props = defineProps<{ id: string }>();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const alert = ref<SecurityAlert | null>(null);
 const loading = ref(true);

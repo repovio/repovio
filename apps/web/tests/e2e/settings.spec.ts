@@ -18,7 +18,7 @@ test('updates global retention and date-time formatting with visible request pro
     releaseSettingsUpdate = resolve;
   });
 
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', async (route) => {
     await route.fulfill({
       contentType: 'application/json',
@@ -106,7 +106,7 @@ test('updates global retention and date-time formatting with visible request pro
 
 /** Let non-administrators manage personal preferences without exposing global settings. */
 test('shows personal settings but hides global defaults from non-administrators', async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', async (route) => {
     await route.fulfill({
       contentType: 'application/json',
@@ -148,7 +148,7 @@ test('updates personal details and refreshes the visible user identity', async (
   const updateGate = new Promise<void>((resolve) => {
     releaseUpdate = resolve;
   });
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', async (route) => {
     if (route.request().method() === 'PATCH') {
       expect(route.request().postDataJSON()).toEqual({
@@ -188,7 +188,7 @@ test('manages a cropped personal avatar from upload and HTTPS import', async ({ 
     username: 'viewer',
   };
   let uploadCount = 0;
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ contentType: 'application/json', json: currentUser }),
   );

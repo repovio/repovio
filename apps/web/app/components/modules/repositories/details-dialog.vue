@@ -79,7 +79,7 @@
 import { computed, ref, watch } from 'vue';
 
 import { defineEmits, defineModel, defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useAuthStore } from '~/store/auth';
 import type { Repository, RepositoryWebhookConfiguration } from '~/types/api/resources';
 
@@ -95,7 +95,7 @@ const emit = defineEmits<{
   webhookUpdated: [configuration: RepositoryWebhookConfiguration];
 }>();
 
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const auth = useAuthStore();
 const { t } = useI18n();
 const repository = ref<Repository>();

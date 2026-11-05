@@ -48,7 +48,7 @@ describe('OidcController authorization and browser handoff', () => {
 
     await controller.callback(
       {
-        headers: { cookie: 'ezrepo_oidc_binding=binding' },
+        headers: { cookie: 'repovio_oidc_binding=binding' },
         originalUrl: '/api/v1/auth/oidc/callback?code=provider-code&state=provider-state',
       } as never,
       response as never,

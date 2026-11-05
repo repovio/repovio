@@ -9,9 +9,9 @@ import {
 
 const rules = {
   allowUnmatchedViewer: false,
-  managerGroups: ['ezrepo-managers'],
-  systemAdministratorGroups: ['ezrepo-admins'],
-  viewerGroups: ['ezrepo-viewers'],
+  managerGroups: ['repovio-managers'],
+  systemAdministratorGroups: ['repovio-admins'],
+  viewerGroups: ['repovio-viewers'],
 };
 
 describe('OIDC claim handling', () => {
@@ -37,9 +37,9 @@ describe('OIDC claim handling', () => {
 
   it('applies exact group mappings in descending role priority', () => {
     expect(
-      decideOidcAccess({ groups: ['ezrepo-viewers', 'ezrepo-admins', 'EZREPO-ADMINS'], status: 'ok' }, rules),
+      decideOidcAccess({ groups: ['repovio-viewers', 'repovio-admins', 'REPOVIO-ADMINS'], status: 'ok' }, rules),
     ).toMatchObject({ ok: true, role: 'SYSTEM_ADMIN' });
-    expect(decideOidcAccess({ groups: ['ezrepo-managers'], status: 'ok' }, rules)).toMatchObject({
+    expect(decideOidcAccess({ groups: ['repovio-managers'], status: 'ok' }, rules)).toMatchObject({
       ok: true,
       role: 'MANAGER',
     });

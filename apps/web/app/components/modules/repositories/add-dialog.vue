@@ -110,7 +110,7 @@
 import { computed, ref, watch } from 'vue';
 
 import { defineEmits, defineModel } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useProviderType } from '~/composables/enums/provider-type';
 import type { ProviderAccount, ProviderRepository } from '~/types/api/resources';
 
@@ -120,7 +120,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const { getLabel: getProviderTypeLabel } = useProviderType();
 const providerAccounts = ref<ProviderAccount[]>([]);
 const providerAccountsLoading = ref(false);

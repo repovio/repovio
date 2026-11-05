@@ -11,7 +11,7 @@ const repository = {
   issueRetentionDays: 14,
   lastSyncAt: '2020-01-01T00:00:00.000Z',
   members: [],
-  name: 'ezrepo',
+  name: 'repovio',
   owner: 'twaelde',
   providerAccountId: 'provider-1',
   providerRepositoryId: '42',
@@ -28,14 +28,14 @@ const repository = {
     startedAt: '2026-09-29T08:01:00.000Z',
     status: 'RUNNING',
   },
-  url: 'https://github.com/tobiaswaelde/ezrepo',
+  url: 'https://github.com/repovio/repovio',
   workflowRunCount: 12,
   workflowRunRetentionDays: 30,
 };
 
 /** Mock the authenticated viewer shell and sidebar counters. */
 async function mockViewerShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'viewer-1', role, username: 'viewer' } }),
   );
@@ -78,7 +78,7 @@ test('shows repository freshness, activity, provider links, and a partial sectio
             id: 'run-1',
             providerCreatedAt: '2026-09-29T08:00:00.000Z',
             status: 'SUCCESS',
-            url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/1',
+            url: 'https://github.com/repovio/repovio/actions/runs/1',
             workflowName: 'Build',
           },
         ],
@@ -97,7 +97,7 @@ test('shows repository freshness, activity, provider links, and a partial sectio
             providerUpdatedAt: '2026-09-29T08:04:00.000Z',
             state: 'OPEN',
             title: 'Improve repository details',
-            url: 'https://github.com/tobiaswaelde/ezrepo/pull/17',
+            url: 'https://github.com/repovio/repovio/pull/17',
           },
         ],
       },
@@ -108,7 +108,7 @@ test('shows repository freshness, activity, provider links, and a partial sectio
   await expect(page.locator('.animate-pulse').first()).toBeVisible();
   releaseRepository?.();
 
-  await expect(page).toHaveTitle('twaelde/ezrepo · ezRepo');
+  await expect(page).toHaveTitle('twaelde/repovio · Repovio');
   await expect(page.getByText('Repository data is stale')).toBeVisible();
   await expect(
     page.getByText('The provider rate limit was reached. Synchronization will resume automatically.'),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** ISO-8601 timestamp returned by the ezRepo HTTP API. */
+/** ISO-8601 timestamp returned by the Repovio HTTP API. */
 export type ApiTimestamp = string;
 
 /** Application-wide date and time presentation supported by the API. */
@@ -185,7 +185,7 @@ export interface ProviderOAuthAuthorization {
   authorizationUrl: string;
 }
 
-/** Safe provider authentication capabilities for the current ezRepo installation. */
+/** Safe provider authentication capabilities for the current Repovio installation. */
 export interface ProviderAuthenticationOptions {
   oauthProviderTypes: ProviderType[];
 }

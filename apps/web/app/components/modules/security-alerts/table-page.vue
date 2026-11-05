@@ -131,7 +131,7 @@ import { FilterFieldType, type FilterField, type SortingField } from '@querry-ki
 import { refDebounced } from '@vueuse/core';
 
 import { defineProps } from 'vue';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
@@ -150,7 +150,7 @@ const props = defineProps<{ kind: SecurityAlertKind }>();
 type AlertRow = SecurityAlert & Record<string, unknown>;
 type AlertColumn = ColumnDefinition<AlertRow> & { header: string; id: string };
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const route = useRoute();
 const { formatDateTime } = useDateTime();
 const { getLabel: getProviderTypeLabel } = useProviderType();

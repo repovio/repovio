@@ -3,13 +3,13 @@ import { buildTestDatabaseCleanupStatement } from './test-database.service.js';
 describe('buildTestDatabaseCleanupStatement', () => {
   it('requires a test database name', () => {
     expect(() =>
-      buildTestDatabaseCleanupStatement('postgresql://ezrepo:ezrepo@localhost:5432/ezrepo', ['users']),
+      buildTestDatabaseCleanupStatement('postgresql://repovio:repovio@localhost:5432/repovio', ['users']),
     ).toThrow('test database');
   });
 
   it('creates a deterministic truncation statement for discovered tables', () => {
     expect(
-      buildTestDatabaseCleanupStatement('postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_test', [
+      buildTestDatabaseCleanupStatement('postgresql://repovio:repovio@localhost:5432/repovio_test', [
         'workflow_runs',
         'users',
       ]),
@@ -17,6 +17,8 @@ describe('buildTestDatabaseCleanupStatement', () => {
   });
 
   it('does not execute a statement when no application tables exist', () => {
-    expect(buildTestDatabaseCleanupStatement('postgresql://ezrepo:ezrepo@localhost:5432/ezrepo_test', [])).toBeNull();
+    expect(
+      buildTestDatabaseCleanupStatement('postgresql://repovio:repovio@localhost:5432/repovio_test', []),
+    ).toBeNull();
   });
 });

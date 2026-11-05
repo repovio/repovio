@@ -3,7 +3,7 @@
 self.addEventListener('push', (event) => {
   const payload = event.data?.json() ?? {};
   event.waitUntil(
-    self.registration.showNotification(payload.title ?? 'ezRepo', {
+    self.registration.showNotification(payload.title ?? 'Repovio', {
       body: payload.body ?? '',
       data: { url: payload.url || '/' },
       icon: '/favicon.svg',

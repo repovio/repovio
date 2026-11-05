@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 };
 
 async function mockShell(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({
       json: {
@@ -28,7 +28,7 @@ async function mockShell(page: Page): Promise<void> {
     route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
   );
   await page.route('**/api/v1/notification-channels/manageable-repositories', (route) =>
-    route.fulfill({ json: [{ id: 'repository-1', name: 'ezrepo', owner: 'tobiaswaelde' }] }),
+    route.fulfill({ json: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }] }),
   );
   await page.route('**/api/v1/users**', (route) =>
     route.fulfill({
@@ -78,7 +78,7 @@ test('shows global channel events and system-wide delivery history', async ({ pa
           {
             eventType: 'WORKFLOW_RUN_FAILED',
             id: 'run-1',
-            repositoryName: 'ezrepo',
+            repositoryName: 'repovio',
             repositoryOwner: 'tobiaswaelde',
             url: 'https://example.com/run/1',
             workflowName: 'deploy-production',
@@ -117,7 +117,7 @@ test('shows global channel events and system-wide delivery history', async ({ pa
             notificationChannelName: 'Operations',
             notificationChannelType: 'GOTIFY',
             repositoryId: 'repository-1',
-            repositoryName: 'ezrepo',
+            repositoryName: 'repovio',
             repositoryOwner: 'tobiaswaelde',
             requestedByUsername: null,
             status: 'FAILED',
@@ -165,7 +165,7 @@ test('shows global channel events and system-wide delivery history', async ({ pa
   await dialog.getByRole('textbox', { name: 'Workflow patterns' }).fill('deploy-*');
   await dialog.getByRole('button', { name: 'Preview matching runs' }).click();
   await expect(dialog.getByText('1 recent workflow runs match this rule.')).toBeVisible();
-  await expect(dialog.getByRole('link', { name: /tobiaswaelde\/ezrepo · deploy-production/ })).toHaveAttribute(
+  await expect(dialog.getByRole('link', { name: /tobiaswaelde\/repovio · deploy-production/ })).toHaveAttribute(
     'href',
     'https://example.com/run/1',
   );

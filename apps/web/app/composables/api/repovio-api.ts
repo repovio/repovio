@@ -49,8 +49,8 @@ import type {
 } from '~/types/api/resources';
 import { useApi } from './api';
 
-/** Provide typed methods for ezRepo's non-Query-Kit API endpoints. */
-export function useEzRepoApi() {
+/** Provide typed methods for Repovio's non-Query-Kit API endpoints. */
+export function useRepovioApi() {
   const api = useApi();
 
   return {

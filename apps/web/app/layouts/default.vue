@@ -1,5 +1,5 @@
 <template>
-  <UDashboardGroup storage="local" storage-key="ezrepo" unit="rem">
+  <UDashboardGroup storage="local" storage-key="repovio" unit="rem">
     <a
       class="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-inverted focus:outline-none"
       href="#main-content"

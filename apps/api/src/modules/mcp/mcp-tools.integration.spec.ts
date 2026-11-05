@@ -32,19 +32,19 @@ describe('MCP tool authorization integration', () => {
       prisma.repository.create({
         data: {
           name: 'visible',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: providerAccount.id,
           providerRepositoryId: 'visible',
-          url: 'https://github.com/ezrepo/visible',
+          url: 'https://github.com/repovio/visible',
         },
       }),
       prisma.repository.create({
         data: {
           name: 'hidden',
-          owner: 'ezrepo',
+          owner: 'repovio',
           providerAccountId: providerAccount.id,
           providerRepositoryId: 'hidden',
-          url: 'https://github.com/ezrepo/hidden',
+          url: 'https://github.com/repovio/hidden',
         },
       }),
     ]);

@@ -13,9 +13,9 @@ const alert = {
   providerCreatedAt: '2026-09-28T08:00:00.000Z',
   providerType: 'GITHUB',
   providerUpdatedAt: '2026-09-29T08:00:00.000Z',
-  providerUrl: 'https://github.test/ezrepo/security/dependabot/1',
+  providerUrl: 'https://github.test/repovio/security/dependabot/1',
   repositoryId: 'repository-1',
-  repositoryName: 'ezrepo',
+  repositoryName: 'repovio',
   repositoryOwner: 'tobiaswaelde',
   resolution: null,
   resolvedAt: null,
@@ -31,7 +31,7 @@ const alert = {
 };
 
 async function mockShell(page: Page, role: 'MANAGER' | 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('ezrepo.access-token', 'playwright-access-token'));
+  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: role.toLocaleLowerCase(), role, username: role.toLocaleLowerCase() } }),
   );
@@ -80,7 +80,7 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
         manifests: ['pnpm-lock.yaml'],
         packages: ['vite'],
         paths: [],
-        repositories: [{ id: 'repository-1', name: 'ezrepo', owner: 'tobiaswaelde' }],
+        repositories: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
         rules: [],
         scanners: ['Dependabot'],
         secretProviders: [],
@@ -108,7 +108,7 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
     ),
   ).toBeVisible();
   await expect(page.getByText('Vite path traversal')).toBeVisible();
-  await expect(page.getByText('tobiaswaelde/ezrepo')).toBeVisible();
+  await expect(page.getByText('repovio/repovio')).toBeVisible();
   await page.getByRole('textbox', { name: 'Search alerts' }).fill('vite');
   await page.getByLabel('Updated from').fill('2026-09-01');
   await expect

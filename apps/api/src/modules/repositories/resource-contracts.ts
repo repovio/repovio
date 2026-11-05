@@ -6,8 +6,8 @@ import {
   type WorkflowRunResourceModel,
 } from './dto/resource.dto.js';
 
-/** API endpoint response mapping for queryable ezRepo resources. */
-export interface EzRepoEndpointTypeMap {
+/** API endpoint response mapping for queryable Repovio resources. */
+export interface RepovioEndpointTypeMap {
   repositories: RepositoryDto;
   workflowRuns: WorkflowRunDto;
 }

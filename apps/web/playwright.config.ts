@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-/** Browser-test configuration for reproducible ezRepo web application checks. */
+/** Browser-test configuration for reproducible Repovio web application checks. */
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30_000,

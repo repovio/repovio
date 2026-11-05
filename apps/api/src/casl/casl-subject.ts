@@ -1,4 +1,4 @@
-/** Resources protected by ezRepo authorization policies. */
+/** Resources protected by Repovio authorization policies. */
 export enum CaslSubject {
   All = 'all',
   User = 'User',

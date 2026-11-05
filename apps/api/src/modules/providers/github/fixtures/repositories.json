@@ -1,9 +1,9 @@
 [
   {
     "id": 1,
-    "name": "ezrepo",
-    "full_name": "octo/ezrepo",
-    "html_url": "https://github.com/octo/ezrepo",
+    "name": "repovio",
+    "full_name": "octo/repovio",
+    "html_url": "https://github.com/octo/repovio",
     "owner": { "login": "octo" }
   }
 ]

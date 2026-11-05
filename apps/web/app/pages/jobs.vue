@@ -154,8 +154,8 @@ import type { TableColumn } from '#ui/types';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
 import { useModuleApi } from '~/composables/api/module-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import { usePendingActions } from '~/composables/use-pending-actions';
 import { useAuthStore } from '~/store/auth';
@@ -164,7 +164,7 @@ import { syncErrorKind } from '~/util/sync-error';
 
 const refreshIntervalMs = 5_000;
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const jobsApi = useModuleApi('jobs/repository-sync');
 const auth = useAuthStore();
 const { formatDateTime } = useDateTime();

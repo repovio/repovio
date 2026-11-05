@@ -18,13 +18,13 @@ describe('NotificationChannelUrlService', () => {
 
   it('builds an SMTP URL without logging or returning separate credentials', () => {
     const prepared = service.prepare(NotificationChannelType.EMAIL, {
-      from: 'ezrepo@example.com',
+      from: 'repovio@example.com',
       password: 'secret',
       port: 587,
       recipients: ['on-call@example.com'],
       security: 'STARTTLS',
       smtpHost: 'smtp.example.com',
-      username: 'ezrepo',
+      username: 'repovio',
     });
 
     expect(prepared?.scheme).toBe('mailtos');

@@ -11,7 +11,7 @@ import {
   McpAccessTokenDto,
 } from './dto/mcp-access-token.dto.js';
 
-const tokenPrefix = 'ezrepo_mcp_';
+const tokenPrefix = 'repovio_mcp_';
 
 /** Creates, validates, and revokes user-owned MCP bearer tokens. */
 @Injectable()

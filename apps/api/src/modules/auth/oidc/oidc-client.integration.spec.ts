@@ -55,9 +55,9 @@ describe('OIDC client against a signed HTTP mock provider', () => {
           const now = Math.floor(Date.now() / 1000);
           const header = encodeJson({ alg: 'RS256', kid: 'test-key', typ: 'JWT' });
           const payload = encodeJson({
-            aud: 'ezrepo',
+            aud: 'repovio',
             exp: now + 60,
-            groups: ['ezrepo-viewers'],
+            groups: ['repovio-viewers'],
             iat: now,
             iss: issuer,
             nonce: 'expected-nonce',
@@ -102,7 +102,7 @@ describe('OIDC client against a signed HTTP mock provider', () => {
   async function exchange(input: { nonce?: string; state?: string; verifier?: string } = {}) {
     const handle = await buildOidcClient({
       allowHttpIssuer: true,
-      clientId: 'ezrepo',
+      clientId: 'repovio',
       clientSecret: null,
       issuer,
     });
@@ -117,7 +117,7 @@ describe('OIDC client against a signed HTTP mock provider', () => {
 
   it('accepts a correctly signed authorization-code response with nonce, state, audience, issuer, and subject', async () => {
     await expect(exchange()).resolves.toMatchObject({
-      claims: { groups: ['ezrepo-viewers'] },
+      claims: { groups: ['repovio-viewers'] },
       subject: 'stable-subject',
     });
   });

@@ -2,6 +2,7 @@
 
 @import 'tailwindcss';
 @import '@nuxt/ui';
+@import './brand.css';
 
 @theme {
   --font-display: 'JetBrains Mono', ui-monospace, monospace;

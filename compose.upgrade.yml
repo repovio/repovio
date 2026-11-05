@@ -1,0 +1,5 @@
+# Upgrade-only override: require the exact existing volume instead of creating a blank replacement.
+volumes:
+  repovio-postgres:
+    external: true
+    name: ${REPOVIO_POSTGRES_VOLUME:?Set the exact existing PostgreSQL volume name before upgrading}

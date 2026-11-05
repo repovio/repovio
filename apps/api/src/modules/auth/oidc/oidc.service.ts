@@ -271,7 +271,7 @@ export class OidcService {
   }
 
   /**
-   * Atomically exchange one browser handoff code for the normal ezRepo bearer session.
+   * Atomically exchange one browser handoff code for the normal Repovio bearer session.
    *
    * @param code - Opaque one-time exchange code.
    * @returns The normal authentication result and validated return path.

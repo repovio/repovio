@@ -189,11 +189,11 @@ async function createRepository(prisma: PrismaService) {
   });
   const repository = await prisma.repository.create({
     data: {
-      name: 'ezrepo',
+      name: 'repovio',
       owner: 'octo',
       providerAccountId: account.id,
       providerRepositoryId: '42',
-      url: 'https://github.example.test/octo/ezrepo',
+      url: 'https://github.example.test/octo/repovio',
     },
   });
   return { account, repository };

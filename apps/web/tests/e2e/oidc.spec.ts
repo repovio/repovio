@@ -40,7 +40,7 @@ test('removes the handoff code from the URL before exchanging it for a normal be
   await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
   await page.route('**/api/v1/auth/oidc/exchange', async (route) => {
     expect(route.request().postDataJSON()).toEqual({ code: 'opaque-one-time-code' });
-    await expect(page).toHaveURL('http://[::1]:3000/auth/oidc/callback');
+    await expect(page).toHaveURL('/auth/oidc/callback');
     await exchangeGate;
     await route.fulfill({
       json: {
@@ -56,7 +56,7 @@ test('removes the handoff code from the URL before exchanging it for a normal be
   releaseExchange?.();
 
   await expect(page).toHaveURL('/admin/settings');
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('ezrepo.access-token'))).toBe('oidc-access-token');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('repovio.access-token'))).toBe('oidc-access-token');
   expect(browserMessages.join('\n')).not.toContain('opaque-one-time-code');
 });
 
@@ -64,23 +64,23 @@ test('configures OIDC through the administrator-only authentication page', async
   const oidcConfig = {
     allowHttpIssuer: false,
     allowUnmatchedViewer: false,
-    callbackUrl: 'https://ezrepo.example.com/api/v1/auth/oidc/callback',
-    clientId: 'ezrepo',
+    callbackUrl: 'https://repovio.example.com/api/v1/auth/oidc/callback',
+    clientId: 'repovio',
     clientSecretConfigured: true,
     configRevision: 2,
     enabled: true,
     groupsClaim: 'groups',
-    issuer: 'https://id.example/application/o/ezrepo/',
-    managerGroups: ['ezrepo-managers'],
-    observedGroups: ['ezrepo-admins', 'ezrepo-viewers'],
+    issuer: 'https://id.example/application/o/repovio/',
+    managerGroups: ['repovio-managers'],
+    observedGroups: ['repovio-admins', 'repovio-viewers'],
     providerName: 'Company SSO',
     scopes: ['openid', 'profile', 'email'],
     secretDecryptable: true,
-    systemAdministratorGroups: ['ezrepo-admins'],
+    systemAdministratorGroups: ['repovio-admins'],
     updatedAt: '2026-10-04T12:00:00.000Z',
-    viewerGroups: ['ezrepo-viewers'],
+    viewerGroups: ['repovio-viewers'],
   };
-  await page.addInitScript(() => localStorage.setItem('ezrepo.access-token', 'administrator-token'));
+  await page.addInitScript(() => localStorage.setItem('repovio.access-token', 'administrator-token'));
   await page.route('**/api/v1/auth/me', (route) => route.fulfill({ json: administrator }));
   await page.route('**/api/v1/auth/oidc/config', (route) => route.fulfill({ json: oidcConfig }));
   await page.route('**/api/v1/auth/oidc/check', (route) =>
@@ -101,7 +101,7 @@ test('configures OIDC through the administrator-only authentication page', async
   await expect(page.getByRole('link', { name: 'Authentication' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('textbox', { name: 'Client secret' })).toHaveValue('');
   await expect(page.getByText('Leave blank to retain the stored secret.')).toBeVisible();
-  await expect(page.getByText('ezrepo-admins', { exact: true })).toBeVisible();
+  await expect(page.getByText('repovio-admins', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.getByText('OIDC discovery succeeded')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('oidc-administration.png'), fullPage: true });
@@ -109,7 +109,7 @@ test('configures OIDC through the administrator-only authentication page', async
 
 test('marks OIDC users and keeps only their local avatar editable', async ({ page }) => {
   const oidcAdministrator = { ...administrator, authProvider: 'OIDC' as const, username: 'oidc_admin' };
-  await page.addInitScript(() => localStorage.setItem('ezrepo.access-token', 'oidc-administrator-token'));
+  await page.addInitScript(() => localStorage.setItem('repovio.access-token', 'oidc-administrator-token'));
   await page.route('**/api/v1/auth/me', (route) => route.fulfill({ json: oidcAdministrator }));
   await page.route(/\/api\/v1\/users(?:\?.*)?$/, (route) =>
     route.fulfill({

@@ -4,7 +4,7 @@ const accessToken = 'playwright-access-token';
 
 /** Configure the authenticated dashboard shell required by the global status bar. */
 async function mockDashboardShell(page: Page): Promise<void> {
-  await page.addInitScript((token) => window.localStorage.setItem('ezrepo.access-token', token), accessToken);
+  await page.addInitScript((token) => window.localStorage.setItem('repovio.access-token', token), accessToken);
   await page.route('**/api/v1/auth/me', (route) =>
     route.fulfill({ json: { id: 'playwright', role: 'VIEWER', username: 'playwright' } }),
   );
@@ -66,7 +66,7 @@ test('shows live workflow counts and provider synchronization progress globally'
   const statusBar = page.getByLabel('API status');
   await expect(statusBar).toBeVisible();
   const statusBarBox = await statusBar.boundingBox();
-  const dashboardPanelBox = await page.locator('#ezrepo-panel-main').boundingBox();
+  const dashboardPanelBox = await page.locator('#repovio-panel-main').boundingBox();
   const sidebarBox = await page.getByRole('complementary', { name: 'Sidebar navigation' }).boundingBox();
   expect(statusBarBox).not.toBeNull();
   expect(dashboardPanelBox).not.toBeNull();
@@ -153,11 +153,11 @@ test('refreshes an open workflow-run table once after provider synchronization b
                   id: 'run-1',
                   providerCreatedAt: '2026-09-13T12:00:00.000Z',
                   providerType: 'GITHUB',
-                  repositoryName: 'ezrepo',
+                  repositoryName: 'repovio',
                   repositoryOwner: 'tobiaswaelde',
                   startedAt: '2026-09-13T12:00:00.000Z',
                   status: 'RUNNING',
-                  url: 'https://github.com/tobiaswaelde/ezrepo/actions/runs/1',
+                  url: 'https://github.com/repovio/repovio/actions/runs/1',
                   workflowName: 'Test',
                 },
               ]

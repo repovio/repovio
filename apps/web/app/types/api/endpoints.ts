@@ -15,7 +15,7 @@ import type {
   WorkflowRun,
 } from './resources';
 
-/** Relative paths for every ezRepo endpoint exposed to the web application. */
+/** Relative paths for every Repovio endpoint exposed to the web application. */
 export const apiEndpoints = {
   auth: {
     currentUser: '/auth/me',
@@ -111,7 +111,7 @@ type ToQueryKitEndpoint<TEndpoint> = TEndpoint extends {
   ? EndpointDefinition<Item, Create, Update>
   : never;
 
-/** Query Kit-compatible representation of ezRepo's paginated resource endpoints. */
+/** Query Kit-compatible representation of Repovio's paginated resource endpoints. */
 export type QueryKitEndpoints = {
   [TEndpoint in Endpoint]: ToQueryKitEndpoint<Endpoints[TEndpoint]>;
 };

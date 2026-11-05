@@ -215,7 +215,7 @@
 import { isAxiosError } from 'axios';
 import { computed, reactive, ref, watch } from 'vue';
 
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import type {
   NotificationChannel,
   NotificationChannelConfiguration,
@@ -234,7 +234,7 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [] }>();
 const { t } = useI18n();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const submitting = ref(false);
 const saveError = ref(false);
 const replaceConfiguration = ref(false);

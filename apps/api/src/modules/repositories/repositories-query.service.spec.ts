@@ -45,19 +45,21 @@ describe('RepositoriesQueryService', () => {
   });
 
   it('searches repository identity fields while preserving caller filters', () => {
-    expect(service.toQueryOptions({ page: 1, perPage: 10, search: 'ezrepo', where: { enabled: true } })).toMatchObject({
-      where: {
-        AND: [
-          { enabled: true },
-          {
-            OR: [
-              { owner: { contains: 'ezrepo', mode: 'insensitive' } },
-              { name: { contains: 'ezrepo', mode: 'insensitive' } },
-              { url: { contains: 'ezrepo', mode: 'insensitive' } },
-            ],
-          },
-        ],
+    expect(service.toQueryOptions({ page: 1, perPage: 10, search: 'repovio', where: { enabled: true } })).toMatchObject(
+      {
+        where: {
+          AND: [
+            { enabled: true },
+            {
+              OR: [
+                { owner: { contains: 'repovio', mode: 'insensitive' } },
+                { name: { contains: 'repovio', mode: 'insensitive' } },
+                { url: { contains: 'repovio', mode: 'insensitive' } },
+              ],
+            },
+          ],
+        },
       },
-    });
+    );
   });
 });

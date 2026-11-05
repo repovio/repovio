@@ -177,7 +177,7 @@
 import { computed, onMounted, ref } from 'vue';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
-import { useEzRepoApi } from '~/composables/api/ezrepo-api';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
 import { useBrowserPush } from '~/composables/app/browser-push';
 import { useDateTime } from '~/composables/use-date-time';
@@ -191,7 +191,7 @@ type ChannelColumn = ColumnDefinition<ChannelRow> & { header: string; id: string
 
 const { t } = useI18n();
 const toast = useToast();
-const api = useEzRepoApi();
+const api = useRepovioApi();
 const auth = useAuthStore();
 const push = useBrowserPush();
 const { formatDateTime } = useDateTime();

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-const releasesUrl = 'https://api.github.com/repos/tobiaswaelde/ezrepo/releases/latest';
+const releasesUrl = 'https://api.github.com/repos/repovio/repovio/releases/latest';
 const cacheTtl = 5 * 60 * 1000;
 
 interface CachedVersion {
@@ -18,7 +18,7 @@ export function parseReleaseVersion(tagName: string | undefined): string | null 
   return tagName?.match(/(?:^|@)v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)$/)?.[1] ?? null;
 }
 
-/** Resolves the latest published ezRepo version without exposing GitHub failures to clients. */
+/** Resolves the latest published Repovio version without exposing GitHub failures to clients. */
 @Injectable()
 export class VersionService {
   private cached: CachedVersion | undefined;
@@ -48,7 +48,7 @@ export class VersionService {
   private async fetchLatest(): Promise<{ latest: string | null }> {
     try {
       const response = await fetch(releasesUrl, {
-        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'ezrepo' },
+        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'repovio' },
       });
       if (!response.ok) return { latest: null };
       const release = (await response.json()) as { tag_name?: string };

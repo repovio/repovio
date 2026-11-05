@@ -18,13 +18,15 @@ Use the API and web images under `ghcr.io/repovio/repovio-api` and `ghcr.io/repo
    `docker volume inspect <recorded-volume>`. The new-installation default is `repovio-postgres`; it must not replace an
    existing installation's volume accidentally.
 4. Retain `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `TOKEN_ENCRYPTION_KEY` and `AUTH_JWT_SECRET` unchanged.
-   Keep PostgreSQL on the same major version. Review `docker compose config` privately before starting; its output contains
+   Complete the branding rename on PostgreSQL 17 first using the previous release configuration. The current Compose
+   configuration targets PostgreSQL 18; follow [the separate PostgreSQL 18 upgrade](postgresql-18-upgrade.md) before
+   using it. Never mount PostgreSQL 17 files into the PostgreSQL 18 service. Review `docker compose config` privately before starting; its output contains
    resolved secrets and must never be shared or committed.
-5. Use `docker compose -f compose.yml -f compose.upgrade.yml` for the upgrade. This override requires the named volume
+5. Use the retained PostgreSQL 17 release's `compose.yml` and `compose.upgrade.yml` for the branding upgrade. That override requires the named volume
    to exist, so a misspelled volume cannot silently initialize an empty replacement. Start PostgreSQL first and verify the existing database, then start the migration service and application. Never run
    `docker compose down --volumes`, remove the old volume, or initialize a blank database as part of this rename.
 
-No data conversion is required by branding. The database credentials and encryption key remain essential to read the
+No data conversion is required by branding alone. A PostgreSQL major upgrade is a separate operation. The database credentials and encryption key remain essential to read the
 existing data. A previous deployment can be restored using its configuration and retained volume; avoid concurrent writers.
 
 ## Authentication and browser state

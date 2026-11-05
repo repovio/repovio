@@ -24,7 +24,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_DB: repovio_test
           POSTGRES_USER: repovio
@@ -97,3 +97,24 @@ jobs:
       - name: Test web app
         if: hashFiles('apps/web/vitest.config.mts') != ''
         run: pnpm nx run web:test
+
+  postgres-upgrade:
+    name: Test PostgreSQL major upgrade
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+
+      - name: Build API image with production dependencies
+        run: docker build -f apps/api/Dockerfile -t repovio-api:upgrade-test .
+
+      - name: Verify fresh PostgreSQL 18 and PostgreSQL 17 dump restoration
+        env:
+          REPOVIO_TEST_API_IMAGE: repovio-api:upgrade-test
+        run: node --test scripts/check-postgres-upgrade.test.mjs

@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
+    entrypoint: ['/bin/sh', '/usr/local/bin/repovio-postgres-entrypoint.sh']
+    command: ['postgres']
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
@@ -13,7 +15,8 @@ services:
       retries: 12
       start_period: 5s
     volumes:
-      - repovio-postgres:/var/lib/postgresql/data
+      - repovio-postgres:/var/lib/postgresql
+      - ./docker/postgres-entrypoint.sh:/usr/local/bin/repovio-postgres-entrypoint.sh:ro
       - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
 
   migrate:

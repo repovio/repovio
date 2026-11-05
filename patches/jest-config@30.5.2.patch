@@ -1,0 +1,31 @@
+diff --git a/build/index.js b/build/index.js
+index ba4be77f23084cc3700a2eaae21300fcb94dca4a..c1dd06ea38e23d262d7297792e798eaf2359788f 100644
+--- a/build/index.js
++++ b/build/index.js
+@@ -887,7 +887,7 @@ function _chalk() {
+   return data;
+ }
+ function _deepmerge() {
+-  const data = _interopRequireDefault(require("deepmerge"));
++  const data = _interopRequireDefault(require("@fastify/deepmerge")({ symbols: true }));
+   _deepmerge = function () {
+     return data;
+   };
+@@ -940,7 +940,7 @@ function mergeConfig(defaults, overrides) {
+   if (typeof defaults === 'function' || typeof overrides === 'function') {
+     throw new TypeError('Cannot merge config in form of callback');
+   }
+-  return _deepmerge().default.all([defaults, overrides]);
++  return _deepmerge().default(defaults, overrides);
+ }
+ async function readConfig(argv, packageRootOrConfig,
+ // Whether it needs to look into `--config` arg passed to CLI.
+@@ -1317,7 +1317,7 @@ function _chalk() {
+   return data;
+ }
+ function _deepmerge() {
+-  const data = _interopRequireDefault(require("deepmerge"));
++  const data = _interopRequireDefault(require("@fastify/deepmerge")({ symbols: true }));
+   _deepmerge = function () {
+     return data;
+   };

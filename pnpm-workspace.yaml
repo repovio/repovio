@@ -12,6 +12,11 @@ publicHoistPattern:
   - vue-i18n
 
 overrides:
+  'glob@>=9.0.0 <14.0.2': 14.0.2
+  'minimatch@>=7.0.0 <11.0.1': 11.0.1
+  'nestjs-zod>deepmerge': '-'
+  'jest-config>deepmerge': '-'
+  '@rollup/plugin-node-resolve>deepmerge': '-'
   '@nestjs/platform-fastify>fastify': 5.12.8
   '@modelcontextprotocol/node>@hono/node-server': 2.1.6
   '@tiptap/core@>=3.7.0 <3.30.5': 3.31.4
@@ -87,4 +92,18 @@ minimumReleaseAgeExclude:
   - '@hono/node-server@2.1.6'
 
 patchedDependencies:
+  '@rollup/plugin-node-resolve@16.0.3': patches/@rollup__plugin-node-resolve@16.0.3.patch
   braces@3.0.3: patches/braces@3.0.3.patch
+  jest-config@30.5.2: patches/jest-config@30.5.2.patch
+  nestjs-zod@5.5.0: patches/nestjs-zod@5.5.0.patch
+
+packageExtensions:
+  'nestjs-zod@5.5.0':
+    dependencies:
+      '@fastify/deepmerge': 3.2.4
+  'jest-config@30.5.2':
+    dependencies:
+      '@fastify/deepmerge': 3.2.4
+  '@rollup/plugin-node-resolve@16.0.3':
+    dependencies:
+      '@fastify/deepmerge': 3.2.4

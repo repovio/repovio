@@ -73,6 +73,9 @@ jobs:
       - name: Build shared schema contracts
         run: pnpm --filter @repovio/schemas build
 
+      - name: Verify dependency security regressions
+        run: pnpm test:dependencies
+
       - name: Test shared schema contracts
         run: pnpm --filter @repovio/schemas test
 

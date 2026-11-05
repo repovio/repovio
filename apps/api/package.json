@@ -11,6 +11,8 @@
     "db:reset-password": "node dist/scripts/reset-password.js",
     "dev": "pnpm --filter @repovio/schemas build && nest start --watch",
     "docker:build": "docker build -f Dockerfile -t repovio-api:local ../..",
+    "test:openapi": "pnpm build && node --test ../../scripts/check-openapi-export.test.mjs",
+    "openapi:export": "pnpm build && node dist/scripts/export-openapi.js",
     "lint": "eslint . && node --test ../../scripts/check-api-tsdoc.test.mjs && node ../../scripts/check-api-tsdoc.mjs",
     "start": "nest start",
     "start:prod": "node dist/main.js",

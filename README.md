@@ -102,6 +102,23 @@ pnpm changeset status
 
 Public documentation is maintained in `repovio/docs` and rendered by the private `repovio/website` project.
 
+## OpenAPI export
+
+The installed API serves its interactive Scalar reference at `/docs` on the API server (locally
+`http://localhost:3001/docs`). REST endpoints use `/api/v1`; configure your reverse proxy explicitly to expose `/docs`.
+
+Export the same Zod-cleaned contract without starting a listener, database connection, scheduler, or provider request:
+
+```bash
+pnpm --filter @repovio/api openapi:export /absolute/path/openapi.json
+pnpm --filter @repovio/api test:openapi
+```
+
+The exporter uses synthetic configuration, skips local environment files, and emits deterministic JSON with a relative
+server URL. The website release publisher runs it against the exact released application revision, archives the schema
+in `repovio/docs`, and bundles it into the static, versioned reference. Never generate a release snapshot from a running
+production instance or an unreviewed working tree.
+
 ## Changesets and releases
 
 Repovio uses one private root package and Changesets for release management.

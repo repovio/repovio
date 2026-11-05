@@ -88,6 +88,9 @@ jobs:
         if: hashFiles('apps/api/jest.config.ts') != ''
         run: pnpm nx run api:test
 
+      - name: Verify offline OpenAPI export
+        run: pnpm --filter @repovio/api test:openapi
+
       - name: Test web app
         if: hashFiles('apps/web/vitest.config.mts') != ''
         run: pnpm nx run web:test

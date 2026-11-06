@@ -37,7 +37,7 @@ interface CallbackResult {
   error?: OidcErrorCode;
 }
 
-export interface OidcExchangeResult extends AuthResult {
+/** Defines the oidc exchange result contract shared by its consumers. */ export interface OidcExchangeResult extends AuthResult {
   returnTo: string;
 }
 
@@ -122,26 +122,29 @@ export class OidcService {
     const securityChanged =
       encryptedClientSecret !== current.encryptedClientSecret ||
       Object.entries(update).some(
+        /** Checks whether any entry satisfies `key !== 'providerName' && !this.equal(value, current[key as keyof OidcConfig])`. */
         ([key, value]) => key !== 'providerName' && !this.equal(value, current[key as keyof OidcConfig]),
       );
-    const saved = await this.prisma.transaction(async (transaction) => {
-      const record = await transaction.oidcConfig.update({
-        data: {
-          ...update,
-          encryptedClientSecret,
-          configRevision: securityChanged ? { increment: 1 } : undefined,
-        },
-        where: { id: current.id },
-      });
-      if (securityChanged) {
-        await Promise.all([
-          transaction.oidcLoginTransaction.deleteMany(),
-          transaction.oidcSessionExchange.deleteMany(),
-          transaction.user.updateMany({ data: { authVersion: { increment: 1 } }, where: { authProvider: 'OIDC' } }),
-        ]);
-      }
-      return record;
-    });
+    const saved = await this.prisma.transaction(
+      /** Keeps the database updates for update config atomic. */ async (transaction) => {
+        const record = await transaction.oidcConfig.update({
+          data: {
+            ...update,
+            encryptedClientSecret,
+            configRevision: securityChanged ? { increment: 1 } : undefined,
+          },
+          where: { id: current.id },
+        });
+        if (securityChanged) {
+          await Promise.all([
+            transaction.oidcLoginTransaction.deleteMany(),
+            transaction.oidcSessionExchange.deleteMany(),
+            transaction.user.updateMany({ data: { authVersion: { increment: 1 } }, where: { authProvider: 'OIDC' } }),
+          ]);
+        }
+        return record;
+      },
+    );
     return this.toConfigDto(saved);
   }
 
@@ -176,25 +179,27 @@ export class OidcService {
     const bindingIsNew = !existingBinding || !bindingPattern.test(existingBinding);
     const bindingValue = bindingIsNew ? randomBytes(32).toString('base64url') : existingBinding;
     const bindingHash = this.hash(`binding:${bindingValue}`);
-    await this.prisma.transaction(async (transaction) => {
-      await transaction.oidcLoginTransaction.deleteMany({ where: { expiresAt: { lte: new Date() } } });
-      const pending = await transaction.oidcLoginTransaction.count({
-        where: { bindingHash, consumedAt: null, expiresAt: { gt: new Date() } },
-      });
-      if (pending >= maximumPendingTransactions)
-        throw new HttpException('Too many pending OIDC logins.', HttpStatus.TOO_MANY_REQUESTS);
-      await transaction.oidcLoginTransaction.create({
-        data: {
-          bindingHash,
-          codeVerifier: authorization.codeVerifier,
-          configRevision: config.configRevision,
-          expiresAt: new Date(Date.now() + transactionLifetimeMs),
-          nonce: authorization.nonce,
-          returnTo: this.sanitizeReturnTo(returnTo),
-          stateHash: this.hash(authorization.state),
-        },
-      });
-    });
+    await this.prisma.transaction(
+      /** Keeps the database updates for begin atomic. */ async (transaction) => {
+        await transaction.oidcLoginTransaction.deleteMany({ where: { expiresAt: { lte: new Date() } } });
+        const pending = await transaction.oidcLoginTransaction.count({
+          where: { bindingHash, consumedAt: null, expiresAt: { gt: new Date() } },
+        });
+        if (pending >= maximumPendingTransactions)
+          throw new HttpException('Too many pending OIDC logins.', HttpStatus.TOO_MANY_REQUESTS);
+        await transaction.oidcLoginTransaction.create({
+          data: {
+            bindingHash,
+            codeVerifier: authorization.codeVerifier,
+            configRevision: config.configRevision,
+            expiresAt: new Date(Date.now() + transactionLifetimeMs),
+            nonce: authorization.nonce,
+            returnTo: this.sanitizeReturnTo(returnTo),
+            stateHash: this.hash(authorization.state),
+          },
+        });
+      },
+    );
     return { bindingIsNew, bindingValue, redirectUrl: authorization.url.toString() };
   }
 
@@ -210,22 +215,24 @@ export class OidcService {
     if (!state || !bindingValue || !bindingPattern.test(bindingValue)) return { error: 'oidc_transaction_invalid' };
     const config = await this.getConfig();
     if (!this.isReady(config)) return { error: 'oidc_not_configured' };
-    const transaction = await this.prisma.transaction(async (database) => {
-      const record = await database.oidcLoginTransaction.findUnique({ where: { stateHash: this.hash(state) } });
-      if (
-        !record ||
-        record.consumedAt ||
-        record.expiresAt <= new Date() ||
-        record.bindingHash !== this.hash(`binding:${bindingValue}`) ||
-        record.configRevision !== config.configRevision
-      )
-        return null;
-      const consumed = await database.oidcLoginTransaction.updateMany({
-        data: { consumedAt: new Date() },
-        where: { consumedAt: null, id: record.id },
-      });
-      return consumed.count === 1 ? record : null;
-    });
+    const transaction = await this.prisma.transaction(
+      /** Keeps the database updates for callback atomic. */ async (database) => {
+        const record = await database.oidcLoginTransaction.findUnique({ where: { stateHash: this.hash(state) } });
+        if (
+          !record ||
+          record.consumedAt ||
+          record.expiresAt <= new Date() ||
+          record.bindingHash !== this.hash(`binding:${bindingValue}`) ||
+          record.configRevision !== config.configRevision
+        )
+          return null;
+        const consumed = await database.oidcLoginTransaction.updateMany({
+          data: { consumedAt: new Date() },
+          where: { consumedAt: null, id: record.id },
+        });
+        return consumed.count === 1 ? record : null;
+      },
+    );
     if (!transaction) return { error: 'oidc_transaction_invalid' };
     if (parameters.get('error')) return { error: 'oidc_provider_error' };
     if (!parameters.get('code')) return { error: 'oidc_invalid_request' };
@@ -278,15 +285,17 @@ export class OidcService {
    * @throws UnauthorizedException - When the code is invalid, expired, or already consumed.
    */
   async exchange(code: string): Promise<OidcExchangeResult> {
-    const exchange = await this.prisma.transaction(async (transaction) => {
-      const record = await transaction.oidcSessionExchange.findUnique({ where: { codeHash: this.hash(code) } });
-      if (!record || record.consumedAt || record.expiresAt <= new Date()) return null;
-      const consumed = await transaction.oidcSessionExchange.updateMany({
-        data: { consumedAt: new Date() },
-        where: { consumedAt: null, id: record.id },
-      });
-      return consumed.count === 1 ? record : null;
-    });
+    const exchange = await this.prisma.transaction(
+      /** Keeps the database updates for exchange atomic. */ async (transaction) => {
+        const record = await transaction.oidcSessionExchange.findUnique({ where: { codeHash: this.hash(code) } });
+        if (!record || record.consumedAt || record.expiresAt <= new Date()) return null;
+        const consumed = await transaction.oidcSessionExchange.updateMany({
+          data: { consumedAt: new Date() },
+          where: { consumedAt: null, id: record.id },
+        });
+        return consumed.count === 1 ? record : null;
+      },
+    );
     if (!exchange) throw new UnauthorizedException('The OIDC exchange code is invalid or expired.');
     return { ...(await this.auth.createSession(exchange.userId)), returnTo: exchange.returnTo };
   }
@@ -440,7 +449,9 @@ export class OidcService {
    * @returns Trimmed unique non-empty names.
    */
   private normalizeGroups(groups: string[]): string[] {
-    return [...new Set(groups.map((group) => group.trim()).filter(Boolean))];
+    return [
+      ...new Set(groups.map(/** Projects each entry using `group.trim()`. */ (group) => group.trim()).filter(Boolean)),
+    ];
   }
 
   /**
@@ -451,7 +462,9 @@ export class OidcService {
    * @throws BadRequestException - When no usable scope was submitted.
    */
   private normalizeScopes(scopes: string[]): string[] {
-    const normalized = [...new Set(scopes.map((scope) => scope.trim()).filter(Boolean))];
+    const normalized = [
+      ...new Set(scopes.map(/** Projects each entry using `scope.trim()`. */ (scope) => scope.trim()).filter(Boolean)),
+    ];
     if (!normalized.length) throw new BadRequestException('At least one OIDC scope is required.');
     return normalized.includes('openid') ? normalized : ['openid', ...normalized];
   }

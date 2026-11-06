@@ -103,15 +103,20 @@ const loading = ref(true);
 const error = ref(false);
 const endpoint = props.kind === 'issue' ? 'issues' : 'pull-requests';
 const icon = props.kind === 'issue' ? 'i-tabler-circle-dot' : 'i-tabler-git-pull-request';
-const listTitle = computed(() => t(props.kind === 'issue' ? 'issues.title' : 'pullRequests.title'));
+const listTitle = computed(
+  /** Derives list title from the current reactive dependencies. */ () =>
+    t(props.kind === 'issue' ? 'issues.title' : 'pullRequests.title'),
+);
 
-onMounted(async () => {
-  try {
-    item.value = (await (props.kind === 'issue' ? api.issues.get(props.id) : api.pullRequests.get(props.id))).data;
-  } catch {
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    try {
+      item.value = (await (props.kind === 'issue' ? api.issues.get(props.id) : api.pullRequests.get(props.id))).data;
+    } catch {
+      error.value = true;
+    } finally {
+      loading.value = false;
+    }
+  },
+);
 </script>

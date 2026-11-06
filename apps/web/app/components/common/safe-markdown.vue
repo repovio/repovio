@@ -12,11 +12,15 @@ import { defineProps } from 'vue';
 
 const props = defineProps<{ source: string }>();
 const renderer = new marked.Renderer();
-renderer.html = ({ text }) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-const html = computed(() =>
-  DOMPurify.sanitize(String(marked.parse(props.source, { async: false, renderer })), {
-    FORBID_ATTR: ['style'],
-    FORBID_TAGS: ['iframe', 'object', 'script', 'style'],
-  }),
+renderer.html =
+  /** Returns `text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')` to the caller. */ ({
+    text,
+  }) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const html = computed(
+  /** Derives html from the current reactive dependencies. */ () =>
+    DOMPurify.sanitize(String(marked.parse(props.source, { async: false, renderer })), {
+      FORBID_ATTR: ['style'],
+      FORBID_TAGS: ['iframe', 'object', 'script', 'style'],
+    }),
 );
 </script>

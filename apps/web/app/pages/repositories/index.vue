@@ -196,54 +196,66 @@ const api = useRepovioApi();
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
-const isAdmin = computed(() => auth.user?.role === 'SYSTEM_ADMIN');
+const isAdmin = computed(
+  /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',
+);
 const dialogOpen = ref(false);
 const webhookConfigurations = ref<RepositoryWebhookConfiguration[]>([]);
 const webhookConfigurationsLoading = ref(false);
 const webhookConfigurationsError = ref(false);
 const openedFromList = ref(false);
-const selectedRepositoryId = computed(() =>
-  typeof route.query.repository === 'string' && route.query.repository ? route.query.repository : undefined,
+const selectedRepositoryId = computed(
+  /** Derives selected repository id from the current reactive dependencies. */ () =>
+    typeof route.query.repository === 'string' && route.query.repository ? route.query.repository : undefined,
 );
-const selectedRepositoryWebhookConfiguration = computed(() =>
-  selectedRepositoryId.value ? webhookConfiguration(selectedRepositoryId.value) : undefined,
+const selectedRepositoryWebhookConfiguration = computed(
+  /** Derives selected repository webhook configuration from the current reactive dependencies. */ () =>
+    selectedRepositoryId.value ? webhookConfiguration(selectedRepositoryId.value) : undefined,
 );
 const detailsDialogOpen = computed({
+  /** Reads the details dialog open binding. */
   get: () => Boolean(selectedRepositoryId.value),
+  /** Writes the details dialog open binding. */
   set: (isOpen: boolean) => {
     if (!isOpen) closeDetailsDialog();
   },
 });
 const { isPending, run: runPendingAction } = usePendingActions();
-const columnDefinition = computed<RepositoryTableColumn[]>(() => {
-  const columns: RepositoryTableColumn[] = [
-    { accessorKey: 'owner', header: t('repositories.columns.owner'), id: 'owner' },
-    { accessorKey: 'name', header: t('repositories.columns.name'), id: 'name' },
-    { accessorKey: 'enabled', header: t('repositories.columns.status'), id: 'enabled' },
-    { accessorKey: 'members', header: t('repositories.columns.members'), id: 'members' },
-    { accessorKey: 'workflowRunCount', header: t('repositories.columns.workflowRuns'), id: 'workflowRunCount' },
-    {
-      accessorKey: 'workflowRunRetentionDays',
-      header: t('repositories.columns.retention'),
-      id: 'workflowRunRetentionDays',
-    },
-    { accessorKey: 'lastSyncAt', header: t('repositories.columns.lastSync'), id: 'lastSyncAt' },
-  ];
-  // The status is loaded separately; reusing the already-required `id` field keeps it out of the resource projection.
-  if (isAdmin.value) columns.push({ header: t('repositories.columns.webhook'), id: 'id' });
-  columns.push({ enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' });
-  return columns;
-});
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('repositories.columns.owner'), value: 'owner' },
-  { label: t('repositories.columns.name'), value: 'name' },
-  { label: t('repositories.columns.status'), value: 'enabled' },
-  { label: t('repositories.columns.retention'), value: 'workflowRunRetentionDays' },
-  { label: t('repositories.columns.lastSync'), value: 'lastSyncAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  { label: t('repositories.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
-]);
+const columnDefinition = computed<RepositoryTableColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => {
+    const columns: RepositoryTableColumn[] = [
+      { accessorKey: 'owner', header: t('repositories.columns.owner'), id: 'owner' },
+      { accessorKey: 'name', header: t('repositories.columns.name'), id: 'name' },
+      { accessorKey: 'enabled', header: t('repositories.columns.status'), id: 'enabled' },
+      { accessorKey: 'members', header: t('repositories.columns.members'), id: 'members' },
+      { accessorKey: 'workflowRunCount', header: t('repositories.columns.workflowRuns'), id: 'workflowRunCount' },
+      {
+        accessorKey: 'workflowRunRetentionDays',
+        header: t('repositories.columns.retention'),
+        id: 'workflowRunRetentionDays',
+      },
+      { accessorKey: 'lastSyncAt', header: t('repositories.columns.lastSync'), id: 'lastSyncAt' },
+    ];
+    // The status is loaded separately; reusing the already-required `id` field keeps it out of the resource projection.
+    if (isAdmin.value) columns.push({ header: t('repositories.columns.webhook'), id: 'id' });
+    columns.push({ enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' });
+    return columns;
+  },
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('repositories.columns.owner'), value: 'owner' },
+    { label: t('repositories.columns.name'), value: 'name' },
+    { label: t('repositories.columns.status'), value: 'enabled' },
+    { label: t('repositories.columns.retention'), value: 'workflowRunRetentionDays' },
+    { label: t('repositories.columns.lastSync'), value: 'lastSyncAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    { label: t('repositories.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
+  ],
+);
 const repositoryTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 10,
@@ -265,17 +277,24 @@ const {
   totalItems,
 } = repositoryTable;
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: repositoryTable.columnPinning.value.left, right: repositoryTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     repositoryTable.columnPinning.value = value;
   },
 });
 
-useHead({ title: computed(() => t('repositories.title')) });
-
-watch(selectedRepositoryId, (repositoryId) => {
-  if (!repositoryId) openedFromList.value = false;
+useHead({
+  title: computed(/** Derives title from the current reactive dependencies. */ () => t('repositories.title')),
 });
+
+watch(
+  selectedRepositoryId,
+  /** Synchronizes index when the observed state changes. */ (repositoryId) => {
+    if (!repositoryId) openedFromList.value = false;
+  },
+);
 
 /** Format a repository's last successful synchronization in the active interface locale. */
 function formatLastSync(lastSyncAt: string | null): string {
@@ -285,7 +304,10 @@ function formatLastSync(lastSyncAt: string | null): string {
 
 /** Resolve safe webhook metadata for one repository. */
 function webhookConfiguration(repositoryId: string): RepositoryWebhookConfiguration | undefined {
-  return webhookConfigurations.value.find((configuration) => configuration.repositoryId === repositoryId);
+  return webhookConfigurations.value.find(
+    /** Finds the first entry matching `configuration.repositoryId === repositoryId`. */ (configuration) =>
+      configuration.repositoryId === repositoryId,
+  );
 }
 
 /** Load repository webhook states only for system administrators. */
@@ -328,6 +350,7 @@ function closeDetailsDialog(): void {
 }
 
 defineShortcuts({
+  /** Opens the create dialog when its keyboard shortcut is allowed. */
   shift_n: () => {
     if (isAdmin.value) openAddDialog();
   },
@@ -341,28 +364,39 @@ async function handleRepositoryCreated(): Promise<void> {
 
 /** Replace a changed repository row without reloading the complete table. */
 function handleRepositoryUpdated(repository: Repository): void {
-  const existingRepository = items.value.find((item) => item.id === repository.id);
+  const existingRepository = items.value.find(
+    /** Finds the first entry matching `item.id === repository.id`. */ (item) => item.id === repository.id,
+  );
   repositoryTable.updateRow({ ...existingRepository, ...repository } as RepositoryRow);
 }
 
 /** Replace webhook metadata changed in the repository detail card. */
 function handleWebhookUpdated(configuration: RepositoryWebhookConfiguration): void {
   webhookConfigurations.value = [
-    ...webhookConfigurations.value.filter((item) => item.repositoryId !== configuration.repositoryId),
+    ...webhookConfigurations.value.filter(
+      /** Keeps entries matching `item.repositoryId !== configuration.repositoryId`. */ (item) =>
+        item.repositoryId !== configuration.repositoryId,
+    ),
     configuration,
   ];
 }
 
 /** Enable or disable a repository without changing its retention configuration. */
 async function toggle(repository: Repository): Promise<void> {
-  await runPendingAction(repository.id, async () => {
-    await api.repositories.update(repository.id, {
-      enabled: !repository.enabled,
-      workflowRunRetentionDays: repository.workflowRunRetentionDays,
-    });
-    repositoryTable.updateRow({ ...repository, enabled: !repository.enabled } as RepositoryRow);
-  });
+  await runPendingAction(
+    repository.id,
+    /** Performs toggle while retaining the initiating action’s pending state. */ async () => {
+      await api.repositories.update(repository.id, {
+        enabled: !repository.enabled,
+        workflowRunRetentionDays: repository.workflowRunRetentionDays,
+      });
+      repositoryTable.updateRow({ ...repository, enabled: !repository.enabled } as RepositoryRow);
+    },
+  );
 }
 
-onMounted(() => void Promise.all([repositoryTable.initialize(), loadWebhookConfigurations()]));
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () =>
+    void Promise.all([repositoryTable.initialize(), loadWebhookConfigurations()]),
+);
 </script>

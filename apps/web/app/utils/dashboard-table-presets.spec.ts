@@ -6,8 +6,8 @@ import {
   resolveWorkItemDashboardPreset,
 } from './dashboard-table-presets';
 
-describe('dashboard table presets', () => {
-  it('resolves open work items and rejects presets unsupported by the current kind', () => {
+describe('dashboard table presets', /** Groups scenarios for dashboard table presets. */ () => {
+  it('resolves open work items and rejects presets unsupported by the current kind', /** Verifies resolves open work items and rejects presets unsupported by the current kind. */ () => {
     expect(resolveWorkItemDashboardPreset('issue', 'open')?.filtering.filters).toEqual([
       { field: 'state', id: 'dashboard-state', operator: 'in', type: 'enum', value: ['OPEN'] },
     ]);
@@ -16,7 +16,7 @@ describe('dashboard table presets', () => {
     expect(resolveWorkItemDashboardPreset('issue', 'unknown')).toBeUndefined();
   });
 
-  it('uses the exact rolling 30-day boundary for stale open issues', () => {
+  it('uses the exact rolling 30-day boundary for stale open issues', /** Verifies uses the exact rolling 30-day boundary for stale open issues. */ () => {
     const preset = resolveWorkItemDashboardPreset('issue', 'stale', new Date('2026-09-14T12:30:00.000Z'));
 
     expect(preset).toEqual({
@@ -29,7 +29,7 @@ describe('dashboard table presets', () => {
     });
   });
 
-  it('combines open state with workflow approval and resolves active workflow statuses', () => {
+  it('combines open state with workflow approval and resolves active workflow statuses', /** Verifies combines open state with workflow approval and resolves active workflow statuses. */ () => {
     expect(resolveWorkItemDashboardPreset('pull-request', 'approval-required')?.filtering.filters).toEqual([
       { field: 'state', id: 'dashboard-state', operator: 'in', type: 'enum', value: ['OPEN'] },
       {

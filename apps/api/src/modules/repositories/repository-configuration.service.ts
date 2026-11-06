@@ -53,13 +53,14 @@ export class RepositoryConfigurationService {
         },
       },
     });
-    return repositories.map((repository) =>
-      this.toWebhookConfiguration(
-        repository.id,
-        repository.providerAccount.providerType,
-        repository.encryptedWebhookSecret !== null,
-        repository.webhookDeliveries[0]?.createdAt ?? null,
-      ),
+    return repositories.map(
+      /** Projects each entry using the listWebhookConfigurations mapping. */ (repository) =>
+        this.toWebhookConfiguration(
+          repository.id,
+          repository.providerAccount.providerType,
+          repository.encryptedWebhookSecret !== null,
+          repository.webhookDeliveries[0]?.createdAt ?? null,
+        ),
     );
   }
 

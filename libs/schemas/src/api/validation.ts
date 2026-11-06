@@ -8,7 +8,7 @@ export const oidcScopeToken = /^[\x21\x23-\x5B\x5D-\x7E]+$/;
 export function optionalInput<T extends z.ZodType>(schema: T) {
   return schema
     .nullish()
-    .transform((value) => value ?? undefined)
+    .transform(/** Normalizes input using `value ?? undefined`. */ (value) => value ?? undefined)
     .optional();
 }
 
@@ -18,7 +18,7 @@ export const optionalNameSchema = z
   .trim()
   .max(255)
   .nullish()
-  .transform((value) => value || undefined)
+  .transform(/** Normalizes input using `value || undefined`. */ (value) => value || undefined)
   .optional();
 
 // ISO-8601 grammar retained from validator.js (MIT), previously used through class-validator.
@@ -49,7 +49,10 @@ export function validInputUrl(value: string, requireHttps: boolean): boolean {
     const labels = host.split('.');
     return (
       labels.length > 1 &&
-      labels.every((label) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)) &&
+      labels.every(
+        /** Checks whether every entry satisfies `/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)`. */ (label) =>
+          /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label),
+      ) &&
       /^(?:[a-z]{2,}|xn--[a-z0-9-]+)$/i.test(labels.at(-1) ?? '')
     );
   } catch {
@@ -59,8 +62,12 @@ export function validInputUrl(value: string, requireHttps: boolean): boolean {
 
 export const providerBaseUrlSchema = z
   .string()
-  .refine((value) => validInputUrl(value, false), { message: 'Invalid URL.' });
+  .refine(/** Validates input against `validInputUrl(value, false)`. */ (value) => validInputUrl(value, false), {
+    message: 'Invalid URL.',
+  });
 
 export const httpsUrlSchema = z
   .string()
-  .refine((value) => validInputUrl(value, true), { message: 'Invalid HTTPS URL.' });
+  .refine(/** Validates input against `validInputUrl(value, true)`. */ (value) => validInputUrl(value, true), {
+    message: 'Invalid HTTPS URL.',
+  });

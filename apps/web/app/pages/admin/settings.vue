@@ -33,35 +33,37 @@ definePageMeta({ fullWidth: true });
 
 const { t } = useI18n();
 const auth = useAuthStore();
-const navigation = computed<NavigationMenuItem[][]>(() => [
-  [
-    {
-      exact: true,
-      icon: 'i-lucide-user-round',
-      label: t('settings.tabs.general'),
-      to: '/admin/settings',
-    },
-    {
-      icon: 'i-lucide-key-round',
-      label: t('settings.tabs.mcp'),
-      to: '/admin/settings/mcp',
-    },
-    ...(auth.user?.role === 'SYSTEM_ADMIN'
-      ? [
-          {
-            icon: 'i-lucide-shield-check',
-            label: t('settings.tabs.authentication'),
-            to: '/admin/settings/authentication',
-          },
-          {
-            icon: 'i-lucide-settings-2',
-            label: t('settings.tabs.system'),
-            to: '/admin/settings/system',
-          },
-        ]
-      : []),
+const navigation = computed<NavigationMenuItem[][]>(
+  /** Derives navigation from the current reactive dependencies. */ () => [
+    [
+      {
+        exact: true,
+        icon: 'i-lucide-user-round',
+        label: t('settings.tabs.general'),
+        to: '/admin/settings',
+      },
+      {
+        icon: 'i-lucide-key-round',
+        label: t('settings.tabs.mcp'),
+        to: '/admin/settings/mcp',
+      },
+      ...(auth.user?.role === 'SYSTEM_ADMIN'
+        ? [
+            {
+              icon: 'i-lucide-shield-check',
+              label: t('settings.tabs.authentication'),
+              to: '/admin/settings/authentication',
+            },
+            {
+              icon: 'i-lucide-settings-2',
+              label: t('settings.tabs.system'),
+              to: '/admin/settings/system',
+            },
+          ]
+        : []),
+    ],
   ],
-]);
+);
 
-useHead({ title: computed(() => t('settings.title')) });
+useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('settings.title')) });
 </script>

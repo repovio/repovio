@@ -162,10 +162,17 @@ export class DashboardService {
       awaitingApprovalCount: awaitingApprovalRuns.length,
       completedCount: completedRuns.length,
       medianDurationMs: this.median(
-        completedRuns.flatMap((run) => (run.durationMs === null ? [] : [Number(run.durationMs)])),
+        completedRuns.flatMap(
+          /** Flattens entries produced by `(run.durationMs === null ? [] : [Number(run.durationMs)])`. */ (run) =>
+            run.durationMs === null ? [] : [Number(run.durationMs)],
+        ),
       ),
-      queuedCount: activeRuns.filter((run) => run.status === 'QUEUED').length,
-      runningCount: activeRuns.filter((run) => run.status === 'RUNNING').length,
+      queuedCount: activeRuns.filter(
+        /** Keeps entries matching `run.status === 'QUEUED'`. */ (run) => run.status === 'QUEUED',
+      ).length,
+      runningCount: activeRuns.filter(
+        /** Keeps entries matching `run.status === 'RUNNING'`. */ (run) => run.status === 'RUNNING',
+      ).length,
       statuses,
       ...(securityAlerts ? { securityAlerts } : {}),
       successRate: decidedCount === 0 ? 0 : this.roundPercentage((statuses.success / decidedCount) * 100),
@@ -190,7 +197,7 @@ export class DashboardService {
               select: { repositoryId: true },
               where: { role: 'MANAGER', userId: user.id },
             })
-          ).map(({ repositoryId }) => repositoryId);
+          ).map(/** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId);
     const where: Prisma.SecurityAlertWhereInput = {
       state: 'OPEN',
       ...(repositoryIds === undefined ? {} : { repositoryId: { in: repositoryIds } }),
@@ -199,8 +206,14 @@ export class DashboardService {
       this.prisma.securityAlert.groupBy({ by: ['kind'], _count: true, where }),
       this.prisma.securityAlert.groupBy({ by: ['severity'], _count: true, where }),
     ]);
-    const kind = new Map(kinds.map((entry) => [entry.kind, entry._count]));
-    const severity = new Map(severities.map((entry) => [entry.severity, entry._count]));
+    const kind = new Map(
+      kinds.map(/** Projects each entry using `[entry.kind, entry._count]`. */ (entry) => [entry.kind, entry._count]),
+    );
+    const severity = new Map(
+      severities.map(
+        /** Projects each entry using `[entry.severity, entry._count]`. */ (entry) => [entry.severity, entry._count],
+      ),
+    );
     return {
       code: kind.get('CODE') ?? 0,
       critical: severity.get('CRITICAL') ?? 0,
@@ -243,20 +256,27 @@ export class DashboardService {
     }
 
     return [...groups.values()]
-      .map((repositoryRuns): RepositoryHealthDto => {
-        const statuses = this.countStatuses(repositoryRuns);
-        const decidedCount = statuses.success + statuses.failed;
-        return {
-          completedCount: repositoryRuns.length,
-          failedCount: statuses.failed,
-          medianDurationMs: this.median(
-            repositoryRuns.flatMap((run) => (run.durationMs === null ? [] : [Number(run.durationMs)])),
-          ),
-          repository: repositoryRuns[0]!.repository,
-          successRate: decidedCount === 0 ? 0 : this.roundPercentage((statuses.success / decidedCount) * 100),
-        };
-      })
+      .map(
+        /** Projects each entry using the getRepositoryHealth mapping. */ (repositoryRuns): RepositoryHealthDto => {
+          const statuses = this.countStatuses(repositoryRuns);
+          const decidedCount = statuses.success + statuses.failed;
+          return {
+            completedCount: repositoryRuns.length,
+            failedCount: statuses.failed,
+            medianDurationMs: this.median(
+              repositoryRuns.flatMap(
+                /** Flattens entries produced by `(run.durationMs === null ? [] : [Number(run.durationMs)])`. */ (
+                  run,
+                ) => (run.durationMs === null ? [] : [Number(run.durationMs)]),
+              ),
+            ),
+            repository: repositoryRuns[0]!.repository,
+            successRate: decidedCount === 0 ? 0 : this.roundPercentage((statuses.success / decidedCount) * 100),
+          };
+        },
+      )
       .sort(
+        /** Orders entries using the getRepositoryHealth mapping. */
         (left, right) =>
           right.failedCount - left.failedCount ||
           left.successRate - right.successRate ||
@@ -286,7 +306,14 @@ export class DashboardService {
       },
     });
     const buckets = this.createBuckets(from, to, query.bucket);
-    const counts = new Map(buckets.map((bucket) => [bucket.bucketStart.toISOString(), bucket]));
+    const counts = new Map(
+      buckets.map(
+        /** Projects each entry using `[bucket.bucketStart.toISOString(), bucket]`. */ (bucket) => [
+          bucket.bucketStart.toISOString(),
+          bucket,
+        ],
+      ),
+    );
 
     for (const run of runs) {
       if (!run.completedAt) continue;
@@ -342,11 +369,17 @@ export class DashboardService {
    */
   private countStatuses(runs: Pick<DashboardSummaryRun, 'status'>[]): DashboardStatusDistributionDto {
     return {
-      cancelled: runs.filter((run) => run.status === 'CANCELLED').length,
-      failed: runs.filter((run) => run.status === 'FAILED').length,
-      skipped: runs.filter((run) => run.status === 'SKIPPED').length,
-      success: runs.filter((run) => run.status === 'SUCCESS').length,
-      unknown: runs.filter((run) => run.status === 'UNKNOWN').length,
+      cancelled: runs.filter(
+        /** Keeps entries matching `run.status === 'CANCELLED'`. */ (run) => run.status === 'CANCELLED',
+      ).length,
+      failed: runs.filter(/** Keeps entries matching `run.status === 'FAILED'`. */ (run) => run.status === 'FAILED')
+        .length,
+      skipped: runs.filter(/** Keeps entries matching `run.status === 'SKIPPED'`. */ (run) => run.status === 'SKIPPED')
+        .length,
+      success: runs.filter(/** Keeps entries matching `run.status === 'SUCCESS'`. */ (run) => run.status === 'SUCCESS')
+        .length,
+      unknown: runs.filter(/** Keeps entries matching `run.status === 'UNKNOWN'`. */ (run) => run.status === 'UNKNOWN')
+        .length,
     };
   }
 
@@ -358,7 +391,7 @@ export class DashboardService {
    */
   private median(values: number[]): number | null {
     if (values.length === 0) return null;
-    const sorted = [...values].sort((left, right) => left - right);
+    const sorted = [...values].sort(/** Orders entries using `left - right`. */ (left, right) => left - right);
     const middle = Math.floor(sorted.length / 2);
     return sorted.length % 2 === 0 ? Math.round((sorted[middle - 1] + sorted[middle]) / 2) : sorted[middle];
   }

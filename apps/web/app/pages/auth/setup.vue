@@ -72,7 +72,10 @@ definePageMeta({ layout: 'auth' });
 
 const auth = useAuthStore();
 const { t } = useI18n();
-const localizedSetupFormSchema = computed(() => createSetupFormSchema(t('auth.passwordMismatch')));
+const localizedSetupFormSchema = computed(
+  /** Derives localized setup form schema from the current reactive dependencies. */ () =>
+    createSetupFormSchema(t('auth.passwordMismatch')),
+);
 const error = ref('');
 const submitting = ref(false);
 const form = reactive({ confirmPassword: '', firstName: '', lastName: '', password: '', username: '' });

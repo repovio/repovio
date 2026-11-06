@@ -10,7 +10,9 @@ import { CaslSubject } from '../../../casl/casl-subject.js';
 import type { AppAbility } from '../../../casl/types.js';
 import type { User } from '../../../generated/prisma/client.js';
 
-export type UserWithAvatar = User & { avatar?: { updatedAt: Date } | null };
+/** Defines the user with avatar contract shared by its consumers. */ export type UserWithAvatar = User & {
+  avatar?: { updatedAt: Date } | null;
+};
 
 /** Public user representation without credential material. */
 export class UserDto extends createZodDto(ApiUserSchema) {

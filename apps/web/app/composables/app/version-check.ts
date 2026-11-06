@@ -6,8 +6,14 @@ import { useRepovioApi } from '~/composables/api/repovio-api';
 export function useVersionCheck() {
   const api = useRepovioApi();
   const current = useRuntimeConfig().public.appVersion;
-  const latest = useState<string | null>('latest-app-version', () => null);
-  const loaded = useState('latest-app-version-loaded', () => false);
+  const latest = useState<string | null>(
+    'latest-app-version',
+    /** Evaluates `null` when useState invokes this callback. */ () => null,
+  );
+  const loaded = useState(
+    'latest-app-version-loaded',
+    /** Evaluates `false` when useState invokes this callback. */ () => false,
+  );
 
   /** Load the latest version once for the current application session. */
   async function load(): Promise<void> {
@@ -22,11 +28,15 @@ export function useVersionCheck() {
     }
   }
 
-  const updateAvailable = computed(() => Boolean(latest.value) && compareSemver(latest.value!, current) > 0);
+  const updateAvailable = computed(
+    /** Derives update available from the current reactive dependencies. */ () =>
+      Boolean(latest.value) && compareSemver(latest.value!, current) > 0,
+  );
 
   return { current, latest, load, updateAvailable };
 }
 
+/** Compares numeric semantic-version components for update detection. */
 function compareSemver(left: string, right: string): number {
   const leftParts = left.split('.').map(Number);
   const rightParts = right.split('.').map(Number);

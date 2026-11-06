@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import picomatch from 'picomatch';
 
-export type WorkflowFilterMode = 'ALLOW' | 'DENY';
+/** Defines the workflow filter mode contract shared by its consumers. */ export type WorkflowFilterMode =
+  'ALLOW' | 'DENY';
 
 /** A persisted repository workflow filter used during read-only synchronization. */
 export interface WorkflowFilterRule {
@@ -49,11 +50,17 @@ export class WorkflowFilterService {
      * @returns Whether at least one filter of this mode matches the workflow name.
      */
     const matchingRule = (mode: WorkflowFilterMode) =>
-      filters.some((filter) => filter.mode === mode && picomatch.isMatch(workflowName, filter.pattern, { bash: true }));
+      filters.some(
+        /** Checks whether any entry satisfies `filter.mode === mode && picomatch.isMatch(workflowName, filter.pattern, { bash: true })`. */ (
+          filter,
+        ) => filter.mode === mode && picomatch.isMatch(workflowName, filter.pattern, { bash: true }),
+      );
 
     if (matchingRule('DENY')) return false;
 
-    const hasAllowRules = filters.some((filter) => filter.mode === 'ALLOW');
+    const hasAllowRules = filters.some(
+      /** Checks whether any entry satisfies `filter.mode === 'ALLOW'`. */ (filter) => filter.mode === 'ALLOW',
+    );
     return !hasAllowRules || matchingRule('ALLOW');
   }
 }

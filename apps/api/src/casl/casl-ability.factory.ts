@@ -29,7 +29,9 @@ export class CaslAbilityFactory {
       return build();
     }
 
-    const repositoryIds = memberships.map(({ repositoryId }) => repositoryId);
+    const repositoryIds = memberships.map(
+      /** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId,
+    );
     can(CaslAction.Read, CaslSubject.NotificationChannel);
     if (repositoryIds.length === 0) {
       can(CaslAction.Read, CaslSubject.Repository, { id: { in: [] } });
@@ -47,8 +49,8 @@ export class CaslAbilityFactory {
 
     if (user.role === 'MANAGER') {
       const managedRepositoryIds = memberships
-        .filter(({ role }) => role === 'MANAGER')
-        .map(({ repositoryId }) => repositoryId);
+        .filter(/** Keeps entries matching `role === 'MANAGER'`. */ ({ role }) => role === 'MANAGER')
+        .map(/** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId);
 
       if (managedRepositoryIds.length > 0) {
         can(CaslAction.Update, CaslSubject.Repository, { id: { in: managedRepositoryIds } });

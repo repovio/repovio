@@ -19,91 +19,115 @@ const workflowRun = {
 
 /** Configure stable authenticated shell resources for needs-attention browser scenarios. */
 async function mockApplication(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
-    window.localStorage.setItem(
-      'table:workflow-runs-needs-attention:sort',
-      JSON.stringify([{ desc: false, id: 'completedAt' }]),
-    );
-    window.localStorage.setItem(
-      'table:workflow-runs-needs-attention:filtering',
-      JSON.stringify({
-        filters: [
-          { field: 'repositoryId', id: 'repository-filter', operator: 'in', type: 'enum', value: ['repository-1'] },
-          {
-            field: 'repository.providerAccount.providerType',
-            id: 'provider-filter',
-            operator: 'in',
-            type: 'enum',
-            value: ['GITHUB'],
-          },
-          { field: 'durationMs', id: 'duration-filter', operator: 'gte', type: 'number', value: 90_000 },
-          { field: 'status', id: 'status-filter', operator: 'in', type: 'enum', value: ['FAILED'] },
-        ],
-        operator: 'AND',
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () => {
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
+      window.localStorage.setItem(
+        'table:workflow-runs-needs-attention:sort',
+        JSON.stringify([{ desc: false, id: 'completedAt' }]),
+      );
+      window.localStorage.setItem(
+        'table:workflow-runs-needs-attention:filtering',
+        JSON.stringify({
+          filters: [
+            { field: 'repositoryId', id: 'repository-filter', operator: 'in', type: 'enum', value: ['repository-1'] },
+            {
+              field: 'repository.providerAccount.providerType',
+              id: 'provider-filter',
+              operator: 'in',
+              type: 'enum',
+              value: ['GITHUB'],
+            },
+            { field: 'durationMs', id: 'duration-filter', operator: 'gte', type: 'number', value: 90_000 },
+            { field: 'status', id: 'status-filter', operator: 'in', type: 'enum', value: ['FAILED'] },
+          ],
+          operator: 'AND',
+        }),
+      );
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'viewer', role: 'VIEWER', username: 'viewer' } }),
+  );
+  await page.route(
+    '**/api/v1/settings',
+    /** Supplies the mocked response for `/api/v1/settings`. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
+  );
+  await page.route(
+    '**/api/v1/health',
+    /** Supplies the mocked response for `/api/v1/health`. */ (route) =>
+      route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
+        },
       }),
-    );
-  });
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'viewer', role: 'VIEWER', username: 'viewer' } }),
   );
-  await page.route('**/api/v1/settings', (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
-  );
-  await page.route('**/api/v1/health', (route) =>
-    route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
-  );
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
-      },
-    }),
-  );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) =>
-    route.fulfill({ json: Array.from({ length: 7 }, (_, index) => ({ id: `approval-${index}` })) }),
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({
+        json: Array.from(
+          { length: 7 },
+          /** Evaluates `({ id: `approval-${index}` })` when Array.from invokes this callback. */ (_, index) => ({
+            id: `approval-${index}`,
+          }),
+        ),
+      }),
   );
 }
 
-test('browses, searches, sorts, filters, refreshes, and paginates the complete needs-attention set', async ({
+test('browses, searches, sorts, filters, refreshes, and paginates the complete needs-attention set', /** Verifies browses, searches, sorts, filters, refreshes, and paginates the complete needs-attention set. */ async ({
   page,
 }, testInfo) => {
   await mockApplication(page);
   const requestedUrls: string[] = [];
   let releaseInitialRequest: (() => void) | undefined;
-  const initialRequest = new Promise<void>((resolve) => {
-    releaseInitialRequest = resolve;
-  });
+  const initialRequest = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseInitialRequest = resolve;
+    },
+  );
   let failRequest = false;
   let holdInitialRequest = true;
-  await page.route('**/api/v1/workflow-runs/needs-attention**', async (route) => {
-    const url = new URL(route.request().url());
-    requestedUrls.push(url.toString());
-    const perPage = Number(url.searchParams.get('perPage') ?? '25');
-    if (holdInitialRequest && perPage !== 1) {
-      holdInitialRequest = false;
-      await initialRequest;
-    }
-    if (failRequest) return route.abort('failed');
-    const where = url.searchParams.get('where') ?? '';
-    const pageNumber = Number(url.searchParams.get('page') ?? '1');
-    const isEmptySearch = where.includes('missing');
-    return route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: isEmptySearch ? [] : [{ ...workflowRun, id: `run-${pageNumber}` }],
-        meta: {
-          hasNextPage: !isEmptySearch && pageNumber === 1,
-          hasPrevPage: !isEmptySearch && pageNumber > 1,
-          itemCount: isEmptySearch ? 0 : 26,
-          page: pageNumber,
-          pageCount: isEmptySearch ? 0 : 2,
-          perPage,
+  await page.route(
+    '**/api/v1/workflow-runs/needs-attention**',
+    /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ async (route) => {
+      const url = new URL(route.request().url());
+      requestedUrls.push(url.toString());
+      const perPage = Number(url.searchParams.get('perPage') ?? '25');
+      if (holdInitialRequest && perPage !== 1) {
+        holdInitialRequest = false;
+        await initialRequest;
+      }
+      if (failRequest) return route.abort('failed');
+      const where = url.searchParams.get('where') ?? '';
+      const pageNumber = Number(url.searchParams.get('page') ?? '1');
+      const isEmptySearch = where.includes('missing');
+      return route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: isEmptySearch ? [] : [{ ...workflowRun, id: `run-${pageNumber}` }],
+          meta: {
+            hasNextPage: !isEmptySearch && pageNumber === 1,
+            hasPrevPage: !isEmptySearch && pageNumber > 1,
+            itemCount: isEmptySearch ? 0 : 26,
+            page: pageNumber,
+            pageCount: isEmptySearch ? 0 : 2,
+            perPage,
+          },
         },
-      },
-    });
-  });
+      });
+    },
+  );
 
   await page.goto('/workflow-runs/needs-attention');
 
@@ -152,12 +176,27 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
   expect(initialUrl.searchParams.get('where')).toContain('"status":{"in":["FAILED"]}');
 
   await page.keyboard.press('Shift+ArrowRight');
-  await expect.poll(() => requestedUrls.some((url) => new URL(url).searchParams.get('page') === '2')).toBe(true);
+  await expect
+    .poll(
+      /** Evaluates `requestedUrls.some((url) => new URL(url).searchParams.get('page') === '2')` when expect.poll invokes this callback. */ () =>
+        requestedUrls.some(
+          /** Checks whether any entry satisfies `new URL(url).searchParams.get('page') === '2'`. */ (url) =>
+            new URL(url).searchParams.get('page') === '2',
+        ),
+    )
+    .toBe(true);
 
   await page.getByPlaceholder('Search workflows or repositories').fill('missing');
   await expect(page.getByText('No workflows currently need attention.')).toBeVisible();
   await expect
-    .poll(() => requestedUrls.some((url) => new URL(url).searchParams.get('where')?.includes('missing')))
+    .poll(
+      /** Evaluates `requestedUrls.some((url) => new URL(url).searchParams.get('where')?.includes('missing'))` when expect .poll invokes this callback. */ () =>
+        requestedUrls.some(
+          /** Checks whether any entry satisfies `new URL(url).searchParams.get('where')?.includes('missing')`. */ (
+            url,
+          ) => new URL(url).searchParams.get('where')?.includes('missing'),
+        ),
+    )
     .toBe(true);
 
   failRequest = true;
@@ -171,20 +210,29 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`renders the needs-attention table responsively in ${theme} mode`, async ({ page }, testInfo) => {
-    await page.addInitScript((colorMode) => window.localStorage.setItem('nuxt-color-mode', colorMode), theme);
+  test(`renders the needs-attention table responsively in ${theme} mode`, /** Verifies renders the needs-attention table responsively in [theme] mode. */ async ({
+    page,
+  }, testInfo) => {
+    await page.addInitScript(
+      /** Initializes browser-side authentication and preferences before page scripts run. */ (colorMode) =>
+        window.localStorage.setItem('nuxt-color-mode', colorMode),
+      theme,
+    );
     await mockApplication(page);
-    await page.route('**/api/v1/workflow-runs/needs-attention**', (route) => {
-      const requestUrl = new URL(route.request().url());
-      if (requestUrl.searchParams.get('perPage') !== '1')
-        expect(requestUrl.searchParams.get('fields')).toContain('workflowName');
-      return route.fulfill({
-        json: {
-          items: [workflowRun],
-          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-        },
-      });
-    });
+    await page.route(
+      '**/api/v1/workflow-runs/needs-attention**',
+      /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ (route) => {
+        const requestUrl = new URL(route.request().url());
+        if (requestUrl.searchParams.get('perPage') !== '1')
+          expect(requestUrl.searchParams.get('fields')).toContain('workflowName');
+        return route.fulfill({
+          json: {
+            items: [workflowRun],
+            meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+          },
+        });
+      },
+    );
     await page.setViewportSize({ height: 844, width: 390 });
 
     await page.goto('/workflow-runs/needs-attention');
@@ -202,15 +250,24 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(toolbar.getByRole('button', { name: 'Filter' })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Table options' })).toBeVisible();
     await expect
-      .poll(() =>
-        toolbar.evaluate((element) => {
-          const actions = element.querySelector(':scope > [data-slot="right"]')?.getBoundingClientRect();
-          return Boolean(actions && actions.left >= 0 && actions.right <= document.documentElement.clientWidth);
-        }),
+      .poll(
+        /** Reads the observable state until the browser assertion settles. */ () =>
+          toolbar.evaluate(
+            /** Reads or updates browser state for the needs attention scenario. */ (element) => {
+              const actions = element.querySelector(':scope > [data-slot="right"]')?.getBoundingClientRect();
+              return Boolean(actions && actions.left >= 0 && actions.right <= document.documentElement.clientWidth);
+            },
+          ),
       )
       .toBe(true);
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+      .poll(
+        /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+          page.evaluate(
+            /** Reads or updates browser state for the needs attention scenario. */ () =>
+              document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+          ),
+      )
       .toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`needs-attention-${theme}-mobile.png`), fullPage: true });
   });

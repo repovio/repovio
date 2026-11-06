@@ -78,7 +78,10 @@ import { createUpdatePasswordFormSchema, type UpdatePasswordForm } from '~/types
 
 const auth = useAuthStore();
 const { t } = useI18n();
-const localizedPasswordFormSchema = computed(() => createUpdatePasswordFormSchema(t('auth.passwordMismatch')));
+const localizedPasswordFormSchema = computed(
+  /** Derives localized password form schema from the current reactive dependencies. */ () =>
+    createUpdatePasswordFormSchema(t('auth.passwordMismatch')),
+);
 const error = ref('');
 const saved = ref(false);
 const saving = ref(false);

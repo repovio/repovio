@@ -117,7 +117,9 @@ export class GiteaActionsAdapter implements ProviderAdapter {
    */
   async listRepositories(context: ProviderAccountContext): Promise<ProviderRepository[]> {
     const repositories = await this.request<GiteaRepository[]>(context, '/user/repos?limit=100');
-    return repositories.map((repository) => this.toRepository(repository));
+    return repositories.map(
+      /** Projects each entry using `this.toRepository(repository)`. */ (repository) => this.toRepository(repository),
+    );
   }
 
   /**
@@ -198,14 +200,19 @@ export class GiteaActionsAdapter implements ProviderAdapter {
         `/repos/${repository.owner}/${repository.name}/actions/runs?${query}`,
       );
       const pageRuns = data.workflow_runs ?? [];
-      const recentRuns = updatedAfter ? pageRuns.filter((run) => new Date(run.updated_at) >= updatedAfter) : pageRuns;
+      const recentRuns = updatedAfter
+        ? pageRuns.filter(
+            /** Keeps entries matching `new Date(run.updated_at) >= updatedAfter`. */ (run) =>
+              new Date(run.updated_at) >= updatedAfter,
+          )
+        : pageRuns;
       runs.push(...recentRuns);
 
       const totalCountAllowsAnotherPage = data.total_count === undefined || page * 100 < data.total_count;
       const reachedSynchronizationBoundary = Boolean(updatedAfter) && recentRuns.length < pageRuns.length;
       if (pageRuns.length < 100 || !totalCountAllowsAnotherPage || reachedSynchronizationBoundary) break;
     }
-    return runs.map((run) => this.toWorkflowRun(run));
+    return runs.map(/** Projects each entry using `this.toWorkflowRun(run)`. */ (run) => this.toWorkflowRun(run));
   }
 
   /**
@@ -259,7 +266,7 @@ export class GiteaActionsAdapter implements ProviderAdapter {
       ? await this.listPages<GiteaIssueResponse>(context, path, { state: 'open', type: 'issues' })
       : [];
     return this.uniqueById([...recent, ...open])
-      .filter((issue) => !issue.pull_request)
+      .filter(/** Keeps entries matching `!issue.pull_request`. */ (issue) => !issue.pull_request)
       .map(toProviderIssue);
   }
 
@@ -284,6 +291,7 @@ export class GiteaActionsAdapter implements ProviderAdapter {
       context,
       path,
       { sort: 'recentupdate', state: 'all' },
+      /** Evaluates `new Date(pullRequest.updated_at) >= query.updatedAfter` when this.listPages invokes this callback. */
       (pullRequest) => new Date(pullRequest.updated_at) >= query.updatedAfter,
     );
     const open = query.includeAllOpen
@@ -350,7 +358,7 @@ export class GiteaActionsAdapter implements ProviderAdapter {
     context: ProviderAccountContext,
     path: string,
     parameters: Record<string, string>,
-    keepReading: (item: T) => boolean = () => true,
+    keepReading: (item: T) => boolean = /** Returns `true` to the caller. */ () => true,
   ): Promise<T[]> {
     const items: T[] = [];
     for (let page = 1; ; page += 1) {
@@ -370,7 +378,9 @@ export class GiteaActionsAdapter implements ProviderAdapter {
    * @returns One record per ID in first-insertion order, containing the last value for that ID.
    */
   private uniqueById<T extends { id: number }>(items: T[]): T[] {
-    return [...new Map(items.map((item) => [item.id, item])).values()];
+    return [
+      ...new Map(items.map(/** Projects each entry using `[item.id, item]`. */ (item) => [item.id, item])).values(),
+    ];
   }
 
   /**

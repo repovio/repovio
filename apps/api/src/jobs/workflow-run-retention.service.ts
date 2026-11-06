@@ -45,7 +45,11 @@ export class WorkflowRunRetentionService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async scheduleCleanup(): Promise<void> {
-    await this.jobs.run('workflow-run-retention', () => this.deleteExpiredRecords());
+    await this.jobs.run(
+      'workflow-run-retention',
+      /** Evaluates `this.deleteExpiredRecords()` when this.jobs.run invokes this callback. */ () =>
+        this.deleteExpiredRecords(),
+    );
   }
 
   /**
@@ -181,26 +185,30 @@ export class WorkflowRunRetentionService {
    * @returns A promise that resolves when the operation completes.
    */
   private async archiveDurationsAndDeleteRuns(where: Prisma.WorkflowRunWhereInput): Promise<void> {
-    await this.prisma.$transaction(async (transaction) => {
-      const durations = await transaction.workflowRun.groupBy({
-        by: ['repositoryId'],
-        where,
-        _sum: { durationMs: true },
-      });
+    await this.prisma.$transaction(
+      /** Archives retained duration aggregates before deleting expired workflow runs. */ async (transaction) => {
+        const durations = await transaction.workflowRun.groupBy({
+          by: ['repositoryId'],
+          where,
+          _sum: { durationMs: true },
+        });
 
-      await Promise.all(
-        durations.flatMap(({ _sum, repositoryId }) => {
-          if (_sum.durationMs === null) return [];
-          return [
-            transaction.repository.update({
-              data: { retainedRunDurationMs: { increment: _sum.durationMs } },
-              where: { id: repositoryId },
-            }),
-          ];
-        }),
-      );
+        await Promise.all(
+          durations.flatMap(
+            /** Flattens entries produced by the archiveDurationsAndDeleteRuns mapping. */ ({ _sum, repositoryId }) => {
+              if (_sum.durationMs === null) return [];
+              return [
+                transaction.repository.update({
+                  data: { retainedRunDurationMs: { increment: _sum.durationMs } },
+                  where: { id: repositoryId },
+                }),
+              ];
+            },
+          ),
+        );
 
-      await transaction.workflowRun.deleteMany({ where });
-    });
+        await transaction.workflowRun.deleteMany({ where });
+      },
+    );
   }
 }

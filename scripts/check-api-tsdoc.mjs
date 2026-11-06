@@ -9,16 +9,19 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Collect hand-maintained API sources, excluding generated clients and test specifications. */
 export function apiSourceFiles(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) return entry.name === 'generated' ? [] : apiSourceFiles(path);
-    return /\.tsx?$/.test(entry.name) && !/\.(?:spec|test)\.tsx?$/.test(entry.name) ? [path] : [];
-  });
+  return readdirSync(directory, { withFileTypes: true }).flatMap(
+    /** Flattens entries produced by the apiSourceFiles mapping. */ (entry) => {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) return entry.name === 'generated' ? [] : apiSourceFiles(path);
+      return /\.tsx?$/.test(entry.name) && !/\.(?:spec|test)\.tsx?$/.test(entry.name) ? [path] : [];
+    },
+  );
 }
 
 /** Visit named implementations and method contracts without treating inline callbacks as declarations. */
 export function documentedDeclarations(source) {
   const declarations = [];
+  /** Visits documented declarations. */
   function visit(node) {
     if (
       ts.isFunctionDeclaration(node) ||
@@ -54,12 +57,15 @@ export function parameterName(parameter, index) {
 
 /** Read plain text from both simple and link-containing TypeScript documentation comments. */
 function commentText(comment) {
-  return typeof comment === 'string' ? comment : (comment?.map((part) => part.text).join('') ?? '');
+  return typeof comment === 'string'
+    ? comment
+    : (comment?.map(/** Projects each entry using `part.text`. */ (part) => part.text).join('') ?? '');
 }
 
 /** Detect explicit escaping throws; caught errors and nested callbacks require a semantic review instead. */
 function hasEscapingThrow(callable) {
   let found = false;
+  /** Visits has escaping throw. */
   function visit(node) {
     if (node !== callable && ts.isFunctionLike(node)) return;
     if (ts.isThrowStatement(node)) {
@@ -86,17 +92,29 @@ export function checkSource(source) {
   const errors = [];
   for (const { anchor, callable } of documentedDeclarations(source)) {
     const { line } = source.getLineAndCharacterOfPosition(anchor.getStart(source));
+    /** Appends a source-located documentation diagnostic. */
     const report = (message) => errors.push(`${source.fileName}:${line + 1}: ${message}`);
     const doc = ts.getJSDocCommentsAndTags(anchor).find(ts.isJSDoc);
     if (!doc || !commentText(doc.comment).trim()) report('Missing TSDoc purpose summary.');
     const tags = [...(doc?.tags ?? [])];
-    const throws = tags.filter((tag) => tag.tagName.text === 'throws');
-    if ((hasEscapingThrow(callable) && throws.length === 0) || throws.some((tag) => !commentText(tag.comment).trim())) {
+    const throws = tags.filter(
+      /** Keeps entries matching `tag.tagName.text === 'throws'`. */ (tag) => tag.tagName.text === 'throws',
+    );
+    if (
+      (hasEscapingThrow(callable) && throws.length === 0) ||
+      throws.some(
+        /** Checks whether any entry satisfies `!commentText(tag.comment).trim()`. */ (tag) =>
+          !commentText(tag.comment).trim(),
+      )
+    ) {
       report('Expected a descriptive @throws tag for explicit escaping errors.');
     }
     for (const [index, parameter] of callable.parameters.entries()) {
       const name = parameterName(parameter, index);
-      const matches = tags.filter((tag) => ts.isJSDocParameterTag(tag) && tag.name.getText(source) === name);
+      const matches = tags.filter(
+        /** Keeps entries matching `ts.isJSDocParameterTag(tag) && tag.name.getText(source) === name`. */ (tag) =>
+          ts.isJSDocParameterTag(tag) && tag.name.getText(source) === name,
+      );
       if (matches.length !== 1 || !commentText(matches[0]?.comment).trim()) {
         report(`Expected one descriptive @param ${name} tag.`);
       }
@@ -110,6 +128,7 @@ export function checkSource(source) {
     for (const parameter of callable.typeParameters ?? []) {
       if (
         !tags.some(
+          /** Checks whether any entry satisfies `tag.tagName.text === 'typeParam' && commentText(tag.comment).startsWith(`${parameter.name.text} - `)`. */
           (tag) => tag.tagName.text === 'typeParam' && commentText(tag.comment).startsWith(`${parameter.name.text} - `),
         )
       ) {
@@ -123,16 +142,18 @@ export function checkSource(source) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const files = apiSourceFiles(resolve(repositoryRoot, 'apps/api/src'));
   let count = 0;
-  const errors = files.flatMap((file) => {
-    const source = ts.createSourceFile(
-      relative(repositoryRoot, file),
-      readFileSync(file, 'utf8'),
-      ts.ScriptTarget.Latest,
-      true,
-    );
-    count += documentedDeclarations(source).length;
-    return checkSource(source);
-  });
+  const errors = files.flatMap(
+    /** Flattens entries produced by the errors mapping. */ (file) => {
+      const source = ts.createSourceFile(
+        relative(repositoryRoot, file),
+        readFileSync(file, 'utf8'),
+        ts.ScriptTarget.Latest,
+        true,
+      );
+      count += documentedDeclarations(source).length;
+      return checkSource(source);
+    },
+  );
   if (errors.length) {
     process.stderr.write(`${errors.join('\n')}\n`);
     process.exitCode = 1;

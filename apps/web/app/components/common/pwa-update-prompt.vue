@@ -42,7 +42,9 @@ import { computed, ref } from 'vue';
 const { t } = useI18n();
 const { $pwa: pwa } = useNuxtApp();
 const dismissed = ref(false);
-const needsRefresh = computed(() => pwa?.needRefresh ?? false);
+const needsRefresh = computed(
+  /** Derives needs refresh from the current reactive dependencies. */ () => pwa?.needRefresh ?? false,
+);
 const updateFailed = ref(false);
 const updating = ref(false);
 

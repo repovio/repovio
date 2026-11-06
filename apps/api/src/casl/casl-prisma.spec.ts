@@ -5,8 +5,8 @@ import { CaslAction } from './casl-action.js';
 import { CaslSubject } from './casl-subject.js';
 import type { AppAbility } from './types.js';
 
-describe('CASL Prisma integration', () => {
-  it('converts a repository ability into a database where restriction', () => {
+describe('CASL Prisma integration', /** Groups scenarios for CASL Prisma integration. */ () => {
+  it('converts a repository ability into a database where restriction', /** Verifies converts a repository ability into a database where restriction. */ () => {
     const ability = new CaslAbilityFactory().createForUser(
       { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' },
       [{ repositoryId: 'repository-a', role: 'VIEWER' }],

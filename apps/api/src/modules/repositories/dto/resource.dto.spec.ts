@@ -3,8 +3,8 @@ import type { ProviderAccount, Repository } from '../../../generated/prisma/clie
 import { resourceFields } from '../../../util/resource-contract.js';
 import { ProviderAccountDto, RepositoryDto, WorkflowRunDto, type WorkflowRunResourceModel } from './resource.dto.js';
 
-describe('resource DTO mappings', () => {
-  it('never serializes encrypted provider access tokens', () => {
+describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings. */ () => {
+  it('never serializes encrypted provider access tokens', /** Verifies never serializes encrypted provider access tokens. */ () => {
     const dto = ProviderAccountDto.fromModel({
       id: 'account',
       providerType: 'GITHUB',
@@ -32,7 +32,7 @@ describe('resource DTO mappings', () => {
     expect(dto).not.toHaveProperty('encryptedAccessToken');
   });
 
-  it('allows Query Kit to project every provider-table field', () => {
+  it('allows Query Kit to project every provider-table field', /** Verifies allows Query Kit to project every provider-table field. */ () => {
     const schema = resourceFields(ProviderAccountDto);
 
     expect(schema).toEqual({
@@ -46,7 +46,7 @@ describe('resource DTO mappings', () => {
     expect(Fields.parseAndValidate('id,displayName,providerType,baseUrl,enabled,lastSyncAt', schema)).toEqual(schema);
   });
 
-  it('allows Query Kit to project every repository-table field', () => {
+  it('allows Query Kit to project every repository-table field', /** Verifies allows Query Kit to project every repository-table field. */ () => {
     const schema = resourceFields(RepositoryDto);
 
     expect(
@@ -69,7 +69,7 @@ describe('resource DTO mappings', () => {
     });
   });
 
-  it('maps the repository fields shown in the administration table', () => {
+  it('maps the repository fields shown in the administration table', /** Verifies maps the repository fields shown in the administration table. */ () => {
     const dto = RepositoryDto.fromModel({
       id: 'repository',
       providerRepositoryId: '42',
@@ -125,7 +125,7 @@ describe('resource DTO mappings', () => {
     });
   });
 
-  it('allows Query Kit to project every workflow-run table field', () => {
+  it('allows Query Kit to project every workflow-run table field', /** Verifies allows Query Kit to project every workflow-run table field. */ () => {
     const schema = resourceFields(WorkflowRunDto);
 
     expect(
@@ -147,7 +147,7 @@ describe('resource DTO mappings', () => {
     });
   });
 
-  it('excludes raw provider statuses from public workflow runs', () => {
+  it('excludes raw provider statuses from public workflow runs', /** Verifies excludes raw provider statuses from public workflow runs. */ () => {
     const dto = WorkflowRunDto.fromModel({
       id: 'run',
       providerRunId: '1',

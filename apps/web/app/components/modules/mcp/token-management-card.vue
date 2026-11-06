@@ -139,42 +139,51 @@ const createdToken = ref('');
 const copied = ref(false);
 const revokingId = ref<string>();
 const form = reactive({ expiresAt: '', name: '' });
-const mcpTokenFormSchema = computed(() =>
-  z.object({ expiresAt: z.string(), name: z.string() }).transform((data, context) => {
-    const expiration = data.expiresAt ? new Date(data.expiresAt) : null;
-    const parsed = ApiCreateMcpAccessTokenSchema.safeParse({
-      expiresAt:
-        expiration && Number.isFinite(expiration.getTime()) ? expiration.toISOString() : data.expiresAt || null,
-      name: data.name,
-    });
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
-      }
-      return z.NEVER;
-    }
-    return parsed.data;
-  }),
+const mcpTokenFormSchema = computed(
+  /** Derives mcp token form schema from the current reactive dependencies. */ () =>
+    z.object({ expiresAt: z.string(), name: z.string() }).transform(
+      /** Normalizes input using the mcpTokenFormSchema mapping. */ (data, context) => {
+        const expiration = data.expiresAt ? new Date(data.expiresAt) : null;
+        const parsed = ApiCreateMcpAccessTokenSchema.safeParse({
+          expiresAt:
+            expiration && Number.isFinite(expiration.getTime()) ? expiration.toISOString() : data.expiresAt || null,
+          name: data.name,
+        });
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues) {
+            context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
+          }
+          return z.NEVER;
+        }
+        return parsed.data;
+      },
+    ),
 );
 
-watch(createDialogOpen, (open) => {
-  if (!open) return;
-  Object.assign(form, { expiresAt: '', name: '' });
-  createdToken.value = '';
-  createError.value = false;
-  copied.value = false;
-});
+watch(
+  createDialogOpen,
+  /** Synchronizes token management card when the observed state changes. */ (open) => {
+    if (!open) return;
+    Object.assign(form, { expiresAt: '', name: '' });
+    createdToken.value = '';
+    createError.value = false;
+    copied.value = false;
+  },
+);
 
+/** Formats timestamp. */
 function formatTimestamp(timestamp: string): string {
   return formatDateTime(timestamp);
 }
 
+/** Maps the current delivery or token state to its UI color. */
 function statusColor(status: McpAccessTokenStatus): 'error' | 'neutral' | 'success' {
   if (status === 'ACTIVE') return 'success';
   if (status === 'REVOKED') return 'error';
   return 'neutral';
 }
 
+/** Loads token management card. */
 async function load(): Promise<void> {
   loading.value = true;
   loadError.value = false;
@@ -187,6 +196,7 @@ async function load(): Promise<void> {
   }
 }
 
+/** Creates token. */
 async function createToken(event: FormSubmitEvent<z.output<typeof ApiCreateMcpAccessTokenSchema>>): Promise<void> {
   creating.value = true;
   createError.value = false;
@@ -201,15 +211,18 @@ async function createToken(event: FormSubmitEvent<z.output<typeof ApiCreateMcpAc
   }
 }
 
+/** Copies the newly created token to the clipboard before it is dismissed. */
 async function copyToken(): Promise<void> {
   await navigator.clipboard.writeText(createdToken.value);
   copied.value = true;
 }
 
+/** Closes create dialog. */
 function closeCreateDialog(): void {
   createDialogOpen.value = false;
 }
 
+/** Revokes the selected MCP access token and updates the displayed list. */
 async function revoke(token: McpAccessToken): Promise<void> {
   if (!window.confirm(t('mcp.revokeConfirm', { name: token.name }))) return;
   revokingId.value = token.id;
@@ -221,5 +234,5 @@ async function revoke(token: McpAccessToken): Promise<void> {
   }
 }
 
-onMounted(() => void load());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void load());
 </script>

@@ -163,10 +163,18 @@ const saveError = ref(false);
 const saved = ref(false);
 const saving = ref(false);
 const { reset: resetDirtyState } = useUnsavedChangesGuard(form);
-const dateTimeFormatOptions = computed(() =>
-  defaultDateTimeFormats.map((format) => ({ label: t(`settings.dateTimeFormats.${format}`), value: format })),
+const dateTimeFormatOptions = computed(
+  /** Derives date time format options from the current reactive dependencies. */ () =>
+    defaultDateTimeFormats.map(
+      /** Projects each entry using `({ label: t(`settings.dateTimeFormats.${format}`), value: format })`. */ (
+        format,
+      ) => ({ label: t(`settings.dateTimeFormats.${format}`), value: format }),
+    ),
 );
-const dateTimePreview = computed(() => formatDateTimeValue(previewTimestamp, form.dateTimeFormat, locale.value, 'UTC'));
+const dateTimePreview = computed(
+  /** Derives date time preview from the current reactive dependencies. */ () =>
+    formatDateTimeValue(previewTimestamp, form.dateTimeFormat, locale.value, 'UTC'),
+);
 
 /** Load persisted settings and initialize the editable form snapshot. */
 async function loadSettings(): Promise<void> {
@@ -193,5 +201,5 @@ async function saveSettings(event: FormSubmitEvent<ApplicationSettings>): Promis
   }
 }
 
-onMounted(() => void loadSettings());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void loadSettings());
 </script>

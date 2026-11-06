@@ -16,8 +16,13 @@ export type WireValue<T> = T extends Date
  */
 export function toWire<T>(value: T): WireValue<T> {
   if (value instanceof Date) return value.toISOString() as WireValue<T>;
-  if (Array.isArray(value)) return value.map((item) => toWire(item)) as WireValue<T>;
+  if (Array.isArray(value))
+    return value.map(/** Projects each entry using `toWire(item)`. */ (item) => toWire(item)) as WireValue<T>;
   if (value !== null && typeof value === 'object')
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, toWire(item)])) as WireValue<T>;
+    return Object.fromEntries(
+      Object.entries(value).map(
+        /** Projects each entry using `[key, toWire(item)]`. */ ([key, item]) => [key, toWire(item)],
+      ),
+    ) as WireValue<T>;
   return value as WireValue<T>;
 }

@@ -6,6 +6,7 @@ import type { WorkflowRunStatus } from '~/types/api/resources';
 export function useWorkflowRunStatus(): {
   getColor: (status: WorkflowRunStatus) => BadgeProps['color'];
 } {
+  /** Retrieves color. */
   const getColor = (status: WorkflowRunStatus): BadgeProps['color'] => {
     if (status === 'SUCCESS') return 'success';
     if (status === 'FAILED') return 'error';

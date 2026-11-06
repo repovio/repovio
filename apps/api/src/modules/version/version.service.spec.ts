@@ -1,13 +1,15 @@
 import { parseReleaseVersion, VersionService } from './version.service.js';
 
-describe('VersionService', () => {
+describe('VersionService', /** Groups scenarios for VersionService. */ () => {
   const originalFetch = global.fetch;
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
+  afterEach(
+    /** Restores shared test state for afterEach. */ () => {
+      global.fetch = originalFetch;
+    },
+  );
 
-  it('returns the latest GitHub release without its tag prefix and caches it', async () => {
+  it('returns the latest GitHub release without its tag prefix and caches it', /** Verifies returns the latest GitHub release without its tag prefix and caches it. */ async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       json: jest.fn().mockResolvedValue({ tag_name: 'repovio@1.2.3' }),
       ok: true,
@@ -24,7 +26,7 @@ describe('VersionService', () => {
     });
   });
 
-  it('returns null when the release lookup fails', async () => {
+  it('returns null when the release lookup fails', /** Verifies returns null when the release lookup fails. */ async () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('offline')) as unknown as typeof fetch;
 
     await expect(new VersionService().getLatest()).resolves.toEqual({ latest: null });
@@ -37,11 +39,14 @@ describe('VersionService', () => {
     ['@repovio/app@v1.2.3-beta.1', '1.2.3-beta.1'],
     ['release-1.2.3', null],
     [undefined, null],
-  ])('parses release tag %s as %s', (tagName, expected) => {
-    expect(parseReleaseVersion(tagName)).toBe(expected);
-  });
+  ])(
+    'parses release tag %s as %s',
+    /** Verifies parses release tag %s as %s. */ (tagName, expected) => {
+      expect(parseReleaseVersion(tagName)).toBe(expected);
+    },
+  );
 
-  it('does not cache a failed release lookup', async () => {
+  it('does not cache a failed release lookup', /** Verifies does not cache a failed release lookup. */ async () => {
     const fetchMock = jest
       .fn()
       .mockRejectedValueOnce(new Error('offline'))

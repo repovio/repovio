@@ -169,7 +169,9 @@ const jobsApi = useModuleApi('jobs/repository-sync');
 const auth = useAuthStore();
 const { formatDateTime } = useDateTime();
 const { isPending, run: runPendingAction } = usePendingActions();
-const isAdmin = computed(() => auth.user?.role === 'SYSTEM_ADMIN');
+const isAdmin = computed(
+  /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',
+);
 const jobs = ref<RepositorySyncJob[]>([]);
 const summary = ref<RepositorySyncJobSummary | null>(null);
 const loading = ref(true);
@@ -179,29 +181,33 @@ const itemsPerPage = useLocalStorage('table:jobs:items-per-page', 10);
 const totalItems = ref(0);
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
 
-const columns = computed<TableColumn<RepositorySyncJob>[]>(() => [
-  { accessorKey: 'repositoryName', header: t('jobs.columns.repository'), id: 'repository' },
-  { accessorKey: 'providerName', header: t('jobs.columns.provider'), id: 'provider' },
-  { accessorKey: 'status', header: t('jobs.columns.status'), id: 'status' },
-  { accessorKey: 'scopes', header: t('jobs.columns.scopes'), id: 'scopes' },
-  { accessorKey: 'progressPhase', header: t('jobs.columns.progress'), id: 'progress' },
-  { accessorKey: 'attempt', header: t('jobs.columns.attempt'), id: 'attempt' },
-  { accessorKey: 'requestedAt', header: t('jobs.columns.requestedAt'), id: 'requestedAt' },
-  { accessorKey: 'runAfter', header: t('jobs.columns.runAfter'), id: 'runAfter' },
-  { accessorKey: 'startedAt', header: t('jobs.columns.startedAt'), id: 'startedAt' },
-  { accessorKey: 'lastError', header: t('jobs.columns.error'), id: 'lastError' },
-  ...(isAdmin.value ? [{ header: t('jobs.columns.actions'), id: 'actions' } as TableColumn<RepositorySyncJob>] : []),
-]);
-const summaryMetrics = computed(() => [
-  { key: 'running', label: t('jobs.status.RUNNING'), value: summary.value?.running ?? 0 },
-  { key: 'waiting', label: t('jobs.waiting'), value: summary.value?.pending ?? 0 },
-  { key: 'failed', label: t('jobs.status.FAILED'), value: summary.value?.failed ?? 0 },
-  { key: 'warning', label: t('jobs.status.WARNING'), value: summary.value?.warning ?? 0 },
-  { key: 'idle', label: t('jobs.status.IDLE'), value: summary.value?.idle ?? 0 },
-]);
+const columns = computed<TableColumn<RepositorySyncJob>[]>(
+  /** Derives columns from the current reactive dependencies. */ () => [
+    { accessorKey: 'repositoryName', header: t('jobs.columns.repository'), id: 'repository' },
+    { accessorKey: 'providerName', header: t('jobs.columns.provider'), id: 'provider' },
+    { accessorKey: 'status', header: t('jobs.columns.status'), id: 'status' },
+    { accessorKey: 'scopes', header: t('jobs.columns.scopes'), id: 'scopes' },
+    { accessorKey: 'progressPhase', header: t('jobs.columns.progress'), id: 'progress' },
+    { accessorKey: 'attempt', header: t('jobs.columns.attempt'), id: 'attempt' },
+    { accessorKey: 'requestedAt', header: t('jobs.columns.requestedAt'), id: 'requestedAt' },
+    { accessorKey: 'runAfter', header: t('jobs.columns.runAfter'), id: 'runAfter' },
+    { accessorKey: 'startedAt', header: t('jobs.columns.startedAt'), id: 'startedAt' },
+    { accessorKey: 'lastError', header: t('jobs.columns.error'), id: 'lastError' },
+    ...(isAdmin.value ? [{ header: t('jobs.columns.actions'), id: 'actions' } as TableColumn<RepositorySyncJob>] : []),
+  ],
+);
+const summaryMetrics = computed(
+  /** Derives summary metrics from the current reactive dependencies. */ () => [
+    { key: 'running', label: t('jobs.status.RUNNING'), value: summary.value?.running ?? 0 },
+    { key: 'waiting', label: t('jobs.waiting'), value: summary.value?.pending ?? 0 },
+    { key: 'failed', label: t('jobs.status.FAILED'), value: summary.value?.failed ?? 0 },
+    { key: 'warning', label: t('jobs.status.WARNING'), value: summary.value?.warning ?? 0 },
+    { key: 'idle', label: t('jobs.status.IDLE'), value: summary.value?.idle ?? 0 },
+  ],
+);
 
 definePageMeta({ fullWidth: true });
-useHead({ title: computed(() => t('jobs.title')) });
+useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('jobs.title')) });
 
 /** Load the current queue summary and requested repository page. */
 async function load(showLoading = false): Promise<void> {
@@ -224,18 +230,24 @@ async function load(showLoading = false): Promise<void> {
 
 /** Queue every currently idle or failed repository synchronization. */
 async function startAll(): Promise<void> {
-  await runPendingAction('all', async () => {
-    await api.jobs.startAll();
-    await load();
-  });
+  await runPendingAction(
+    'all',
+    /** Performs start all while retaining the initiating action’s pending state. */ async () => {
+      await api.jobs.startAll();
+      await load();
+    },
+  );
 }
 
 /** Queue one idle or failed repository synchronization. */
 async function start(job: RepositorySyncJob): Promise<void> {
-  await runPendingAction(job.id, async () => {
-    await api.jobs.start(job.id);
-    await load();
-  });
+  await runPendingAction(
+    job.id,
+    /** Performs start while retaining the initiating action’s pending state. */ async () => {
+      await api.jobs.start(job.id);
+      await load();
+    },
+  );
 }
 
 /** Return the localized action label for one repository job. */
@@ -264,12 +276,16 @@ function formatTimestamp(value: string | null): string {
   return value ? formatDateTime(value) : '—';
 }
 
-watch([page, itemsPerPage], () => void load(true));
-onMounted(() => {
-  void load(true);
-  refreshTimer = setInterval(() => void load(), refreshIntervalMs);
-});
-onBeforeUnmount(() => {
-  if (refreshTimer) clearInterval(refreshTimer);
-});
+watch([page, itemsPerPage], /** Synchronizes jobs when the observed state changes. */ () => void load(true));
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () => {
+    void load(true);
+    refreshTimer = setInterval(/** Refreshes jobs on the configured interval. */ () => void load(), refreshIntervalMs);
+  },
+);
+onBeforeUnmount(
+  /** Releases component resources and subscriptions before disposal. */ () => {
+    if (refreshTimer) clearInterval(refreshTimer);
+  },
+);
 </script>

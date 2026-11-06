@@ -20,7 +20,10 @@ export class ProviderAdapterRegistry {
    * @throws Error - When no adapter is registered for the requested provider type.
    */
   get(providerType: ProviderType): ProviderAdapter {
-    const adapter = this.adapters.find((candidate) => candidate.providerType === providerType);
+    const adapter = this.adapters.find(
+      /** Finds the first entry matching `candidate.providerType === providerType`. */ (candidate) =>
+        candidate.providerType === providerType,
+    );
     if (!adapter) throw new Error(`No adapter is installed for ${providerType}.`);
     return adapter;
   }

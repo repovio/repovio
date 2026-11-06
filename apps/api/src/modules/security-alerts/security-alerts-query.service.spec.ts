@@ -4,8 +4,8 @@ import type { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { SecurityAlertsQueryService } from './security-alerts-query.service.js';
 
-describe('SecurityAlertsQueryService', () => {
-  it('rejects viewers before any alert query can run', async () => {
+describe('SecurityAlertsQueryService', /** Groups scenarios for SecurityAlertsQueryService. */ () => {
+  it('rejects viewers before any alert query can run', /** Verifies rejects viewers before any alert query can run. */ async () => {
     const { service } = createService();
 
     await expect(
@@ -13,7 +13,7 @@ describe('SecurityAlertsQueryService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('builds manager abilities from manager memberships only', async () => {
+  it('builds manager abilities from manager memberships only', /** Verifies builds manager abilities from manager memberships only. */ async () => {
     const { abilityFactory, prisma, service } = createService();
     prisma.repositoryMembership.findMany.mockResolvedValue([{ repositoryId: 'managed', role: 'MANAGER' }]);
     const ability = { can: jest.fn() };
@@ -28,7 +28,7 @@ describe('SecurityAlertsQueryService', () => {
     });
   });
 
-  it('leaves system administrators unrestricted', async () => {
+  it('leaves system administrators unrestricted', /** Verifies leaves system administrators unrestricted. */ async () => {
     const { abilityFactory, prisma, service } = createService();
     abilityFactory.createForUser.mockReturnValue({});
     const user = { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
@@ -39,6 +39,7 @@ describe('SecurityAlertsQueryService', () => {
   });
 });
 
+/** Creates service. */
 function createService() {
   const prisma = {
     repositoryMembership: { findMany: jest.fn().mockResolvedValue([]) },

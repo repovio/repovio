@@ -11,6 +11,7 @@ interface RegisteredTool {
 
 const user: AuthenticatedUser = { authProvider: 'LOCAL' as const, id: 'viewer-id', role: 'VIEWER', username: 'viewer' };
 
+/** Lists tools request. */
 function listToolsRequest(id: number): Request {
   return new Request('http://localhost/mcp', {
     body: JSON.stringify({
@@ -35,7 +36,7 @@ function listToolsRequest(id: number): Request {
   });
 }
 
-describe('McpServerFactory', () => {
+describe('McpServerFactory', /** Groups scenarios for McpServerFactory. */ () => {
   const tools = {
     getDashboardSummary: jest.fn(),
     getRepository: jest.fn(),
@@ -47,9 +48,9 @@ describe('McpServerFactory', () => {
   };
   const factory = new McpServerFactory(tools as unknown as McpToolsService);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('advertises exactly seven read-only tools without resources or prompts', () => {
+  it('advertises exactly seven read-only tools without resources or prompts', /** Verifies advertises exactly seven read-only tools without resources or prompts. */ () => {
     const server = factory.create(user);
     const internal = server as unknown as {
       _registeredPrompts: Record<string, unknown>;
@@ -78,7 +79,7 @@ describe('McpServerFactory', () => {
     }
   });
 
-  it('binds tool execution to the authenticated user and returns structured JSON', async () => {
+  it('binds tool execution to the authenticated user and returns structured JSON', /** Verifies binds tool execution to the authenticated user and returns structured JSON. */ async () => {
     tools.getRepository.mockResolvedValue({ id: 'repository-id', lastSyncAt: new Date('2026-09-12T10:00:00Z') });
     const server = factory.create(user) as unknown as {
       _registeredTools: Record<string, RegisteredTool>;
@@ -90,8 +91,11 @@ describe('McpServerFactory', () => {
     expect(result.structuredContent).toEqual({ id: 'repository-id', lastSyncAt: '2026-09-12T10:00:00.000Z' });
   });
 
-  it('serves the 2026-07-28 tool catalog over stateless Streamable HTTP', async () => {
-    const handler = createMcpHandler(() => factory.create(user), { legacy: 'reject' });
+  it('serves the 2026-07-28 tool catalog over stateless Streamable HTTP', /** Verifies serves the 2026-07-28 tool catalog over stateless Streamable HTTP. */ async () => {
+    const handler = createMcpHandler(
+      /** Evaluates `factory.create(user)` when createMcpHandler invokes this callback. */ () => factory.create(user),
+      { legacy: 'reject' },
+    );
 
     try {
       const response = await handler.fetch(listToolsRequest(1), {
@@ -101,7 +105,7 @@ describe('McpServerFactory', () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get('content-type')).toContain('application/json');
-      expect(body.result.tools.map((tool) => tool.name)).toEqual([
+      expect(body.result.tools.map(/** Projects each entry using `tool.name`. */ (tool) => tool.name)).toEqual([
         'list_repositories',
         'get_repository',
         'list_workflow_runs',
@@ -115,12 +119,14 @@ describe('McpServerFactory', () => {
     }
   });
 
-  it('uses a fresh server for every concurrent stateless request', async () => {
+  it('uses a fresh server for every concurrent stateless request', /** Verifies uses a fresh server for every concurrent stateless request. */ async () => {
     let serverCount = 0;
-    const handler = createMcpHandler(() => {
-      serverCount += 1;
-      return factory.create(user);
-    });
+    const handler = createMcpHandler(
+      /** Counts and creates a fresh MCP server for each stateless request. */ () => {
+        serverCount += 1;
+        return factory.create(user);
+      },
+    );
     const options = { authInfo: { clientId: 'token-id', scopes: ['mcp:read'], token: 'redacted' } };
 
     try {
@@ -129,16 +135,22 @@ describe('McpServerFactory', () => {
         handler.fetch(listToolsRequest(2), options),
       ]);
 
-      expect(responses.map((response) => response.status)).toEqual([200, 200]);
+      expect(responses.map(/** Projects each entry using `response.status`. */ (response) => response.status)).toEqual([
+        200, 200,
+      ]);
       expect(serverCount).toBe(2);
     } finally {
       await handler.close();
     }
   });
 
-  it('defaults list pagination to 25 and rejects limits above 100 at the protocol boundary', async () => {
+  it('defaults list pagination to 25 and rejects limits above 100 at the protocol boundary', /** Verifies defaults list pagination to 25 and rejects limits above 100 at the protocol boundary. */ async () => {
     tools.listRepositories.mockResolvedValue({ items: [], page: 1, perPage: 25, total: 0 });
-    const handler = createMcpHandler(() => factory.create(user), { legacy: 'reject' });
+    const handler = createMcpHandler(
+      /** Evaluates `factory.create(user)` when createMcpHandler invokes this callback. */ () => factory.create(user),
+      { legacy: 'reject' },
+    );
+    /** Requests request. */
     const request = (id: number, limit?: number) =>
       new Request('http://localhost/mcp', {
         body: JSON.stringify({

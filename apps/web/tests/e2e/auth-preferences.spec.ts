@@ -15,11 +15,19 @@ for (const route of [
   { heading: 'Sign in', initialized: true, path: '/auth/signin', translatedHeading: 'Anmelden' },
   { heading: 'First-run setup', initialized: false, path: '/auth/setup', translatedHeading: 'Ersteinrichtung' },
 ]) {
-  test(`changes and persists public preferences on ${route.path}`, async ({ page }, testInfo) => {
-    await page.route('**/api/v1/auth/setup-status', (request) =>
-      request.fulfill({ json: { initialized: route.initialized } }),
+  test(`changes and persists public preferences on ${route.path}`, /** Verifies changes and persists public preferences on [route.path]. */ async ({
+    page,
+  }, testInfo) => {
+    await page.route(
+      '**/api/v1/auth/setup-status',
+      /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (request) =>
+        request.fulfill({ json: { initialized: route.initialized } }),
     );
-    await page.route('**/api/v1/auth/oidc/status', (request) => request.fulfill({ json: { enabled: false } }));
+    await page.route(
+      '**/api/v1/auth/oidc/status',
+      /** Supplies the mocked response for `/api/v1/auth/oidc/status`. */ (request) =>
+        request.fulfill({ json: { enabled: false } }),
+    );
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
     await page.goto(route.path);
     await expect(page.getByRole('heading', { name: route.heading, exact: true })).toBeVisible();
@@ -41,7 +49,13 @@ for (const route of [
       await expect(flag).toHaveAttribute('src', `/flags/${country}.svg`);
       await expect(flag).toHaveAttribute('alt', '');
       await expect
-        .poll(() => flag.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
+        .poll(
+          /** Evaluates `flag.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)` when expect .poll invokes this callback. */ () =>
+            flag.evaluate(
+              /** Reads or updates browser state for the auth preferences scenario. */ (image: HTMLImageElement) =>
+                image.complete && image.naturalWidth > 0,
+            ),
+        )
         .toBe(true);
     }
     await page.keyboard.press('Home');
@@ -55,7 +69,13 @@ for (const route of [
     await expect(translatedSelect).toContainText('Deutsch');
     await expect(translatedSelect.locator('img')).toHaveAttribute('src', '/flags/de.svg');
     await expect
-      .poll(async () => (await page.context().cookies()).find((cookie) => cookie.name === 'repovio-locale')?.value)
+      .poll(
+        /** Evaluates `(await page.context().cookies()).find((cookie) => cookie.name === 'repovio-locale')?.value` when expect .poll invokes this callback. */ async () =>
+          (await page.context().cookies()).find(
+            /** Finds the first entry matching `cookie.name === 'repovio-locale'`. */ (cookie) =>
+              cookie.name === 'repovio-locale',
+          )?.value,
+      )
       .toBe('de');
     await page.reload();
     await expect(page.getByRole('heading', { name: route.translatedHeading, exact: true })).toBeVisible();
@@ -82,7 +102,15 @@ for (const route of [
       });
       await expect(updatedButton).toBeFocused();
       await expect(updatedButton.locator(`[class~="i-tabler:${theme.icon}"]`)).toBeVisible();
-      await expect.poll(() => page.evaluate(() => window.localStorage.getItem('nuxt-color-mode'))).toBe(theme.value);
+      await expect
+        .poll(
+          /** Evaluates `page.evaluate(() => window.localStorage.getItem('nuxt-color-mode'))` when expect.poll invokes this callback. */ () =>
+            page.evaluate(
+              /** Reads or updates browser state for the auth preferences scenario. */ () =>
+                window.localStorage.getItem('nuxt-color-mode'),
+            ),
+        )
+        .toBe(theme.value);
       await page.reload();
       await expect(updatedButton).toBeVisible();
       await expect(page.locator('html')).toHaveClass(new RegExp(theme.value === 'dark' ? 'dark' : 'light'));
@@ -95,7 +123,12 @@ for (const route of [
           await page.setViewportSize(viewport);
           await expect(updatedButton).toBeInViewport();
           await expect(translatedSelect).toBeInViewport();
-          expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+          expect(
+            await page.evaluate(
+              /** Reads or updates browser state for the auth preferences scenario. */ () =>
+                document.documentElement.scrollWidth,
+            ),
+          ).toBeLessThanOrEqual(viewport.width);
           await page.screenshot({
             animations: 'disabled',
             path: testInfo.outputPath(`${theme.value}-${viewport.width}.png`),
@@ -128,22 +161,41 @@ for (const route of [
   });
 }
 
-test('keeps the language select busy while its locale is loading', async ({ page }) => {
-  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
-  await page.route('**/api/v1/auth/oidc/status', (route) => route.fulfill({ json: { enabled: false } }));
+test('keeps the language select busy while its locale is loading', /** Verifies keeps the language select busy while its locale is loading. */ async ({
+  page,
+}) => {
+  await page.route(
+    '**/api/v1/auth/setup-status',
+    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
+      route.fulfill({ json: { initialized: true } }),
+  );
+  await page.route(
+    '**/api/v1/auth/oidc/status',
+    /** Supplies the mocked response for `/api/v1/auth/oidc/status`. */ (route) =>
+      route.fulfill({ json: { enabled: false } }),
+  );
+  /** Releases the deferred locale response used by this scenario. */
   let releaseLocale: () => void = () => {};
-  const localeReleased = new Promise<void>((resolve) => {
-    releaseLocale = resolve;
-  });
+  const localeReleased = new Promise<void>(
+    /** Exposes the control that releases the delayed locale download. */ (resolve) => {
+      releaseLocale = resolve;
+    },
+  );
+  /** Selects the requested locale for this response fixture. */
   let localeRequested: () => void = () => {};
-  const localePending = new Promise<void>((resolve) => {
-    localeRequested = resolve;
-  });
-  await page.route(/\/de\.json(?:\?|$)/, async (route) => {
-    localeRequested();
-    await localeReleased;
-    await route.continue();
-  });
+  const localePending = new Promise<void>(
+    /** Signals when the locale download has started. */ (resolve) => {
+      localeRequested = resolve;
+    },
+  );
+  await page.route(
+    /\/de\.json(?:\?|$)/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      localeRequested();
+      await localeReleased;
+      await route.continue();
+    },
+  );
   await page.goto('/auth/signin');
   await page.getByRole('combobox', { name: 'Language', exact: true }).click();
   await page.getByRole('option', { name: 'Deutsch', exact: true }).click();

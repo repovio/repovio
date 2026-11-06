@@ -20,5 +20,7 @@ definePageMeta({ fullWidth: true });
 
 const { t } = useI18n();
 
-useHead({ title: computed(() => t('workflowRuns.title')) });
+useHead({
+  title: computed(/** Derives title from the current reactive dependencies. */ () => t('workflowRuns.title')),
+});
 </script>

@@ -1,44 +1,55 @@
 import { expect, test } from '@playwright/test';
 
-test('lists approval-gated workflows with provider and pull-request actions', async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'playwright', role: 'VIEWER', username: 'playwright' } }),
+test('lists approval-gated workflows with provider and pull-request actions', /** Verifies lists approval-gated workflows with provider and pull-request actions. */ async ({
+  page,
+}) => {
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) =>
-    route.fulfill({
-      json: [
-        {
-          awaitingApproval: true,
-          completedAt: null,
-          displayTitle: 'Deploy pull request',
-          durationMs: null,
-          id: 'run-1',
-          provider: { displayName: 'GitHub', id: 'provider-1', providerType: 'GITHUB' },
-          providerCreatedAt: '2026-09-09T08:00:00.000Z',
-          providerRunId: '42',
-          repository: {
-            id: 'repository-1',
-            name: 'repovio',
-            owner: 'twaelde',
-            url: 'https://github.com/twaelde/repovio',
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'playwright', role: 'VIEWER', username: 'playwright' } }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({
+        json: [
+          {
+            awaitingApproval: true,
+            completedAt: null,
+            displayTitle: 'Deploy pull request',
+            durationMs: null,
+            id: 'run-1',
+            provider: { displayName: 'GitHub', id: 'provider-1', providerType: 'GITHUB' },
+            providerCreatedAt: '2026-09-09T08:00:00.000Z',
+            providerRunId: '42',
+            repository: {
+              id: 'repository-1',
+              name: 'repovio',
+              owner: 'twaelde',
+              url: 'https://github.com/twaelde/repovio',
+            },
+            reviewUrl: 'https://github.com/twaelde/repovio/pull/12',
+            startedAt: '2026-09-09T08:01:00.000Z',
+            status: 'QUEUED',
+            url: 'https://github.com/twaelde/repovio/actions/runs/42',
+            workflowName: 'Deploy',
           },
-          reviewUrl: 'https://github.com/twaelde/repovio/pull/12',
-          startedAt: '2026-09-09T08:01:00.000Z',
-          status: 'QUEUED',
-          url: 'https://github.com/twaelde/repovio/actions/runs/42',
-          workflowName: 'Deploy',
-        },
-      ],
-    }),
+        ],
+      }),
   );
-  await page.route('**/api/v1/workflow-runs/needs-attention**', (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 3, page: 1, pageCount: 3, perPage: 1 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/workflow-runs/needs-attention**',
+    /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 3, page: 1, pageCount: 3, perPage: 1 },
+        },
+      }),
   );
 
   await page.goto('/workflows/awaiting-approval');
@@ -63,17 +74,26 @@ test('lists approval-gated workflows with provider and pull-request actions', as
   const table = page.locator('[data-awaiting-approval-table]');
   await expect(table).toBeVisible();
   await expect
-    .poll(() => table.evaluate((element) => element.parentElement?.hasAttribute('data-page-content')))
+    .poll(
+      /** Evaluates `table.evaluate((element) => element.parentElement?.hasAttribute('data-page-content'))` when expect .poll invokes this callback. */ () =>
+        table.evaluate(
+          /** Reads or updates browser state for the awaiting approval scenario. */ (element) =>
+            element.parentElement?.hasAttribute('data-page-content'),
+        ),
+    )
     .toBe(true);
   await expect
-    .poll(() =>
-      page.locator('[data-provider-approval-notice]').evaluate((notice) => {
-        const noticeBounds = notice.getBoundingClientRect();
-        const contentBounds = notice.closest('[data-page-content]')?.getBoundingClientRect();
-        return Boolean(
-          contentBounds && noticeBounds.left >= contentBounds.left && noticeBounds.right <= contentBounds.right,
-        );
-      }),
+    .poll(
+      /** Reads the observable state until the browser assertion settles. */ () =>
+        page.locator('[data-provider-approval-notice]').evaluate(
+          /** Reads or updates browser state for the awaiting approval scenario. */ (notice) => {
+            const noticeBounds = notice.getBoundingClientRect();
+            const contentBounds = notice.closest('[data-page-content]')?.getBoundingClientRect();
+            return Boolean(
+              contentBounds && noticeBounds.left >= contentBounds.left && noticeBounds.right <= contentBounds.right,
+            );
+          },
+        ),
     )
     .toBe(true);
   await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();

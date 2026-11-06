@@ -1,7 +1,7 @@
 import type { AuthenticatedUser } from '../auth/types.js';
 import { ProviderOAuthService, type ProviderOAuthConfiguration } from './provider-oauth.service.js';
 
-describe('ProviderOAuthService', () => {
+describe('ProviderOAuthService', /** Groups scenarios for ProviderOAuthService. */ () => {
   const accounts = {
     assertAdmin: jest.fn(),
     createFromOAuth: jest.fn(),
@@ -27,9 +27,9 @@ describe('ProviderOAuthService', () => {
     getConfiguration: (providerType: 'GITHUB') => ProviderOAuthConfiguration;
   };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('builds an authorization URL with protected administrator context', () => {
+  it('builds an authorization URL with protected administrator context', /** Verifies builds an authorization URL with protected administrator context. */ () => {
     jest.spyOn(configuration, 'getConfiguration').mockReturnValue({
       authorizationUrl: 'https://provider.example.test/oauth/authorize',
       clientId: 'client-id',
@@ -55,7 +55,7 @@ describe('ProviderOAuthService', () => {
     expect(result.authorizationUrl).toContain('client_id=client-id');
   });
 
-  it('encrypts only the OAuth access token returned by the provider', async () => {
+  it('encrypts only the OAuth access token returned by the provider', /** Verifies encrypts only the OAuth access token returned by the provider. */ async () => {
     jest.spyOn(configuration, 'getConfiguration').mockReturnValue({
       accountBaseUrl: 'https://provider.example.test',
       authorizationUrl: 'https://provider.example.test/oauth/authorize',

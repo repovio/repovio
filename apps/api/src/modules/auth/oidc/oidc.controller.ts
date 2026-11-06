@@ -196,8 +196,8 @@ export class OidcController {
   private readCookie(request: FastifyRequest, name: string): string | undefined {
     const pair = request.headers.cookie
       ?.split(';')
-      .map((value) => value.trim().split('='))
-      .find(([key]) => key === name);
+      .map(/** Projects each entry using `value.trim().split('=')`. */ (value) => value.trim().split('='))
+      .find(/** Finds the first entry matching `key === name`. */ ([key]) => key === name);
     return pair?.[1] ? decodeURIComponent(pair[1]) : undefined;
   }
 

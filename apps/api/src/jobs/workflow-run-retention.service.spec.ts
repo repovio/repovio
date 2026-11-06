@@ -2,6 +2,7 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 import type { JobRunnerService } from './job-runner.service.js';
 import { getWorkflowRunRetentionCutoff, WorkflowRunRetentionService } from './workflow-run-retention.service.js';
 
+/** Creates prisma. */
 function createPrisma() {
   const prisma = {
     applicationSettings: {
@@ -27,23 +28,31 @@ function createPrisma() {
     },
     $transaction: jest.fn(),
   };
-  prisma.$transaction.mockImplementation(async (callback) => callback(prisma));
+  prisma.$transaction.mockImplementation(
+    /** Provides isolated createPrisma behavior for this test fixture. */ async (callback) => callback(prisma),
+  );
   return prisma;
 }
 
-describe('record retention', () => {
-  it('calculates cutoffs from whole-day retention policies', () => {
+describe('record retention', /** Groups scenarios for record retention. */ () => {
+  it('calculates cutoffs from whole-day retention policies', /** Verifies calculates cutoffs from whole-day retention policies. */ () => {
     expect(getWorkflowRunRetentionCutoff(7, new Date('2026-08-26T12:00:00.000Z'))).toEqual(
       new Date('2026-08-19T12:00:00.000Z'),
     );
   });
 
-  it('rejects unsafe retention periods', () => {
-    expect(() => getWorkflowRunRetentionCutoff(0, new Date())).toThrow(RangeError);
-    expect(() => getWorkflowRunRetentionCutoff(1.5, new Date())).toThrow(RangeError);
+  it('rejects unsafe retention periods', /** Verifies rejects unsafe retention periods. */ () => {
+    expect(
+      /** Evaluates `getWorkflowRunRetentionCutoff(0, new Date())` when expect invokes this callback. */ () =>
+        getWorkflowRunRetentionCutoff(0, new Date()),
+    ).toThrow(RangeError);
+    expect(
+      /** Evaluates `getWorkflowRunRetentionCutoff(1.5, new Date())` when expect invokes this callback. */ () =>
+        getWorkflowRunRetentionCutoff(1.5, new Date()),
+    ).toThrow(RangeError);
   });
 
-  it('uses 90-day defaults before global settings exist', async () => {
+  it('uses 90-day defaults before global settings exist', /** Verifies uses 90-day defaults before global settings exist. */ async () => {
     const prisma = createPrisma();
     prisma.applicationSettings.findUnique.mockResolvedValue(null);
     prisma.repository.findMany.mockReset().mockResolvedValue([]);
@@ -66,7 +75,7 @@ describe('record retention', () => {
     });
   });
 
-  it('applies global defaults and repository overrides only to unreferenced terminal work items', async () => {
+  it('applies global defaults and repository overrides only to unreferenced terminal work items', /** Verifies applies global defaults and repository overrides only to unreferenced terminal work items. */ async () => {
     const prisma = createPrisma();
     const now = new Date('2026-08-26T12:00:00.000Z');
 
@@ -127,7 +136,7 @@ describe('record retention', () => {
     });
   });
 
-  it('adds expired run durations before deletion and remains safe to rerun', async () => {
+  it('adds expired run durations before deletion and remains safe to rerun', /** Verifies adds expired run durations before deletion and remains safe to rerun. */ async () => {
     const prisma = createPrisma();
     prisma.repository.findMany.mockReset().mockResolvedValue([]);
     prisma.workflowRun.groupBy.mockResolvedValue([

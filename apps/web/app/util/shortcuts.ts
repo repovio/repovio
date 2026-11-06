@@ -10,9 +10,11 @@ export function createShortcutBindings(
   handlers: Partial<Record<(typeof globalShortcuts)[number]['id'], () => void>>,
 ): Record<string, () => void> {
   return Object.fromEntries(
-    globalShortcuts.flatMap((shortcut) => {
-      const handler = handlers[shortcut.id];
-      return handler ? [[shortcut.keys.join('_'), handler]] : [];
-    }),
+    globalShortcuts.flatMap(
+      /** Flattens entries produced by the createShortcutBindings mapping. */ (shortcut) => {
+        const handler = handlers[shortcut.id];
+        return handler ? [[shortcut.keys.join('_'), handler]] : [];
+      },
+    ),
   );
 }

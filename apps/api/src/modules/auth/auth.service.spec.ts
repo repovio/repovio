@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service.js';
 
-describe('AuthService', () => {
+describe('AuthService', /** Groups scenarios for AuthService. */ () => {
   const prisma = {
     user: {
       count: jest.fn(),
@@ -15,17 +15,19 @@ describe('AuthService', () => {
   const jwt = { signAsync: jest.fn(), verifyAsync: jest.fn() };
   const service = new AuthService(prisma as never, jwt as never);
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ () => {
+      jest.clearAllMocks();
+    },
+  );
 
-  it('rejects invalid local credentials', async () => {
+  it('rejects invalid local credentials', /** Verifies rejects invalid local credentials. */ async () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
     await expect(service.signIn('unknown', 'password')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('issues a JWT for valid credentials', async () => {
+  it('issues a JWT for valid credentials', /** Verifies issues a JWT for valid credentials. */ async () => {
     prisma.user.findUnique.mockResolvedValue({
       id: 'user-id',
       authVersion: 3,
@@ -54,7 +56,7 @@ describe('AuthService', () => {
     );
   });
 
-  it('authenticates a valid access token against the current persisted user', async () => {
+  it('authenticates a valid access token against the current persisted user', /** Verifies authenticates a valid access token against the current persisted user. */ async () => {
     jwt.verifyAsync.mockResolvedValue({ sub: 'user-id' });
     prisma.user.findUnique.mockResolvedValue({
       avatar: null,
@@ -76,14 +78,14 @@ describe('AuthService', () => {
     });
   });
 
-  it('rejects an access token issued before the latest password change', async () => {
+  it('rejects an access token issued before the latest password change', /** Verifies rejects an access token issued before the latest password change. */ async () => {
     jwt.verifyAsync.mockResolvedValue({ authVersion: 1, sub: 'user-id' });
     prisma.user.findUnique.mockResolvedValue({ authVersion: 2 });
 
     await expect(service.authenticateAccessToken('stale')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('accepts a legacy token only while the persisted auth version is zero', async () => {
+  it('accepts a legacy token only while the persisted auth version is zero', /** Verifies accepts a legacy token only while the persisted auth version is zero. */ async () => {
     jwt.verifyAsync.mockResolvedValue({ sub: 'user-id' });
     prisma.user.findUnique.mockResolvedValue({
       authVersion: 0,
@@ -98,14 +100,14 @@ describe('AuthService', () => {
     await expect(service.authenticateAccessToken('legacy')).resolves.toMatchObject({ id: 'user-id' });
   });
 
-  it('reports the persisted first-run setup state', async () => {
+  it('reports the persisted first-run setup state', /** Verifies reports the persisted first-run setup state. */ async () => {
     prisma.user.count.mockResolvedValueOnce(0).mockResolvedValueOnce(1);
 
     await expect(service.getSetupStatus()).resolves.toEqual({ initialized: false });
     await expect(service.getSetupStatus()).resolves.toEqual({ initialized: true });
   });
 
-  it('creates and signs in the first system administrator', async () => {
+  it('creates and signs in the first system administrator', /** Verifies creates and signs in the first system administrator. */ async () => {
     const transaction = {
       $executeRaw: jest.fn(),
       user: { count: jest.fn().mockResolvedValue(0), create: jest.fn() },
@@ -118,7 +120,9 @@ describe('AuthService', () => {
       role: 'SYSTEM_ADMIN',
       username: 'admin',
     });
-    prisma.transaction.mockImplementation((callback) => callback(transaction));
+    prisma.transaction.mockImplementation(
+      /** Provides isolated auth.service behavior for this test fixture. */ (callback) => callback(transaction),
+    );
     jwt.signAsync.mockResolvedValue('setup-token');
 
     await expect(
@@ -130,12 +134,14 @@ describe('AuthService', () => {
     });
   });
 
-  it('rejects setup after any user exists', async () => {
+  it('rejects setup after any user exists', /** Verifies rejects setup after any user exists. */ async () => {
     const transaction = {
       $executeRaw: jest.fn(),
       user: { count: jest.fn().mockResolvedValue(1), create: jest.fn() },
     };
-    prisma.transaction.mockImplementation((callback) => callback(transaction));
+    prisma.transaction.mockImplementation(
+      /** Provides isolated auth.service behavior for this test fixture. */ (callback) => callback(transaction),
+    );
 
     await expect(service.setup({ password: 'new-password', username: 'admin' })).rejects.toBeInstanceOf(
       ConflictException,
@@ -143,7 +149,7 @@ describe('AuthService', () => {
     expect(transaction.user.create).not.toHaveBeenCalled();
   });
 
-  it('changes a password, increments the auth version, and returns a replacement token', async () => {
+  it('changes a password, increments the auth version, and returns a replacement token', /** Verifies changes a password, increments the auth version, and returns a replacement token. */ async () => {
     const passwordHash = await bcrypt.hash('current-password', 4);
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id', passwordHash });
     prisma.user.update.mockResolvedValue({
@@ -169,7 +175,7 @@ describe('AuthService', () => {
     expect(jwt.signAsync).toHaveBeenCalledWith(expect.objectContaining({ authVersion: 5 }));
   });
 
-  it('rejects an incorrect current password without changing it', async () => {
+  it('rejects an incorrect current password without changing it', /** Verifies rejects an incorrect current password without changing it. */ async () => {
     prisma.user.findUnique.mockResolvedValue({
       id: 'user-id',
       passwordHash: await bcrypt.hash('current-password', 4),
@@ -181,7 +187,7 @@ describe('AuthService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('rejects local password changes for an OIDC-managed account', async () => {
+  it('rejects local password changes for an OIDC-managed account', /** Verifies rejects local password changes for an OIDC-managed account. */ async () => {
     prisma.user.findUnique.mockResolvedValue({ authProvider: 'OIDC', id: 'user-id', passwordHash: null });
 
     await expect(service.updatePassword('user-id', 'current-password', 'new-long-password')).rejects.toBeInstanceOf(
@@ -190,13 +196,13 @@ describe('AuthService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('rejects an invalid access token', async () => {
+  it('rejects an invalid access token', /** Verifies rejects an invalid access token. */ async () => {
     jwt.verifyAsync.mockRejectedValue(new Error('invalid token'));
 
     await expect(service.authenticateAccessToken('invalid')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('updates trimmed personal names without requiring a password', async () => {
+  it('updates trimmed personal names without requiring a password', /** Verifies updates trimmed personal names without requiring a password. */ async () => {
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id', passwordHash: 'hash', username: 'viewer' });
     prisma.user.update.mockResolvedValue({
       avatar: null,
@@ -228,7 +234,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('rejects local profile changes for an OIDC-managed account', async () => {
+  it('rejects local profile changes for an OIDC-managed account', /** Verifies rejects local profile changes for an OIDC-managed account. */ async () => {
     prisma.user.findUnique.mockResolvedValue({ authProvider: 'OIDC', id: 'user-id', username: 'oidc_user' });
 
     await expect(
@@ -237,7 +243,7 @@ describe('AuthService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('requires the current password before changing the login username', async () => {
+  it('requires the current password before changing the login username', /** Verifies requires the current password before changing the login username. */ async () => {
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id', passwordHash: 'hash', username: 'viewer' });
 
     await expect(
@@ -250,7 +256,7 @@ describe('AuthService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('rejects an incorrect password before changing the login username', async () => {
+  it('rejects an incorrect password before changing the login username', /** Verifies rejects an incorrect password before changing the login username. */ async () => {
     const passwordHash = await bcrypt.hash('current-password', 4);
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id', passwordHash, username: 'viewer' });
 
@@ -265,7 +271,7 @@ describe('AuthService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('changes the login username after verifying the current password', async () => {
+  it('changes the login username after verifying the current password', /** Verifies changes the login username after verifying the current password. */ async () => {
     const passwordHash = await bcrypt.hash('current-password', 4);
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id', passwordHash, username: 'viewer' });
     prisma.user.update.mockResolvedValue({

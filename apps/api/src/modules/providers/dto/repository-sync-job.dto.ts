@@ -10,11 +10,12 @@ import { toWire } from '../../../util/to-wire.js';
 
 import type { ProviderAccount, Repository, RepositorySyncRequest } from '../../../generated/prisma/client.js';
 
-export type RepositorySyncJobModel = Repository & {
-  providerAccount: Pick<ProviderAccount, 'displayName' | 'providerType'>;
-  syncRequest: RepositorySyncRequest | null;
-  securityAlertSyncStates?: Array<{ availability: string; kind: string }>;
-};
+/** Defines the repository sync job model contract shared by its consumers. */ export type RepositorySyncJobModel =
+  Repository & {
+    providerAccount: Pick<ProviderAccount, 'displayName' | 'providerType'>;
+    syncRequest: RepositorySyncRequest | null;
+    securityAlertSyncStates?: Array<{ availability: string; kind: string }>;
+  };
 
 /** Query parameters for the paginated repository synchronization job list. */
 export class RepositorySyncJobQueryDto extends createZodDto(ApiRepositorySyncJobQuerySchema) {}
@@ -54,8 +55,11 @@ export class RepositorySyncJobDto extends createZodDto(ApiRepositorySyncJobSchem
         startedAt: request?.startedAt ?? null,
         status: request?.status ?? 'IDLE',
         warningKinds: (model.securityAlertSyncStates ?? [])
-          .filter(({ availability }) => availability === 'UNAVAILABLE')
-          .map(({ kind }) => kind),
+          .filter(
+            /** Keeps entries matching `availability === 'UNAVAILABLE'`. */ ({ availability }) =>
+              availability === 'UNAVAILABLE',
+          )
+          .map(/** Projects each entry using `kind`. */ ({ kind }) => kind),
       }),
     );
   }

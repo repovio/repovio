@@ -7,7 +7,7 @@ import { McpController } from './mcp.controller.js';
 
 const user: AuthenticatedUser = { authProvider: 'LOCAL' as const, id: 'user-id', role: 'VIEWER', username: 'viewer' };
 
-describe('McpController', () => {
+describe('McpController', /** Groups scenarios for McpController. */ () => {
   const nodeHandler = jest.fn();
   const authenticate = jest.fn();
   const controller = new McpController(
@@ -15,8 +15,9 @@ describe('McpController', () => {
     { authenticate } as unknown as McpTokenService,
   );
 
-  beforeEach(() => jest.resetAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.resetAllMocks());
 
+  /** Builds the MCP HTTP response fixture. */
   function response(): FastifyReply {
     const result = {
       code: jest.fn(),
@@ -30,7 +31,7 @@ describe('McpController', () => {
     return result as unknown as FastifyReply;
   }
 
-  it('rejects credentials supplied through a query string', async () => {
+  it('rejects credentials supplied through a query string', /** Verifies rejects credentials supplied through a query string. */ async () => {
     const res = response();
     await controller.handle({ body: {}, headers: {}, url: '/mcp?token=secret' } as never, res);
     expect(res.code).toHaveBeenCalledWith(400);
@@ -39,7 +40,7 @@ describe('McpController', () => {
     expect(nodeHandler).not.toHaveBeenCalled();
   });
 
-  it('returns a bearer challenge for missing or invalid authorization', async () => {
+  it('returns a bearer challenge for missing or invalid authorization', /** Verifies returns a bearer challenge for missing or invalid authorization. */ async () => {
     const res = response();
     await controller.handle({ body: {}, headers: {}, url: '/mcp' } as never, res);
     expect(res.header).toHaveBeenCalledWith('WWW-Authenticate', 'Bearer');
@@ -47,7 +48,7 @@ describe('McpController', () => {
     expect(res.hijack).not.toHaveBeenCalled();
   });
 
-  it('rejects an untrusted Origin before authenticating the bearer token', async () => {
+  it('rejects an untrusted Origin before authenticating the bearer token', /** Verifies rejects an untrusted Origin before authenticating the bearer token. */ async () => {
     const res = response();
     await controller.handle(
       {
@@ -63,7 +64,7 @@ describe('McpController', () => {
     expect(res.hijack).not.toHaveBeenCalled();
   });
 
-  it('keeps failed bearer authentication in the normal Fastify response lifecycle', async () => {
+  it('keeps failed bearer authentication in the normal Fastify response lifecycle', /** Verifies keeps failed bearer authentication in the normal Fastify response lifecycle. */ async () => {
     authenticate.mockRejectedValue(new Error('Token lookup failed'));
     const res = response();
 
@@ -79,7 +80,7 @@ describe('McpController', () => {
     expect(nodeHandler).not.toHaveBeenCalled();
   });
 
-  it('passes validated token and current user context to the MCP handler', async () => {
+  it('passes validated token and current user context to the MCP handler', /** Verifies passes validated token and current user context to the MCP handler. */ async () => {
     authenticate.mockResolvedValue({ expiresAt: null, record: { id: 'token-id' }, user });
     const request = {
       body: { jsonrpc: '2.0' },

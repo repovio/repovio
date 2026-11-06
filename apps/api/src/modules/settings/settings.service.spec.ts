@@ -2,16 +2,16 @@ import { DefaultDateTimeFormat } from '../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { SettingsService } from './settings.service.js';
 
-describe('SettingsService', () => {
+describe('SettingsService', /** Groups scenarios for SettingsService. */ () => {
   const applicationSettings = {
     findUnique: jest.fn(),
     upsert: jest.fn(),
   };
   const service = new SettingsService({ applicationSettings } as unknown as PrismaService);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('returns global defaults before settings have been persisted', async () => {
+  it('returns global defaults before settings have been persisted', /** Verifies returns global defaults before settings have been persisted. */ async () => {
     applicationSettings.findUnique.mockResolvedValue(null);
 
     await expect(service.get()).resolves.toEqual({
@@ -23,7 +23,7 @@ describe('SettingsService', () => {
     expect(applicationSettings.findUnique).toHaveBeenCalledWith({ where: { key: 'global' } });
   });
 
-  it('returns only public persisted settings', async () => {
+  it('returns only public persisted settings', /** Verifies returns only public persisted settings. */ async () => {
     applicationSettings.findUnique.mockResolvedValue({
       dateTimeFormat: DefaultDateTimeFormat.ISO,
       id: 'settings',
@@ -41,7 +41,7 @@ describe('SettingsService', () => {
     });
   });
 
-  it('upserts the singleton global settings record', async () => {
+  it('upserts the singleton global settings record', /** Verifies upserts the singleton global settings record. */ async () => {
     const input = {
       dateTimeFormat: DefaultDateTimeFormat.LOCALE_SHORT,
       issueRetentionDays: 30,

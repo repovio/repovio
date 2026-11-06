@@ -51,13 +51,19 @@ export class SecurityAlertSyncService {
     await reportProgress?.({ current: 0, phase: 'SYNCING_ALERTS', total: alertKinds.length });
     const results = adapter.listSecurityAlerts
       ? await adapter.listSecurityAlerts(context, repository)
-      : alertKinds.map<ProviderSecurityAlertResult>((kind) => ({
-          alerts: [],
-          availability: 'UNSUPPORTED',
-          kind,
-          reason: 'This provider does not expose a supported security-alert API.',
-        }));
-    const resultsByKind = new Map(results.map((result) => [result.kind, result]));
+      : alertKinds.map<ProviderSecurityAlertResult>(
+          /** Projects each entry using `({ alerts: [], availability: 'UNSUPPORTED', kind, reason: 'This provider does not expose a supported security-alert API.', })`. */ (
+            kind,
+          ) => ({
+            alerts: [],
+            availability: 'UNSUPPORTED',
+            kind,
+            reason: 'This provider does not expose a supported security-alert API.',
+          }),
+        );
+    const resultsByKind = new Map(
+      results.map(/** Projects each entry using `[result.kind, result]`. */ (result) => [result.kind, result]),
+    );
     const warnings: SecurityAlertKind[] = [];
     for (const [index, kind] of alertKinds.entries()) {
       const result = resultsByKind.get(kind) ?? {
@@ -101,6 +107,7 @@ export class SecurityAlertSyncService {
     const baseline = !previousSync?.baselineEstablished;
     for (const alert of result.alerts) await this.persistAlert(repositoryId, alert, baseline);
     const synchronizedThrough = result.alerts.reduce<Date | null>(
+      /** Accumulates entries using `(!latest || alert.providerUpdatedAt > latest ? alert.providerUpdatedAt : latest)`. */
       (latest, alert) => (!latest || alert.providerUpdatedAt > latest ? alert.providerUpdatedAt : latest),
       previousSync?.synchronizedThrough ?? null,
     );

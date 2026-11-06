@@ -4,23 +4,42 @@ const accessToken = 'playwright-access-token';
 
 /** Configure the authenticated dashboard shell required by the global status bar. */
 async function mockDashboardShell(page: Page): Promise<void> {
-  await page.addInitScript((token) => window.localStorage.setItem('repovio.access-token', token), accessToken);
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'playwright', role: 'VIEWER', username: 'playwright' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ (token) =>
+      window.localStorage.setItem('repovio.access-token', token),
+    accessToken,
   );
-  await page.route('**/api/v1/dashboard/failures', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/latest-runs', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/trend**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/jobs/repository-sync/summary', (route) =>
-    route.fulfill({ json: { failed: 0, idle: 0, pending: 0, running: 0, total: 0 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'playwright', role: 'VIEWER', username: 'playwright' } }),
   );
-  await page.route(/\/api\/v1\/jobs\/repository-sync(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 10 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/jobs/repository-sync/summary',
+    /** Supplies the mocked response for `/api/v1/jobs/repository-sync/summary`. */ (route) =>
+      route.fulfill({ json: { failed: 0, idle: 0, pending: 0, running: 0, total: 0 } }),
+  );
+  await page.route(
+    /\/api\/v1\/jobs\/repository-sync(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 10 },
+        },
+      }),
   );
 }
 
@@ -29,37 +48,44 @@ function statusEvent(snapshot: object): string {
   return `42/status,${JSON.stringify(['system-status', snapshot])}`;
 }
 
-test('shows live workflow counts and provider synchronization progress globally', async ({ page }) => {
+test('shows live workflow counts and provider synchronization progress globally', /** Verifies shows live workflow counts and provider synchronization progress globally. */ async ({
+  page,
+}) => {
   await mockDashboardShell(page);
   let socket: WebSocketRoute | undefined;
   let namespaceAuthentication = '';
-  await page.routeWebSocket(/\/socket\.io\//, (route) => {
-    socket = route;
-    route.send(
-      `0${JSON.stringify({ maxPayload: 1_000_000, pingInterval: 25_000, pingTimeout: 20_000, sid: 'status-test', upgrades: [] })}`,
-    );
-    route.onMessage((message) => {
-      const packet = message.toString();
-      if (packet === '2') route.send('3');
-      if (!packet.startsWith('40/status,')) return;
-      namespaceAuthentication = packet;
-      route.send('40/status,{"sid":"status-client"}');
+  await page.routeWebSocket(
+    /\/socket\.io\//,
+    /** Supplies the mocked system-status WebSocket connection. */ (route) => {
+      socket = route;
       route.send(
-        statusEvent({
-          activity: {
-            kind: 'PROVIDER_SYNC',
-            phase: 'FETCHING_WORKFLOWS',
-            repositoriesCompleted: 1,
-            repositoriesTotal: 4,
-            workflowRunsCompleted: null,
-            workflowRunsTotal: null,
-          },
-          runningWorkflowCount: 3,
-          updatedAt: '2026-09-09T08:00:00.000Z',
-        }),
+        `0${JSON.stringify({ maxPayload: 1_000_000, pingInterval: 25_000, pingTimeout: 20_000, sid: 'status-test', upgrades: [] })}`,
       );
-    });
-  });
+      route.onMessage(
+        /** Responds to the Socket.IO handshake and subscription messages in this fixture. */ (message) => {
+          const packet = message.toString();
+          if (packet === '2') route.send('3');
+          if (!packet.startsWith('40/status,')) return;
+          namespaceAuthentication = packet;
+          route.send('40/status,{"sid":"status-client"}');
+          route.send(
+            statusEvent({
+              activity: {
+                kind: 'PROVIDER_SYNC',
+                phase: 'FETCHING_WORKFLOWS',
+                repositoriesCompleted: 1,
+                repositoriesTotal: 4,
+                workflowRunsCompleted: null,
+                workflowRunsTotal: null,
+              },
+              runningWorkflowCount: 3,
+              updatedAt: '2026-09-09T08:00:00.000Z',
+            }),
+          );
+        },
+      );
+    },
+  );
 
   await page.goto('/');
 
@@ -82,7 +108,11 @@ test('shows live workflow counts and provider synchronization progress globally'
   await expect(statusBar).toContainText('Running: 3');
   await expect(statusBar).toContainText('Fetching workflows from provider');
   await expect(statusBar).toContainText('1/4');
-  await expect.poll(() => namespaceAuthentication).toContain(`"token":"${accessToken}"`);
+  await expect
+    .poll(
+      /** Evaluates `namespaceAuthentication` when expect.poll invokes this callback. */ () => namespaceAuthentication,
+    )
+    .toContain(`"token":"${accessToken}"`);
 
   socket?.send(
     statusEvent({
@@ -108,80 +138,105 @@ test('shows live workflow counts and provider synchronization progress globally'
   await expect(page).toHaveURL(/\/jobs$/);
 });
 
-test('refreshes an open workflow-run table once after provider synchronization becomes idle', async ({ page }) => {
+test('refreshes an open workflow-run table once after provider synchronization becomes idle', /** Verifies refreshes an open workflow-run table once after provider synchronization becomes idle. */ async ({
+  page,
+}) => {
   await mockDashboardShell(page);
   let socket: WebSocketRoute | undefined;
   let workflowRunRequests = 0;
   let attentionCount = 0;
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) =>
-    route.fulfill({ json: Array.from({ length: attentionCount }, (_, index) => ({ id: `run-${index}` })) }),
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({
+        json: Array.from(
+          { length: attentionCount },
+          /** Evaluates `({ id: `run-${index}` })` when Array.from invokes this callback. */ (_, index) => ({
+            id: `run-${index}`,
+          }),
+        ),
+      }),
   );
-  await page.route(/\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: {
-          hasNextPage: false,
-          hasPrevPage: false,
-          itemCount: attentionCount,
-          page: 1,
-          pageCount: attentionCount > 0 ? 1 : 0,
-          perPage: 1,
+  await page.route(
+    /\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: {
+            hasNextPage: false,
+            hasPrevPage: false,
+            itemCount: attentionCount,
+            page: 1,
+            pageCount: attentionCount > 0 ? 1 : 0,
+            perPage: 1,
+          },
         },
-      },
-    }),
+      }),
   );
-  await page.route('**/api/v1/repositories**', (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 100 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/repositories**',
+    /** Supplies the mocked response for `/api/v1/repositories**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 100 },
+        },
+      }),
   );
-  await page.route(/\/api\/v1\/workflow-runs(?:\?.*)?$/, (route) => {
-    workflowRunRequests += 1;
-    return route.fulfill({
-      json: {
-        items:
-          workflowRunRequests > 1
-            ? [
-                {
-                  completedAt: null,
-                  displayTitle: 'Webhook-triggered run',
-                  durationMs: null,
-                  id: 'run-1',
-                  providerCreatedAt: '2026-09-13T12:00:00.000Z',
-                  providerType: 'GITHUB',
-                  repositoryName: 'repovio',
-                  repositoryOwner: 'tobiaswaelde',
-                  startedAt: '2026-09-13T12:00:00.000Z',
-                  status: 'RUNNING',
-                  url: 'https://github.com/repovio/repovio/actions/runs/1',
-                  workflowName: 'Test',
-                },
-              ]
-            : [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-      },
-    });
-  });
-  await page.routeWebSocket(/\/socket\.io\//, (route) => {
-    socket = route;
-    route.send(
-      `0${JSON.stringify({ maxPayload: 1_000_000, pingInterval: 25_000, pingTimeout: 20_000, sid: 'refresh-test', upgrades: [] })}`,
-    );
-    route.onMessage((message) => {
-      const packet = message.toString();
-      if (packet === '2') route.send('3');
-      if (!packet.startsWith('40/status,')) return;
-      route.send('40/status,{"sid":"status-client"}');
-      route.send(statusEvent({ activity: null, runningWorkflowCount: 0, updatedAt: '2026-09-13T12:00:00.000Z' }));
-    });
-  });
+  await page.route(
+    /\/api\/v1\/workflow-runs(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      workflowRunRequests += 1;
+      return route.fulfill({
+        json: {
+          items:
+            workflowRunRequests > 1
+              ? [
+                  {
+                    completedAt: null,
+                    displayTitle: 'Webhook-triggered run',
+                    durationMs: null,
+                    id: 'run-1',
+                    providerCreatedAt: '2026-09-13T12:00:00.000Z',
+                    providerType: 'GITHUB',
+                    repositoryName: 'repovio',
+                    repositoryOwner: 'tobiaswaelde',
+                    startedAt: '2026-09-13T12:00:00.000Z',
+                    status: 'RUNNING',
+                    url: 'https://github.com/repovio/repovio/actions/runs/1',
+                    workflowName: 'Test',
+                  },
+                ]
+              : [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+        },
+      });
+    },
+  );
+  await page.routeWebSocket(
+    /\/socket\.io\//,
+    /** Supplies the mocked system-status WebSocket connection. */ (route) => {
+      socket = route;
+      route.send(
+        `0${JSON.stringify({ maxPayload: 1_000_000, pingInterval: 25_000, pingTimeout: 20_000, sid: 'refresh-test', upgrades: [] })}`,
+      );
+      route.onMessage(
+        /** Responds to the Socket.IO handshake and subscription messages in this fixture. */ (message) => {
+          const packet = message.toString();
+          if (packet === '2') route.send('3');
+          if (!packet.startsWith('40/status,')) return;
+          route.send('40/status,{"sid":"status-client"}');
+          route.send(statusEvent({ activity: null, runningWorkflowCount: 0, updatedAt: '2026-09-13T12:00:00.000Z' }));
+        },
+      );
+    },
+  );
 
   await page.goto('/workflow-runs');
-  await expect.poll(() => workflowRunRequests).toBe(1);
+  await expect
+    .poll(/** Evaluates `workflowRunRequests` when expect.poll invokes this callback. */ () => workflowRunRequests)
+    .toBe(1);
   const workflowRunNavigation = page
     .getByRole('navigation', { name: 'Primary navigation' })
     .getByRole('region', { name: 'Workflow runs' });
@@ -220,7 +275,9 @@ test('refreshes an open workflow-run table once after provider synchronization b
   socket?.send(statusEvent({ activity: null, runningWorkflowCount: 1, updatedAt: '2026-09-13T12:00:04.000Z' }));
 
   await expect(page.getByText('Webhook-triggered run')).toBeVisible();
-  await expect.poll(() => workflowRunRequests).toBe(2);
+  await expect
+    .poll(/** Evaluates `workflowRunRequests` when expect.poll invokes this callback. */ () => workflowRunRequests)
+    .toBe(2);
   await expect(workflowRunNavigation.getByRole('link', { name: 'Awaiting approval' })).toContainText('2');
   await expect(workflowRunNavigation.getByRole('link', { name: 'Needs attention' })).toContainText('2');
 });

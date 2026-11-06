@@ -2,134 +2,167 @@ import { expect, test, type Page } from '@playwright/test';
 
 const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 };
 
+/** Mocks shell. */
 async function mockShell(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({
-      json: {
-        avatarUpdatedAt: null,
-        firstName: null,
-        id: 'user-1',
-        lastName: null,
-        role: 'SYSTEM_ADMIN',
-        username: 'admin',
-      },
-    }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/health', (route) =>
-    route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({
+        json: {
+          avatarUpdatedAt: null,
+          firstName: null,
+          id: 'user-1',
+          lastName: null,
+          role: 'SYSTEM_ADMIN',
+          username: 'admin',
+        },
+      }),
   );
-  await page.route('**/api/v1/version/latest', (route) => route.fulfill({ json: { latest: null } }));
-  await page.route('**/api/v1/settings', (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
+  await page.route(
+    '**/api/v1/health',
+    /** Supplies the mocked response for `/api/v1/health`. */ (route) =>
+      route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
   );
-  await page.route('**/api/v1/dashboard/**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/browser-push', (route) =>
-    route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
+  await page.route(
+    '**/api/v1/version/latest',
+    /** Supplies the mocked response for `/api/v1/version/latest`. */ (route) =>
+      route.fulfill({ json: { latest: null } }),
   );
-  await page.route('**/api/v1/notification-channels/manageable-repositories', (route) =>
-    route.fulfill({ json: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }] }),
+  await page.route(
+    '**/api/v1/settings',
+    /** Supplies the mocked response for `/api/v1/settings`. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
   );
-  await page.route('**/api/v1/users**', (route) =>
-    route.fulfill({
-      json: {
-        items: [{ id: 'user-1', username: 'admin' }],
-        meta: pageMeta,
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/**',
+    /** Supplies the mocked response for `/api/v1/dashboard/**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/browser-push',
+    /** Supplies the mocked response for `/api/v1/browser-push`. */ (route) =>
+      route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
+  );
+  await page.route(
+    '**/api/v1/notification-channels/manageable-repositories',
+    /** Supplies the mocked response for `/api/v1/notification-channels/manageable-repositories`. */ (route) =>
+      route.fulfill({ json: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }] }),
+  );
+  await page.route(
+    '**/api/v1/users**',
+    /** Supplies the mocked response for `/api/v1/users**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [{ id: 'user-1', username: 'admin' }],
+          meta: pageMeta,
+        },
+      }),
   );
 }
 
-test('shows global channel events and system-wide delivery history', async ({ page }) => {
+test('shows global channel events and system-wide delivery history', /** Verifies shows global channel events and system-wide delivery history. */ async ({
+  page,
+}) => {
   await mockShell(page);
   let channelQueryUrl: URL | undefined;
-  await page.route('**/api/v1/notification-channels/query**', (route) => {
-    channelQueryUrl = new URL(route.request().url());
-    return route.fulfill({
-      json: {
-        items: [
-          {
-            browserRecipients: [],
-            canManage: true,
-            createdAt: '2026-09-14T10:00:00Z',
-            enabled: true,
-            eventSubscriptions: [
-              { eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: ['deploy-*'] },
-            ],
-            id: 'channel-1',
-            name: 'Operations',
-            requiresReconfiguration: false,
-            type: 'GOTIFY',
-            updatedAt: '2026-09-14T10:00:00Z',
-            urlScheme: 'gotifys',
-          },
-        ],
-        meta: pageMeta,
-      },
-    });
-  });
-  await page.route('**/api/v1/notification-channels/preview', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({
-      eventSubscriptions: [{ eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: ['deploy-*'] }],
-    });
-    await route.fulfill({
-      json: {
-        matches: [
-          {
-            eventType: 'WORKFLOW_RUN_FAILED',
-            id: 'run-1',
-            repositoryName: 'repovio',
-            repositoryOwner: 'tobiaswaelde',
-            url: 'https://example.com/run/1',
-            workflowName: 'deploy-production',
-          },
-        ],
-        status: 'MATCHES',
-      },
-    });
-  });
-  await page.route('**/api/v1/notification-deliveries/query**', (route) =>
-    route.fulfill({
-      json: {
-        items: [
-          {
-            attempts: [
-              {
-                attempt: 1,
-                browserPushSubscriptionId: null,
-                createdAt: '2026-09-14T10:00:00Z',
-                deliveredAt: null,
-                deviceLabel: null,
-                error: 'Apprise notification delivery failed.',
-                id: 'attempt-1',
-                notificationChannelId: 'channel-1',
-                notificationChannelName: 'Operations',
-                notificationChannelType: 'GOTIFY',
-              },
-            ],
-            createdAt: '2026-09-14T10:00:00Z',
-            eventType: 'WORKFLOW_RUN_FAILED',
-            finalError: 'The notification channel failed.',
-            id: 'delivery-1',
-            kind: 'EVENT',
-            nextAttemptAt: null,
-            notificationChannelId: 'channel-1',
-            notificationChannelName: 'Operations',
-            notificationChannelType: 'GOTIFY',
-            repositoryId: 'repository-1',
-            repositoryName: 'repovio',
-            repositoryOwner: 'tobiaswaelde',
-            requestedByUsername: null,
-            status: 'FAILED',
-            subjectKind: 'WORKFLOW_RUN',
-            subjectTitle: 'deploy-production',
-            subjectUrl: 'https://example.com/run/1',
-            updatedAt: '2026-09-14T10:00:00Z',
-          },
-        ],
-        meta: pageMeta,
-      },
-    }),
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies the mocked response for `/api/v1/notification-channels/query**`. */ (route) => {
+      channelQueryUrl = new URL(route.request().url());
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              browserRecipients: [],
+              canManage: true,
+              createdAt: '2026-09-14T10:00:00Z',
+              enabled: true,
+              eventSubscriptions: [
+                { eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: ['deploy-*'] },
+              ],
+              id: 'channel-1',
+              name: 'Operations',
+              requiresReconfiguration: false,
+              type: 'GOTIFY',
+              updatedAt: '2026-09-14T10:00:00Z',
+              urlScheme: 'gotifys',
+            },
+          ],
+          meta: pageMeta,
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/notification-channels/preview',
+    /** Supplies the mocked response for `/api/v1/notification-channels/preview`. */ async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        eventSubscriptions: [{ eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: ['deploy-*'] }],
+      });
+      await route.fulfill({
+        json: {
+          matches: [
+            {
+              eventType: 'WORKFLOW_RUN_FAILED',
+              id: 'run-1',
+              repositoryName: 'repovio',
+              repositoryOwner: 'tobiaswaelde',
+              url: 'https://example.com/run/1',
+              workflowName: 'deploy-production',
+            },
+          ],
+          status: 'MATCHES',
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/notification-deliveries/query**',
+    /** Supplies the mocked response for `/api/v1/notification-deliveries/query**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [
+            {
+              attempts: [
+                {
+                  attempt: 1,
+                  browserPushSubscriptionId: null,
+                  createdAt: '2026-09-14T10:00:00Z',
+                  deliveredAt: null,
+                  deviceLabel: null,
+                  error: 'Apprise notification delivery failed.',
+                  id: 'attempt-1',
+                  notificationChannelId: 'channel-1',
+                  notificationChannelName: 'Operations',
+                  notificationChannelType: 'GOTIFY',
+                },
+              ],
+              createdAt: '2026-09-14T10:00:00Z',
+              eventType: 'WORKFLOW_RUN_FAILED',
+              finalError: 'The notification channel failed.',
+              id: 'delivery-1',
+              kind: 'EVENT',
+              nextAttemptAt: null,
+              notificationChannelId: 'channel-1',
+              notificationChannelName: 'Operations',
+              notificationChannelType: 'GOTIFY',
+              repositoryId: 'repository-1',
+              repositoryName: 'repovio',
+              repositoryOwner: 'tobiaswaelde',
+              requestedByUsername: null,
+              status: 'FAILED',
+              subjectKind: 'WORKFLOW_RUN',
+              subjectTitle: 'deploy-production',
+              subjectUrl: 'https://example.com/run/1',
+              updatedAt: '2026-09-14T10:00:00Z',
+            },
+          ],
+          meta: pageMeta,
+        },
+      }),
   );
 
   await page.goto('/notifications');
@@ -186,10 +219,14 @@ test('shows global channel events and system-wide delivery history', async ({ pa
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toBeVisible();
 });
 
-test('redirects the removed rules route to global channels', async ({ page }) => {
+test('redirects the removed rules route to global channels', /** Verifies redirects the removed rules route to global channels. */ async ({
+  page,
+}) => {
   await mockShell(page);
-  await page.route('**/api/v1/notification-channels/query**', (route) =>
-    route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies the mocked response for `/api/v1/notification-channels/query**`. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
   );
 
   await page.goto('/notifications/rules');
@@ -198,7 +235,7 @@ test('redirects the removed rules route to global channels', async ({ page }) =>
 });
 
 for (const locale of ['en', 'de'] as const) {
-  test(`validates notification destinations before save and preview (${locale})`, async ({
+  test(`validates notification destinations before save and preview (${locale})`, /** Verifies validates notification destinations before save and preview ([locale]). */ async ({
     page,
     baseURL,
   }, testInfo) => {
@@ -230,52 +267,66 @@ for (const locale of ['en', 'de'] as const) {
     let createRequests = 0;
     let previewRequests = 0;
     let releaseCreation: (() => void) | undefined;
-    const creationGate = new Promise<void>((resolve) => {
-      releaseCreation = resolve;
-    });
-    await page.route('**/api/v1/notification-channels/query**', (route) =>
-      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+    const creationGate = new Promise<void>(
+      /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+        releaseCreation = resolve;
+      },
     );
-    await page.route('**/api/v1/notification-channels/preview', async (route) => {
-      previewRequests++;
-      await route.fulfill({ json: { matches: [], status: 'NO_RESULTS' } });
-    });
-    await page.route('**/api/v1/notification-channels', async (route) => {
-      if (route.request().method() !== 'POST') return route.fulfill({ json: [] });
-      createRequests++;
-      expect(route.request().postDataJSON()).toEqual({
-        browserRecipientUserIds: [],
-        configuration: {
-          from: 'repovio@example.com',
-          port: 587,
-          recipients: ['operations@example.com'],
-          security: 'STARTTLS',
-          smtpHost: 'smtp.example.com',
-        },
-        enabled: true,
-        eventSubscriptions: [{ eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: [] }],
-        name: 'Operations',
-        type: 'EMAIL',
-      });
-      await creationGate;
-      await route.fulfill({
-        json: {
-          browserRecipients: [],
-          canManage: true,
-          createdAt: '2026-11-05T10:00:00.000Z',
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Supplies the mocked response for `/api/v1/notification-channels/query**`. */ (route) =>
+        route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+    );
+    await page.route(
+      '**/api/v1/notification-channels/preview',
+      /** Supplies the mocked response for `/api/v1/notification-channels/preview`. */ async (route) => {
+        previewRequests++;
+        await route.fulfill({ json: { matches: [], status: 'NO_RESULTS' } });
+      },
+    );
+    await page.route(
+      '**/api/v1/notification-channels',
+      /** Supplies the mocked response for `/api/v1/notification-channels`. */ async (route) => {
+        if (route.request().method() !== 'POST') return route.fulfill({ json: [] });
+        createRequests++;
+        expect(route.request().postDataJSON()).toEqual({
+          browserRecipientUserIds: [],
+          configuration: {
+            from: 'repovio@example.com',
+            port: 587,
+            recipients: ['operations@example.com'],
+            security: 'STARTTLS',
+            smtpHost: 'smtp.example.com',
+          },
           enabled: true,
-          eventSubscriptions: [],
-          id: 'validated-channel',
+          eventSubscriptions: [{ eventType: 'WORKFLOW_RUN_FAILED', repositoryIds: [], workflowPatterns: [] }],
           name: 'Operations',
-          requiresReconfiguration: false,
           type: 'EMAIL',
-          updatedAt: '2026-11-05T10:00:00.000Z',
-          urlScheme: 'mailtos',
-        },
-      });
-    });
+        });
+        await creationGate;
+        await route.fulfill({
+          json: {
+            browserRecipients: [],
+            canManage: true,
+            createdAt: '2026-11-05T10:00:00.000Z',
+            enabled: true,
+            eventSubscriptions: [],
+            id: 'validated-channel',
+            name: 'Operations',
+            requiresReconfiguration: false,
+            type: 'EMAIL',
+            updatedAt: '2026-11-05T10:00:00.000Z',
+            urlScheme: 'mailtos',
+          },
+        });
+      },
+    );
 
-    const ready = page.waitForResponse((response) => response.url().includes('/api/v1/notification-channels/query'));
+    const ready = page.waitForResponse(
+      /** Evaluates `response.url().includes('/api/v1/notification-channels/query')` when page.waitForResponse invokes this callback. */ (
+        response,
+      ) => response.url().includes('/api/v1/notification-channels/query'),
+    );
     await page.goto('/notifications');
     await ready;
     await page.getByRole('button', { name: labels.add, exact: true }).click();
@@ -303,7 +354,9 @@ for (const locale of ['en', 'de'] as const) {
 
     await recipients.fill('operations@example.com');
     await save.click();
-    await expect.poll(() => createRequests).toBe(1);
+    await expect
+      .poll(/** Evaluates `createRequests` when expect.poll invokes this callback. */ () => createRequests)
+      .toBe(1);
     await expect(save).toBeDisabled();
     await expect(dialog).toBeVisible();
     releaseCreation?.();

@@ -1,17 +1,20 @@
 import { isWorkflowRunAwaitingApproval, normalizeWorkflowRunStatus } from './workflow-status.js';
 
-describe('isWorkflowRunAwaitingApproval', () => {
+describe('isWorkflowRunAwaitingApproval', /** Groups scenarios for isWorkflowRunAwaitingApproval. */ () => {
   it.each([
     ['GITHUB', 'waiting', null, true],
     ['GITHUB', 'completed', 'action_required', true],
     ['GITLAB', 'manual', null, true],
     ['FORGEJO', 'queued', null, false],
-  ] as const)('maps %s %s/%s to %s', (provider, lifecycle, conclusion, expected) => {
-    expect(isWorkflowRunAwaitingApproval(provider, lifecycle, conclusion)).toBe(expected);
-  });
+  ] as const)(
+    'maps %s %s/%s to %s',
+    /** Verifies maps %s %s/%s to %s. */ (provider, lifecycle, conclusion, expected) => {
+      expect(isWorkflowRunAwaitingApproval(provider, lifecycle, conclusion)).toBe(expected);
+    },
+  );
 });
 
-describe('normalizeWorkflowRunStatus', () => {
+describe('normalizeWorkflowRunStatus', /** Groups scenarios for normalizeWorkflowRunStatus. */ () => {
   it.each([
     ['GITHUB', 'completed', 'success', 'SUCCESS'],
     ['GITHUB', 'completed', 'failure', 'FAILED'],
@@ -27,7 +30,10 @@ describe('normalizeWorkflowRunStatus', () => {
     ['GITHUB', 'waiting', null, 'QUEUED'],
     ['GITHUB', 'completed', 'action_required', 'QUEUED'],
     ['GITHUB', 'completed', 'neutral', 'UNKNOWN'],
-  ] as const)('normalizes %s %s/%s to %s', (provider, lifecycle, conclusion, expected) => {
-    expect(normalizeWorkflowRunStatus(provider, lifecycle, conclusion)).toBe(expected);
-  });
+  ] as const)(
+    'normalizes %s %s/%s to %s',
+    /** Verifies normalizes %s %s/%s to %s. */ (provider, lifecycle, conclusion, expected) => {
+      expect(normalizeWorkflowRunStatus(provider, lifecycle, conclusion)).toBe(expected);
+    },
+  );
 });

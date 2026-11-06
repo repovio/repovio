@@ -7,15 +7,16 @@ import { GiteaActionsAdapter, GiteaActionsUnsupportedError } from './gitea-actio
 
 const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
 
+/** Reads fixture. */
 function readFixture(name: string): unknown {
   return JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));
 }
 
-describe('GiteaActionsAdapter', () => {
+describe('GiteaActionsAdapter', /** Groups scenarios for GiteaActionsAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitea.example.test', providerAccountId: 'account' };
   const repository = { providerRepositoryId: '42', owner: 'repovio', name: 'repovio' };
 
-  it('retains Gitea rate-limit timing without exposing the response body', async () => {
+  it('retains Gitea rate-limit timing without exposing the response body', /** Verifies retains Gitea rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GiteaActionsAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),
     );
@@ -27,16 +28,18 @@ describe('GiteaActionsAdapter', () => {
     });
   });
 
-  it('discovers repositories and maps Actions workflow runs from recorded read-only API fixtures', async () => {
-    const fetchFn = jest.fn(async (url: string) => {
-      if (url.endsWith('/user')) return new Response(JSON.stringify(readFixture('user.json')));
-      if (url.includes('/user/repos')) return new Response(JSON.stringify(readFixture('repositories.json')));
-      if (url.endsWith('/repositories/42'))
-        return new Response(JSON.stringify((readFixture('repositories.json') as unknown[])[0]));
-      if (url.includes('/actions/runs?')) return new Response(JSON.stringify(readFixture('workflow-runs.json')));
-      if (url.endsWith('/actions/runs/7')) return new Response(JSON.stringify(readFixture('workflow-run.json')));
-      throw new Error(`Unexpected request: ${url}`);
-    });
+  it('discovers repositories and maps Actions workflow runs from recorded read-only API fixtures', /** Verifies discovers repositories and maps Actions workflow runs from recorded read-only API fixtures. */ async () => {
+    const fetchFn = jest.fn(
+      /** Provides isolated fetchFn behavior for this test fixture. */ async (url: string) => {
+        if (url.endsWith('/user')) return new Response(JSON.stringify(readFixture('user.json')));
+        if (url.includes('/user/repos')) return new Response(JSON.stringify(readFixture('repositories.json')));
+        if (url.endsWith('/repositories/42'))
+          return new Response(JSON.stringify((readFixture('repositories.json') as unknown[])[0]));
+        if (url.includes('/actions/runs?')) return new Response(JSON.stringify(readFixture('workflow-runs.json')));
+        if (url.endsWith('/actions/runs/7')) return new Response(JSON.stringify(readFixture('workflow-run.json')));
+        throw new Error(`Unexpected request: ${url}`);
+      },
+    );
     const adapter = new GiteaActionsAdapter(fetchFn);
 
     await expect(adapter.validateAccount(context)).resolves.toEqual({ displayName: 'repovio-bot', valid: true });
@@ -64,7 +67,8 @@ describe('GiteaActionsAdapter', () => {
     expect(fetchFn).toHaveBeenCalledTimes(5);
   });
 
-  it('paginates more than 100 incremental workflow runs', async () => {
+  it('paginates more than 100 incremental workflow runs', /** Verifies paginates more than 100 incremental workflow runs. */ async () => {
+    /** Builds a workflow-run fixture for synchronization assertions. */
     const workflowRun = (id: number) => ({
       completed_at: '2026-09-13T10:01:00Z',
       created_at: '2026-09-13T10:00:00Z',
@@ -81,7 +85,11 @@ describe('GiteaActionsAdapter', () => {
         new Response(
           JSON.stringify({
             total_count: 101,
-            workflow_runs: Array.from({ length: 100 }, (_, index) => workflowRun(index)),
+            workflow_runs: Array.from(
+              { length: 100 },
+              /** Evaluates `workflowRun(index)` when Array.from invokes this callback. */ (_, index) =>
+                workflowRun(index),
+            ),
           }),
         ),
       )
@@ -93,12 +101,12 @@ describe('GiteaActionsAdapter', () => {
     expect(fetchFn).toHaveBeenNthCalledWith(2, expect.stringContaining('limit=100&page=2'), expect.anything());
   });
 
-  it('reports unsupported Actions servers without attempting a provider write', async () => {
+  it('reports unsupported Actions servers without attempting a provider write', /** Verifies reports unsupported Actions servers without attempting a provider write. */ async () => {
     const adapter = new GiteaActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(adapter.listWorkflowRuns(context, repository)).rejects.toBeInstanceOf(GiteaActionsUnsupportedError);
   });
 
-  it('validates a recorded Gitea webhook using the raw JSON payload', async () => {
+  it('validates a recorded Gitea webhook using the raw JSON payload', /** Verifies validates a recorded Gitea webhook using the raw JSON payload. */ async () => {
     const payload = Buffer.from(JSON.stringify(readFixture('webhook.json')));
     const signature = createHmac('sha256', 'webhook-secret').update(payload).digest('hex');
     const adapter = new GiteaActionsAdapter();
@@ -113,7 +121,7 @@ describe('GiteaActionsAdapter', () => {
   });
 });
 
-describe('GiteaActionsAdapter change requests', () => {
+describe('GiteaActionsAdapter change requests', /** Groups scenarios for GiteaActionsAdapter change requests. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitea.example.test', providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
@@ -123,6 +131,7 @@ describe('GiteaActionsAdapter change requests', () => {
     ['closed', true, '2026-09-12T10:00:00.000Z', 'MERGED'],
   ] as const)(
     'normalizes a %s pull request with merged=%s and merged-at %s as %s',
+    /** Verifies normalizes a %s pull request with merged=%s and merged-at %s as %s. */
     async (state, merged, mergedAt, expected) => {
       const adapter = new GiteaActionsAdapter(
         jest
@@ -140,7 +149,7 @@ describe('GiteaActionsAdapter change requests', () => {
     },
   );
 
-  it('normalizes Gitea issue and pull-request fixtures', async () => {
+  it('normalizes Gitea issue and pull-request fixtures', /** Verifies normalizes Gitea issue and pull-request fixtures. */ async () => {
     const adapter = new GiteaActionsAdapter(
       jest
         .fn()
@@ -156,7 +165,7 @@ describe('GiteaActionsAdapter change requests', () => {
     ]);
   });
 
-  it('returns null when the pull request is unavailable', async () => {
+  it('returns null when the pull request is unavailable', /** Verifies returns null when the pull request is unavailable. */ async () => {
     const adapter = new GiteaActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toBeNull();
   });

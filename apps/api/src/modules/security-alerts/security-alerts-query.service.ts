@@ -12,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { SecurityAlertQueryDto } from './dto/security-alert-query.dto.js';
 
-export interface SecurityAlertTypeMap extends BaseDelegateTypeMap {
+/** Defines the security alert type map contract shared by its consumers. */ export interface SecurityAlertTypeMap extends BaseDelegateTypeMap {
   select: Prisma.SecurityAlertSelect;
   include: Prisma.SecurityAlertInclude;
   whereInput: Prisma.SecurityAlertWhereInput;
@@ -89,7 +89,7 @@ export class SecurityAlertsQueryService extends QueryService<
       select: { repositoryId: true },
       where: { role: 'MANAGER', userId: user.id },
     });
-    return memberships.map(({ repositoryId }) => repositoryId);
+    return memberships.map(/** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId);
   }
 
   /**

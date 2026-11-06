@@ -146,36 +146,52 @@ const loading = ref(true);
 const adding = ref(false);
 const error = ref(false);
 const invalidRoleUserId = ref<string>();
-const membershipFormSchema = computed(() =>
-  ApiUpsertRepositoryMembershipSchema.extend({
-    userId: z.string({ error: () => t('forms.invalidValue') }).min(1, { error: () => t('forms.invalidValue') }),
-  }),
+const membershipFormSchema = computed(
+  /** Derives membership form schema from the current reactive dependencies. */ () =>
+    ApiUpsertRepositoryMembershipSchema.extend({
+      userId: z
+        .string({ /** Returns the localized validation error for this field. */ error: () => t('forms.invalidValue') })
+        .min(1, { /** Returns the localized validation error for this field. */ error: () => t('forms.invalidValue') }),
+    }),
 );
 type MembershipForm = z.output<typeof membershipFormSchema.value>;
 const form = reactive<{ role: RepositoryRole; userId: string | undefined }>({ role: 'VIEWER', userId: undefined });
-const membershipRoleOptions = computed(() => [
-  { label: t('roles.VIEWER'), value: 'VIEWER' },
-  { label: t('roles.MANAGER'), value: 'MANAGER' },
-]);
-const availableUserOptions = computed(() => {
-  const memberIds = new Set(memberships.value.map((membership) => membership.userId));
-  return users.value
-    .filter((user) => user.role !== 'SYSTEM_ADMIN' && !memberIds.has(user.id))
-    .map((user) => ({
-      avatarUpdatedAt: user.avatarUpdatedAt,
-      firstName: user.firstName,
-      label: getUserIdentityLabel(user),
-      lastName: user.lastName,
-      userId: user.id,
-      username: user.username,
-      value: user.id,
-    }));
-});
-const columns = computed(() => [
-  { accessorKey: 'user.username', header: t('repositoryDetails.user'), id: 'user' },
-  { accessorKey: 'role', header: t('repositoryDetails.role') },
-  { id: 'actions', header: t('repositoryDetails.actions') },
-]);
+const membershipRoleOptions = computed(
+  /** Derives membership role options from the current reactive dependencies. */ () => [
+    { label: t('roles.VIEWER'), value: 'VIEWER' },
+    { label: t('roles.MANAGER'), value: 'MANAGER' },
+  ],
+);
+const availableUserOptions = computed(
+  /** Derives available user options from the current reactive dependencies. */ () => {
+    const memberIds = new Set(
+      memberships.value.map(/** Projects each entry using `membership.userId`. */ (membership) => membership.userId),
+    );
+    return users.value
+      .filter(
+        /** Keeps entries matching `user.role !== 'SYSTEM_ADMIN' && !memberIds.has(user.id)`. */ (user) =>
+          user.role !== 'SYSTEM_ADMIN' && !memberIds.has(user.id),
+      )
+      .map(
+        /** Projects each entry using the availableUserOptions mapping. */ (user) => ({
+          avatarUpdatedAt: user.avatarUpdatedAt,
+          firstName: user.firstName,
+          label: getUserIdentityLabel(user),
+          lastName: user.lastName,
+          userId: user.id,
+          username: user.username,
+          value: user.id,
+        }),
+      );
+  },
+);
+const columns = computed(
+  /** Derives columns from the current reactive dependencies. */ () => [
+    { accessorKey: 'user.username', header: t('repositoryDetails.user'), id: 'user' },
+    { accessorKey: 'role', header: t('repositoryDetails.role') },
+    { id: 'actions', header: t('repositoryDetails.actions') },
+  ],
+);
 
 /** Build a unique pending-state key for one membership action. */
 function memberActionKey(action: 'remove' | 'role', userId: string): string {
@@ -213,8 +229,9 @@ async function addMember(event: FormSubmitEvent<MembershipForm>): Promise<void> 
     const { data } = await api.repositories.upsertMembership(props.repositoryId, event.data.userId, {
       role: event.data.role,
     });
-    memberships.value = [...memberships.value, data].sort((left, right) =>
-      left.user.username.localeCompare(right.user.username),
+    memberships.value = [...memberships.value, data].sort(
+      /** Orders entries using `left.user.username.localeCompare(right.user.username)`. */ (left, right) =>
+        left.user.username.localeCompare(right.user.username),
     );
     form.userId = undefined;
     form.role = 'VIEWER';
@@ -233,29 +250,40 @@ async function updateMemberRole(membership: RepositoryMembership, role: Reposito
     return;
   }
   invalidRoleUserId.value = undefined;
-  await runPendingAction(memberActionKey('role', membership.userId), async () => {
-    error.value = false;
-    try {
-      const { data } = await api.repositories.upsertMembership(props.repositoryId, membership.userId, input.data);
-      memberships.value = memberships.value.map((current) => (current.id === membership.id ? data : current));
-    } catch {
-      error.value = true;
-    }
-  });
+  await runPendingAction(
+    memberActionKey('role', membership.userId),
+    /** Performs update member role while retaining the initiating action’s pending state. */ async () => {
+      error.value = false;
+      try {
+        const { data } = await api.repositories.upsertMembership(props.repositoryId, membership.userId, input.data);
+        memberships.value = memberships.value.map(
+          /** Projects each entry using `(current.id === membership.id ? data : current)`. */ (current) =>
+            current.id === membership.id ? data : current,
+        );
+      } catch {
+        error.value = true;
+      }
+    },
+  );
 }
 
 /** Revoke explicit repository access from one user. */
 async function removeMember(userId: string): Promise<void> {
-  await runPendingAction(memberActionKey('remove', userId), async () => {
-    error.value = false;
-    try {
-      await api.repositories.deleteMembership(props.repositoryId, userId);
-      memberships.value = memberships.value.filter((membership) => membership.userId !== userId);
-    } catch {
-      error.value = true;
-    }
-  });
+  await runPendingAction(
+    memberActionKey('remove', userId),
+    /** Performs remove member while retaining the initiating action’s pending state. */ async () => {
+      error.value = false;
+      try {
+        await api.repositories.deleteMembership(props.repositoryId, userId);
+        memberships.value = memberships.value.filter(
+          /** Keeps entries matching `membership.userId !== userId`. */ (membership) => membership.userId !== userId,
+        );
+      } catch {
+        error.value = true;
+      }
+    },
+  );
 }
 
-onMounted(() => void load());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void load());
 </script>

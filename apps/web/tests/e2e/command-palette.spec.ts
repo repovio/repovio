@@ -41,59 +41,119 @@ const workflowRun = {
 
 /** Mock the authenticated shell and empty resource endpoints used by command-palette scenarios. */
 async function mockCommandPaletteShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: `playwright-${role.toLowerCase()}`, role, username: 'playwright' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/settings', (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 30 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: `playwright-${role.toLowerCase()}`, role, username: 'playwright' } }),
   );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/failures', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/latest-runs', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/repositories**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/trend**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/summary**', (route) =>
-    route.fulfill({
-      json: {
-        awaitingApprovalCount: 0,
-        completedCount: 0,
-        medianDurationMs: null,
-        queuedCount: 0,
-        runningCount: 0,
-        statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
-        successRate: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/settings',
+    /** Supplies the mocked response for `/api/v1/settings`. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 30 } }),
   );
-  await page.route('**/api/v1/workflow-runs/needs-attention**', (route) => route.fulfill({ json: emptyPage }));
-  await page.route(/\/api\/v1\/workflow-runs(?:\?.*)?$/, (route) => {
-    const search = new URL(route.request().url()).searchParams.get('search');
-    return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [workflowRun] : [] } });
-  });
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) => {
-    const search = new URL(route.request().url()).searchParams.get('search');
-    return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [repository] : [] } });
-  });
-  await page.route(/\/api\/v1\/provider-accounts(?:\?.*)?$/, (route) => {
-    const search = new URL(route.request().url()).searchParams.get('search');
-    return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [providerAccount] : [] } });
-  });
-  await page.route('**/api/v1/provider-accounts/authentication-options', (route) =>
-    route.fulfill({ json: { oauthProviderTypes: [] } }),
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({ json: [] }),
   );
-  await page.route('**/api/v1/repositories/repository-1', (route) => route.fulfill({ json: repository }));
-  await page.route('**/api/v1/repositories/repository-1/workflow-filters', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/repositories/repository-1/memberships', (route) => route.fulfill({ json: [] }));
-  await page.route(/\/api\/v1\/users(?:\?.*)?$/, (route) => route.fulfill({ json: emptyPage }));
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/repositories**',
+    /** Supplies the mocked response for `/api/v1/dashboard/repositories**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/summary**',
+    /** Supplies the mocked response for `/api/v1/dashboard/summary**`. */ (route) =>
+      route.fulfill({
+        json: {
+          awaitingApprovalCount: 0,
+          completedCount: 0,
+          medianDurationMs: null,
+          queuedCount: 0,
+          runningCount: 0,
+          statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
+          successRate: 0,
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/workflow-runs/needs-attention**',
+    /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ (route) =>
+      route.fulfill({ json: emptyPage }),
+  );
+  await page.route(
+    /\/api\/v1\/workflow-runs(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      const search = new URL(route.request().url()).searchParams.get('search');
+      return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [workflowRun] : [] } });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      const search = new URL(route.request().url()).searchParams.get('search');
+      return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [repository] : [] } });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/provider-accounts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      const search = new URL(route.request().url()).searchParams.get('search');
+      return route.fulfill({ json: { ...emptyPage, items: search === 'flow' ? [providerAccount] : [] } });
+    },
+  );
+  await page.route(
+    '**/api/v1/provider-accounts/authentication-options',
+    /** Supplies the mocked response for `/api/v1/provider-accounts/authentication-options`. */ (route) =>
+      route.fulfill({ json: { oauthProviderTypes: [] } }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({ json: repository }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/workflow-filters',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/workflow-filters`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    /\/api\/v1\/users(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
+  );
 }
 
 /** Return the platform shortcut rendered by Nuxt UI's meta key. */
 async function commandPaletteShortcut(page: Page): Promise<'Meta+K' | 'Control+K'> {
-  return (await page.evaluate(() => /Macintosh|Mac OS X/.test(navigator.userAgent))) ? 'Meta+K' : 'Control+K';
+  return (await page.evaluate(
+    /** Reads or updates browser state for the command palette shortcut scenario. */ () =>
+      /Macintosh|Mac OS X/.test(navigator.userAgent),
+  ))
+    ? 'Meta+K'
+    : 'Control+K';
 }
 
-test('opens globally, restores focus, supports keyboard navigation, and opens resource results', async ({
+test('opens globally, restores focus, supports keyboard navigation, and opens resource results', /** Verifies opens globally, restores focus, supports keyboard navigation, and opens resource results. */ async ({
   page,
 }, testInfo) => {
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
@@ -124,7 +184,12 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   await expect(paletteSearch).toBeFocused();
   await expect(palette.getByRole('option', { name: 'Dashboard', exact: true })).toHaveAttribute('data-highlighted');
   await page.keyboard.press('ArrowDown');
-  await expect.poll(() => palette.locator('[data-highlighted]').allTextContents()).toEqual(['All runs']);
+  await expect
+    .poll(
+      /** Evaluates `palette.locator('[data-highlighted]').allTextContents()` when expect.poll invokes this callback. */ () =>
+        palette.locator('[data-highlighted]').allTextContents(),
+    )
+    .toEqual(['All runs']);
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/workflow-runs$/);
 
@@ -148,7 +213,13 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   await page.keyboard.press(shortcut);
   await expect(palette).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the command palette scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
   await page.screenshot({
     animations: 'disabled',
@@ -157,7 +228,9 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   });
 });
 
-test('starts the existing provider creation dialog from an administrative command', async ({ page }) => {
+test('starts the existing provider creation dialog from an administrative command', /** Verifies starts the existing provider creation dialog from an administrative command. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
 
@@ -171,7 +244,9 @@ test('starts the existing provider creation dialog from an administrative comman
   await expect(providerDialog.getByRole('button', { name: 'Verify and add provider' })).toBeEnabled();
 });
 
-test('starts the existing repository creation dialog from an administrative command', async ({ page }) => {
+test('starts the existing repository creation dialog from an administrative command', /** Verifies starts the existing repository creation dialog from an administrative command. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
 
@@ -187,14 +262,19 @@ test('starts the existing repository creation dialog from an administrative comm
   ).toBeVisible();
 });
 
-test('hides administrative navigation and creation actions from viewers', async ({ page }) => {
+test('hides administrative navigation and creation actions from viewers', /** Verifies hides administrative navigation and creation actions from viewers. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'VIEWER');
   let providerSearchRequests = 0;
   await page.unroute(/\/api\/v1\/provider-accounts(?:\?.*)?$/);
-  await page.route(/\/api\/v1\/provider-accounts(?:\?.*)?$/, (route) => {
-    providerSearchRequests += 1;
-    return route.fulfill({ status: 403 });
-  });
+  await page.route(
+    /\/api\/v1\/provider-accounts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      providerSearchRequests += 1;
+      return route.fulfill({ status: 403 });
+    },
+  );
 
   await page.goto('/');
   await page.getByRole('button', { name: 'Open search' }).click();
@@ -210,7 +290,9 @@ test('hides administrative navigation and creation actions from viewers', async 
 });
 
 for (const role of ['SYSTEM_ADMIN', 'VIEWER'] as const) {
-  test(`shortcut dialog supports menu, focus, keyboard, and themes for ${role}`, async ({ page }, testInfo) => {
+  test(`shortcut dialog supports menu, focus, keyboard, and themes for ${role}`, /** Verifies shortcut dialog supports menu, focus, keyboard, and themes for [role]. */ async ({
+    page,
+  }, testInfo) => {
     await mockCommandPaletteShell(page, role);
     await page.goto('/');
     const userMenu = page.getByRole('button', { name: 'playwright', exact: true });
@@ -245,13 +327,23 @@ for (const role of ['SYSTEM_ADMIN', 'VIEWER'] as const) {
     await page.keyboard.press('Escape');
     await userMenu.focus();
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    });
+    await page.evaluate(
+      /** Reads or updates browser state for the command palette scenario. */ () => {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      },
+    );
     await page.keyboard.press('?');
     await expect(dialog).toBeVisible();
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect
+      .poll(
+        /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)` when expect.poll invokes this callback. */ () =>
+          page.evaluate(
+            /** Reads or updates browser state for the command palette scenario. */ () =>
+              document.documentElement.scrollWidth <= window.innerWidth,
+          ),
+      )
+      .toBe(true);
     await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('shortcuts-mobile-light.png') });
     await close.click();
     await expect(dialog).not.toBeVisible();
@@ -259,10 +351,13 @@ for (const role of ['SYSTEM_ADMIN', 'VIEWER'] as const) {
   });
 }
 
-test('documents and runs Command+K on macOS and slash after navigation', async ({ page }) => {
+test('documents and runs Command+K on macOS and slash after navigation', /** Verifies documents and runs Command+K on macOS and slash after navigation. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'VIEWER');
-  await page.addInitScript(() =>
-    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }),
   );
   await page.goto('/');
   const menu = page.getByRole('button', { name: 'playwright', exact: true });
@@ -286,7 +381,9 @@ test('documents and runs Command+K on macOS and slash after navigation', async (
   await expect(dialog).toBeVisible();
 });
 
-test('keeps editable controls and other dialogs isolated from global search shortcuts', async ({ page }) => {
+test('keeps editable controls and other dialogs isolated from global search shortcuts', /** Verifies keeps editable controls and other dialogs isolated from global search shortcuts. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
   const shortcut = await commandPaletteShortcut(page);
@@ -311,10 +408,16 @@ test('keeps editable controls and other dialogs isolated from global search shor
 
 for (const locale of ['en', 'de'] as const) {
   for (const theme of ['light', 'dark'] as const) {
-    test(`unified search layout in ${locale} and ${theme}`, async ({ page }, testInfo) => {
+    test(`unified search layout in ${locale} and ${theme}`, /** Verifies unified search layout in [locale] and [theme]. */ async ({
+      page,
+    }, testInfo) => {
       await mockCommandPaletteShell(page, 'VIEWER');
       await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
-      await page.addInitScript((mode) => window.localStorage.setItem('nuxt-color-mode', mode), theme);
+      await page.addInitScript(
+        /** Initializes browser-side authentication and preferences before page scripts run. */ (mode) =>
+          window.localStorage.setItem('nuxt-color-mode', mode),
+        theme,
+      );
       await page.goto('/');
       const title = locale === 'de' ? 'Suche' : 'Search';
       const trigger = page.getByRole('button', { name: locale === 'de' ? 'Suche öffnen' : 'Open search' });
@@ -324,7 +427,12 @@ for (const locale of ['en', 'de'] as const) {
       for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: 900 });
         await expect(trigger).toBeVisible();
-        await expect.poll(async () => (await trigger.boundingBox())!.height).toBeLessThanOrEqual(40);
+        await expect
+          .poll(
+            /** Evaluates `(await trigger.boundingBox())!.height` when expect.poll invokes this callback. */ async () =>
+              (await trigger.boundingBox())!.height,
+          )
+          .toBeLessThanOrEqual(40);
         await expect(trigger.locator('[data-slot="label"]')).toHaveCSS('white-space', 'nowrap');
         await page.screenshot({ animations: 'disabled', path: testInfo.outputPath(`search-trigger-${width}.png`) });
         await trigger.click();
@@ -332,7 +440,13 @@ for (const locale of ['en', 'de'] as const) {
         await expect(palette).toBeVisible();
         await expect(palette.getByRole('textbox')).toBeFocused();
         await expect
-          .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+          .poll(
+            /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)` when expect .poll invokes this callback. */ () =>
+              page.evaluate(
+                /** Reads or updates browser state for the command palette scenario. */ () =>
+                  document.documentElement.scrollWidth <= window.innerWidth,
+              ),
+          )
           .toBe(true);
         await page.screenshot({ animations: 'disabled', path: testInfo.outputPath(`search-dialog-${width}.png`) });
         await page.keyboard.press('Escape');
@@ -342,43 +456,59 @@ for (const locale of ['en', 'de'] as const) {
   }
 }
 
-test('closing cancels active requests and reopening starts with an empty search', async ({ page }) => {
+test('closing cancels active requests and reopening starts with an empty search', /** Verifies closing cancels active requests and reopening starts with an empty search. */ async ({
+  page,
+}) => {
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   const pending: Array<() => Promise<void>> = [];
-  await page.route(/\/api\/v1\/(?:provider-accounts|repositories|workflow-runs)\?/, async (route) => {
-    if (new URL(route.request().url()).searchParams.get('search') !== 'obsolete') {
-      return route.fulfill({ json: emptyPage });
-    }
-    await new Promise<void>((resolve) => {
-      pending.push(async () => {
-        try {
-          await route.fulfill({ json: { ...emptyPage, items: [] } });
-        } catch {
-          // Closing the search should abort the intercepted request.
-        } finally {
-          resolve();
-        }
-      });
-    });
-  });
+  await page.route(
+    /\/api\/v1\/(?:provider-accounts|repositories|workflow-runs)\?/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      if (new URL(route.request().url()).searchParams.get('search') !== 'obsolete') {
+        return route.fulfill({ json: emptyPage });
+      }
+      await new Promise<void>(
+        /** Defers the obsolete search response until the test explicitly releases it. */ (resolve) => {
+          pending.push(
+            /** Completes the delayed search response or tolerates its cancellation. */ async () => {
+              try {
+                await route.fulfill({ json: { ...emptyPage, items: [] } });
+              } catch {
+                // Closing the search should abort the intercepted request.
+              } finally {
+                resolve();
+              }
+            },
+          );
+        },
+      );
+    },
+  );
   await page.goto('/');
   const trigger = page.getByRole('button', { name: 'Open search' });
   await trigger.click();
   const input = page.getByPlaceholder('Search or type a command');
   const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   const failedRequests: string[] = [];
-  page.on('requestfailed', (request) => {
-    if (request.url().includes('search=obsolete')) failedRequests.push(request.url());
-  });
+  page.on(
+    'requestfailed',
+    /** Handles 'requestfailed' events for this subscription. */ (request) => {
+      if (request.url().includes('search=obsolete')) failedRequests.push(request.url());
+    },
+  );
   await input.fill('obsolete');
-  await expect.poll(() => pending.length).toBe(3);
+  await expect
+    .poll(/** Evaluates `pending.length` when expect.poll invokes this callback. */ () => pending.length)
+    .toBe(3);
   await page.keyboard.press('Escape');
   await expect(palette).not.toBeVisible();
-  await expect.poll(() => failedRequests.length).toBe(3);
+  await expect
+    .poll(/** Evaluates `failedRequests.length` when expect.poll invokes this callback. */ () => failedRequests.length)
+    .toBe(3);
   await expect(trigger).toBeFocused();
   await trigger.click();
   await expect(input).toHaveValue('');
-  await Promise.all(pending.map((complete) => complete()));
+  await Promise.all(pending.map(/** Projects each entry using `complete()`. */ (complete) => complete()));
   await expect(palette.getByRole('option', { name: 'Dashboard', exact: true })).toBeVisible();
   await expect(palette).not.toContainText('obsolete');
 });

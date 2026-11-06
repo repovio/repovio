@@ -1,14 +1,16 @@
 import { RepositoriesQueryService } from './repositories-query.service.js';
 
-describe('RepositoriesQueryService', () => {
+describe('RepositoriesQueryService', /** Groups scenarios for RepositoriesQueryService. */ () => {
   const ability = {};
-  const abilityFactory = { createForUser: jest.fn(() => ability) };
+  const abilityFactory = {
+    createForUser: jest.fn(/** Provides isolated createForUser behavior for this test fixture. */ () => ability),
+  };
   const prisma = { repository: {}, repositoryMembership: { findMany: jest.fn() } };
   const service = new RepositoriesQueryService(prisma as never, abilityFactory as never);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('gives system administrators an unrestricted repository ability', async () => {
+  it('gives system administrators an unrestricted repository ability', /** Verifies gives system administrators an unrestricted repository ability. */ async () => {
     await expect(
       service.getReadAbility({ authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN', username: 'admin' }),
     ).resolves.toBe(ability);
@@ -19,7 +21,7 @@ describe('RepositoriesQueryService', () => {
     expect(prisma.repositoryMembership.findMany).not.toHaveBeenCalled();
   });
 
-  it('builds a repository-scoped ability for non-administrators', async () => {
+  it('builds a repository-scoped ability for non-administrators', /** Verifies builds a repository-scoped ability for non-administrators. */ async () => {
     const memberships = [{ repositoryId: 'repository-1', role: 'VIEWER' as const }];
     prisma.repositoryMembership.findMany.mockResolvedValue(memberships);
 
@@ -36,7 +38,7 @@ describe('RepositoriesQueryService', () => {
     );
   });
 
-  it('uses a stable repository order when the table has no selected sort', () => {
+  it('uses a stable repository order when the table has no selected sort', /** Verifies uses a stable repository order when the table has no selected sort. */ () => {
     expect(service.toQueryOptions({ page: 1, perPage: 10 })).toMatchObject({
       orderBy: [{ owner: 'asc' }, { name: 'asc' }, { id: 'asc' }],
       page: 1,
@@ -44,7 +46,7 @@ describe('RepositoriesQueryService', () => {
     });
   });
 
-  it('searches repository identity fields while preserving caller filters', () => {
+  it('searches repository identity fields while preserving caller filters', /** Verifies searches repository identity fields while preserving caller filters. */ () => {
     expect(service.toQueryOptions({ page: 1, perPage: 10, search: 'repovio', where: { enabled: true } })).toMatchObject(
       {
         where: {

@@ -12,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { IssueQueryDto } from './dto/issue-query.dto.js';
 
-export interface IssueTypeMap extends BaseDelegateTypeMap {
+/** Defines the issue type map contract shared by its consumers. */ export interface IssueTypeMap extends BaseDelegateTypeMap {
   select: Prisma.IssueSelect;
   include: Prisma.IssueInclude;
   whereInput: Prisma.IssueWhereInput;

@@ -8,6 +8,7 @@ export function rankSearchResults<T>(
   limit = maximumGroupResults,
 ): T[] {
   const normalizedQuery = query.trim().toLocaleLowerCase();
+  /** Computes match priority and stable label/identifier tie-breakers for a search result. */
   const rank = (value: T): [number, string, string] => {
     const { id, label, supportingText = '' } = getSearchText(value);
     const normalizedLabel = label.toLocaleLowerCase();
@@ -20,7 +21,10 @@ export function rankSearchResults<T>(
           ? 1
           : words.includes(normalizedQuery)
             ? 2
-            : words.some((word) => word.startsWith(normalizedQuery))
+            : words.some(
+                  /** Checks whether any entry satisfies `word.startsWith(normalizedQuery)`. */ (word) =>
+                    word.startsWith(normalizedQuery),
+                )
               ? 3
               : normalizedLabel.includes(normalizedQuery)
                 ? 4
@@ -31,10 +35,12 @@ export function rankSearchResults<T>(
   };
 
   return [...items]
-    .sort((left, right) => {
-      const [leftScore, leftLabel, leftId] = rank(left);
-      const [rightScore, rightLabel, rightId] = rank(right);
-      return leftScore - rightScore || leftLabel.localeCompare(rightLabel) || leftId.localeCompare(rightId);
-    })
+    .sort(
+      /** Orders entries using the rankSearchResults mapping. */ (left, right) => {
+        const [leftScore, leftLabel, leftId] = rank(left);
+        const [rightScore, rightLabel, rightId] = rank(right);
+        return leftScore - rightScore || leftLabel.localeCompare(rightLabel) || leftId.localeCompare(rightId);
+      },
+    )
     .slice(0, limit);
 }

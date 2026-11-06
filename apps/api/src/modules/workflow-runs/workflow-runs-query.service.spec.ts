@@ -2,8 +2,8 @@ import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { WorkflowRunsQueryService } from './workflow-runs-query.service.js';
 
-describe('WorkflowRunsQueryService', () => {
-  it('combines a workflow-name search with repository-scoped CASL access', async () => {
+describe('WorkflowRunsQueryService', /** Groups scenarios for WorkflowRunsQueryService. */ () => {
+  it('combines a workflow-name search with repository-scoped CASL access', /** Verifies combines a workflow-name search with repository-scoped CASL access. */ async () => {
     const mocks = {
       repositoryMembership: {
         findMany: jest.fn().mockResolvedValue([{ repositoryId: 'repository-a', role: 'VIEWER' }]),
@@ -60,7 +60,7 @@ describe('WorkflowRunsQueryService', () => {
     );
   });
 
-  it('uses the requested Query Kit sort order instead of the default', () => {
+  it('uses the requested Query Kit sort order instead of the default', /** Verifies uses the requested Query Kit sort order instead of the default. */ () => {
     const service = new WorkflowRunsQueryService({ workflowRun: {} } as PrismaService, new CaslAbilityFactory());
 
     expect(service.toQueryOptions({ orderBy: { completedAt: 'asc' }, page: 1, perPage: 10 })).toMatchObject({
@@ -68,7 +68,7 @@ describe('WorkflowRunsQueryService', () => {
     });
   });
 
-  it('centralizes latest-terminal failure selection before applying public Query Kit filters', async () => {
+  it('centralizes latest-terminal failure selection before applying public Query Kit filters', /** Verifies centralizes latest-terminal failure selection before applying public Query Kit filters. */ async () => {
     const mocks = {
       workflowRun: {
         findMany: jest.fn().mockResolvedValue([
@@ -146,7 +146,7 @@ describe('WorkflowRunsQueryService', () => {
     });
   });
 
-  it('removes closed and merged change-request failures without hiding active or unknown failures', async () => {
+  it('removes closed and merged change-request failures without hiding active or unknown failures', /** Verifies removes closed and merged change-request failures without hiding active or unknown failures. */ async () => {
     const mocks = {
       workflowRun: {
         findMany: jest.fn().mockResolvedValue([
@@ -169,7 +169,7 @@ describe('WorkflowRunsQueryService', () => {
     expect(mocks.workflowRun.findMany).toHaveBeenCalledTimes(1);
   });
 
-  it('applies active-state filters only after resolving the latest authorized workflow contexts', async () => {
+  it('applies active-state filters only after resolving the latest authorized workflow contexts', /** Verifies applies active-state filters only after resolving the latest authorized workflow contexts. */ async () => {
     const mocks = {
       workflowRun: {
         findMany: jest
@@ -214,7 +214,7 @@ describe('WorkflowRunsQueryService', () => {
     );
   });
 
-  it('centralizes actionable approval selection without hiding open or unknown contexts', async () => {
+  it('centralizes actionable approval selection without hiding open or unknown contexts', /** Verifies centralizes actionable approval selection without hiding open or unknown contexts. */ async () => {
     const mocks = {
       workflowRun: {
         findMany: jest
@@ -258,7 +258,7 @@ describe('WorkflowRunsQueryService', () => {
     );
   });
 
-  it('excludes terminal change requests from active workflow selection', async () => {
+  it('excludes terminal change requests from active workflow selection', /** Verifies excludes terminal change requests from active workflow selection. */ async () => {
     const mocks = {
       workflowRun: {
         findMany: jest

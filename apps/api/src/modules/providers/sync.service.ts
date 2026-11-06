@@ -233,12 +233,17 @@ export class ProviderSyncService {
     const runsToRefresh = new Map(
       [...currentRuns, ...activeRuns]
         .filter(
+          /** Keeps entries matching `run.awaitingApproval || run.status === 'FAILED' || run.status === 'QUEUED' || run.status === 'RUNNING'`. */
           (run) =>
             run.awaitingApproval || run.status === 'FAILED' || run.status === 'QUEUED' || run.status === 'RUNNING',
         )
-        .map((run) => [run.providerRunId, run]),
+        .map(/** Projects each entry using `[run.providerRunId, run]`. */ (run) => [run.providerRunId, run]),
     );
-    const runsByProviderId = new Map(discoveredRuns.map((run) => [run.providerRunId, run]));
+    const runsByProviderId = new Map(
+      discoveredRuns.map(
+        /** Projects each entry using `[run.providerRunId, run]`. */ (run) => [run.providerRunId, run],
+      ),
+    );
     for (const run of runsToRefresh.values()) {
       if (runsByProviderId.has(run.providerRunId)) continue;
       const refreshedRun = await adapter.getWorkflowRun(context, repository, run.providerRunId);

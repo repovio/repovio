@@ -84,19 +84,25 @@ const { formatDateTime } = useDateTime();
 const items = ref<ActivityItem[]>([]);
 const loading = ref(true);
 const loadError = ref(false);
-const icon = computed(() => {
-  if (props.kind === 'issues') return 'i-tabler-circle-dot';
-  if (props.kind === 'pullRequests') return 'i-tabler-git-pull-request';
-  if (props.kind === 'securityAlerts') return 'i-lucide-shield-alert';
-  return 'i-lucide-workflow';
-});
-const pageUrl = computed(() => {
-  if (props.kind === 'issues') return '/issues';
-  if (props.kind === 'pullRequests') return '/pull-requests';
-  if (props.kind === 'securityAlerts') return `/alerts/dependencies?repositoryId=${props.repositoryId}`;
-  return '/workflow-runs';
-});
-const title = computed(() => t(`repositoryDetails.activity.${props.kind}`));
+const icon = computed(
+  /** Derives icon from the current reactive dependencies. */ () => {
+    if (props.kind === 'issues') return 'i-tabler-circle-dot';
+    if (props.kind === 'pullRequests') return 'i-tabler-git-pull-request';
+    if (props.kind === 'securityAlerts') return 'i-lucide-shield-alert';
+    return 'i-lucide-workflow';
+  },
+);
+const pageUrl = computed(
+  /** Derives page url from the current reactive dependencies. */ () => {
+    if (props.kind === 'issues') return '/issues';
+    if (props.kind === 'pullRequests') return '/pull-requests';
+    if (props.kind === 'securityAlerts') return `/alerts/dependencies?repositoryId=${props.repositoryId}`;
+    return '/workflow-runs';
+  },
+);
+const title = computed(
+  /** Derives title from the current reactive dependencies. */ () => t(`repositoryDetails.activity.${props.kind}`),
+);
 
 /** Load and normalize the five newest records for this repository section. */
 async function load(repositoryId: string): Promise<void> {
@@ -107,50 +113,58 @@ async function load(repositoryId: string): Promise<void> {
     if (props.kind === 'issues') {
       const { data } = await api.issues.listForRepository(repositoryId);
       if (props.repositoryId !== repositoryId) return;
-      items.value = data.items.map((item) => ({
-        detailUrl: `/issues/${item.id}`,
-        id: item.id,
-        providerUrl: item.url,
-        status: t(`workItems.states.${item.state}`),
-        subtitle: `#${item.number}`,
-        timestamp: formatDateTime(item.providerUpdatedAt),
-        title: item.title,
-      }));
+      items.value = data.items.map(
+        /** Projects each entry using the load mapping. */ (item) => ({
+          detailUrl: `/issues/${item.id}`,
+          id: item.id,
+          providerUrl: item.url,
+          status: t(`workItems.states.${item.state}`),
+          subtitle: `#${item.number}`,
+          timestamp: formatDateTime(item.providerUpdatedAt),
+          title: item.title,
+        }),
+      );
     } else if (props.kind === 'pullRequests') {
       const { data } = await api.pullRequests.listForRepository(repositoryId);
       if (props.repositoryId !== repositoryId) return;
-      items.value = data.items.map((item) => ({
-        detailUrl: `/pull-requests/${item.id}`,
-        id: item.id,
-        providerUrl: item.url,
-        status: t(`workItems.states.${item.state}`),
-        subtitle: `#${item.number}`,
-        timestamp: formatDateTime(item.providerUpdatedAt),
-        title: item.title,
-      }));
+      items.value = data.items.map(
+        /** Projects each entry using the load mapping. */ (item) => ({
+          detailUrl: `/pull-requests/${item.id}`,
+          id: item.id,
+          providerUrl: item.url,
+          status: t(`workItems.states.${item.state}`),
+          subtitle: `#${item.number}`,
+          timestamp: formatDateTime(item.providerUpdatedAt),
+          title: item.title,
+        }),
+      );
     } else if (props.kind === 'workflowRuns') {
       const { data } = await api.workflowRuns.listForRepository(repositoryId);
       if (props.repositoryId !== repositoryId) return;
-      items.value = data.items.map((item) => ({
-        id: item.id,
-        providerUrl: item.url,
-        status: t(`workflowStatus.${item.status}`),
-        subtitle: item.workflowName,
-        timestamp: formatDateTime(item.completedAt ?? item.providerCreatedAt),
-        title: item.displayTitle,
-      }));
+      items.value = data.items.map(
+        /** Projects each entry using the load mapping. */ (item) => ({
+          id: item.id,
+          providerUrl: item.url,
+          status: t(`workflowStatus.${item.status}`),
+          subtitle: item.workflowName,
+          timestamp: formatDateTime(item.completedAt ?? item.providerCreatedAt),
+          title: item.displayTitle,
+        }),
+      );
     } else {
       const { data } = await api.securityAlerts.listForRepository(repositoryId);
       if (props.repositoryId !== repositoryId) return;
-      items.value = data.items.map((item) => ({
-        detailUrl: `/alerts/${item.id}`,
-        id: item.id,
-        providerUrl: item.providerUrl,
-        status: t(`securityAlerts.states.${item.state}`),
-        subtitle: t(`securityAlerts.kindTitles.${item.kind}`),
-        timestamp: formatDateTime(item.providerUpdatedAt),
-        title: item.title,
-      }));
+      items.value = data.items.map(
+        /** Projects each entry using the load mapping. */ (item) => ({
+          detailUrl: `/alerts/${item.id}`,
+          id: item.id,
+          providerUrl: item.providerUrl,
+          status: t(`securityAlerts.states.${item.state}`),
+          subtitle: t(`securityAlerts.kindTitles.${item.kind}`),
+          timestamp: formatDateTime(item.providerUpdatedAt),
+          title: item.title,
+        }),
+      );
     }
   } catch {
     if (props.repositoryId === repositoryId) loadError.value = true;
@@ -160,7 +174,9 @@ async function load(repositoryId: string): Promise<void> {
 }
 
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => props.repositoryId,
+  /** Synchronizes activity section when the observed state changes. */
   (repositoryId) => void load(repositoryId),
   { immediate: true },
 );

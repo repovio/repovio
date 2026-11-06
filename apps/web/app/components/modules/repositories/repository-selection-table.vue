@@ -67,52 +67,81 @@ const props = defineProps<{
 const selectedRepositoryIds = defineModel<string[]>('selectedRepositoryIds', { required: true });
 const { t } = useI18n();
 const search = ref('');
-const columns = computed<TableColumn<ProviderRepository>[]>(() => [
-  { id: 'select' },
-  { accessorKey: 'owner', header: t('repositories.columns.owner'), id: 'owner' },
-  { accessorKey: 'name', header: t('repositories.columns.name'), id: 'name' },
-  { accessorKey: 'tracked', header: t('repositories.columns.status'), id: 'tracked' },
-]);
-const filteredRepositories = computed(() => {
-  const normalizedSearch = search.value.trim().toLocaleLowerCase();
-  if (!normalizedSearch) return props.repositories;
-  return props.repositories.filter((repository) =>
-    [repository.owner, repository.name, repository.url].some((value) =>
-      value.toLocaleLowerCase().includes(normalizedSearch),
+const columns = computed<TableColumn<ProviderRepository>[]>(
+  /** Derives columns from the current reactive dependencies. */ () => [
+    { id: 'select' },
+    { accessorKey: 'owner', header: t('repositories.columns.owner'), id: 'owner' },
+    { accessorKey: 'name', header: t('repositories.columns.name'), id: 'name' },
+    { accessorKey: 'tracked', header: t('repositories.columns.status'), id: 'tracked' },
+  ],
+);
+const filteredRepositories = computed(
+  /** Derives filtered repositories from the current reactive dependencies. */ () => {
+    const normalizedSearch = search.value.trim().toLocaleLowerCase();
+    if (!normalizedSearch) return props.repositories;
+    return props.repositories.filter(
+      /** Keeps entries matching `[repository.owner, repository.name, repository.url].some((value) => value.toLocaleLowerCase().includes(normalizedSearch), )`. */ (
+        repository,
+      ) =>
+        [repository.owner, repository.name, repository.url].some(
+          /** Checks whether any entry satisfies `value.toLocaleLowerCase().includes(normalizedSearch)`. */ (value) =>
+            value.toLocaleLowerCase().includes(normalizedSearch),
+        ),
+    );
+  },
+);
+const visibleSelectableRepositories = computed(
+  /** Derives visible selectable repositories from the current reactive dependencies. */ () =>
+    filteredRepositories.value.filter(
+      /** Keeps entries matching `!repository.tracked`. */ (repository) => !repository.tracked,
     ),
-  );
-});
-const visibleSelectableRepositories = computed(() =>
-  filteredRepositories.value.filter((repository) => !repository.tracked),
 );
 const allVisibleRepositoriesSelected = computed(
+  /** Derives all visible repositories selected from the current reactive dependencies. */
   () =>
     visibleSelectableRepositories.value.length > 0 &&
-    visibleSelectableRepositories.value.every((repository) =>
-      selectedRepositoryIds.value.includes(repository.providerRepositoryId),
+    visibleSelectableRepositories.value.every(
+      /** Checks whether every entry satisfies `selectedRepositoryIds.value.includes(repository.providerRepositoryId)`. */ (
+        repository,
+      ) => selectedRepositoryIds.value.includes(repository.providerRepositoryId),
     ),
 );
-const someVisibleRepositoriesSelected = computed(() =>
-  visibleSelectableRepositories.value.some((repository) =>
-    selectedRepositoryIds.value.includes(repository.providerRepositoryId),
-  ),
+const someVisibleRepositoriesSelected = computed(
+  /** Derives some visible repositories selected from the current reactive dependencies. */ () =>
+    visibleSelectableRepositories.value.some(
+      /** Checks whether any entry satisfies `selectedRepositoryIds.value.includes(repository.providerRepositoryId)`. */ (
+        repository,
+      ) => selectedRepositoryIds.value.includes(repository.providerRepositoryId),
+    ),
 );
 
 /** Select or deselect one available provider repository. */
 function setRepositorySelected(providerRepositoryId: string, selected: boolean): void {
-  const repository = props.repositories.find((item) => item.providerRepositoryId === providerRepositoryId);
+  const repository = props.repositories.find(
+    /** Finds the first entry matching `item.providerRepositoryId === providerRepositoryId`. */ (item) =>
+      item.providerRepositoryId === providerRepositoryId,
+  );
   if (!repository || repository.tracked) return;
 
   selectedRepositoryIds.value = selected
     ? [...new Set([...selectedRepositoryIds.value, providerRepositoryId])]
-    : selectedRepositoryIds.value.filter((id) => id !== providerRepositoryId);
+    : selectedRepositoryIds.value.filter(
+        /** Keeps entries matching `id !== providerRepositoryId`. */ (id) => id !== providerRepositoryId,
+      );
 }
 
 /** Select or deselect every available repository visible through the current search. */
 function toggleVisibleRepositories(selected: boolean): void {
-  const visibleIds = new Set(visibleSelectableRepositories.value.map((repository) => repository.providerRepositoryId));
+  const visibleIds = new Set(
+    visibleSelectableRepositories.value.map(
+      /** Projects each entry using `repository.providerRepositoryId`. */ (repository) =>
+        repository.providerRepositoryId,
+    ),
+  );
   selectedRepositoryIds.value = selected
     ? [...new Set([...selectedRepositoryIds.value, ...visibleIds])]
-    : selectedRepositoryIds.value.filter((id) => !visibleIds.has(id));
+    : selectedRepositoryIds.value.filter(
+        /** Keeps entries matching `!visibleIds.has(id)`. */ (id) => !visibleIds.has(id),
+      );
 }
 </script>

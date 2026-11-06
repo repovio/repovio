@@ -39,9 +39,11 @@ export class SystemStatusGateway implements OnGatewayConnection, OnGatewayInit, 
    * @returns No return value.
    */
   afterInit(): void {
-    this.statusSubscription = this.status.changes$.subscribe((snapshot) => {
-      this.server.to(AUTHENTICATED_STATUS_ROOM).emit(SYSTEM_STATUS_EVENT, snapshot);
-    });
+    this.statusSubscription = this.status.changes$.subscribe(
+      /** Broadcasts the latest system-status snapshot to connected clients. */ (snapshot) => {
+        this.server.to(AUTHENTICATED_STATUS_ROOM).emit(SYSTEM_STATUS_EVENT, snapshot);
+      },
+    );
   }
 
   /**

@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { HealthController } from './health.controller.js';
 import { HealthService } from './health.service.js';
 
-@Module({
+/** Registers the health module providers and imports with Nest. */ @Module({
   controllers: [HealthController],
   providers: [HealthService],
 })

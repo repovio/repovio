@@ -6,14 +6,14 @@ import { SystemStatusGateway } from './system-status.gateway.js';
 import type { SystemStatusService } from './system-status.service.js';
 import { SYSTEM_STATUS_EVENT, type SystemStatusSnapshot } from './system-status.types.js';
 
-describe('SystemStatusGateway', () => {
+describe('SystemStatusGateway', /** Groups scenarios for SystemStatusGateway. */ () => {
   const snapshot: SystemStatusSnapshot = {
     activity: null,
     runningWorkflowCount: 2,
     updatedAt: '2026-09-09T08:00:00.000Z',
   };
 
-  it('authenticates sockets, sends the current snapshot, and broadcasts changes', async () => {
+  it('authenticates sockets, sends the current snapshot, and broadcasts changes', /** Verifies authenticates sockets, sends the current snapshot, and broadcasts changes. */ async () => {
     const changes = new Subject<SystemStatusSnapshot>();
     const auth = { authenticateAccessToken: jest.fn().mockResolvedValue({ id: 'user-id' }) };
     const status = { changes$: changes.asObservable(), getSnapshot: jest.fn().mockReturnValue(snapshot) };
@@ -38,7 +38,7 @@ describe('SystemStatusGateway', () => {
     gateway.onModuleDestroy();
   });
 
-  it('disconnects sockets that do not provide a valid access token', async () => {
+  it('disconnects sockets that do not provide a valid access token', /** Verifies disconnects sockets that do not provide a valid access token. */ async () => {
     const auth = { authenticateAccessToken: jest.fn().mockRejectedValue(new Error('invalid')) };
     const status = { changes$: new Subject().asObservable(), getSnapshot: jest.fn() };
     const gateway = new SystemStatusGateway(auth as unknown as AuthService, status as unknown as SystemStatusService);

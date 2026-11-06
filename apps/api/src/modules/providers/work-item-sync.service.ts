@@ -146,7 +146,14 @@ export class WorkItemSyncService {
         workflow: { kind: 'STANDARD' },
       },
     });
-    const branches = [...new Set(runs.flatMap((run) => (run.headBranch ? [run.headBranch] : [])))];
+    const branches = [
+      ...new Set(
+        runs.flatMap(
+          /** Flattens entries produced by `(run.headBranch ? [run.headBranch] : [])`. */ (run) =>
+            run.headBranch ? [run.headBranch] : [],
+        ),
+      ),
+    ];
     if (branches.length === 0) return;
 
     const pullRequests = await this.prisma.pullRequest.findMany({
@@ -196,14 +203,16 @@ export class WorkItemSyncService {
     const runIdsByPullRequest = new Map<string, string[]>();
     for (const run of runs) {
       // ponytail: retained history bounds this scan; replace it with a database range join if sync volume becomes costly.
-      const pullRequest = pullRequests.find((candidate) => {
-        const terminalAt = candidate.mergedAt ?? candidate.closedAt;
-        return (
-          candidate.sourceBranch === run.headBranch &&
-          candidate.providerCreatedAt <= run.providerCreatedAt &&
-          (!terminalAt || run.providerCreatedAt <= terminalAt)
-        );
-      });
+      const pullRequest = pullRequests.find(
+        /** Finds the first entry matching the pullRequest predicate. */ (candidate) => {
+          const terminalAt = candidate.mergedAt ?? candidate.closedAt;
+          return (
+            candidate.sourceBranch === run.headBranch &&
+            candidate.providerCreatedAt <= run.providerCreatedAt &&
+            (!terminalAt || run.providerCreatedAt <= terminalAt)
+          );
+        },
+      );
       if (!pullRequest) continue;
       const runIds = runIdsByPullRequest.get(pullRequest.id);
       if (runIds) runIds.push(run.id);
@@ -347,7 +356,11 @@ export class WorkItemSyncService {
       select: { state: true },
       where: { repositoryId_providerIssueId: { providerIssueId: issue.providerIssueId, repositoryId: repository.id } },
     });
-    const record = await this.prisma.transaction((transaction) => this.upsertIssue(repository, issue, transaction));
+    const record = await this.prisma.transaction(
+      /** Evaluates `this.upsertIssue(repository, issue, transaction)` when this.prisma.transaction invokes this callback. */ (
+        transaction,
+      ) => this.upsertIssue(repository, issue, transaction),
+    );
     if (baseline) return;
     const events = issueLifecycleEvents(
       previous?.state ?? null,
@@ -381,19 +394,38 @@ export class WorkItemSyncService {
       update: { ...this.issueData(issue), authorId },
     });
     const actorIds = await Promise.all(
-      issue.assignees.map((actor) => this.upsertActor(repository.providerAccountId, actor, transaction)),
+      issue.assignees.map(
+        /** Projects each entry using `this.upsertActor(repository.providerAccountId, actor, transaction)`. */ (
+          actor,
+        ) => this.upsertActor(repository.providerAccountId, actor, transaction),
+      ),
     );
     const labelIds = await Promise.all(
-      issue.labels.map((label) => this.upsertLabel(repository.id, label, transaction)),
+      issue.labels.map(
+        /** Projects each entry using `this.upsertLabel(repository.id, label, transaction)`. */ (label) =>
+          this.upsertLabel(repository.id, label, transaction),
+      ),
     );
     await transaction.issueAssignee.deleteMany({ where: { issueId: record.id } });
     await transaction.issueLabel.deleteMany({ where: { issueId: record.id } });
     if (actorIds.length > 0)
       await transaction.issueAssignee.createMany({
-        data: actorIds.map((actorId) => ({ actorId, issueId: record.id })),
+        data: actorIds.map(
+          /** Projects each entry using `({ actorId, issueId: record.id })`. */ (actorId) => ({
+            actorId,
+            issueId: record.id,
+          }),
+        ),
       });
     if (labelIds.length > 0)
-      await transaction.issueLabel.createMany({ data: labelIds.map((labelId) => ({ issueId: record.id, labelId })) });
+      await transaction.issueLabel.createMany({
+        data: labelIds.map(
+          /** Projects each entry using `({ issueId: record.id, labelId })`. */ (labelId) => ({
+            issueId: record.id,
+            labelId,
+          }),
+        ),
+      });
     return record;
   }
 
@@ -444,8 +476,10 @@ export class WorkItemSyncService {
         },
       },
     });
-    const record = await this.prisma.transaction((transaction) =>
-      this.upsertPullRequest(repository, pullRequest, transaction),
+    const record = await this.prisma.transaction(
+      /** Evaluates `this.upsertPullRequest(repository, pullRequest, transaction)` when this.prisma.transaction invokes this callback. */ (
+        transaction,
+      ) => this.upsertPullRequest(repository, pullRequest, transaction),
     );
     await this.refreshPullRequestWorkflowStatus(record.id);
     if (baseline) return;
@@ -484,20 +518,37 @@ export class WorkItemSyncService {
       update: { ...this.pullRequestData(pullRequest), authorId },
     });
     const actorIds = await Promise.all(
-      pullRequest.assignees.map((actor) => this.upsertActor(repository.providerAccountId, actor, transaction)),
+      pullRequest.assignees.map(
+        /** Projects each entry using `this.upsertActor(repository.providerAccountId, actor, transaction)`. */ (
+          actor,
+        ) => this.upsertActor(repository.providerAccountId, actor, transaction),
+      ),
     );
     const labelIds = await Promise.all(
-      pullRequest.labels.map((label) => this.upsertLabel(repository.id, label, transaction)),
+      pullRequest.labels.map(
+        /** Projects each entry using `this.upsertLabel(repository.id, label, transaction)`. */ (label) =>
+          this.upsertLabel(repository.id, label, transaction),
+      ),
     );
     await transaction.pullRequestAssignee.deleteMany({ where: { pullRequestId: persisted.id } });
     await transaction.pullRequestLabel.deleteMany({ where: { pullRequestId: persisted.id } });
     if (actorIds.length > 0)
       await transaction.pullRequestAssignee.createMany({
-        data: actorIds.map((actorId) => ({ actorId, pullRequestId: persisted.id })),
+        data: actorIds.map(
+          /** Projects each entry using `({ actorId, pullRequestId: persisted.id })`. */ (actorId) => ({
+            actorId,
+            pullRequestId: persisted.id,
+          }),
+        ),
       });
     if (labelIds.length > 0)
       await transaction.pullRequestLabel.createMany({
-        data: labelIds.map((labelId) => ({ labelId, pullRequestId: persisted.id })),
+        data: labelIds.map(
+          /** Projects each entry using `({ labelId, pullRequestId: persisted.id })`. */ (labelId) => ({
+            labelId,
+            pullRequestId: persisted.id,
+          }),
+        ),
       });
     await transaction.workflowRun.updateMany({
       data: {
@@ -555,8 +606,12 @@ export class WorkItemSyncService {
     ]);
     await this.prisma.pullRequest.update({
       data: {
-        workflowApprovalRequired: pullRequest.state === 'OPEN' && runs.some((run) => run.awaitingApproval),
-        workflowStatus: this.aggregateWorkflowStatus(runs.map((run) => run.status)),
+        workflowApprovalRequired:
+          pullRequest.state === 'OPEN' &&
+          runs.some(/** Checks whether any entry satisfies `run.awaitingApproval`. */ (run) => run.awaitingApproval),
+        workflowStatus: this.aggregateWorkflowStatus(
+          runs.map(/** Projects each entry using `run.status`. */ (run) => run.status),
+        ),
       },
       where: { id: pullRequestId },
     });

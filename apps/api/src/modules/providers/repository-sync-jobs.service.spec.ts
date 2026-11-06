@@ -3,10 +3,10 @@ import type { RepositoriesQueryService } from '../repositories/repositories-quer
 import { RepositorySyncJobsService } from './repository-sync-jobs.service.js';
 import type { ProviderSyncQueueService } from './sync-queue.service.js';
 
-describe('RepositorySyncJobsService', () => {
+describe('RepositorySyncJobsService', /** Groups scenarios for RepositorySyncJobsService. */ () => {
   const user = { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER' as const, username: 'viewer' };
 
-  it('returns idle repositories as permanently available jobs', async () => {
+  it('returns idle repositories as permanently available jobs', /** Verifies returns idle repositories as permanently available jobs. */ async () => {
     const prisma = {
       repository: {
         count: jest.fn().mockResolvedValue(1),
@@ -40,7 +40,7 @@ describe('RepositorySyncJobsService', () => {
     expect(repositories.visibleWhere).toHaveBeenCalled();
   });
 
-  it('derives summary counts from the permission-scoped repository set', async () => {
+  it('derives summary counts from the permission-scoped repository set', /** Verifies derives summary counts from the permission-scoped repository set. */ async () => {
     const prisma = {
       repository: {
         count: jest
@@ -64,7 +64,7 @@ describe('RepositorySyncJobsService', () => {
     });
   });
 
-  it('starts only available repository jobs', async () => {
+  it('starts only available repository jobs', /** Verifies starts only available repository jobs. */ async () => {
     const prisma = { repository: { findFirst: jest.fn().mockResolvedValue({ id: 'repository-id' }) } };
     const queue = { enqueueRepositorySyncIfAvailable: jest.fn().mockResolvedValue(false) };
     const service = createService(prisma, undefined, queue);
@@ -73,6 +73,7 @@ describe('RepositorySyncJobsService', () => {
   });
 });
 
+/** Creates service. */
 function createService(prisma: object, repositories?: object, queue?: object): RepositorySyncJobsService {
   return new RepositorySyncJobsService(
     prisma as PrismaService,

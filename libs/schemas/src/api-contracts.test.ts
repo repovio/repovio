@@ -24,8 +24,8 @@ const subscription = {
   workflowPatterns: ['ci-*'],
 };
 
-describe('shared API input compatibility', () => {
-  it('trims optional setup names and omits empty names without accepting nonstrings', () => {
+describe('shared API input compatibility', /** Groups scenarios for shared API input compatibility. */ () => {
+  it('trims optional setup names and omits empty names without accepting nonstrings', /** Verifies trims optional setup names and omits empty names without accepting nonstrings. */ () => {
     const credentials = { username: ' admin ', password: 'long-enough-password' };
     assert.deepEqual(ApiSetupSchema.parse({ ...credentials, firstName: '  ', lastName: ' User ' }), {
       ...credentials,
@@ -36,7 +36,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiSetupSchema.safeParse({ ...credentials, firstName: 1 }).success, false);
   });
 
-  it('rejects forbidden OIDC claim and scope characters while allowing supported punctuation', () => {
+  it('rejects forbidden OIDC claim and scope characters while allowing supported punctuation', /** Verifies rejects forbidden OIDC claim and scope characters while allowing supported punctuation. */ () => {
     assert.equal(
       ApiUpdateOidcConfigSchema.safeParse({ groupsClaim: 'realm_access.roles', scopes: ['openid', 'api/read'] })
         .success,
@@ -50,30 +50,50 @@ describe('shared API input compatibility', () => {
     }
   });
 
-  it('retains OIDC group and scope array limits and individual string bounds', () => {
+  it('retains OIDC group and scope array limits and individual string bounds', /** Verifies retains OIDC group and scope array limits and individual string bounds. */ () => {
     for (const field of ['managerGroups', 'viewerGroups', 'systemAdministratorGroups']) {
       assert.equal(
-        ApiUpdateOidcConfigSchema.safeParse({ [field]: Array.from({ length: 100 }, () => 'group') }).success,
+        ApiUpdateOidcConfigSchema.safeParse({
+          [field]: Array.from(
+            { length: 100 },
+            /** Evaluates `'group'` when Array.from invokes this callback. */ () => 'group',
+          ),
+        }).success,
         true,
       );
       assert.equal(
-        ApiUpdateOidcConfigSchema.safeParse({ [field]: Array.from({ length: 101 }, () => 'group') }).success,
+        ApiUpdateOidcConfigSchema.safeParse({
+          [field]: Array.from(
+            { length: 101 },
+            /** Evaluates `'group'` when Array.from invokes this callback. */ () => 'group',
+          ),
+        }).success,
         false,
       );
       assert.equal(ApiUpdateOidcConfigSchema.safeParse({ [field]: ['g'.repeat(513)] }).success, false);
     }
     assert.equal(
-      ApiUpdateOidcConfigSchema.safeParse({ scopes: Array.from({ length: 20 }, () => 'openid') }).success,
+      ApiUpdateOidcConfigSchema.safeParse({
+        scopes: Array.from(
+          { length: 20 },
+          /** Evaluates `'openid'` when Array.from invokes this callback. */ () => 'openid',
+        ),
+      }).success,
       true,
     );
     assert.equal(
-      ApiUpdateOidcConfigSchema.safeParse({ scopes: Array.from({ length: 21 }, () => 'openid') }).success,
+      ApiUpdateOidcConfigSchema.safeParse({
+        scopes: Array.from(
+          { length: 21 },
+          /** Evaluates `'openid'` when Array.from invokes this callback. */ () => 'openid',
+        ),
+      }).success,
       false,
     );
     assert.equal(ApiUpdateOidcConfigSchema.safeParse({ scopes: ['s'.repeat(129)] }).success, false);
   });
 
-  it('applies the same nested subscription constraints to preview, create and update', () => {
+  it('applies the same nested subscription constraints to preview, create and update', /** Verifies applies the same nested subscription constraints to preview, create and update. */ () => {
     const badSubscriptions = [
       { ...subscription, repositoryIds: ['not-a-uuid'] },
       { ...subscription, repositoryIds: [repositoryId, repositoryId] },
@@ -94,7 +114,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiNotificationRulePreviewInputSchema.safeParse({ eventSubscriptions: [] }).success, false);
   });
 
-  it('validates browser recipient and MCP owner UUIDs', () => {
+  it('validates browser recipient and MCP owner UUIDs', /** Verifies validates browser recipient and MCP owner UUIDs. */ () => {
     const channel = { name: 'Browser alerts', eventSubscriptions: [subscription], type: 'BROWSER_PUSH' };
     assert.equal(
       ApiCreateNotificationChannelSchema.safeParse({ ...channel, browserRecipientUserIds: [userId] }).success,
@@ -112,7 +132,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiListMcpAccessTokensQuerySchema.safeParse({ page: '1' }).success, false);
   });
 
-  it('accepts the existing date-only, local and offset ISO input forms', () => {
+  it('accepts the existing date-only, local and offset ISO input forms', /** Verifies accepts the existing date-only, local and offset ISO input forms. */ () => {
     for (const date of ['2027-01-15', '2027-01-15T12:30:00', '2027-01-15 12:30:00Z', '2027-01-15T12:30:00+02:00']) {
       assert.equal(ApiDashboardPeriodQuerySchema.safeParse({ from: date, to: date }).success, true, date);
       assert.equal(ApiCreateMcpAccessTokenSchema.safeParse({ name: ' Token ', expiresAt: date }).success, true, date);
@@ -121,7 +141,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiDashboardPeriodQuerySchema.safeParse({ from: '2027-13-15', to: '2027-01-15' }).success, false);
   });
 
-  it('preserves nullable updates and treats null optional nonnullable values as omitted', () => {
+  it('preserves nullable updates and treats null optional nonnullable values as omitted', /** Verifies preserves nullable updates and treats null optional nonnullable values as omitted. */ () => {
     assert.deepEqual(ApiUpdateProviderAccountSchema.parse({ displayName: null, enabled: null, baseUrl: null }), {
       displayName: undefined,
       enabled: undefined,
@@ -130,7 +150,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiUpdateOidcConfigSchema.parse({ issuer: null }).issuer, null);
   });
 
-  it('retains the former provider URL protocol and host restrictions', () => {
+  it('retains the former provider URL protocol and host restrictions', /** Verifies retains the former provider URL protocol and host restrictions. */ () => {
     const account = { providerType: 'GITLAB', displayName: 'GitLab', accessToken: 'token' };
     for (const baseUrl of [
       'https://git.example.com',
@@ -152,7 +172,7 @@ describe('shared API input compatibility', () => {
     assert.equal(ApiRemoteAvatarSchema.safeParse({ url: 'https://images.example.com/avatar.png' }).success, true);
   });
 
-  it('rejects unknown request keys instead of stripping a misspelled configuration field', () => {
+  it('rejects unknown request keys instead of stripping a misspelled configuration field', /** Verifies rejects unknown request keys instead of stripping a misspelled configuration field. */ () => {
     assert.equal(ApiUpdateOidcConfigSchema.safeParse({ allowUnmatchedViewr: true }).success, false);
     assert.equal(
       ApiCreateNotificationChannelSchema.safeParse({

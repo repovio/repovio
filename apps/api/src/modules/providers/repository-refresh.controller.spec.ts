@@ -1,7 +1,7 @@
 import { RepositoryRefreshController } from './repository-refresh.controller.js';
 
-describe('RepositoryRefreshController', () => {
-  it('returns refreshed repository metadata from the administrator service', async () => {
+describe('RepositoryRefreshController', /** Groups scenarios for RepositoryRefreshController. */ () => {
+  it('returns refreshed repository metadata from the administrator service', /** Verifies returns refreshed repository metadata from the administrator service. */ async () => {
     const repository = {
       enabled: true,
       issueRetentionDays: null,
@@ -28,7 +28,7 @@ describe('RepositoryRefreshController', () => {
     expect(metadata.refreshById).toHaveBeenCalledWith(user, repository.id);
   });
 
-  it('queues an immediate workflow synchronization for administrators', async () => {
+  it('queues an immediate workflow synchronization for administrators', /** Verifies queues an immediate workflow synchronization for administrators. */ async () => {
     const metadata = { refreshById: jest.fn() };
     const syncQueue = { enqueueRepositorySyncIfAvailable: jest.fn().mockResolvedValue(true) };
     const controller = new RepositoryRefreshController(metadata as never, syncQueue as never);

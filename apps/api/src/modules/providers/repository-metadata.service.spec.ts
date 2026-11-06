@@ -2,7 +2,7 @@ import { ConflictException, ForbiddenException, NotFoundException } from '@nestj
 
 import { RepositoryMetadataService } from './repository-metadata.service.js';
 
-describe('RepositoryMetadataService', () => {
+describe('RepositoryMetadataService', /** Groups scenarios for RepositoryMetadataService. */ () => {
   const repository = {
     createdAt: new Date('2026-09-12T08:00:00.000Z'),
     enabled: true,
@@ -40,9 +40,9 @@ describe('RepositoryMetadataService', () => {
   );
   const admin = { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('updates changed provider-owned metadata without changing repository identity', async () => {
+  it('updates changed provider-owned metadata without changing repository identity', /** Verifies updates changed provider-owned metadata without changing repository identity. */ async () => {
     adapter.getRepository.mockResolvedValue({
       name: 'new-name',
       owner: 'new-owner',
@@ -66,7 +66,7 @@ describe('RepositoryMetadataService', () => {
     });
   });
 
-  it('does not write when provider metadata is unchanged', async () => {
+  it('does not write when provider metadata is unchanged', /** Verifies does not write when provider metadata is unchanged. */ async () => {
     adapter.getRepository.mockResolvedValue({
       name: repository.name,
       owner: repository.owner,
@@ -78,7 +78,7 @@ describe('RepositoryMetadataService', () => {
     expect(prisma.repository.update).not.toHaveBeenCalled();
   });
 
-  it('preserves local metadata when the provider repository is missing or has another identity', async () => {
+  it('preserves local metadata when the provider repository is missing or has another identity', /** Verifies preserves local metadata when the provider repository is missing or has another identity. */ async () => {
     adapter.getRepository.mockResolvedValueOnce(null);
     await expect(service.refreshById(admin, repository.id)).rejects.toBeInstanceOf(NotFoundException);
 
@@ -92,7 +92,7 @@ describe('RepositoryMetadataService', () => {
     expect(prisma.repository.update).not.toHaveBeenCalled();
   });
 
-  it('rejects non-administrators before reading the repository', async () => {
+  it('rejects non-administrators before reading the repository', /** Verifies rejects non-administrators before reading the repository. */ async () => {
     await expect(
       service.refreshById(
         { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' },

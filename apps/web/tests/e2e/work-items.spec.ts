@@ -39,54 +39,77 @@ const pullRequest = {
   workflowStatus: 'FAILED',
 };
 
+/** Mocks shell. */
 async function mockShell(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'viewer', role: 'VIEWER', username: 'viewer' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/settings', (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'viewer', role: 'VIEWER', username: 'viewer' } }),
   );
-  await page.route('**/api/v1/health', (route) =>
-    route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
+  await page.route(
+    '**/api/v1/settings',
+    /** Supplies the mocked response for `/api/v1/settings`. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
   );
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/health',
+    /** Supplies the mocked response for `/api/v1/health`. */ (route) =>
+      route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
+        },
+      }),
   );
 }
 
+/** Checks full page shell. */
 async function expectFullPageShell(page: Page): Promise<void> {
   await expect(page.locator('#main-content')).toHaveClass(/overflow-hidden/);
 }
 
-test('filters issues by every selected label and updated range, then renders sanitized provider Markdown', async ({
+test('filters issues by every selected label and updated range, then renders sanitized provider Markdown', /** Verifies filters issues by every selected label and updated range, then renders sanitized provider Markdown. */ async ({
   page,
 }, testInfo) => {
   await mockShell(page);
   const requestedUrls: string[] = [];
-  await page.route('**/api/v1/issues/filter-options', (route) =>
-    route.fulfill({
-      json: { assignees: ['alex'], authors: ['taylor'], labels: ['Bug', 'Priority: High'], milestones: ['v1.0'] },
-    }),
+  await page.route(
+    '**/api/v1/issues/filter-options',
+    /** Supplies the mocked response for `/api/v1/issues/filter-options`. */ (route) =>
+      route.fulfill({
+        json: { assignees: ['alex'], authors: ['taylor'], labels: ['Bug', 'Priority: High'], milestones: ['v1.0'] },
+      }),
   );
-  await page.route('**/api/v1/issues/summary', (route) =>
-    route.fulfill({ json: { assigned: 1, open: 1, recentlyUpdated: 1, stale: 0 } }),
+  await page.route(
+    '**/api/v1/issues/summary',
+    /** Supplies the mocked response for `/api/v1/issues/summary`. */ (route) =>
+      route.fulfill({ json: { assigned: 1, open: 1, recentlyUpdated: 1, stale: 0 } }),
   );
-  await page.route(/\/api\/v1\/issues(?:\?.*)?$/, (route) => {
-    requestedUrls.push(route.request().url());
-    return route.fulfill({
-      json: {
-        items: [{ ...issue, body: undefined }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-      },
-    });
-  });
-  await page.route('**/api/v1/issues/issue-1', (route) => route.fulfill({ json: issue }));
+  await page.route(
+    /\/api\/v1\/issues(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      requestedUrls.push(route.request().url());
+      return route.fulfill({
+        json: {
+          items: [{ ...issue, body: undefined }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/issues/issue-1',
+    /** Supplies the mocked response for `/api/v1/issues/issue-1`. */ (route) => route.fulfill({ json: issue }),
+  );
 
   await page.goto('/issues');
   await expectFullPageShell(page);
@@ -102,7 +125,10 @@ test('filters issues by every selected label and updated range, then renders san
   await page.getByLabel('Updated from').fill('2026-09-01');
   await page.getByLabel('Updated to').fill('2026-09-13');
   await expect
-    .poll(() => new URL(requestedUrls.at(-1)!).searchParams.get('where') ?? '')
+    .poll(
+      /** Evaluates `new URL(requestedUrls.at(-1)!).searchParams.get('where') ?? ''` when expect .poll invokes this callback. */ () =>
+        new URL(requestedUrls.at(-1)!).searchParams.get('where') ?? '',
+    )
     .toContain('2026-09-13T23:59:59.999Z');
   const where = new URL(requestedUrls.at(-1)!).searchParams.get('where') ?? '';
   expect(where).toContain('bug');
@@ -119,27 +145,41 @@ test('filters issues by every selected label and updated range, then renders san
   await expect(page.getByRole('heading', { name: 'Reproduction' })).toBeVisible();
   await expect(page.locator('script').filter({ hasText: 'window.__unsafe' })).toHaveCount(0);
   await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0);
-  expect(await page.evaluate(() => '__unsafe' in window)).toBe(false);
+  expect(
+    await page.evaluate(/** Reads or updates browser state for the work items scenario. */ () => '__unsafe' in window),
+  ).toBe(false);
   await page.screenshot({ path: testInfo.outputPath('issue-detail.png'), fullPage: true });
 });
 
-test('renders GitLab pull requests as merge requests with independent workflow signals', async ({ page }, testInfo) => {
+test('renders GitLab pull requests as merge requests with independent workflow signals', /** Verifies renders GitLab pull requests as merge requests with independent workflow signals. */ async ({
+  page,
+}, testInfo) => {
   await mockShell(page);
-  await page.route('**/api/v1/pull-requests/filter-options', (route) =>
-    route.fulfill({ json: { assignees: ['alex'], authors: ['taylor'], labels: ['Bug'], milestones: [] } }),
+  await page.route(
+    '**/api/v1/pull-requests/filter-options',
+    /** Supplies the mocked response for `/api/v1/pull-requests/filter-options`. */ (route) =>
+      route.fulfill({ json: { assignees: ['alex'], authors: ['taylor'], labels: ['Bug'], milestones: [] } }),
   );
-  await page.route('**/api/v1/pull-requests/summary', (route) =>
-    route.fulfill({ json: { drafts: 1, failedWorkflows: 1, open: 1, workflowApprovalRequired: 1 } }),
+  await page.route(
+    '**/api/v1/pull-requests/summary',
+    /** Supplies the mocked response for `/api/v1/pull-requests/summary`. */ (route) =>
+      route.fulfill({ json: { drafts: 1, failedWorkflows: 1, open: 1, workflowApprovalRequired: 1 } }),
   );
-  await page.route(/\/api\/v1\/pull-requests(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [{ ...pullRequest, body: undefined }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-      },
-    }),
+  await page.route(
+    /\/api\/v1\/pull-requests(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [{ ...pullRequest, body: undefined }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+        },
+      }),
   );
-  await page.route('**/api/v1/pull-requests/pull-request-1', (route) => route.fulfill({ json: pullRequest }));
+  await page.route(
+    '**/api/v1/pull-requests/pull-request-1',
+    /** Supplies the mocked response for `/api/v1/pull-requests/pull-request-1`. */ (route) =>
+      route.fulfill({ json: pullRequest }),
+  );
 
   await page.goto('/pull-requests');
   await expectFullPageShell(page);
@@ -163,22 +203,34 @@ test('renders GitLab pull requests as merge requests with independent workflow s
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`keeps work-item overview responsive in ${theme} mode`, async ({ page }, testInfo) => {
-    await page.addInitScript((colorMode) => window.localStorage.setItem('nuxt-color-mode', colorMode), theme);
+  test(`keeps work-item overview responsive in ${theme} mode`, /** Verifies keeps work-item overview responsive in [theme] mode. */ async ({
+    page,
+  }, testInfo) => {
+    await page.addInitScript(
+      /** Initializes browser-side authentication and preferences before page scripts run. */ (colorMode) =>
+        window.localStorage.setItem('nuxt-color-mode', colorMode),
+      theme,
+    );
     await mockShell(page);
-    await page.route('**/api/v1/issues/filter-options', (route) =>
-      route.fulfill({ json: { assignees: [], authors: [], labels: ['Bug'], milestones: [] } }),
+    await page.route(
+      '**/api/v1/issues/filter-options',
+      /** Supplies the mocked response for `/api/v1/issues/filter-options`. */ (route) =>
+        route.fulfill({ json: { assignees: [], authors: [], labels: ['Bug'], milestones: [] } }),
     );
-    await page.route('**/api/v1/issues/summary', (route) =>
-      route.fulfill({ json: { assigned: 1, open: 1, recentlyUpdated: 1, stale: 0 } }),
+    await page.route(
+      '**/api/v1/issues/summary',
+      /** Supplies the mocked response for `/api/v1/issues/summary`. */ (route) =>
+        route.fulfill({ json: { assigned: 1, open: 1, recentlyUpdated: 1, stale: 0 } }),
     );
-    await page.route(/\/api\/v1\/issues(?:\?.*)?$/, (route) =>
-      route.fulfill({
-        json: {
-          items: [{ ...issue, body: undefined }],
-          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-        },
-      }),
+    await page.route(
+      /\/api\/v1\/issues(?:\?.*)?$/,
+      /** Supplies the mocked response for the intercepted request. */ (route) =>
+        route.fulfill({
+          json: {
+            items: [{ ...issue, body: undefined }],
+            meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+          },
+        }),
     );
     await page.setViewportSize({ height: 844, width: 390 });
 
@@ -187,7 +239,13 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.locator('html')).toHaveClass(new RegExp(theme));
     await expect(page.getByText('Track provider issues')).toBeVisible();
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+      .poll(
+        /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+          page.evaluate(
+            /** Reads or updates browser state for the work items scenario. */ () =>
+              document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+          ),
+      )
       .toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`issues-${theme}-mobile.png`), fullPage: true });
   });

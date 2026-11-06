@@ -217,98 +217,140 @@ const summary = ref<IssueSummary | PullRequestSummary | null>(null);
 const summaryLoading = ref(true);
 const summaryError = ref(false);
 const endpoint: 'issues' | 'pull-requests' = props.kind === 'issue' ? 'issues' : 'pull-requests';
-const pageTitle = computed(() => t(props.kind === 'issue' ? 'issues.title' : 'pullRequests.title'));
-const pageDescription = computed(() => t(props.kind === 'issue' ? 'issues.description' : 'pullRequests.description'));
-const kindIcon = computed(() => (props.kind === 'issue' ? 'i-tabler-circle-dot' : 'i-tabler-git-pull-request'));
+const pageTitle = computed(
+  /** Derives page title from the current reactive dependencies. */ () =>
+    t(props.kind === 'issue' ? 'issues.title' : 'pullRequests.title'),
+);
+const pageDescription = computed(
+  /** Derives page description from the current reactive dependencies. */ () =>
+    t(props.kind === 'issue' ? 'issues.description' : 'pullRequests.description'),
+);
+const kindIcon = computed(
+  /** Derives kind icon from the current reactive dependencies. */ () =>
+    props.kind === 'issue' ? 'i-tabler-circle-dot' : 'i-tabler-git-pull-request',
+);
 
-const columnDefinition = computed<WorkItemTableColumn[]>(() => [
-  { accessorKey: 'number', header: t('workItems.columns.number'), id: 'number' },
-  { accessorKey: 'title', header: t('workItems.columns.title'), id: 'title' },
-  { accessorKey: 'repositoryName', header: t('repositories.columns.name'), id: 'repositoryName' },
-  { accessorKey: 'providerType', header: t('repositories.addSteps.provider'), id: 'providerType' },
-  { accessorKey: 'state', header: t('workItems.columns.state'), id: 'state' },
-  { accessorKey: 'author', header: t('workItems.columns.author'), id: 'author' },
-  { accessorKey: 'labels', header: t('workItems.labels'), id: 'labels' },
-  ...(props.kind === 'pull-request'
-    ? [
-        { accessorKey: 'workflowStatus', header: t('pullRequests.workflowStatus'), id: 'workflowStatus' },
-        { accessorKey: 'workflowApprovalRequired', header: t('pullRequests.approval'), id: 'workflowApprovalRequired' },
-      ]
-    : []),
-  { accessorKey: 'providerUpdatedAt', header: t('workItems.columns.updated'), id: 'providerUpdatedAt' },
-  { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('workItems.columns.number'), value: 'number' },
-  { label: t('workItems.columns.title'), value: 'title' },
-  { label: t('workItems.columns.updated'), value: 'providerUpdatedAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('workItems.columns.state'),
-    type: FilterFieldType.Enum,
-    value: 'state',
-    values: (props.kind === 'issue' ? ['OPEN', 'CLOSED'] : ['OPEN', 'CLOSED', 'MERGED']).map((state) => ({
-      label: t(`workItems.states.${state}`),
-      value: state,
-    })),
+const columnDefinition = computed<WorkItemTableColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'number', header: t('workItems.columns.number'), id: 'number' },
+    { accessorKey: 'title', header: t('workItems.columns.title'), id: 'title' },
+    { accessorKey: 'repositoryName', header: t('repositories.columns.name'), id: 'repositoryName' },
+    { accessorKey: 'providerType', header: t('repositories.addSteps.provider'), id: 'providerType' },
+    { accessorKey: 'state', header: t('workItems.columns.state'), id: 'state' },
+    { accessorKey: 'author', header: t('workItems.columns.author'), id: 'author' },
+    { accessorKey: 'labels', header: t('workItems.labels'), id: 'labels' },
+    ...(props.kind === 'pull-request'
+      ? [
+          { accessorKey: 'workflowStatus', header: t('pullRequests.workflowStatus'), id: 'workflowStatus' },
+          {
+            accessorKey: 'workflowApprovalRequired',
+            header: t('pullRequests.approval'),
+            id: 'workflowApprovalRequired',
+          },
+        ]
+      : []),
+    { accessorKey: 'providerUpdatedAt', header: t('workItems.columns.updated'), id: 'providerUpdatedAt' },
+    { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('workItems.columns.number'), value: 'number' },
+    { label: t('workItems.columns.title'), value: 'title' },
+    { label: t('workItems.columns.updated'), value: 'providerUpdatedAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('workItems.columns.state'),
+      type: FilterFieldType.Enum,
+      value: 'state',
+      values: (props.kind === 'issue' ? ['OPEN', 'CLOSED'] : ['OPEN', 'CLOSED', 'MERGED']).map(
+        /** Projects each entry using `({ label: t(`workItems.states.${state}`), value: state, })`. */ (state) => ({
+          label: t(`workItems.states.${state}`),
+          value: state,
+        }),
+      ),
+    },
+    { label: t('workItems.repository'), type: FilterFieldType.Enum, value: 'repositoryId', values: repositories.value },
+    {
+      label: t('workItems.provider'),
+      type: FilterFieldType.Enum,
+      value: 'repository.providerAccount.providerType',
+      values: providerTypes.map(
+        /** Projects each entry using `({ label: getProviderTypeLabel(value), value })`. */ (value) => ({
+          label: getProviderTypeLabel(value),
+          value,
+        }),
+      ),
+    },
+    {
+      label: t('workItems.columns.author'),
+      type: FilterFieldType.Enum,
+      value: 'author.username',
+      values: filterOptions.value.authors.map(
+        /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+      ),
+    },
+    {
+      label: t('workItems.assignee'),
+      type: FilterFieldType.Enum,
+      value: 'assignees.some.actor.username',
+      values: filterOptions.value.assignees.map(
+        /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+      ),
+    },
+    ...(props.kind === 'issue'
+      ? [
+          {
+            label: t('workItems.milestone'),
+            type: FilterFieldType.Enum,
+            value: 'milestone',
+            values: filterOptions.value.milestones.map(
+              /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+            ),
+          },
+        ]
+      : [
+          { label: t('pullRequests.draft'), type: FilterFieldType.Boolean, value: 'draft' },
+          {
+            label: t('pullRequests.workflowStatus'),
+            type: FilterFieldType.Enum,
+            value: 'workflowStatus',
+            values: ['PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED', 'UNKNOWN'].map(
+              /** Projects each entry using `({ label: t(`workItems.workflowStatuses.${value}`), value, })`. */ (
+                value,
+              ) => ({
+                label: t(`workItems.workflowStatuses.${value}`),
+                value,
+              }),
+            ),
+          },
+          { label: t('pullRequests.approval'), type: FilterFieldType.Boolean, value: 'workflowApprovalRequired' },
+        ]),
+  ],
+);
+const staticFilter = computed(
+  /** Derives static filter from the current reactive dependencies. */ () => {
+    const constraints: Record<string, unknown>[] = selectedLabels.value.map(
+      /** Projects each entry using `({ labels: { some: { label: { normalizedName: name.toLocaleLowerCase() } } }, })`. */ (
+        name,
+      ) => ({
+        labels: { some: { label: { normalizedName: name.toLocaleLowerCase() } } },
+      }),
+    );
+    if (dashboardPresetStaticFilter.value) constraints.push(dashboardPresetStaticFilter.value);
+    const value = debouncedSearch.value.trim();
+    if (value)
+      constraints.push({ OR: [{ number: { contains: value } }, { title: { contains: value, mode: 'insensitive' } }] });
+    if (updatedFrom.value)
+      constraints.push({ providerUpdatedAt: { gte: new Date(`${updatedFrom.value}T00:00:00.000Z`).toISOString() } });
+    if (updatedTo.value)
+      constraints.push({ providerUpdatedAt: { lte: new Date(`${updatedTo.value}T23:59:59.999Z`).toISOString() } });
+    return constraints.length > 0 ? { AND: constraints } : undefined;
   },
-  { label: t('workItems.repository'), type: FilterFieldType.Enum, value: 'repositoryId', values: repositories.value },
-  {
-    label: t('workItems.provider'),
-    type: FilterFieldType.Enum,
-    value: 'repository.providerAccount.providerType',
-    values: providerTypes.map((value) => ({ label: getProviderTypeLabel(value), value })),
-  },
-  {
-    label: t('workItems.columns.author'),
-    type: FilterFieldType.Enum,
-    value: 'author.username',
-    values: filterOptions.value.authors.map((value) => ({ label: value, value })),
-  },
-  {
-    label: t('workItems.assignee'),
-    type: FilterFieldType.Enum,
-    value: 'assignees.some.actor.username',
-    values: filterOptions.value.assignees.map((value) => ({ label: value, value })),
-  },
-  ...(props.kind === 'issue'
-    ? [
-        {
-          label: t('workItems.milestone'),
-          type: FilterFieldType.Enum,
-          value: 'milestone',
-          values: filterOptions.value.milestones.map((value) => ({ label: value, value })),
-        },
-      ]
-    : [
-        { label: t('pullRequests.draft'), type: FilterFieldType.Boolean, value: 'draft' },
-        {
-          label: t('pullRequests.workflowStatus'),
-          type: FilterFieldType.Enum,
-          value: 'workflowStatus',
-          values: ['PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED', 'UNKNOWN'].map((value) => ({
-            label: t(`workItems.workflowStatuses.${value}`),
-            value,
-          })),
-        },
-        { label: t('pullRequests.approval'), type: FilterFieldType.Boolean, value: 'workflowApprovalRequired' },
-      ]),
-]);
-const staticFilter = computed(() => {
-  const constraints: Record<string, unknown>[] = selectedLabels.value.map((name) => ({
-    labels: { some: { label: { normalizedName: name.toLocaleLowerCase() } } },
-  }));
-  if (dashboardPresetStaticFilter.value) constraints.push(dashboardPresetStaticFilter.value);
-  const value = debouncedSearch.value.trim();
-  if (value)
-    constraints.push({ OR: [{ number: { contains: value } }, { title: { contains: value, mode: 'insensitive' } }] });
-  if (updatedFrom.value)
-    constraints.push({ providerUpdatedAt: { gte: new Date(`${updatedFrom.value}T00:00:00.000Z`).toISOString() } });
-  if (updatedTo.value)
-    constraints.push({ providerUpdatedAt: { lte: new Date(`${updatedTo.value}T23:59:59.999Z`).toISOString() } });
-  return constraints.length > 0 ? { AND: constraints } : undefined;
-});
+);
 const table = useTable({
   columnDefinition,
   defaultItemsPerPage: 25,
@@ -337,48 +379,80 @@ if (initialDashboardPreset) {
   filtering.value = initialDashboardPreset.filtering;
   page.value = 1;
 }
-const activeDashboardPresetLabel = computed(() => {
-  if (activeDashboardPreset.value === 'open') return t(props.kind === 'issue' ? 'issues.open' : 'pullRequests.open');
-  if (activeDashboardPreset.value === 'stale') return t('issues.stale');
-  if (activeDashboardPreset.value === 'approval-required') return t('pullRequests.approvalRequired');
-  return '';
-});
-const summaryMetrics = computed(() =>
-  props.kind === 'issue'
-    ? [
-        ['issues.open', (summary.value as IssueSummary | null)?.open, 'i-tabler-circle-dot'],
-        ['issues.recent', (summary.value as IssueSummary | null)?.recentlyUpdated, 'i-lucide-clock'],
-        ['issues.assigned', (summary.value as IssueSummary | null)?.assigned, 'i-lucide-user-check'],
-        ['issues.stale', (summary.value as IssueSummary | null)?.stale, 'i-lucide-hourglass'],
-      ].map(([label, value, icon]) => ({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') }))
-    : [
-        ['pullRequests.open', (summary.value as PullRequestSummary | null)?.open, 'i-tabler-git-pull-request'],
-        ['pullRequests.drafts', (summary.value as PullRequestSummary | null)?.drafts, 'i-lucide-file-pen'],
-        ['pullRequests.failed', (summary.value as PullRequestSummary | null)?.failedWorkflows, 'i-lucide-circle-alert'],
-        [
-          'pullRequests.approvalRequired',
-          (summary.value as PullRequestSummary | null)?.workflowApprovalRequired,
-          'i-lucide-shield-alert',
-        ],
-      ].map(([label, value, icon]) => ({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') })),
+const activeDashboardPresetLabel = computed(
+  /** Derives active dashboard preset label from the current reactive dependencies. */ () => {
+    if (activeDashboardPreset.value === 'open') return t(props.kind === 'issue' ? 'issues.open' : 'pullRequests.open');
+    if (activeDashboardPreset.value === 'stale') return t('issues.stale');
+    if (activeDashboardPreset.value === 'approval-required') return t('pullRequests.approvalRequired');
+    return '';
+  },
+);
+const summaryMetrics = computed(
+  /** Derives summary metrics from the current reactive dependencies. */ () =>
+    props.kind === 'issue'
+      ? [
+          ['issues.open', (summary.value as IssueSummary | null)?.open, 'i-tabler-circle-dot'],
+          ['issues.recent', (summary.value as IssueSummary | null)?.recentlyUpdated, 'i-lucide-clock'],
+          ['issues.assigned', (summary.value as IssueSummary | null)?.assigned, 'i-lucide-user-check'],
+          ['issues.stale', (summary.value as IssueSummary | null)?.stale, 'i-lucide-hourglass'],
+        ].map(
+          /** Projects each entry using `({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') })`. */ ([
+            label,
+            value,
+            icon,
+          ]) => ({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') }),
+        )
+      : [
+          ['pullRequests.open', (summary.value as PullRequestSummary | null)?.open, 'i-tabler-git-pull-request'],
+          ['pullRequests.drafts', (summary.value as PullRequestSummary | null)?.drafts, 'i-lucide-file-pen'],
+          [
+            'pullRequests.failed',
+            (summary.value as PullRequestSummary | null)?.failedWorkflows,
+            'i-lucide-circle-alert',
+          ],
+          [
+            'pullRequests.approvalRequired',
+            (summary.value as PullRequestSummary | null)?.workflowApprovalRequired,
+            'i-lucide-shield-alert',
+          ],
+        ].map(
+          /** Projects each entry using `({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') })`. */ ([
+            label,
+            value,
+            icon,
+          ]) => ({ icon: String(icon), label: t(String(label)), value: String(value ?? '—') }),
+        ),
 );
 
+/** Loads supporting data. */
 async function loadSupportingData(): Promise<void> {
   summaryLoading.value = true;
   summaryError.value = false;
   const [optionsResult, repositoriesResult, summaryResult] = await Promise.allSettled([
     props.kind === 'issue' ? api.issues.filterOptions() : api.pullRequests.filterOptions(),
-    loadWorkflowRunRepositoryFilterOptions((page) => api.repositories.list(page).then((response) => response.data)),
+    loadWorkflowRunRepositoryFilterOptions(
+      /** Evaluates `api.repositories.list(page).then((response) => response.data)` when loadWorkflowRunRepositoryFilterOptions invokes this callback. */ (
+        page,
+      ) =>
+        api.repositories
+          .list(page)
+          .then(
+            /** Evaluates `response.data` when api.repositories.list(page).then invokes this callback. */ (response) =>
+              response.data,
+          ),
+    ),
     props.kind === 'issue' ? api.issues.summary() : api.pullRequests.summary(),
   ]);
   if (optionsResult.status === 'fulfilled') filterOptions.value = optionsResult.value.data;
   if (repositoriesResult.status === 'fulfilled') repositories.value = repositoriesResult.value;
   if (summaryResult.status === 'fulfilled') summary.value = summaryResult.value.data;
   summaryError.value = [optionsResult, repositoriesResult, summaryResult].some(
+    /** Checks whether any entry satisfies `result.status === 'rejected'`. */
     (result) => result.status === 'rejected',
   );
   summaryLoading.value = false;
 }
+/** Refreshes all. */
 async function refreshAll(): Promise<void> {
   await Promise.all([refresh(), loadSupportingData()]);
 }
@@ -412,5 +486,8 @@ function removeDashboardPresetQuery(): void {
 }
 
 watch([filtering, search, selectedLabels, updatedFrom, updatedTo], releaseDashboardPreset, { deep: true });
-onMounted(() => Promise.all([initialize(), loadSupportingData()]));
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () =>
+    Promise.all([initialize(), loadSupportingData()]),
+);
 </script>

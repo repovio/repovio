@@ -113,33 +113,38 @@ const { formatDateTime } = useDateTime();
 const retentionDays = reactive({ issueRetentionDays: '', pullRequestRetentionDays: '', workflowRunRetentionDays: '' });
 /** Normalize form controls before validating the shared nullable retention contract. */
 function retentionValue() {
-  return z.unknown().transform((value, context) => {
-    const normalized = typeof value === 'string' ? (value.trim() === '' ? null : Number(value)) : value;
-    const parsed = ApiUpdateRepositorySchema.shape.issueRetentionDays.unwrap().safeParse(normalized);
-    if (!parsed.success) {
-      context.addIssue({ code: 'custom', message: t('forms.invalidValue') });
-      return z.NEVER;
-    }
-    return parsed.data;
-  });
+  return z.unknown().transform(
+    /** Normalizes input using the retentionValue mapping. */ (value, context) => {
+      const normalized = typeof value === 'string' ? (value.trim() === '' ? null : Number(value)) : value;
+      const parsed = ApiUpdateRepositorySchema.shape.issueRetentionDays.unwrap().safeParse(normalized);
+      if (!parsed.success) {
+        context.addIssue({ code: 'custom', message: t('forms.invalidValue') });
+        return z.NEVER;
+      }
+      return parsed.data;
+    },
+  );
 }
-const retentionSchema = computed(() =>
-  ApiUpdateRepositorySchema.pick({
-    issueRetentionDays: true,
-    pullRequestRetentionDays: true,
-    workflowRunRetentionDays: true,
-  }).extend({
-    issueRetentionDays: retentionValue(),
-    pullRequestRetentionDays: retentionValue(),
-    workflowRunRetentionDays: retentionValue(),
-  }),
+const retentionSchema = computed(
+  /** Derives retention schema from the current reactive dependencies. */ () =>
+    ApiUpdateRepositorySchema.pick({
+      issueRetentionDays: true,
+      pullRequestRetentionDays: true,
+      workflowRunRetentionDays: true,
+    }).extend({
+      issueRetentionDays: retentionValue(),
+      pullRequestRetentionDays: retentionValue(),
+      workflowRunRetentionDays: retentionValue(),
+    }),
 );
 type RetentionValues = z.output<typeof retentionSchema.value>;
 const saving = ref(false);
 const saveError = ref(false);
 
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => props.repository,
+  /** Synchronizes general card when the observed state changes. */
   (repository) => {
     retentionDays.issueRetentionDays = repository.issueRetentionDays?.toString() ?? '';
     retentionDays.pullRequestRetentionDays = repository.pullRequestRetentionDays?.toString() ?? '';

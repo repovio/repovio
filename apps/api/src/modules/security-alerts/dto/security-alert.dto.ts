@@ -14,11 +14,12 @@ import { CaslSubject } from '../../../casl/casl-subject.js';
 import type { AppAbility } from '../../../casl/types.js';
 import type { ProviderAccount, Repository, SecurityAlert } from '../../../generated/prisma/client.js';
 
-export type SecurityAlertResourceModel = SecurityAlert & {
-  repository: Pick<Repository, 'name' | 'owner'> & {
-    providerAccount: Pick<ProviderAccount, 'providerType'>;
+/** Defines the security alert resource model contract shared by its consumers. */ export type SecurityAlertResourceModel =
+  SecurityAlert & {
+    repository: Pick<Repository, 'name' | 'owner'> & {
+      providerAccount: Pick<ProviderAccount, 'providerType'>;
+    };
   };
-};
 
 /** Safe normalized security-alert representation. */
 export class SecurityAlertDto extends createZodDto(ApiSecurityAlertSchema) {

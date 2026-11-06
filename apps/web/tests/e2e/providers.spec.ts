@@ -1,41 +1,57 @@
 import { expect, test } from '@playwright/test';
 
 /** Verify the Query Kit provider table and its credential-validated add dialog. */
-test('provider account table opens an add dialog with structured native controls', async ({ page }, testInfo) => {
+test('provider account table opens an add dialog with structured native controls', /** Verifies provider account table opens an add dialog with structured native controls. */ async ({
+  page,
+}, testInfo) => {
   let releaseAuthenticationOptions: (() => void) | undefined;
-  const authenticationOptionsResponse = new Promise<void>((resolve) => {
-    releaseAuthenticationOptions = resolve;
-  });
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route(/\/api\/v1\/provider-accounts(?:\?.*)?$/, async (route) => {
-    expect(route.request().url()).toContain('fields=');
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
-          {
-            baseUrl: null,
-            displayName: 'Production GitHub',
-            enabled: true,
-            id: 'provider-1',
-            lastSyncAt: null,
-            providerType: 'GITHUB',
-          },
-        ],
-        meta: { itemCount: 1, pageCount: 1 },
-      },
-    });
-  });
-  await page.route('**/api/v1/provider-accounts/authentication-options', async (route) => {
-    await authenticationOptionsResponse;
-    await route.fulfill({ contentType: 'application/json', json: { oauthProviderTypes: [] } });
-  });
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
-    });
-  });
+  const authenticationOptionsResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseAuthenticationOptions = resolve;
+    },
+  );
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
+  );
+  await page.route(
+    /\/api\/v1\/provider-accounts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      expect(route.request().url()).toContain('fields=');
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              baseUrl: null,
+              displayName: 'Production GitHub',
+              enabled: true,
+              id: 'provider-1',
+              lastSyncAt: null,
+              providerType: 'GITHUB',
+            },
+          ],
+          meta: { itemCount: 1, pageCount: 1 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/provider-accounts/authentication-options',
+    /** Supplies the mocked response for `/api/v1/provider-accounts/authentication-options`. */ async (route) => {
+      await authenticationOptionsResponse;
+      await route.fulfill({ contentType: 'application/json', json: { oauthProviderTypes: [] } });
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
+      });
+    },
+  );
 
   await page.goto('/admin/providers');
 

@@ -14,16 +14,17 @@ type DeliveryAttemptModel = NotificationDeliveryAttempt & {
   notificationChannel?: { name: string; type: NotificationChannelType };
 };
 
-export type DeliveryHistoryModel = NotificationDelivery & {
-  attempts: DeliveryAttemptModel[];
-  issue?: { id: string; number: string; title: string; url: string } | null;
-  notificationChannel: { id: string; name: string; type: NotificationChannelType };
-  pullRequest?: { id: string; number: string; title: string; url: string } | null;
-  repository?: { id: string; name: string; owner: string } | null;
-  securityAlert?: { id: string; kind: string; providerUrl: string; title: string } | null;
-  requestedBy?: { username: string } | null;
-  workflowRun?: { id: string; url: string; workflowName: string } | null;
-};
+/** Defines the delivery history model contract shared by its consumers. */ export type DeliveryHistoryModel =
+  NotificationDelivery & {
+    attempts: DeliveryAttemptModel[];
+    issue?: { id: string; number: string; title: string; url: string } | null;
+    notificationChannel: { id: string; name: string; type: NotificationChannelType };
+    pullRequest?: { id: string; number: string; title: string; url: string } | null;
+    repository?: { id: string; name: string; owner: string } | null;
+    securityAlert?: { id: string; kind: string; providerUrl: string; title: string } | null;
+    requestedBy?: { username: string } | null;
+    workflowRun?: { id: string; url: string; workflowName: string } | null;
+  };
 
 /** Safe delivery-attempt metadata visible to system administrators. */
 export class NotificationDeliveryAttemptDto extends createZodDto(ApiNotificationDeliveryAttemptSchema) {

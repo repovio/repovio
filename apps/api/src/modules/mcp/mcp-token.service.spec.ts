@@ -24,7 +24,7 @@ const persistedToken = {
   userId: viewer.id,
 };
 
-describe('McpTokenService', () => {
+describe('McpTokenService', /** Groups scenarios for McpTokenService. */ () => {
   const mcpAccessToken = {
     create: jest.fn(),
     findMany: jest.fn(),
@@ -33,10 +33,15 @@ describe('McpTokenService', () => {
   };
   const service = new McpTokenService({ mcpAccessToken } as unknown as PrismaService);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('creates a 256-bit user-owned token while persisting only its hash and prefix', async () => {
-    mcpAccessToken.create.mockImplementation(({ data }) => ({ ...persistedToken, ...data }));
+  it('creates a 256-bit user-owned token while persisting only its hash and prefix', /** Verifies creates a 256-bit user-owned token while persisting only its hash and prefix. */ async () => {
+    mcpAccessToken.create.mockImplementation(
+      /** Provides isolated mcp-token.service behavior for this test fixture. */ ({ data }) => ({
+        ...persistedToken,
+        ...data,
+      }),
+    );
 
     const created = await service.create(viewer, { name: 'Editor' });
 
@@ -53,14 +58,14 @@ describe('McpTokenService', () => {
     expect(mcpAccessToken.create.mock.calls[0][0].data.tokenHash).not.toContain(created.token);
   });
 
-  it('rejects an expiration that is not in the future', async () => {
+  it('rejects an expiration that is not in the future', /** Verifies rejects an expiration that is not in the future. */ async () => {
     await expect(service.create(viewer, { expiresAt: '2020-01-01T00:00:00.000Z', name: 'Expired' })).rejects.toThrow(
       BadRequestException,
     );
     expect(mcpAccessToken.create).not.toHaveBeenCalled();
   });
 
-  it('authenticates an active token and returns the current persisted user', async () => {
+  it('authenticates an active token and returns the current persisted user', /** Verifies authenticates an active token and returns the current persisted user. */ async () => {
     const user = { ...viewer, createdAt: new Date(), updatedAt: new Date(), passwordHash: 'hidden' };
     mcpAccessToken.findUnique.mockResolvedValue({ ...persistedToken, user });
     mcpAccessToken.update.mockResolvedValue({ ...persistedToken, lastUsedAt: new Date() });
@@ -76,6 +81,7 @@ describe('McpTokenService', () => {
 
   it.each([{ revokedAt: new Date() }, { expiresAt: new Date('2020-01-01T00:00:00.000Z') }])(
     'rejects inactive tokens',
+    /** Verifies rejects inactive tokens. */
     async (state) => {
       mcpAccessToken.findUnique.mockResolvedValue({ ...persistedToken, ...state, user: viewer });
       await expect(service.authenticate('repovio_mcp_inactive')).rejects.toThrow(UnauthorizedException);
@@ -83,14 +89,14 @@ describe('McpTokenService', () => {
     },
   );
 
-  it('rejects a token after its owning user has been deleted', async () => {
+  it('rejects a token after its owning user has been deleted', /** Verifies rejects a token after its owning user has been deleted. */ async () => {
     mcpAccessToken.findUnique.mockResolvedValue(null);
 
     await expect(service.authenticate('repovio_mcp_deleted_user')).rejects.toThrow(UnauthorizedException);
     expect(mcpAccessToken.update).not.toHaveBeenCalled();
   });
 
-  it('allows administrators to inspect metadata and revoke another user token', async () => {
+  it('allows administrators to inspect metadata and revoke another user token', /** Verifies allows administrators to inspect metadata and revoke another user token. */ async () => {
     mcpAccessToken.findMany.mockResolvedValue([persistedToken]);
     mcpAccessToken.findUnique.mockResolvedValue(persistedToken);
     mcpAccessToken.update.mockResolvedValue({ ...persistedToken, revokedAt: new Date() });
@@ -101,7 +107,7 @@ describe('McpTokenService', () => {
     await expect(service.revoke(admin, persistedToken.id)).resolves.toBeUndefined();
   });
 
-  it('prevents users from inspecting another user tokens', async () => {
+  it('prevents users from inspecting another user tokens', /** Verifies prevents users from inspecting another user tokens. */ async () => {
     await expect(service.list(viewer, 'another-user')).rejects.toThrow(ForbiddenException);
     expect(mcpAccessToken.findMany).not.toHaveBeenCalled();
   });

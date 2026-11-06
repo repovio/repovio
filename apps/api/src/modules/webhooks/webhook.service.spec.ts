@@ -6,7 +6,7 @@ import type { ProviderCredentialService } from '../providers/provider-credential
 import type { ProviderSyncQueueService } from '../providers/sync-queue.service.js';
 import { WebhookService } from './webhook.service.js';
 
-describe('WebhookService', () => {
+describe('WebhookService', /** Groups scenarios for WebhookService. */ () => {
   const payload = Buffer.from('{"repository":{"id":42}}');
 
   it.each([
@@ -16,6 +16,7 @@ describe('WebhookService', () => {
     ['GITEA', 'x-gitea-delivery'],
   ] as const)(
     'records and queues a verified %s delivery for the URL repository',
+    /** Verifies records and queues a verified %s delivery for the URL repository. */
     async (providerType, deliveryHeader) => {
       const mocks = createMocks(providerType);
 
@@ -35,7 +36,7 @@ describe('WebhookService', () => {
     },
   );
 
-  it('accepts a repeated repository delivery without scheduling it again', async () => {
+  it('accepts a repeated repository delivery without scheduling it again', /** Verifies accepts a repeated repository delivery without scheduling it again. */ async () => {
     const mocks = createMocks('GITLAB');
     mocks.transaction.webhookDelivery.create.mockRejectedValue({ code: 'P2002' });
 
@@ -52,19 +53,22 @@ describe('WebhookService', () => {
     { encryptedWebhookSecret: null },
     { enabled: false },
     { providerAccount: { enabled: false, providerType: 'GITHUB' } },
-  ])('rejects an unavailable repository webhook configuration', async (override) => {
-    const mocks = createMocks('GITHUB', override);
+  ])(
+    'rejects an unavailable repository webhook configuration',
+    /** Verifies rejects an unavailable repository webhook configuration. */ async (override) => {
+      const mocks = createMocks('GITHUB', override);
 
-    await expect(
-      createService(mocks).receive('GITHUB', 'repository-id', {
-        headers: { 'x-github-delivery': 'delivery-id' },
-        payload,
-      }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-    expect(mocks.adapter.verifyWebhook).not.toHaveBeenCalled();
-  });
+      await expect(
+        createService(mocks).receive('GITHUB', 'repository-id', {
+          headers: { 'x-github-delivery': 'delivery-id' },
+          payload,
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(mocks.adapter.verifyWebhook).not.toHaveBeenCalled();
+    },
+  );
 
-  it('rejects a provider type that does not own the repository', async () => {
+  it('rejects a provider type that does not own the repository', /** Verifies rejects a provider type that does not own the repository. */ async () => {
     const mocks = createMocks('GITHUB');
 
     await expect(
@@ -75,7 +79,7 @@ describe('WebhookService', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('rejects a signed payload for another provider repository', async () => {
+  it('rejects a signed payload for another provider repository', /** Verifies rejects a signed payload for another provider repository. */ async () => {
     const mocks = createMocks('GITHUB');
     mocks.adapter.verifyWebhook.mockResolvedValue({
       event: 'workflow_run',
@@ -93,6 +97,7 @@ describe('WebhookService', () => {
   });
 });
 
+/** Creates mocks. */
 function createMocks(
   providerType: 'GITHUB' | 'GITLAB' | 'FORGEJO' | 'GITEA',
   repositoryOverride: Record<string, unknown> = {},
@@ -117,13 +122,16 @@ function createMocks(
           ...repositoryOverride,
         }),
       },
-      transaction: jest.fn((callback) => callback(transaction)),
+      transaction: jest.fn(
+        /** Provides isolated transaction behavior for this test fixture. */ (callback) => callback(transaction),
+      ),
     },
     syncQueue: { enqueueWebhookRepository: jest.fn().mockResolvedValue(true) },
     transaction,
   };
 }
 
+/** Creates service. */
 function createService(mocks: ReturnType<typeof createMocks>): WebhookService {
   return new WebhookService(
     mocks.prisma as unknown as PrismaService,

@@ -32,9 +32,11 @@ export class VersionService {
   async getLatest(): Promise<{ latest: string | null }> {
     if (this.cached && Date.now() - this.cached.timestamp < cacheTtl) return { latest: this.cached.latest };
 
-    this.pending ??= this.fetchLatest().finally(() => {
-      this.pending = undefined;
-    });
+    this.pending ??= this.fetchLatest().finally(
+      /** Releases the in-flight lookup after success or failure so future requests may retry. */ () => {
+        this.pending = undefined;
+      },
+    );
     const result = await this.pending;
     if (result.latest) this.cached = { ...result, timestamp: Date.now() };
     return result;

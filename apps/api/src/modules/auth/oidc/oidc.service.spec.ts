@@ -23,7 +23,7 @@ const config = {
   viewerGroups: ['viewers'],
 };
 
-describe('OidcService', () => {
+describe('OidcService', /** Groups scenarios for OidcService. */ () => {
   const transaction = {
     oidcConfig: { update: jest.fn() },
     oidcLoginTransaction: { deleteMany: jest.fn() },
@@ -39,14 +39,18 @@ describe('OidcService', () => {
   const auth = { createSession: jest.fn() };
   const service = new OidcService(prisma as never, credentials as never, auth as never);
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    prisma.oidcConfig.upsert.mockResolvedValue(config);
-    prisma.transaction.mockImplementation((callback) => callback(transaction));
-    credentials.decrypt.mockReturnValue('plain-secret');
-  });
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ () => {
+      jest.clearAllMocks();
+      prisma.oidcConfig.upsert.mockResolvedValue(config);
+      prisma.transaction.mockImplementation(
+        /** Provides isolated oidc.service behavior for this test fixture. */ (callback) => callback(transaction),
+      );
+      credentials.decrypt.mockReturnValue('plain-secret');
+    },
+  );
 
-  it('never exposes the encrypted or plaintext client secret', async () => {
+  it('never exposes the encrypted or plaintext client secret', /** Verifies never exposes the encrypted or plaintext client secret. */ async () => {
     await expect(service.config()).resolves.toEqual(
       expect.objectContaining({ clientSecretConfigured: true, secretDecryptable: true }),
     );
@@ -55,15 +59,17 @@ describe('OidcService', () => {
     expect(serialized).not.toContain('plain-secret');
   });
 
-  it('maps an undecryptable saved secret to a safe discovery-check code', async () => {
-    credentials.decrypt.mockImplementation(() => {
-      throw new Error('ciphertext details');
-    });
+  it('maps an undecryptable saved secret to a safe discovery-check code', /** Verifies maps an undecryptable saved secret to a safe discovery-check code. */ async () => {
+    credentials.decrypt.mockImplementation(
+      /** Provides isolated oidc.service behavior for this test fixture. */ () => {
+        throw new Error('ciphertext details');
+      },
+    );
 
     await expect(service.check()).resolves.toEqual({ code: 'secret_unavailable', ok: false });
   });
 
-  it('keeps an omitted secret and does not invalidate sessions for a display-name-only change', async () => {
+  it('keeps an omitted secret and does not invalidate sessions for a display-name-only change', /** Verifies keeps an omitted secret and does not invalidate sessions for a display-name-only change. */ async () => {
     transaction.oidcConfig.update.mockResolvedValue({ ...config, providerName: 'Renamed SSO' });
 
     await service.updateConfig({ providerName: 'Renamed SSO' });
@@ -76,7 +82,7 @@ describe('OidcService', () => {
     expect(transaction.user.updateMany).not.toHaveBeenCalled();
   });
 
-  it('encrypts a replacement secret and invalidates OIDC transactions and bearer sessions', async () => {
+  it('encrypts a replacement secret and invalidates OIDC transactions and bearer sessions', /** Verifies encrypts a replacement secret and invalidates OIDC transactions and bearer sessions. */ async () => {
     credentials.encrypt.mockReturnValue('replacement-ciphertext');
     transaction.oidcConfig.update.mockResolvedValue({
       ...config,
@@ -95,7 +101,7 @@ describe('OidcService', () => {
     });
   });
 
-  it('consumes a session handoff atomically and rejects a replay', async () => {
+  it('consumes a session handoff atomically and rejects a replay', /** Verifies consumes a session handoff atomically and rejects a replay. */ async () => {
     transaction.oidcSessionExchange.findUnique.mockResolvedValue({
       consumedAt: null,
       expiresAt: new Date(Date.now() + 30_000),
@@ -115,7 +121,7 @@ describe('OidcService', () => {
     expect(auth.createSession).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects an expired handoff before issuing a bearer session', async () => {
+  it('rejects an expired handoff before issuing a bearer session', /** Verifies rejects an expired handoff before issuing a bearer session. */ async () => {
     transaction.oidcSessionExchange.findUnique.mockResolvedValue({
       consumedAt: null,
       expiresAt: new Date(Date.now() - 1),
@@ -127,10 +133,11 @@ describe('OidcService', () => {
     expect(auth.createSession).not.toHaveBeenCalled();
   });
 
-  it('provisions only by verified issuer and subject without linking mutable claims', async () => {
+  it('provisions only by verified issuer and subject without linking mutable claims', /** Verifies provisions only by verified issuer and subject without linking mutable claims. */ async () => {
     prisma.user.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
     prisma.user.upsert.mockResolvedValue({ id: 'oidc-user-id' });
     const provisioning = service as unknown as {
+      /** Provisions the authenticated identity using the test account data. */
       provisionUser(
         issuer: string,
         subject: string,
@@ -161,12 +168,13 @@ describe('OidcService', () => {
     expect(prisma.user.upsert.mock.calls[0]?.[0].create).not.toHaveProperty('email');
   });
 
-  it('increments the authentication version when group mappings change an existing OIDC role', async () => {
+  it('increments the authentication version when group mappings change an existing OIDC role', /** Verifies increments the authentication version when group mappings change an existing OIDC role. */ async () => {
     prisma.user.findUnique
       .mockResolvedValueOnce({ oidcIssuer: 'https://id.example', oidcSubject: 'stable-subject' })
       .mockResolvedValueOnce({ firstName: null, lastName: null, role: 'VIEWER' });
     prisma.user.upsert.mockResolvedValue({ id: 'oidc-user-id' });
     const provisioning = service as unknown as {
+      /** Provisions the authenticated identity using the test account data. */
       provisionUser(
         issuer: string,
         subject: string,

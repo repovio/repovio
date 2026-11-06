@@ -85,13 +85,15 @@ export class RepositoryDto extends createZodDto(ApiRepositorySchema) {
             pullRequestRetentionDays: model.pullRequestRetentionDays,
             workflowRunRetentionDays: model.workflowRunRetentionDays,
             providerAccountId: model.providerAccountId,
-            members: (model.memberships ?? []).map((membership) => ({
-              avatarUpdatedAt: membership.user.avatar?.updatedAt ?? null,
-              firstName: membership.user.firstName,
-              lastName: membership.user.lastName,
-              userId: membership.userId,
-              username: membership.user.username,
-            })),
+            members: (model.memberships ?? []).map(
+              /** Projects each entry using the members mapping. */ (membership) => ({
+                avatarUpdatedAt: membership.user.avatar?.updatedAt ?? null,
+                firstName: membership.user.firstName,
+                lastName: membership.user.lastName,
+                userId: membership.userId,
+                username: membership.user.username,
+              }),
+            ),
             ...(model._count ? { workflowRunCount: model._count.workflowRuns } : {}),
           }),
         ),
@@ -143,8 +145,11 @@ export class RepositoryDetailDto extends createZodDto(ApiRepositoryDetailSchema)
         startedAt: request?.startedAt ?? null,
         status: request?.status ?? 'IDLE',
         warningKinds: (model.securityAlertSyncStates ?? [])
-          .filter(({ availability }) => availability === 'UNAVAILABLE')
-          .map(({ kind }) => kind),
+          .filter(
+            /** Keeps entries matching `availability === 'UNAVAILABLE'`. */ ({ availability }) =>
+              availability === 'UNAVAILABLE',
+          )
+          .map(/** Projects each entry using `kind`. */ ({ kind }) => kind),
       },
     });
   }

@@ -105,7 +105,9 @@ const { t } = useI18n();
 const api = useRepovioApi();
 const auth = useAuthStore();
 const toast = useToast();
-const repositoryId = computed(() => String(route.params.id));
+const repositoryId = computed(
+  /** Derives repository id from the current reactive dependencies. */ () => String(route.params.id),
+);
 const repository = ref<RepositoryDetail>();
 const loading = ref(true);
 const loadError = ref(false);
@@ -115,10 +117,16 @@ const syncing = ref(false);
 const webhookConfiguration = ref<RepositoryWebhookConfiguration>();
 const webhookConfigurationLoading = ref(false);
 const webhookConfigurationError = ref(false);
-const isAdmin = computed(() => auth.user?.role === 'SYSTEM_ADMIN');
-const canViewAlerts = computed(() => ['MANAGER', 'SYSTEM_ADMIN'].includes(auth.user?.role ?? ''));
-const repositoryName = computed(() =>
-  repository.value ? `${repository.value.owner}/${repository.value.name}` : t('repositoryDetails.title'),
+const isAdmin = computed(
+  /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',
+);
+const canViewAlerts = computed(
+  /** Derives can view alerts from the current reactive dependencies. */ () =>
+    ['MANAGER', 'SYSTEM_ADMIN'].includes(auth.user?.role ?? ''),
+);
+const repositoryName = computed(
+  /** Derives repository name from the current reactive dependencies. */ () =>
+    repository.value ? `${repository.value.owner}/${repository.value.name}` : t('repositoryDetails.title'),
 );
 
 useHead({ title: repositoryName });
@@ -152,7 +160,10 @@ async function loadWebhookConfiguration(id: string): Promise<void> {
   try {
     const { data } = await api.repositories.webhookConfigurations();
     if (repositoryId.value === id)
-      webhookConfiguration.value = data.find((configuration) => configuration.repositoryId === id);
+      webhookConfiguration.value = data.find(
+        /** Finds the first entry matching `configuration.repositoryId === id`. */ (configuration) =>
+          configuration.repositoryId === id,
+      );
   } catch {
     if (repositoryId.value === id) webhookConfigurationError.value = true;
   } finally {
@@ -194,5 +205,7 @@ async function syncRepository(): Promise<void> {
   }
 }
 
-watch(repositoryId, (id) => void load(id), { immediate: true });
+watch(repositoryId, /** Synchronizes [id] when the observed state changes. */ (id) => void load(id), {
+  immediate: true,
+});
 </script>

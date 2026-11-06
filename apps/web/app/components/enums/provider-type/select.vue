@@ -22,11 +22,16 @@ defineProps<{
 const value = defineModel<ProviderType | undefined>({ default: undefined });
 const { getIcon, getLabel } = useProviderType();
 
-const items = computed(() =>
-  providerTypes.map((providerType) => ({
-    icon: getIcon(providerType),
-    label: getLabel(providerType),
-    value: providerType,
-  })),
+const items = computed(
+  /** Derives items from the current reactive dependencies. */ () =>
+    providerTypes.map(
+      /** Projects each entry using `({ icon: getIcon(providerType), label: getLabel(providerType), value: providerType, })`. */ (
+        providerType,
+      ) => ({
+        icon: getIcon(providerType),
+        label: getLabel(providerType),
+        value: providerType,
+      }),
+    ),
 );
 </script>

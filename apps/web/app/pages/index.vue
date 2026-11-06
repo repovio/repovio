@@ -113,50 +113,61 @@ const errors = reactive({
 const range = ref<'7d' | '30d' | '90d'>('30d');
 let historicalRequestId = 0;
 
-useHead({ title: computed(() => t('dashboard.title')) });
+useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('dashboard.title')) });
 
-const isLoading = computed(() => isCurrentLoading.value || isHistoricalLoading.value);
-const hasError = computed(() => Object.values(errors).some(Boolean));
-const rangeOptions = computed(() => [
-  { label: t('dashboard.last7Days'), value: '7d' },
-  { label: t('dashboard.last30Days'), value: '30d' },
-  { label: t('dashboard.last90Days'), value: '90d' },
-]);
-const workMetrics = computed(() => [
-  {
-    icon: 'i-tabler-circle-dot',
-    label: t('issues.open'),
-    to: '/issues?preset=open',
-    value: String(issueSummary.value?.open ?? '—'),
-  },
-  {
-    icon: 'i-lucide-hourglass',
-    label: t('issues.stale'),
-    to: '/issues?preset=stale',
-    value: String(issueSummary.value?.stale ?? '—'),
-  },
-  {
-    icon: 'i-tabler-git-pull-request',
-    label: t('pullRequests.open'),
-    to: '/pull-requests?preset=open',
-    value: String(pullRequestSummary.value?.open ?? '—'),
-  },
-  {
-    icon: 'i-lucide-shield-alert',
-    label: t('pullRequests.approvalRequired'),
-    to: '/pull-requests?preset=approval-required',
-    value: String(pullRequestSummary.value?.workflowApprovalRequired ?? '—'),
-  },
-]);
-const securityAlertMetrics = computed(() => [
-  {
-    kind: 'DEPENDENCY',
-    label: t('securityAlerts.dependencies'),
-    value: summary.value?.securityAlerts?.dependency ?? 0,
-  },
-  { kind: 'CODE', label: t('securityAlerts.code'), value: summary.value?.securityAlerts?.code ?? 0 },
-  { kind: 'SECRET', label: t('securityAlerts.secrets'), value: summary.value?.securityAlerts?.secret ?? 0 },
-]);
+const isLoading = computed(
+  /** Derives is loading from the current reactive dependencies. */ () =>
+    isCurrentLoading.value || isHistoricalLoading.value,
+);
+const hasError = computed(
+  /** Derives has error from the current reactive dependencies. */ () => Object.values(errors).some(Boolean),
+);
+const rangeOptions = computed(
+  /** Derives range options from the current reactive dependencies. */ () => [
+    { label: t('dashboard.last7Days'), value: '7d' },
+    { label: t('dashboard.last30Days'), value: '30d' },
+    { label: t('dashboard.last90Days'), value: '90d' },
+  ],
+);
+const workMetrics = computed(
+  /** Derives work metrics from the current reactive dependencies. */ () => [
+    {
+      icon: 'i-tabler-circle-dot',
+      label: t('issues.open'),
+      to: '/issues?preset=open',
+      value: String(issueSummary.value?.open ?? '—'),
+    },
+    {
+      icon: 'i-lucide-hourglass',
+      label: t('issues.stale'),
+      to: '/issues?preset=stale',
+      value: String(issueSummary.value?.stale ?? '—'),
+    },
+    {
+      icon: 'i-tabler-git-pull-request',
+      label: t('pullRequests.open'),
+      to: '/pull-requests?preset=open',
+      value: String(pullRequestSummary.value?.open ?? '—'),
+    },
+    {
+      icon: 'i-lucide-shield-alert',
+      label: t('pullRequests.approvalRequired'),
+      to: '/pull-requests?preset=approval-required',
+      value: String(pullRequestSummary.value?.workflowApprovalRequired ?? '—'),
+    },
+  ],
+);
+const securityAlertMetrics = computed(
+  /** Derives security alert metrics from the current reactive dependencies. */ () => [
+    {
+      kind: 'DEPENDENCY',
+      label: t('securityAlerts.dependencies'),
+      value: summary.value?.securityAlerts?.dependency ?? 0,
+    },
+    { kind: 'CODE', label: t('securityAlerts.code'), value: summary.value?.securityAlerts?.code ?? 0 },
+    { kind: 'SECRET', label: t('securityAlerts.secrets'), value: summary.value?.securityAlerts?.secret ?? 0 },
+  ],
+);
 
 /** Fetch current and period-based dashboard resources visible to the current user. */
 async function loadDashboard(): Promise<void> {
@@ -212,5 +223,5 @@ function createPeriodQuery(days: number): DashboardPeriodQuery {
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
-onMounted(() => void loadDashboard());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void loadDashboard());
 </script>

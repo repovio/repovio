@@ -3,11 +3,12 @@ import { createServer, type Server } from 'node:http';
 
 import { buildOidcClient, exchangeAuthorizationCode } from './oidc-client.js';
 
+/** Encodes a JSON value as a Base64URL JWT segment for the test identity provider. */
 function encodeJson(value: unknown): string {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
 }
 
-describe('OIDC client against a signed HTTP mock provider', () => {
+describe('OIDC client against a signed HTTP mock provider', /** Groups scenarios for OIDC client against a signed HTTP mock provider. */ () => {
   const signingKeys = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const otherKeys = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const publicJwk = { ...signingKeys.publicKey.export({ format: 'jwk' }), alg: 'RS256', kid: 'test-key', use: 'sig' };
@@ -17,88 +18,119 @@ describe('OIDC client against a signed HTTP mock provider', () => {
   let claimOverrides: Record<string, unknown> = {};
   let useWrongSigningKey = false;
 
-  beforeAll(async () => {
-    server = createServer((request, response) => {
-      if (request.url === '/.well-known/openid-configuration') {
-        response.setHeader('Content-Type', 'application/json');
-        response.end(
-          JSON.stringify({
-            authorization_endpoint: `${issuer}/authorize`,
-            code_challenge_methods_supported: ['S256'],
-            id_token_signing_alg_values_supported: ['RS256'],
-            issuer,
-            jwks_uri: `${issuer}/jwks`,
-            response_types_supported: ['code'],
-            subject_types_supported: ['public'],
-            token_endpoint: `${issuer}/token`,
-            token_endpoint_auth_methods_supported: ['none'],
-          }),
-        );
-        return;
-      }
-      if (request.url === '/jwks') {
-        response.setHeader('Content-Type', 'application/json');
-        response.end(JSON.stringify({ keys: [publicJwk] }));
-        return;
-      }
-      if (request.url === '/token' && request.method === 'POST') {
-        const chunks: Buffer[] = [];
-        request.on('data', (chunk: Buffer) => chunks.push(chunk));
-        request.on('end', () => {
-          const body = new URLSearchParams(Buffer.concat(chunks).toString('utf8'));
-          if (body.get('code_verifier') !== expectedVerifier) {
-            response.statusCode = 400;
+  beforeAll(
+    /** Prepares shared test state for beforeAll. */ async () => {
+      server = createServer(
+        /** Serves the local OpenID Connect discovery, keys, and token endpoints for integration tests. */ (
+          request,
+          response,
+        ) => {
+          if (request.url === '/.well-known/openid-configuration') {
             response.setHeader('Content-Type', 'application/json');
-            response.end(JSON.stringify({ error: 'invalid_grant' }));
+            response.end(
+              JSON.stringify({
+                authorization_endpoint: `${issuer}/authorize`,
+                code_challenge_methods_supported: ['S256'],
+                id_token_signing_alg_values_supported: ['RS256'],
+                issuer,
+                jwks_uri: `${issuer}/jwks`,
+                response_types_supported: ['code'],
+                subject_types_supported: ['public'],
+                token_endpoint: `${issuer}/token`,
+                token_endpoint_auth_methods_supported: ['none'],
+              }),
+            );
             return;
           }
-          const now = Math.floor(Date.now() / 1000);
-          const header = encodeJson({ alg: 'RS256', kid: 'test-key', typ: 'JWT' });
-          const payload = encodeJson({
-            aud: 'repovio',
-            exp: now + 60,
-            groups: ['repovio-viewers'],
-            iat: now,
-            iss: issuer,
-            nonce: 'expected-nonce',
-            sub: 'stable-subject',
-            ...claimOverrides,
-          });
-          const signature = sign(
-            'RSA-SHA256',
-            Buffer.from(`${header}.${payload}`, 'utf8'),
-            useWrongSigningKey ? otherKeys.privateKey : signingKeys.privateKey,
-          ).toString('base64url');
-          response.setHeader('Content-Type', 'application/json');
-          response.end(
-            JSON.stringify({
-              access_token: randomUUID(),
-              id_token: `${header}.${payload}.${signature}`,
-              token_type: 'Bearer',
-            }),
-          );
-        });
-        return;
-      }
-      response.statusCode = 404;
-      response.end();
-    });
-    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-    const address = server.address();
-    if (!address || typeof address === 'string') throw new Error('Mock provider did not bind a TCP port.');
-    issuer = `http://127.0.0.1:${address.port}`;
-  });
-
-  afterAll(
-    async () => new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
+          if (request.url === '/jwks') {
+            response.setHeader('Content-Type', 'application/json');
+            response.end(JSON.stringify({ keys: [publicJwk] }));
+            return;
+          }
+          if (request.url === '/token' && request.method === 'POST') {
+            const chunks: Buffer[] = [];
+            request.on(
+              'data',
+              /** Evaluates `chunks.push(chunk)` when request.on invokes this callback. */ (chunk: Buffer) =>
+                chunks.push(chunk),
+            );
+            request.on(
+              'end',
+              /** Handles 'end' events for this subscription. */ () => {
+                const body = new URLSearchParams(Buffer.concat(chunks).toString('utf8'));
+                if (body.get('code_verifier') !== expectedVerifier) {
+                  response.statusCode = 400;
+                  response.setHeader('Content-Type', 'application/json');
+                  response.end(JSON.stringify({ error: 'invalid_grant' }));
+                  return;
+                }
+                const now = Math.floor(Date.now() / 1000);
+                const header = encodeJson({ alg: 'RS256', kid: 'test-key', typ: 'JWT' });
+                const payload = encodeJson({
+                  aud: 'repovio',
+                  exp: now + 60,
+                  groups: ['repovio-viewers'],
+                  iat: now,
+                  iss: issuer,
+                  nonce: 'expected-nonce',
+                  sub: 'stable-subject',
+                  ...claimOverrides,
+                });
+                const signature = sign(
+                  'RSA-SHA256',
+                  Buffer.from(`${header}.${payload}`, 'utf8'),
+                  useWrongSigningKey ? otherKeys.privateKey : signingKeys.privateKey,
+                ).toString('base64url');
+                response.setHeader('Content-Type', 'application/json');
+                response.end(
+                  JSON.stringify({
+                    access_token: randomUUID(),
+                    id_token: `${header}.${payload}.${signature}`,
+                    token_type: 'Bearer',
+                  }),
+                );
+              },
+            );
+            return;
+          }
+          response.statusCode = 404;
+          response.end();
+        },
+      );
+      await new Promise<void>(
+        /** Returns `server.listen(0, '127.0.0.1', resolve)` to the caller. */ (resolve) =>
+          server.listen(0, '127.0.0.1', resolve),
+      );
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Mock provider did not bind a TCP port.');
+      issuer = `http://127.0.0.1:${address.port}`;
+    },
   );
 
-  beforeEach(() => {
-    claimOverrides = {};
-    expectedVerifier = 'expected-code-verifier';
-    useWrongSigningKey = false;
-  });
+  afterAll(
+    /** Restores shared test state for afterAll. */
+    async () =>
+      new Promise<void>(
+        /** Returns `server.close((error) => (error ? reject(error) : resolve()))` to the caller. */ (
+          resolve,
+          reject,
+        ) =>
+          server.close(
+            /** Evaluates `(error ? reject(error) : resolve())` when server.close invokes this callback. */ (error) =>
+              error ? reject(error) : resolve(),
+          ),
+      ),
+  );
 
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ () => {
+      claimOverrides = {};
+      expectedVerifier = 'expected-code-verifier';
+      useWrongSigningKey = false;
+    },
+  );
+
+  /** Exchanges the test authorization code for the configured token response. */
   async function exchange(input: { nonce?: string; state?: string; verifier?: string } = {}) {
     const handle = await buildOidcClient({
       allowHttpIssuer: true,
@@ -115,7 +147,7 @@ describe('OIDC client against a signed HTTP mock provider', () => {
     });
   }
 
-  it('accepts a correctly signed authorization-code response with nonce, state, audience, issuer, and subject', async () => {
+  it('accepts a correctly signed authorization-code response with nonce, state, audience, issuer, and subject', /** Verifies accepts a correctly signed authorization-code response with nonce, state, audience, issuer, and subject. */ async () => {
     await expect(exchange()).resolves.toMatchObject({
       claims: { groups: ['repovio-viewers'] },
       subject: 'stable-subject',
@@ -127,17 +159,20 @@ describe('OIDC client against a signed HTTP mock provider', () => {
     ['audience', { aud: 'another-client' }],
     ['nonce', { nonce: 'wrong-nonce' }],
     ['subject', { sub: undefined }],
-  ])('rejects a token with an invalid %s', async (_name, overrides) => {
-    claimOverrides = overrides;
-    await expect(exchange()).rejects.toBeDefined();
-  });
+  ])(
+    'rejects a token with an invalid %s',
+    /** Verifies rejects a token with an invalid %s. */ async (_name, overrides) => {
+      claimOverrides = overrides;
+      await expect(exchange()).rejects.toBeDefined();
+    },
+  );
 
-  it('rejects a token with a signature outside the discovered JWKS', async () => {
+  it('rejects a token with a signature outside the discovered JWKS', /** Verifies rejects a token with a signature outside the discovered JWKS. */ async () => {
     useWrongSigningKey = true;
     await expect(exchange()).rejects.toBeDefined();
   });
 
-  it('rejects state and PKCE verifier mismatches', async () => {
+  it('rejects state and PKCE verifier mismatches', /** Verifies rejects state and PKCE verifier mismatches. */ async () => {
     await expect(exchange({ state: 'wrong-state' })).rejects.toBeDefined();
     expectedVerifier = 'different-verifier';
     await expect(exchange()).rejects.toBeDefined();

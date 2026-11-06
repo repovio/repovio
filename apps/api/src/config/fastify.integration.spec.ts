@@ -119,24 +119,26 @@ class FastifyFixtureController {
   }
 }
 
-describe('Fastify HTTP transport integration', () => {
+describe('Fastify HTTP transport integration', /** Groups scenarios for Fastify HTTP transport integration. */ () => {
   let app: NestFastifyApplication;
   let baseUrl: string;
 
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ controllers: [FastifyFixtureController] }).compile();
-    app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter(), { rawBody: true });
-    await app.register(cookie);
-    app.useGlobalPipes(new PublicQueryPipe(), new ZodValidationPipe());
-    app.useGlobalInterceptors(new ZodSerializerInterceptor(app.get(Reflector)), new WireInterceptor());
-    app.useGlobalFilters(new PrismaExceptionFilter(), new HttpExceptionFilter());
-    await app.listen(0, '127.0.0.1');
-    baseUrl = await app.getUrl();
-  });
+  beforeAll(
+    /** Prepares shared test state for beforeAll. */ async () => {
+      const moduleRef = await Test.createTestingModule({ controllers: [FastifyFixtureController] }).compile();
+      app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter(), { rawBody: true });
+      await app.register(cookie);
+      app.useGlobalPipes(new PublicQueryPipe(), new ZodValidationPipe());
+      app.useGlobalInterceptors(new ZodSerializerInterceptor(app.get(Reflector)), new WireInterceptor());
+      app.useGlobalFilters(new PrismaExceptionFilter(), new HttpExceptionFilter());
+      await app.listen(0, '127.0.0.1');
+      baseUrl = await app.getUrl();
+    },
+  );
 
-  afterAll(async () => app?.close());
+  afterAll(/** Restores shared test state for afterAll. */ async () => app?.close());
 
-  it('accepts and normalizes shared profile input through the actual request pipeline', async () => {
+  it('accepts and normalizes shared profile input through the actual request pipeline', /** Verifies accepts and normalizes shared profile input through the actual request pipeline. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/profile`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -150,50 +152,56 @@ describe('Fastify HTTP transport integration', () => {
   it.each([
     { firstName: null, lastName: null, username: '   ' },
     { firstName: null, lastName: null, username: 'viewer', role: 'SYSTEM_ADMIN' },
-  ])('rejects invalid or unknown profile fields without exposing submitted values', async (input) => {
-    const response = await fetch(`${baseUrl}/fixture/profile`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(input),
-    });
-    const body = await response.json();
+  ])(
+    'rejects invalid or unknown profile fields without exposing submitted values',
+    /** Verifies rejects invalid or unknown profile fields without exposing submitted values. */ async (input) => {
+      const response = await fetch(`${baseUrl}/fixture/profile`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const body = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(body).toMatchObject({ error: 'BAD_REQUEST', statusCode: 400, message: expect.any(Array) });
-    expect(JSON.stringify(body)).not.toContain('SYSTEM_ADMIN');
-  });
+      expect(response.status).toBe(400);
+      expect(body).toMatchObject({ error: 'BAD_REQUEST', statusCode: 400, message: expect.any(Array) });
+      expect(JSON.stringify(body)).not.toContain('SYSTEM_ADMIN');
+    },
+  );
 
   it.each([
     new URLSearchParams({ where: JSON.stringify({ title: { contains: 'fix' } }), orderBy: '{"title":"asc"}' }),
     new URLSearchParams({ 'where.title.contains': 'fix', 'orderBy.title': 'asc' }),
-  ])('normalizes structured resource queries while preserving scalar fields', async (query) => {
-    query.set('fields', '123');
-    query.set('page', '2');
-    query.set('perPage', '25');
-    const response = await fetch(`${baseUrl}/fixture/issues?${query}`);
+  ])(
+    'normalizes structured resource queries while preserving scalar fields',
+    /** Verifies normalizes structured resource queries while preserving scalar fields. */ async (query) => {
+      query.set('fields', '123');
+      query.set('page', '2');
+      query.set('perPage', '25');
+      const response = await fetch(`${baseUrl}/fixture/issues?${query}`);
 
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({
-      where: { title: { contains: 'fix' } },
-      orderBy: { title: 'asc' },
-      fields: '123',
-      page: 2,
-      perPage: 25,
-    });
-  });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        where: { title: { contains: 'fix' } },
+        orderBy: { title: 'asc' },
+        fields: '123',
+        page: 2,
+        perPage: 25,
+      });
+    },
+  );
 
-  it('rejects unrecognized query properties and invalid pagination', async () => {
+  it('rejects unrecognized query properties and invalid pagination', /** Verifies rejects unrecognized query properties and invalid pagination. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/issues?page=0&arbitrary=true`);
     expect(response.status).toBe(400);
   });
 
-  it('serializes mapped dates before validating documented responses', async () => {
+  it('serializes mapped dates before validating documented responses', /** Verifies serializes mapped dates before validating documented responses. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/timestamp`);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ updatedAt: '2026-11-05T12:00:00.000Z' });
   });
 
-  it('returns a safe 500 for invalid response data without leaking its value', async () => {
+  it('returns a safe 500 for invalid response data without leaking its value', /** Verifies returns a safe 500 for invalid response data without leaking its value. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/invalid-response`);
     const body = await response.text();
     expect(response.status).toBe(500);
@@ -205,13 +213,13 @@ describe('Fastify HTTP transport integration', () => {
     expect(body).not.toContain(responseSecret);
   });
 
-  it('does not restore a projected field through schema defaults', async () => {
+  it('does not restore a projected field through schema defaults', /** Verifies does not restore a projected field through schema defaults. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/projected`);
     expect(response.status).toBe(200);
     expect((await response.json()).items).toEqual([{ id: 'visible-id' }]);
   });
 
-  it('generates OpenAPI from the same response schemas used at runtime', () => {
+  it('generates OpenAPI from the same response schemas used at runtime', /** Verifies generates OpenAPI from the same response schemas used at runtime. */ () => {
     const document = cleanupOpenApiDoc(
       SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('Transport fixture').setVersion('1').build()),
     );
@@ -220,7 +228,7 @@ describe('Fastify HTTP transport integration', () => {
     expect(document.components?.schemas).toBeDefined();
   });
 
-  it('retains signed raw webhook bytes including whitespace', async () => {
+  it('retains signed raw webhook bytes including whitespace', /** Verifies retains signed raw webhook bytes including whitespace. */ async () => {
     const body = '{\n  "repository": { "id": 42 }, "name": "synthetic"\n}\n';
     const signature = createHmac('sha256', webhookSecret).update(body).digest('hex');
     const response = await fetch(`${baseUrl}/fixture/webhook`, {
@@ -232,7 +240,7 @@ describe('Fastify HTTP transport integration', () => {
     expect(await response.json()).toEqual({ accepted: true });
   });
 
-  it('preserves OIDC redirect, cache and binding-cookie semantics', async () => {
+  it('preserves OIDC redirect, cache and binding-cookie semantics', /** Verifies preserves OIDC redirect, cache and binding-cookie semantics. */ async () => {
     const response = await fetch(`${baseUrl}/fixture/oidc`, { redirect: 'manual' });
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe('/auth/oidc/callback#code=opaque-code');
@@ -249,13 +257,16 @@ describe('Fastify HTTP transport integration', () => {
   it.each([
     [uploadLimit, 200],
     [uploadLimit + 1, 413],
-  ])('enforces the avatar file size boundary at %i bytes', async (size, expectedStatus) => {
-    const form = new FormData();
-    form.set('file', new Blob([new Uint8Array(size)], { type: 'image/png' }), 'avatar.png');
-    const response = await fetch(`${baseUrl}/fixture/avatar`, { method: 'POST', body: form });
+  ])(
+    'enforces the avatar file size boundary at %i bytes',
+    /** Verifies enforces the avatar file size boundary at %i bytes. */ async (size, expectedStatus) => {
+      const form = new FormData();
+      form.set('file', new Blob([new Uint8Array(size)], { type: 'image/png' }), 'avatar.png');
+      const response = await fetch(`${baseUrl}/fixture/avatar`, { method: 'POST', body: form });
 
-    expect(response.status).toBe(expectedStatus);
-    if (expectedStatus === 200) expect(await response.json()).toEqual({ size, mimeType: 'image/png' });
-    else expect(await response.json()).toMatchObject({ statusCode: 413 });
-  });
+      expect(response.status).toBe(expectedStatus);
+      if (expectedStatus === 200) expect(await response.json()).toEqual({ size, mimeType: 'image/png' });
+      else expect(await response.json()).toMatchObject({ statusCode: 413 });
+    },
+  );
 });

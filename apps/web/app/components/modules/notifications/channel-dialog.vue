@@ -292,10 +292,11 @@ const eventTypes: NotificationEventType[] = [
 ];
 const eventStates = ref(
   Object.fromEntries(
-    eventTypes.map((eventType) => [
-      eventType,
-      { repositoryIds: [] as string[], selected: false, workflowPatterns: '' },
-    ]),
+    eventTypes.map(
+      /** Projects each entry using `[ eventType, { repositoryIds: [] as string[], selected: false, workflowPatterns: '' }, ]`. */ (
+        eventType,
+      ) => [eventType, { repositoryIds: [] as string[], selected: false, workflowPatterns: '' }],
+    ),
   ) as Record<NotificationEventType, { repositoryIds: string[]; selected: boolean; workflowPatterns: string }>,
 );
 const form = ref({
@@ -337,7 +338,9 @@ const channelFormBaseSchema = ApiCreateNotificationChannelSchema.pick({ name: tr
   name: z.string(),
   ntfyPriority: z.enum(['min', 'low', 'default', 'high', 'max']),
   password: z.string(),
-  port: z.number({ error: () => t('forms.invalidValue') }),
+  port: z.number({
+    /** Returns the localized validation error for this field. */ error: () => t('forms.invalidValue'),
+  }),
   priority: z.enum(['low', 'moderate', 'normal', 'high']),
   recipients: z.string(),
   replaceConfiguration: z.boolean(),
@@ -351,143 +354,194 @@ const channelFormBaseSchema = ApiCreateNotificationChannelSchema.pick({ name: tr
   webhookUrl: z.string(),
 });
 type ChannelForm = z.output<typeof channelFormBaseSchema>;
-const channelFormSchema = computed(() =>
-  channelFormBaseSchema.superRefine((data, context) => {
-    const fail = (path: string): void =>
-      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
-    const input = {
-      browserRecipientUserIds: data.type === 'BROWSER_PUSH' ? data.browserRecipientUserIds : [],
-      configuration: configuration(data),
-      enabled: data.enabled,
-      eventSubscriptions: eventSubscriptions(data.eventStates),
-      name: data.name.trim(),
-    };
-    const parsed = props.channel
-      ? ApiUpdateNotificationChannelSchema.safeParse(input)
-      : ApiCreateNotificationChannelSchema.safeParse({ ...input, type: data.type });
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const root = String(issue.path[0] ?? 'name');
-        if (root === 'eventSubscriptions') {
-          const subscription = input.eventSubscriptions[Number(issue.path[1])];
-          const field = issue.path[2];
-          fail(subscription && field ? `eventStates.${subscription.eventType}.${String(field)}` : 'eventStates');
-        } else if (root === 'configuration') {
-          fail(String(issue.path[1] ?? 'type'));
-        } else fail(root);
-      }
-    }
-    if (!data.name.trim()) fail('name');
-    if (data.type === 'BROWSER_PUSH' && !data.browserRecipientUserIds.length) fail('browserRecipientUserIds');
-    if (data.type === 'BROWSER_PUSH' || (props.channel && !data.replaceConfiguration)) return;
-    const httpUrl = (value: string): boolean => z.url({ protocol: /^https?$/ }).safeParse(value.trim()).success;
-    if (data.type === 'EMAIL') {
-      if (!data.smtpHost.trim()) fail('smtpHost');
-      if (!z.email().safeParse(data.from.trim()).success) fail('from');
-      const recipients = data.recipients
-        .split(/[\n,;]/)
-        .map((value) => value.trim())
-        .filter(Boolean);
-      if (!recipients.length || recipients.some((value) => !z.email().safeParse(value).success)) fail('recipients');
-      if (!Number.isInteger(data.port) || data.port < 1 || data.port > 65_535) fail('port');
-    } else if (data.type === 'GOTIFY') {
-      if (!httpUrl(data.serverUrl)) fail('serverUrl');
-      if (!data.token.trim()) fail('token');
-    } else if (data.type === 'NTFY') {
-      if (data.serverUrl.trim() && !httpUrl(data.serverUrl)) fail('serverUrl');
-      if (!data.topic.trim()) fail('topic');
-    } else if (data.type === 'DISCORD') {
-      if (!httpUrl(data.webhookUrl)) fail('webhookUrl');
-      else {
-        const webhook = new URL(data.webhookUrl.trim());
-        if (
-          !['discord.com', 'discordapp.com'].some(
-            (domain) => webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`),
-          ) ||
-          !/\/api\/webhooks\/[^/]+\/[^/]+/.test(webhook.pathname)
-        )
-          fail('webhookUrl');
-      }
-    } else if (data.type === 'CUSTOM_APPRISE') {
-      if (
-        !z.url().safeParse(data.appriseUrl.trim()).success ||
-        /\s/.test(data.appriseUrl.trim()) ||
-        data.appriseUrl.trim().startsWith('file:')
-      )
-        fail('appriseUrl');
-    }
-  }),
+const channelFormSchema = computed(
+  /** Derives channel form schema from the current reactive dependencies. */ () =>
+    channelFormBaseSchema.superRefine(
+      /** Validates input against the channelFormSchema predicate. */ (data, context) => {
+        /** Adds a localized validation issue at the specified form path. */
+        const fail = (path: string): void =>
+          context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
+        const input = {
+          browserRecipientUserIds: data.type === 'BROWSER_PUSH' ? data.browserRecipientUserIds : [],
+          configuration: configuration(data),
+          enabled: data.enabled,
+          eventSubscriptions: eventSubscriptions(data.eventStates),
+          name: data.name.trim(),
+        };
+        const parsed = props.channel
+          ? ApiUpdateNotificationChannelSchema.safeParse(input)
+          : ApiCreateNotificationChannelSchema.safeParse({ ...input, type: data.type });
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues) {
+            const root = String(issue.path[0] ?? 'name');
+            if (root === 'eventSubscriptions') {
+              const subscription = input.eventSubscriptions[Number(issue.path[1])];
+              const field = issue.path[2];
+              fail(subscription && field ? `eventStates.${subscription.eventType}.${String(field)}` : 'eventStates');
+            } else if (root === 'configuration') {
+              fail(String(issue.path[1] ?? 'type'));
+            } else fail(root);
+          }
+        }
+        if (!data.name.trim()) fail('name');
+        if (data.type === 'BROWSER_PUSH' && !data.browserRecipientUserIds.length) fail('browserRecipientUserIds');
+        if (data.type === 'BROWSER_PUSH' || (props.channel && !data.replaceConfiguration)) return;
+        /** Accepts only valid absolute HTTP or HTTPS URLs after trimming. */
+        const httpUrl = (value: string): boolean => z.url({ protocol: /^https?$/ }).safeParse(value.trim()).success;
+        if (data.type === 'EMAIL') {
+          if (!data.smtpHost.trim()) fail('smtpHost');
+          if (!z.email().safeParse(data.from.trim()).success) fail('from');
+          const recipients = data.recipients
+            .split(/[\n,;]/)
+            .map(/** Projects each entry using `value.trim()`. */ (value) => value.trim())
+            .filter(Boolean);
+          if (
+            !recipients.length ||
+            recipients.some(
+              /** Checks whether any entry satisfies `!z.email().safeParse(value).success`. */ (value) =>
+                !z.email().safeParse(value).success,
+            )
+          )
+            fail('recipients');
+          if (!Number.isInteger(data.port) || data.port < 1 || data.port > 65_535) fail('port');
+        } else if (data.type === 'GOTIFY') {
+          if (!httpUrl(data.serverUrl)) fail('serverUrl');
+          if (!data.token.trim()) fail('token');
+        } else if (data.type === 'NTFY') {
+          if (data.serverUrl.trim() && !httpUrl(data.serverUrl)) fail('serverUrl');
+          if (!data.topic.trim()) fail('topic');
+        } else if (data.type === 'DISCORD') {
+          if (!httpUrl(data.webhookUrl)) fail('webhookUrl');
+          else {
+            const webhook = new URL(data.webhookUrl.trim());
+            if (
+              !['discord.com', 'discordapp.com'].some(
+                /** Checks whether any entry satisfies `webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`)`. */
+                (domain) => webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`),
+              ) ||
+              !/\/api\/webhooks\/[^/]+\/[^/]+/.test(webhook.pathname)
+            )
+              fail('webhookUrl');
+          }
+        } else if (data.type === 'CUSTOM_APPRISE') {
+          if (
+            !z.url().safeParse(data.appriseUrl.trim()).success ||
+            /\s/.test(data.appriseUrl.trim()) ||
+            data.appriseUrl.trim().startsWith('file:')
+          )
+            fail('appriseUrl');
+        }
+      },
+    ),
 );
 
-const repositoryOptions = computed(() =>
-  props.repositories.map((repository) => ({ label: `${repository.owner}/${repository.name}`, value: repository.id })),
+const repositoryOptions = computed(
+  /** Derives repository options from the current reactive dependencies. */ () =>
+    props.repositories.map(
+      /** Projects each entry using `({ label: `${repository.owner}/${repository.name}`, value: repository.id })`. */ (
+        repository,
+      ) => ({ label: `${repository.owner}/${repository.name}`, value: repository.id }),
+    ),
 );
-const userOptions = computed(() => props.users.map((user) => ({ label: `@${user.username}`, value: user.id })));
-const typeOptions = computed(() =>
-  (['EMAIL', 'GOTIFY', 'NTFY', 'DISCORD', 'BROWSER_PUSH', 'CUSTOM_APPRISE'] as NotificationChannelType[]).map(
-    (value) => ({
-      disabled: value === 'BROWSER_PUSH' && !props.browserPushAvailable,
-      label: t(`notifications.channelTypes.${value}`),
-      value,
-    }),
-  ),
+const userOptions = computed(
+  /** Derives user options from the current reactive dependencies. */ () =>
+    props.users.map(
+      /** Projects each entry using `({ label: `@${user.username}`, value: user.id })`. */ (user) => ({
+        label: `@${user.username}`,
+        value: user.id,
+      }),
+    ),
 );
-const securityOptions = computed(() =>
-  (['NONE', 'STARTTLS', 'TLS'] as const).map((value) => ({ label: t(`notifications.security.${value}`), value })),
+const typeOptions = computed(
+  /** Derives type options from the current reactive dependencies. */ () =>
+    (['EMAIL', 'GOTIFY', 'NTFY', 'DISCORD', 'BROWSER_PUSH', 'CUSTOM_APPRISE'] as NotificationChannelType[]).map(
+      /** Projects each entry using `({ disabled: value === 'BROWSER_PUSH' && !props.browserPushAvailable, label: t(`notifications.channelTypes.${value}`), value, })`. */
+      (value) => ({
+        disabled: value === 'BROWSER_PUSH' && !props.browserPushAvailable,
+        label: t(`notifications.channelTypes.${value}`),
+        value,
+      }),
+    ),
+);
+const securityOptions = computed(
+  /** Derives security options from the current reactive dependencies. */ () =>
+    (['NONE', 'STARTTLS', 'TLS'] as const).map(
+      /** Projects each entry using `({ label: t(`notifications.security.${value}`), value })`. */ (value) => ({
+        label: t(`notifications.security.${value}`),
+        value,
+      }),
+    ),
 );
 const gotifyPriorityOptions = ['low', 'moderate', 'normal', 'high'];
 const ntfyPriorityOptions = ['min', 'low', 'default', 'high', 'max'];
 const showConfiguration = computed(
+  /** Derives show configuration from the current reactive dependencies. */
   () => form.value.type !== 'BROWSER_PUSH' && (!props.channel || form.value.replaceConfiguration),
 );
 const canSave = computed(
+  /** Derives can save from the current reactive dependencies. */
   () =>
     form.value.name.trim().length > 0 &&
-    eventTypes.some((eventType) => eventStates.value[eventType].selected) &&
+    eventTypes.some(
+      /** Checks whether any entry satisfies `eventStates.value[eventType].selected`. */ (eventType) =>
+        eventStates.value[eventType].selected,
+    ) &&
     (form.value.type !== 'BROWSER_PUSH' || form.value.browserRecipientUserIds.length > 0),
 );
-const canPreview = computed(() =>
-  eventTypes.some((eventType) => eventType.startsWith('WORKFLOW_RUN_') && eventStates.value[eventType].selected),
+const canPreview = computed(
+  /** Derives can preview from the current reactive dependencies. */ () =>
+    eventTypes.some(
+      /** Checks whether any entry satisfies `eventType.startsWith('WORKFLOW_RUN_') && eventStates.value[eventType].selected`. */ (
+        eventType,
+      ) => eventType.startsWith('WORKFLOW_RUN_') && eventStates.value[eventType].selected,
+    ),
 );
 
-watch(open, (isOpen) => {
-  if (!isOpen) return;
-  Object.assign(form.value, {
-    appriseUrl: '',
-    browserRecipientUserIds: props.channel?.browserRecipients.map(({ id }) => id) ?? [],
-    enabled: props.channel?.enabled ?? true,
-    from: '',
-    name: props.channel?.name ?? '',
-    ntfyPriority: 'default',
-    password: '',
-    port: 587,
-    priority: 'normal',
-    recipients: '',
-    security: 'STARTTLS',
-    serverUrl: '',
-    smtpHost: '',
-    token: '',
-    topic: '',
-    type: props.channel?.type ?? 'EMAIL',
-    username: '',
-    webhookUrl: '',
-  });
-  for (const eventType of eventTypes) {
-    const subscription = props.channel?.eventSubscriptions.find((item) => item.eventType === eventType);
-    Object.assign(eventStates.value[eventType], {
-      repositoryIds: subscription?.repositoryIds ?? [],
-      selected: Boolean(subscription),
-      workflowPatterns: subscription?.workflowPatterns.join(', ') ?? '',
+watch(
+  open,
+  /** Synchronizes channel dialog when the observed state changes. */ (isOpen) => {
+    if (!isOpen) return;
+    Object.assign(form.value, {
+      appriseUrl: '',
+      browserRecipientUserIds:
+        props.channel?.browserRecipients.map(/** Projects each entry using `id`. */ ({ id }) => id) ?? [],
+      enabled: props.channel?.enabled ?? true,
+      from: '',
+      name: props.channel?.name ?? '',
+      ntfyPriority: 'default',
+      password: '',
+      port: 587,
+      priority: 'normal',
+      recipients: '',
+      security: 'STARTTLS',
+      serverUrl: '',
+      smtpHost: '',
+      token: '',
+      topic: '',
+      type: props.channel?.type ?? 'EMAIL',
+      username: '',
+      webhookUrl: '',
     });
-  }
-  form.value.replaceConfiguration = false;
-  preview.value = null;
-  previewStatus.value = null;
-  saveError.value = false;
-});
+    for (const eventType of eventTypes) {
+      const subscription = props.channel?.eventSubscriptions.find(
+        /** Finds the first entry matching `item.eventType === eventType`. */ (item) => item.eventType === eventType,
+      );
+      Object.assign(eventStates.value[eventType], {
+        repositoryIds: subscription?.repositoryIds ?? [],
+        selected: Boolean(subscription),
+        workflowPatterns: subscription?.workflowPatterns.join(', ') ?? '',
+      });
+    }
+    form.value.replaceConfiguration = false;
+    preview.value = null;
+    previewStatus.value = null;
+    saveError.value = false;
+  },
+);
 
 watch(
   eventStates,
+  /** Synchronizes channel dialog when the observed state changes. */
   () => {
     preview.value = null;
     previewStatus.value = null;
@@ -495,20 +549,24 @@ watch(
   { deep: true },
 );
 
+/** Converts selected event controls into notification subscription contracts. */
 function eventSubscriptions(states: ChannelForm['eventStates']): NotificationEventSubscription[] {
   return eventTypes
-    .filter((eventType) => states[eventType]!.selected)
-    .map((eventType) => ({
-      eventType,
-      repositoryIds: states[eventType]!.repositoryIds,
-      workflowPatterns: eventType.startsWith('WORKFLOW_RUN_')
-        ? states[eventType]!.workflowPatterns.split(',')
-            .map((value) => value.trim())
-            .filter(Boolean)
-        : [],
-    }));
+    .filter(/** Keeps entries matching `states[eventType]!.selected`. */ (eventType) => states[eventType]!.selected)
+    .map(
+      /** Projects each entry using the eventSubscriptions mapping. */ (eventType) => ({
+        eventType,
+        repositoryIds: states[eventType]!.repositoryIds,
+        workflowPatterns: eventType.startsWith('WORKFLOW_RUN_')
+          ? states[eventType]!.workflowPatterns.split(',')
+              .map(/** Projects each entry using `value.trim()`. */ (value) => value.trim())
+              .filter(Boolean)
+          : [],
+      }),
+    );
 }
 
+/** Runs preview. */
 async function runPreview(): Promise<void> {
   const data = await channelForm.value?.validate({ silent: true });
   if (!data) return;
@@ -525,6 +583,7 @@ async function runPreview(): Promise<void> {
   }
 }
 
+/** Builds channel-specific credentials and options, omitting unchanged configuration. */
 function configuration(data: ChannelForm): NotificationChannelConfiguration | undefined {
   if (data.type === 'BROWSER_PUSH' || (props.channel && !data.replaceConfiguration)) return undefined;
   if (data.type === 'EMAIL') {
@@ -534,7 +593,7 @@ function configuration(data: ChannelForm): NotificationChannelConfiguration | un
       port: data.port || undefined,
       recipients: data.recipients
         .split(/[\n,;]/)
-        .map((value) => value.trim())
+        .map(/** Projects each entry using `value.trim()`. */ (value) => value.trim())
         .filter(Boolean),
       security: data.security,
       smtpHost: data.smtpHost.trim(),
@@ -557,6 +616,7 @@ function configuration(data: ChannelForm): NotificationChannelConfiguration | un
   return undefined;
 }
 
+/** Saves channel dialog. */
 async function save(event: FormSubmitEvent<ChannelForm>): Promise<void> {
   const data = event.data;
   submitting.value = true;

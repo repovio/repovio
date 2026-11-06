@@ -28,7 +28,7 @@ import { ProviderSyncQueueService } from './sync-queue.service.js';
 import { ProviderSyncService } from './sync.service.js';
 import { WorkItemSyncService } from './work-item-sync.service.js';
 
-@Module({
+/** Registers the providers module providers and imports with Nest. */ @Module({
   imports: [CaslModule, JobsModule, NotificationsModule, RepositoriesModule, SecurityModule, SystemStatusModule],
   controllers: [
     ProviderAccountsController,
@@ -54,6 +54,7 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
     GiteaActionsAdapter,
     {
       provide: ProviderAdapterRegistry,
+      /** Provides factory. */
       useFactory: (
         github: GitHubActionsAdapter,
         gitlab: GitLabPipelinesAdapter,

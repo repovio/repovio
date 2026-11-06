@@ -4,7 +4,8 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { CredentialEncryptionService } from '../../security/credential-encryption.service.js';
 import { BrowserPushService } from './browser-push.service.js';
 
-describe('BrowserPushService', () => {
+describe('BrowserPushService', /** Groups scenarios for BrowserPushService. */ () => {
+  /** Creates service. */
   function createService(existingUserId?: string) {
     const prisma = {
       browserPushSubscription: {
@@ -13,7 +14,11 @@ describe('BrowserPushService', () => {
         upsert: jest.fn().mockResolvedValue(undefined),
       },
     };
-    const credentials = { encrypt: jest.fn((value: string) => `encrypted:${value}`) };
+    const credentials = {
+      encrypt: jest.fn(
+        /** Provides isolated encrypt behavior for this test fixture. */ (value: string) => `encrypted:${value}`,
+      ),
+    };
     return {
       credentials,
       prisma,
@@ -24,7 +29,7 @@ describe('BrowserPushService', () => {
     };
   }
 
-  it('encrypts browser endpoint and key material before persistence', async () => {
+  it('encrypts browser endpoint and key material before persistence', /** Verifies encrypts browser endpoint and key material before persistence. */ async () => {
     const { credentials, prisma, service } = createService();
     await service.register('user-a', {
       endpoint: 'https://push.example.com/subscription',
@@ -44,7 +49,7 @@ describe('BrowserPushService', () => {
     );
   });
 
-  it('does not transfer an existing endpoint between users', async () => {
+  it('does not transfer an existing endpoint between users', /** Verifies does not transfer an existing endpoint between users. */ async () => {
     const { service } = createService('user-b');
     await expect(
       service.register('user-a', {

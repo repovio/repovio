@@ -10,7 +10,7 @@ import { CredentialEncryptionService } from '../../security/credential-encryptio
 import type { RegisterBrowserPushSubscriptionDto } from './dto/browser-push.dto.js';
 import type { NotificationPayload } from './notification-channel-adapter.js';
 
-export interface BrowserPushDeliveryResult {
+/** Defines the browser push delivery result contract shared by its consumers. */ export interface BrowserPushDeliveryResult {
   delivered: boolean;
   error: string | null;
   recordAttempt: boolean;
@@ -120,7 +120,12 @@ export class BrowserPushService {
     });
     if (subscriptions.length === 0 && deliveredSubscriptionIds.size === 0)
       throw new ServiceUnavailableException('No browser push subscriptions are registered.');
-    return Promise.all(subscriptions.map((subscription) => this.send(subscription, payload)));
+    return Promise.all(
+      subscriptions.map(
+        /** Projects each entry using `this.send(subscription, payload)`. */ (subscription) =>
+          this.send(subscription, payload),
+      ),
+    );
   }
 
   /**

@@ -74,12 +74,14 @@ async function loadAttentionCounts(): Promise<void> {
     needsAttentionResult.status === 'fulfilled' ? needsAttentionResult.value.data.meta.itemCount : null;
 }
 
-onMounted(() => void loadAttentionCounts());
-watch(() => route.fullPath, loadAttentionCounts);
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void loadAttentionCounts());
+watch(/** Reads the reactive dependencies observed by this watcher. */ () => route.fullPath, loadAttentionCounts);
 
 let observedProviderSync = false;
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => systemStatus.value.activity,
+  /** Synchronizes sidebar when the observed state changes. */
   (activity) => {
     if (activity) {
       observedProviderSync = true;

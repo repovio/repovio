@@ -242,23 +242,29 @@ const oidcFormBaseSchema = ApiUpdateOidcConfigSchema.pick({
   viewerGroups: z.string(),
 });
 type OidcForm = z.output<typeof oidcFormBaseSchema>;
-const oidcFormSchema = computed(() =>
-  oidcFormBaseSchema.superRefine((data, context) => {
-    const fail = (path: string): void =>
-      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
-    const parsed = ApiUpdateOidcConfigSchema.safeParse(oidcInput(data));
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) fail(String(issue.path[0] ?? 'issuer'));
-    }
-    if (data.enabled) {
-      if (!data.clientId.trim()) fail('clientId');
-      if (!data.issuer.trim()) fail('issuer');
-    }
-    if (data.issuer.trim()) {
-      const issuer = z.url({ protocol: data.allowHttpIssuer ? /^https?$/ : /^https$/ }).safeParse(data.issuer.trim());
-      if (!issuer.success) fail('issuer');
-    }
-  }),
+const oidcFormSchema = computed(
+  /** Derives oidc form schema from the current reactive dependencies. */ () =>
+    oidcFormBaseSchema.superRefine(
+      /** Validates input against the oidcFormSchema predicate. */ (data, context) => {
+        /** Adds a localized validation issue at the specified form path. */
+        const fail = (path: string): void =>
+          context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: [path] });
+        const parsed = ApiUpdateOidcConfigSchema.safeParse(oidcInput(data));
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues) fail(String(issue.path[0] ?? 'issuer'));
+        }
+        if (data.enabled) {
+          if (!data.clientId.trim()) fail('clientId');
+          if (!data.issuer.trim()) fail('issuer');
+        }
+        if (data.issuer.trim()) {
+          const issuer = z
+            .url({ protocol: data.allowHttpIssuer ? /^https?$/ : /^https$/ })
+            .safeParse(data.issuer.trim());
+          if (!issuer.success) fail('issuer');
+        }
+      },
+    ),
 );
 
 /** Build the write-only request without sending an unchanged stored client secret. */
@@ -281,19 +287,26 @@ function oidcInput(data: OidcForm): UpdateOidcConfig {
   return input;
 }
 
-const serialized = computed(() => JSON.stringify(form));
-const dirty = computed(() => serialized.value !== baseline.value);
-const secretHelp = computed(() =>
-  config.value?.clientSecretConfigured ? t('settings.oidc.secretConfigured') : t('settings.oidc.secretOptional'),
+const serialized = computed(
+  /** Derives serialized from the current reactive dependencies. */ () => JSON.stringify(form),
 );
-const checkDetails = computed(() =>
-  checkResult.value?.ok
-    ? [checkResult.value.idTokenAlgorithm, checkResult.value.tokenEndpointAuthenticationMethod]
-        .filter(Boolean)
-        .join(' · ')
-    : '',
+const dirty = computed(
+  /** Derives dirty from the current reactive dependencies. */ () => serialized.value !== baseline.value,
+);
+const secretHelp = computed(
+  /** Derives secret help from the current reactive dependencies. */ () =>
+    config.value?.clientSecretConfigured ? t('settings.oidc.secretConfigured') : t('settings.oidc.secretOptional'),
+);
+const checkDetails = computed(
+  /** Derives check details from the current reactive dependencies. */ () =>
+    checkResult.value?.ok
+      ? [checkResult.value.idTokenAlgorithm, checkResult.value.tokenEndpointAuthenticationMethod]
+          .filter(Boolean)
+          .join(' · ')
+      : '',
 );
 
+/** Copies persisted OpenID Connect settings into the editable form. */
 function apply(value: OidcConfig): void {
   config.value = value;
   Object.assign(form, {
@@ -314,13 +327,15 @@ function apply(value: OidcConfig): void {
   baseline.value = JSON.stringify(form);
 }
 
+/** Splits and trims multiline form input, discarding empty entries. */
 function lines(value: string): string[] {
   return value
     .split(/[\n,]/)
-    .map((item) => item.trim())
+    .map(/** Projects each entry using `item.trim()`. */ (item) => item.trim())
     .filter(Boolean);
 }
 
+/** Loads oidc card. */
 async function load(): Promise<void> {
   loading.value = true;
   loadError.value = false;
@@ -333,6 +348,7 @@ async function load(): Promise<void> {
   }
 }
 
+/** Saves oidc card. */
 async function save(event: FormSubmitEvent<OidcForm>): Promise<void> {
   saving.value = true;
   saveError.value = false;
@@ -349,6 +365,7 @@ async function save(event: FormSubmitEvent<OidcForm>): Promise<void> {
   }
 }
 
+/** Checks oidc card. */
 async function check(): Promise<void> {
   if (!(await oidcForm.value?.validate({ silent: true }))) return;
   checking.value = true;
@@ -362,11 +379,12 @@ async function check(): Promise<void> {
   }
 }
 
+/** Copies the configured OpenID Connect callback URL to the clipboard. */
 async function copyCallback(): Promise<void> {
   if (!config.value?.callbackUrl) return;
   await navigator.clipboard.writeText(config.value.callbackUrl);
   toast.add({ color: 'success', title: t('settings.oidc.copied') });
 }
 
-onMounted(() => void load());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void load());
 </script>

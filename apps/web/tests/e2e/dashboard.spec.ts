@@ -30,45 +30,78 @@ const dashboardSummary = {
 };
 /** Configure the current authenticated user and dashboard endpoint responses. */
 async function mockDashboard(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER'): Promise<void> {
-  await page.addInitScript((token) => window.localStorage.setItem('repovio.access-token', token), accessToken);
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({ contentType: 'application/json', json: { id: 'playwright', role, username: 'playwright' } });
-  });
-  await page.route('**/api/v1/issues/summary', (route) =>
-    route.fulfill({ json: { assigned: 3, open: 8, recentlyUpdated: 5, stale: 2 } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ (token) =>
+      window.localStorage.setItem('repovio.access-token', token),
+    accessToken,
   );
-  await page.route('**/api/v1/pull-requests/summary', (route) =>
-    route.fulfill({ json: { drafts: 1, failedWorkflows: 2, open: 4, workflowApprovalRequired: 1 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright', role, username: 'playwright' },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/issues/summary',
+    /** Supplies the mocked response for `/api/v1/issues/summary`. */ (route) =>
+      route.fulfill({ json: { assigned: 3, open: 8, recentlyUpdated: 5, stale: 2 } }),
+  );
+  await page.route(
+    '**/api/v1/pull-requests/summary',
+    /** Supplies the mocked response for `/api/v1/pull-requests/summary`. */ (route) =>
+      route.fulfill({ json: { drafts: 1, failedWorkflows: 2, open: 4, workflowApprovalRequired: 1 } }),
   );
 }
 
-test('redirects unauthenticated visitors to sign-in', async ({ page }) => {
-  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
+test('redirects unauthenticated visitors to sign-in', /** Verifies redirects unauthenticated visitors to sign-in. */ async ({
+  page,
+}) => {
+  await page.route(
+    '**/api/v1/auth/setup-status',
+    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
+      route.fulfill({ json: { initialized: true } }),
+  );
   await page.goto('/');
 
   await expect(page).toHaveURL(/\/auth\/signin$/);
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
 });
 
-test('hides system administration navigation from viewers', async ({ page }) => {
+test('hides system administration navigation from viewers', /** Verifies hides system administration navigation from viewers. */ async ({
+  page,
+}) => {
   await mockDashboard(page, 'VIEWER');
-  await page.route('**/api/v1/dashboard/failures', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/latest-runs', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/summary**', (route) =>
-    route.fulfill({
-      json: {
-        awaitingApprovalCount: 0,
-        completedCount: 0,
-        medianDurationMs: null,
-        queuedCount: 0,
-        runningCount: 0,
-        statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
-        successRate: 0,
-        totalRunDurationMs: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) => route.fulfill({ json: [] }),
   );
-  await page.route('**/api/v1/dashboard/trend**', (route) => route.fulfill({ json: [] }));
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/summary**',
+    /** Supplies the mocked response for `/api/v1/dashboard/summary**`. */ (route) =>
+      route.fulfill({
+        json: {
+          awaitingApprovalCount: 0,
+          completedCount: 0,
+          medianDurationMs: null,
+          queuedCount: 0,
+          runningCount: 0,
+          statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
+          successRate: 0,
+          totalRunDurationMs: 0,
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => route.fulfill({ json: [] }),
+  );
 
   await page.goto('/');
 
@@ -80,53 +113,72 @@ test('hides system administration navigation from viewers', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Repository health' })).toHaveCount(0);
 });
 
-test('renders dashboard values, reloads for range filters, and presents request errors', async ({ page }, testInfo) => {
+test('renders dashboard values, reloads for range filters, and presents request errors', /** Verifies renders dashboard values, reloads for range filters, and presents request errors. */ async ({
+  page,
+}, testInfo) => {
   await mockDashboard(page, 'SYSTEM_ADMIN');
   let failDashboardRequest = false;
   const summaryUrls: string[] = [];
   const trendUrls: string[] = [];
   const pullRequestUrls: string[] = [];
-  await page.route('**/api/v1/dashboard/failures', (route) =>
-    failDashboardRequest
-      ? route.abort('failed')
-      : route.fulfill({ contentType: 'application/json', json: [dashboardRun] }),
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) =>
+      failDashboardRequest
+        ? route.abort('failed')
+        : route.fulfill({ contentType: 'application/json', json: [dashboardRun] }),
   );
-  await page.route('**/api/v1/dashboard/latest-runs', (route) =>
-    route.fulfill({ contentType: 'application/json', json: [dashboardRun] }),
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) =>
+      route.fulfill({ contentType: 'application/json', json: [dashboardRun] }),
   );
-  await page.route('**/api/v1/dashboard/summary**', (route) => {
-    summaryUrls.push(route.request().url());
-    return route.fulfill({ contentType: 'application/json', json: dashboardSummary });
-  });
-  await page.route('**/api/v1/dashboard/trend**', (route) => {
-    trendUrls.push(route.request().url());
-    return route.fulfill({
-      contentType: 'application/json',
-      json: [
-        { bucketStart: '2026-08-26T00:00:00.000Z', errorCount: 1, successCount: 2 },
-        { bucketStart: '2026-08-27T00:00:00.000Z', errorCount: 1, successCount: 1 },
-      ],
-    });
-  });
-  await page.route('**/api/v1/pull-requests/filter-options', (route) =>
-    route.fulfill({ json: { assignees: [], authors: [], labels: [], milestones: [] } }),
+  await page.route(
+    '**/api/v1/dashboard/summary**',
+    /** Supplies the mocked response for `/api/v1/dashboard/summary**`. */ (route) => {
+      summaryUrls.push(route.request().url());
+      return route.fulfill({ contentType: 'application/json', json: dashboardSummary });
+    },
   );
-  await page.route(/\/api\/v1\/pull-requests(?:\?.*)?$/, (route) => {
-    pullRequestUrls.push(route.request().url());
-    return route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 25 },
-      },
-    });
-  });
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1_000 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => {
+      trendUrls.push(route.request().url());
+      return route.fulfill({
+        contentType: 'application/json',
+        json: [
+          { bucketStart: '2026-08-26T00:00:00.000Z', errorCount: 1, successCount: 2 },
+          { bucketStart: '2026-08-27T00:00:00.000Z', errorCount: 1, successCount: 1 },
+        ],
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/pull-requests/filter-options',
+    /** Supplies the mocked response for `/api/v1/pull-requests/filter-options`. */ (route) =>
+      route.fulfill({ json: { assignees: [], authors: [], labels: [], milestones: [] } }),
+  );
+  await page.route(
+    /\/api\/v1\/pull-requests(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      pullRequestUrls.push(route.request().url());
+      return route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 25 },
+        },
+      });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1_000 },
+        },
+      }),
   );
 
   await page.goto('/');
@@ -197,14 +249,17 @@ test('renders dashboard values, reloads for range filters, and presents request 
   await expect(trendChart).toBeVisible();
   await expect(trendChart.locator('[data-series="success"]')).toHaveCount(2);
   await expect(trendChart.locator('[data-series="error"]')).toHaveCount(2);
-  const stackedBars = await trendChart.locator('[data-series]').evaluateAll((segments) =>
-    segments.map((segment) => ({
-      height: Number(segment.getAttribute('height')),
-      series: segment.getAttribute('data-series'),
-      width: Number(segment.getAttribute('width')),
-      x: Number(segment.getAttribute('x')),
-      y: Number(segment.getAttribute('y')),
-    })),
+  const stackedBars = await trendChart.locator('[data-series]').evaluateAll(
+    /** Reads the rendered element state used by this browser assertion. */ (segments) =>
+      segments.map(
+        /** Projects each entry using the stackedBars mapping. */ (segment) => ({
+          height: Number(segment.getAttribute('height')),
+          series: segment.getAttribute('data-series'),
+          width: Number(segment.getAttribute('width')),
+          x: Number(segment.getAttribute('x')),
+          y: Number(segment.getAttribute('y')),
+        }),
+      ),
   );
   expect(stackedBars).toHaveLength(4);
   expect(stackedBars[0]).toMatchObject({
@@ -229,8 +284,18 @@ test('renders dashboard values, reloads for range filters, and presents request 
 
   await page.getByRole('combobox', { name: 'Dashboard period' }).click();
   await page.getByRole('option', { name: 'Last 7 days' }).click();
-  await expect.poll(() => trendUrls.some((url) => new URL(url).searchParams.get('bucket') === 'hour')).toBe(true);
-  await expect.poll(() => summaryUrls.length).toBe(2);
+  await expect
+    .poll(
+      /** Evaluates `trendUrls.some((url) => new URL(url).searchParams.get('bucket') === 'hour')` when expect.poll invokes this callback. */ () =>
+        trendUrls.some(
+          /** Checks whether any entry satisfies `new URL(url).searchParams.get('bucket') === 'hour'`. */ (url) =>
+            new URL(url).searchParams.get('bucket') === 'hour',
+        ),
+    )
+    .toBe(true);
+  await expect
+    .poll(/** Evaluates `summaryUrls.length` when expect.poll invokes this callback. */ () => summaryUrls.length)
+    .toBe(2);
 
   failDashboardRequest = true;
   await page.getByRole('button', { name: 'Refresh' }).click();
@@ -242,17 +307,24 @@ test('renders dashboard values, reloads for range filters, and presents request 
   await expect(page.getByRole('heading', { name: 'Status distribution' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Repository health' })).toHaveCount(0);
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the dashboard scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
 
-  await page.evaluate(() =>
-    window.localStorage.setItem(
-      'table:pull-requests:filtering',
-      JSON.stringify({
-        filters: [{ field: 'state', id: 'saved-state', operator: 'in', type: 'enum', value: ['CLOSED'] }],
-        operator: 'AND',
-      }),
-    ),
+  await page.evaluate(
+    /** Reads or updates browser state for the dashboard scenario. */ () =>
+      window.localStorage.setItem(
+        'table:pull-requests:filtering',
+        JSON.stringify({
+          filters: [{ field: 'state', id: 'saved-state', operator: 'in', type: 'enum', value: ['CLOSED'] }],
+          operator: 'AND',
+        }),
+      ),
   );
   const openPullRequestsLink = workSummary.getByRole('link').filter({ hasText: 'Open pull requests' });
   await openPullRequestsLink.focus();
@@ -262,13 +334,29 @@ test('renders dashboard values, reloads for range filters, and presents request 
   await expect(page).toHaveURL(/\/pull-requests\?preset=open$/);
   await expect(page.getByRole('button', { name: 'Open pull requests' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('pull-request-open-preset.png'), fullPage: true });
-  await expect.poll(() => new URL(pullRequestUrls.at(-1)!).searchParams.get('where') ?? '').toContain('OPEN');
+  await expect
+    .poll(
+      /** Evaluates `new URL(pullRequestUrls.at(-1)!).searchParams.get('where') ?? ''` when expect.poll invokes this callback. */ () =>
+        new URL(pullRequestUrls.at(-1)!).searchParams.get('where') ?? '',
+    )
+    .toContain('OPEN');
   expect(new URL(pullRequestUrls.at(-1)!).searchParams.get('where') ?? '').not.toContain('CLOSED');
   await expect
-    .poll(() => page.evaluate(() => JSON.parse(window.localStorage.getItem('table:pull-requests:filtering') ?? '{}')))
+    .poll(
+      /** Evaluates `page.evaluate(() => JSON.parse(window.localStorage.getItem('table:pull-requests:filtering') ?? '{}'))` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the dashboard scenario. */ () =>
+            JSON.parse(window.localStorage.getItem('table:pull-requests:filtering') ?? '{}'),
+        ),
+    )
     .toMatchObject({ filters: [{ field: 'state', value: ['OPEN'] }], operator: 'AND' });
 
   await page.getByRole('button', { name: 'Open pull requests' }).click();
   await expect(page).toHaveURL(/\/pull-requests$/);
-  await expect.poll(() => new URL(pullRequestUrls.at(-1)!).searchParams.get('where')).toBeNull();
+  await expect
+    .poll(
+      /** Evaluates `new URL(pullRequestUrls.at(-1)!).searchParams.get('where')` when expect.poll invokes this callback. */ () =>
+        new URL(pullRequestUrls.at(-1)!).searchParams.get('where'),
+    )
+    .toBeNull();
 });

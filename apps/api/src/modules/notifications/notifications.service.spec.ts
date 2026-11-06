@@ -8,7 +8,7 @@ import { NotificationChannelUrlService } from './notification-channel-url.servic
 import type { NotificationDeliveryService } from './notification-delivery.service.js';
 import { NotificationsService } from './notifications.service.js';
 
-describe('NotificationsService', () => {
+describe('NotificationsService', /** Groups scenarios for NotificationsService. */ () => {
   const viewer = { authProvider: 'LOCAL' as const, id: 'user-a', role: 'VIEWER' as const, username: 'viewer' };
   const admin = { authProvider: 'LOCAL' as const, id: 'admin-a', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
   const failedRun = {
@@ -21,6 +21,7 @@ describe('NotificationsService', () => {
     workflowName: 'Deploy production',
   };
 
+  /** Creates service. */
   function createService() {
     const prisma = {
       notificationChannel: {
@@ -49,7 +50,9 @@ describe('NotificationsService', () => {
         prisma as unknown as PrismaService,
         {
           decrypt: jest.fn(),
-          encrypt: jest.fn((secret: string) => `encrypted:${secret}`),
+          encrypt: jest.fn(
+            /** Provides isolated encrypt behavior for this test fixture. */ (secret: string) => `encrypted:${secret}`,
+          ),
         } as unknown as CredentialEncryptionService,
         new WorkflowFilterService(),
         delivery as unknown as NotificationDeliveryService,
@@ -59,7 +62,7 @@ describe('NotificationsService', () => {
     };
   }
 
-  it('lists global channels without applying repository membership filters', async () => {
+  it('lists global channels without applying repository membership filters', /** Verifies lists global channels without applying repository membership filters. */ async () => {
     const { prisma, service } = createService();
 
     await service.listChannels();
@@ -69,7 +72,7 @@ describe('NotificationsService', () => {
     );
   });
 
-  it('allows only system administrators to mutate global channels or read history', async () => {
+  it('allows only system administrators to mutate global channels or read history', /** Verifies allows only system administrators to mutate global channels or read history. */ async () => {
     const { service } = createService();
     const eventSubscriptions = [{ eventType: 'ISSUE_OPENED' as const }];
 
@@ -79,7 +82,7 @@ describe('NotificationsService', () => {
     await expect(service.listDeliveryHistory(viewer)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('encrypts destination configuration and persists normalized global event filters', async () => {
+  it('encrypts destination configuration and persists normalized global event filters', /** Verifies encrypts destination configuration and persists normalized global event filters. */ async () => {
     const { prisma, service } = createService();
     prisma.repository.count.mockResolvedValue(1);
     prisma.notificationChannel.create.mockResolvedValue({});
@@ -115,7 +118,7 @@ describe('NotificationsService', () => {
     );
   });
 
-  it('requires recipients only for browser-push channels', async () => {
+  it('requires recipients only for browser-push channels', /** Verifies requires recipients only for browser-push channels. */ async () => {
     const { prisma, service } = createService();
     prisma.user.count.mockResolvedValue(1);
     prisma.notificationChannel.create.mockResolvedValue({});
@@ -134,7 +137,7 @@ describe('NotificationsService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('does not emit workflow notifications while establishing a baseline', async () => {
+  it('does not emit workflow notifications while establishing a baseline', /** Verifies does not emit workflow notifications while establishing a baseline. */ async () => {
     const { prisma, service } = createService();
 
     await service.evaluateWorkflowRun(failedRun, null, true);
@@ -143,7 +146,7 @@ describe('NotificationsService', () => {
     expect(prisma.notificationDelivery.createMany).not.toHaveBeenCalled();
   });
 
-  it('emits one recovered delivery when either success or recovery matches', async () => {
+  it('emits one recovered delivery when either success or recovery matches', /** Verifies emits one recovered delivery when either success or recovery matches. */ async () => {
     const { delivery, prisma, service } = createService();
     prisma.workflowRun.findFirst.mockResolvedValue({ status: 'FAILED' });
     prisma.notificationChannel.findMany.mockResolvedValue([
@@ -169,7 +172,7 @@ describe('NotificationsService', () => {
     expect(delivery.deliverPending).toHaveBeenCalledWith(['delivery-a']);
   });
 
-  it('does not emit an event when a workflow glob does not match', async () => {
+  it('does not emit an event when a workflow glob does not match', /** Verifies does not emit an event when a workflow glob does not match. */ async () => {
     const { prisma, service } = createService();
     prisma.notificationChannel.findMany.mockResolvedValue([
       {
@@ -183,7 +186,7 @@ describe('NotificationsService', () => {
     expect(prisma.notificationDelivery.createMany).not.toHaveBeenCalled();
   });
 
-  it('queues a deduplicated security-alert delivery with only the alert reference', async () => {
+  it('queues a deduplicated security-alert delivery with only the alert reference', /** Verifies queues a deduplicated security-alert delivery with only the alert reference. */ async () => {
     const { delivery, prisma, service } = createService();
     prisma.notificationChannel.findMany.mockResolvedValue([
       {
@@ -212,7 +215,7 @@ describe('NotificationsService', () => {
     expect(delivery.deliverPending).toHaveBeenCalledWith(['delivery-a']);
   });
 
-  it('previews matching workflow runs without creating a delivery', async () => {
+  it('previews matching workflow runs without creating a delivery', /** Verifies previews matching workflow runs without creating a delivery. */ async () => {
     const { delivery, prisma, service } = createService();
     prisma.repository.count.mockResolvedValue(1);
     prisma.repository.findMany.mockResolvedValue([
@@ -244,7 +247,7 @@ describe('NotificationsService', () => {
     expect(delivery.deliverPending).not.toHaveBeenCalled();
   });
 
-  it('shows the recovered event when a success subscription matches a recovered run', async () => {
+  it('shows the recovered event when a success subscription matches a recovered run', /** Verifies shows the recovered event when a success subscription matches a recovered run. */ async () => {
     const { prisma, service } = createService();
     prisma.repository.findMany.mockResolvedValue([
       { id: 'repository-a', lastSyncAt: new Date(), name: 'repovio', owner: 'owner', syncRequest: null },
@@ -281,17 +284,20 @@ describe('NotificationsService', () => {
       },
       'SYNCHRONIZATION_FAILED',
     ],
-  ])('reports unavailable preview data as %s', async (repository, status) => {
-    const { prisma, service } = createService();
-    prisma.repository.findMany.mockResolvedValue([repository]);
+  ])(
+    'reports unavailable preview data as %s',
+    /** Verifies reports unavailable preview data as %s. */ async (repository, status) => {
+      const { prisma, service } = createService();
+      prisma.repository.findMany.mockResolvedValue([repository]);
 
-    await expect(service.previewRules(admin, [{ eventType: 'WORKFLOW_RUN_FAILED' }])).resolves.toEqual({
-      matches: [],
-      status,
-    });
-  });
+      await expect(service.previewRules(admin, [{ eventType: 'WORKFLOW_RUN_FAILED' }])).resolves.toEqual({
+        matches: [],
+        status,
+      });
+    },
+  );
 
-  it('reports partial data when only some repositories are synchronized', async () => {
+  it('reports partial data when only some repositories are synchronized', /** Verifies reports partial data when only some repositories are synchronized. */ async () => {
     const { prisma, service } = createService();
     prisma.repository.findMany.mockResolvedValue([
       { id: 'repository-a', lastSyncAt: new Date(), name: 'one', owner: 'owner', syncRequest: null },
@@ -304,7 +310,7 @@ describe('NotificationsService', () => {
     });
   });
 
-  it('reports no results when synchronized workflow data does not match', async () => {
+  it('reports no results when synchronized workflow data does not match', /** Verifies reports no results when synchronized workflow data does not match. */ async () => {
     const { prisma, service } = createService();
     prisma.repository.findMany.mockResolvedValue([
       { id: 'repository-a', lastSyncAt: new Date(), name: 'one', owner: 'owner', syncRequest: null },
@@ -316,7 +322,7 @@ describe('NotificationsService', () => {
     });
   });
 
-  it('requires administrator permission for previews', async () => {
+  it('requires administrator permission for previews', /** Verifies requires administrator permission for previews. */ async () => {
     const { service } = createService();
 
     await expect(service.previewRules(viewer, [{ eventType: 'WORKFLOW_RUN_FAILED' }])).rejects.toBeInstanceOf(

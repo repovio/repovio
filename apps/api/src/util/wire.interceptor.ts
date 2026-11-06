@@ -22,6 +22,12 @@ export class WireInterceptor implements NestInterceptor {
   intercept(_context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next
       .handle()
-      .pipe(map((value) => (value instanceof StreamableFile || Buffer.isBuffer(value) ? value : toWire(value))));
+      .pipe(
+        map(
+          /** Projects each entry using `(value instanceof StreamableFile || Buffer.isBuffer(value) ? value : toWire(value))`. */ (
+            value,
+          ) => (value instanceof StreamableFile || Buffer.isBuffer(value) ? value : toWire(value)),
+        ),
+      );
   }
 }

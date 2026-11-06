@@ -12,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { PullRequestQueryDto } from './dto/pull-request-query.dto.js';
 
-export interface PullRequestTypeMap extends BaseDelegateTypeMap {
+/** Defines the pull request type map contract shared by its consumers. */ export interface PullRequestTypeMap extends BaseDelegateTypeMap {
   select: Prisma.PullRequestSelect;
   include: Prisma.PullRequestInclude;
   whereInput: Prisma.PullRequestWhereInput;

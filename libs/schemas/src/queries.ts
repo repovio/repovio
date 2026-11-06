@@ -66,7 +66,10 @@ function scalarFilter(field: Field, scalar: z.ZodType): z.ZodType {
     shape.mode = z.enum(['default', 'insensitive']).optional();
   }
   const operations: z.ZodType = z
-    .lazy(() => z.strictObject({ ...shape, not: z.union([value, operations]).optional() }))
+    .lazy(
+      /** Evaluates `z.strictObject({ ...shape, not: z.union([value, operations]).optional() })` when z .lazy invokes this callback. */ () =>
+        z.strictObject({ ...shape, not: z.union([value, operations]).optional() }),
+    )
     .meta({ id: `${field.type}${field.nullable ? 'Nullable' : ''}Filter` });
   const result = z.union([value, operations]);
   scalarFilterCache.set(cacheKey, result);
@@ -77,31 +80,33 @@ function scalarFilter(field: Field, scalar: z.ZodType): z.ZodType {
 export function resourceWhereFor(model: string): z.ZodType<Filter> {
   const cached = whereCache.get(model);
   if (cached) return cached;
-  let schema: z.ZodType<Filter> = z.lazy(() => {
-    const shape: Record<string, z.ZodType> = {};
-    for (const [name, field] of Object.entries(models[model] ?? {})) {
-      const scalar = scalarFor(field);
-      if (scalar) shape[name] = scalarFilter(field, scalar).optional();
-      else if (models[field.type]) {
-        const nested = resourceWhereFor(field.type);
-        shape[name] = field.list
-          ? z.strictObject({ some: nested.optional(), every: nested.optional(), none: nested.optional() }).optional()
-          : z
-              .union([
-                nested,
-                z.strictObject({ is: nested.nullable().optional(), isNot: nested.nullable().optional() }),
-              ])
-              .nullable()
-              .optional();
+  let schema: z.ZodType<Filter> = z.lazy(
+    /** Defers recursive filter schema construction until nested filters are parsed. */ () => {
+      const shape: Record<string, z.ZodType> = {};
+      for (const [name, field] of Object.entries(models[model] ?? {})) {
+        const scalar = scalarFor(field);
+        if (scalar) shape[name] = scalarFilter(field, scalar).optional();
+        else if (models[field.type]) {
+          const nested = resourceWhereFor(field.type);
+          shape[name] = field.list
+            ? z.strictObject({ some: nested.optional(), every: nested.optional(), none: nested.optional() }).optional()
+            : z
+                .union([
+                  nested,
+                  z.strictObject({ is: nested.nullable().optional(), isNot: nested.nullable().optional() }),
+                ])
+                .nullable()
+                .optional();
+        }
       }
-    }
-    if (model === 'SecurityAlert')
-      shape.location = z.strictObject({ path: z.tuple([z.literal('path')]), equals: z.string() }).optional();
-    shape.AND = z.union([schema, z.array(schema)]).optional();
-    shape.OR = z.array(schema).optional();
-    shape.NOT = z.union([schema, z.array(schema)]).optional();
-    return z.strictObject(shape);
-  });
+      if (model === 'SecurityAlert')
+        shape.location = z.strictObject({ path: z.tuple([z.literal('path')]), equals: z.string() }).optional();
+      shape.AND = z.union([schema, z.array(schema)]).optional();
+      shape.OR = z.array(schema).optional();
+      shape.NOT = z.union([schema, z.array(schema)]).optional();
+      return z.strictObject(shape);
+    },
+  );
   schema = schema.meta({ id: `${model}Where` });
   whereCache.set(model, schema);
   return schema;
@@ -111,33 +116,36 @@ export function resourceWhereFor(model: string): z.ZodType<Filter> {
 function sortFor(model: string): z.ZodType<Filter> {
   const cached = sortCache.get(model);
   if (cached) return cached;
-  let schema: z.ZodType<Filter> = z.lazy(() =>
-    z.strictObject(
-      Object.fromEntries(
-        Object.entries(models[model] ?? {}).flatMap<[string, z.ZodType]>(([name, field]) => {
-          if (scalarFor(field))
-            return [
-              [
-                name,
-                z
-                  .union([
-                    z.enum(['asc', 'desc']),
-                    z.strictObject({ sort: z.enum(['asc', 'desc']), nulls: z.enum(['first', 'last']).optional() }),
-                  ])
-                  .optional(),
-              ],
-            ];
-          if (models[field.type])
-            return [
-              [
-                name,
-                (field.list ? z.strictObject({ _count: z.enum(['asc', 'desc']) }) : sortFor(field.type)).optional(),
-              ],
-            ];
-          return [];
-        }),
+  let schema: z.ZodType<Filter> = z.lazy(
+    /** Defers recursive filter schema construction until nested filters are parsed. */ () =>
+      z.strictObject(
+        Object.fromEntries(
+          Object.entries(models[model] ?? {}).flatMap<[string, z.ZodType]>(
+            /** Flattens entries produced by the schema mapping. */ ([name, field]) => {
+              if (scalarFor(field))
+                return [
+                  [
+                    name,
+                    z
+                      .union([
+                        z.enum(['asc', 'desc']),
+                        z.strictObject({ sort: z.enum(['asc', 'desc']), nulls: z.enum(['first', 'last']).optional() }),
+                      ])
+                      .optional(),
+                  ],
+                ];
+              if (models[field.type])
+                return [
+                  [
+                    name,
+                    (field.list ? z.strictObject({ _count: z.enum(['asc', 'desc']) }) : sortFor(field.type)).optional(),
+                  ],
+                ];
+              return [];
+            },
+          ),
+        ),
       ),
-    ),
   );
   schema = schema.meta({ id: `${model}OrderBy` });
   sortCache.set(model, schema);
@@ -149,32 +157,35 @@ function selectionFor(model: string, mode: 'select' | 'include' = 'select'): z.Z
   const cacheKey = `${model}:${mode}`;
   const cached = selectionCache.get(cacheKey);
   if (cached) return cached;
-  let schema: z.ZodType<Filter> = z.lazy(() =>
-    z.strictObject(
-      Object.fromEntries(
-        Object.entries(models[model] ?? {}).flatMap<[string, z.ZodType]>(([name, field]) => {
-          if (scalarFor(field)) return mode === 'select' ? [[name, z.boolean().optional()]] : [];
-          if (models[field.type])
-            return [
-              [
-                name,
-                z
-                  .union([
-                    z.boolean(),
-                    z.strictObject({
-                      select: selectionFor(field.type).optional(),
-                      include: selectionFor(field.type, 'include').optional(),
-                      where: resourceWhereFor(field.type).optional(),
-                      orderBy: z.union([sortFor(field.type), z.array(sortFor(field.type))]).optional(),
-                    }),
-                  ])
-                  .optional(),
-              ],
-            ];
-          return [];
-        }),
+  let schema: z.ZodType<Filter> = z.lazy(
+    /** Defers recursive filter schema construction until nested filters are parsed. */ () =>
+      z.strictObject(
+        Object.fromEntries(
+          Object.entries(models[model] ?? {}).flatMap<[string, z.ZodType]>(
+            /** Flattens entries produced by the schema mapping. */ ([name, field]) => {
+              if (scalarFor(field)) return mode === 'select' ? [[name, z.boolean().optional()]] : [];
+              if (models[field.type])
+                return [
+                  [
+                    name,
+                    z
+                      .union([
+                        z.boolean(),
+                        z.strictObject({
+                          select: selectionFor(field.type).optional(),
+                          include: selectionFor(field.type, 'include').optional(),
+                          where: resourceWhereFor(field.type).optional(),
+                          orderBy: z.union([sortFor(field.type), z.array(sortFor(field.type))]).optional(),
+                        }),
+                      ])
+                      .optional(),
+                  ],
+                ];
+              return [];
+            },
+          ),
+        ),
       ),
-    ),
   );
   schema = schema.meta({ id: `${model}${mode === 'include' ? 'Include' : 'Select'}` });
   selectionCache.set(cacheKey, schema);
@@ -194,8 +205,8 @@ const paginationSchema = z.strictObject({
 /** Build model-specific queries while keeping database types out of the browser. */
 export function createResourceQuerySchema(model: string) {
   const scalarNames = Object.entries(models[model])
-    .filter(([, field]) => Boolean(scalarFor(field)))
-    .map(([name]) => name) as [string, ...string[]];
+    .filter(/** Keeps entries matching `Boolean(scalarFor(field))`. */ ([, field]) => Boolean(scalarFor(field)))
+    .map(/** Projects each entry using `name`. */ ([name]) => name) as [string, ...string[]];
   return paginationSchema.extend({
     where: resourceWhereFor(model).optional(),
     orderBy: z.union([sortFor(model), z.array(sortFor(model))]).optional(),

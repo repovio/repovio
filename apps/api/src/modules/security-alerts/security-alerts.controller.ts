@@ -59,6 +59,7 @@ export class SecurityAlertsController {
     return ResourceQuery.query({
       ability,
       include: securityAlertInclude,
+      /** Maps map. */
       map: (alert: SecurityAlertResourceModel) => SecurityAlertDto.fromModel(alert, false, ability),
       query: this.alerts.toQueryOptions(query),
       schema: resourceFields(SecurityAlertDto),
@@ -83,11 +84,17 @@ export class SecurityAlertsController {
     const repositoryIds = await this.alerts.visibleRepositoryIds(request.user);
     const [kindCounts, severityCounts, unavailable] = await Promise.all([
       Promise.all(
-        kinds.map((kind) => this.prisma.securityAlert.count({ where: { AND: [visible, { kind, state: 'OPEN' }] } })),
+        kinds.map(
+          /** Projects each entry using `this.prisma.securityAlert.count({ where: { AND: [visible, { kind, state: 'OPEN' }] } })`. */ (
+            kind,
+          ) => this.prisma.securityAlert.count({ where: { AND: [visible, { kind, state: 'OPEN' }] } }),
+        ),
       ),
       Promise.all(
-        severities.map((severity) =>
-          this.prisma.securityAlert.count({ where: { AND: [visible, { severity, state: 'OPEN' }] } }),
+        severities.map(
+          /** Projects each entry using `this.prisma.securityAlert.count({ where: { AND: [visible, { severity, state: 'OPEN' }] } })`. */ (
+            severity,
+          ) => this.prisma.securityAlert.count({ where: { AND: [visible, { severity, state: 'OPEN' }] } }),
         ),
       ),
       this.prisma.securityAlertSyncState.findMany({
@@ -100,14 +107,19 @@ export class SecurityAlertsController {
       }),
     ]);
     return {
-      open: Object.fromEntries(kinds.map((kind, index) => [kind, kindCounts[index]])) as Record<
-        SecurityAlertKind,
-        number
-      >,
-      severity: Object.fromEntries(severities.map((severity, index) => [severity, severityCounts[index]])) as Record<
-        SecurityAlertSeverity,
-        number
-      >,
+      open: Object.fromEntries(
+        kinds.map(
+          /** Projects each entry using `[kind, kindCounts[index]]`. */ (kind, index) => [kind, kindCounts[index]],
+        ),
+      ) as Record<SecurityAlertKind, number>,
+      severity: Object.fromEntries(
+        severities.map(
+          /** Projects each entry using `[severity, severityCounts[index]]`. */ (severity, index) => [
+            severity,
+            severityCounts[index],
+          ],
+        ),
+      ) as Record<SecurityAlertSeverity, number>,
       unavailableRepositories: unavailable.length,
     };
   }
@@ -150,27 +162,50 @@ export class SecurityAlertsController {
      * @returns Sorted distinct values.
      */
     const values = (field: keyof (typeof items)[number]) =>
-      [...new Set(items.flatMap((item) => (typeof item[field] === 'string' ? [item[field] as string] : [])))].sort();
-    const repositories = [...new Map(items.map(({ repository }) => [repository.id, repository])).values()].sort(
+      [
+        ...new Set(
+          items.flatMap(
+            /** Flattens entries produced by `(typeof item[field] === 'string' ? [item[field] as string] : [])`. */ (
+              item,
+            ) => (typeof item[field] === 'string' ? [item[field] as string] : []),
+          ),
+        ),
+      ].sort();
+    const repositories = [
+      ...new Map(
+        items.map(
+          /** Projects each entry using `[repository.id, repository]`. */ ({ repository }) => [
+            repository.id,
+            repository,
+          ],
+        ),
+      ).values(),
+    ].sort(
+      /** Orders entries using ``${left.owner}/${left.name}`.localeCompare(`${right.owner}/${right.name}`)`. */
       (left, right) => `${left.owner}/${left.name}`.localeCompare(`${right.owner}/${right.name}`),
     );
     const paths = [
       ...new Set(
-        items.flatMap(({ location }) =>
-          location &&
-          typeof location === 'object' &&
-          !Array.isArray(location) &&
-          typeof (location as Record<string, unknown>).path === 'string'
-            ? [(location as Record<string, string>).path]
-            : [],
+        items.flatMap(
+          /** Flattens entries produced by the paths mapping. */ ({ location }) =>
+            location &&
+            typeof location === 'object' &&
+            !Array.isArray(location) &&
+            typeof (location as Record<string, unknown>).path === 'string'
+              ? [(location as Record<string, string>).path]
+              : [],
         ),
       ),
     ].sort();
     return {
-      availability: availability.map((item) => ({
-        ...item,
-        lastSuccessfulSyncAt: item.lastSuccessfulSyncAt?.toISOString() ?? null,
-      })),
+      availability: availability.map(
+        /** Projects each entry using `({ ...item, lastSuccessfulSyncAt: item.lastSuccessfulSyncAt?.toISOString() ?? null, })`. */ (
+          item,
+        ) => ({
+          ...item,
+          lastSuccessfulSyncAt: item.lastSuccessfulSyncAt?.toISOString() ?? null,
+        }),
+      ),
       ecosystems: values('ecosystem'),
       manifests: values('manifest'),
       packages: values('packageName'),

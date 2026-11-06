@@ -59,7 +59,7 @@ for (const [network, prefix] of [
   blockedAddresses.addSubnet(network, prefix, 'ipv6');
 }
 
-export interface AvatarSource {
+/** Defines the avatar source contract shared by its consumers. */ export interface AvatarSource {
   data: Buffer;
   mimeType: string;
 }
@@ -204,29 +204,35 @@ export class AvatarService {
   private async downloadRedirect(url: URL, redirectCount: number): Promise<AvatarSource> {
     this.assertValidDownloadUrl(url, redirectCount);
     const address = await this.resolvePublicAddress(url.hostname);
-    return new Promise<AvatarSource>((resolve, reject) => {
-      const remoteRequest = request(
-        {
-          hostname: address.address,
-          path: `${url.pathname}${url.search}`,
-          protocol: 'https:',
-          servername: url.hostname,
-          headers: {
-            Accept: 'image/jpeg, image/png, image/webp',
-            Host: url.host,
-            'User-Agent': 'Repovio-avatar-import/1.0',
+    return new Promise<AvatarSource>(
+      /** Resolves a bounded HTTPS download response or rejects transport failures. */ (resolve, reject) => {
+        const remoteRequest = request(
+          {
+            hostname: address.address,
+            path: `${url.pathname}${url.search}`,
+            protocol: 'https:',
+            servername: url.hostname,
+            headers: {
+              Accept: 'image/jpeg, image/png, image/webp',
+              Host: url.host,
+              'User-Agent': 'Repovio-avatar-import/1.0',
+            },
           },
-        },
-        (response) => {
-          void this.handleDownloadResponse(response, url, redirectCount).then(resolve, reject);
-        },
-      );
-      remoteRequest.setTimeout(remoteTimeoutMs, () => {
-        remoteRequest.destroy(new BadGatewayException('The avatar URL timed out.'));
-      });
-      remoteRequest.on('error', reject);
-      remoteRequest.end();
-    });
+          /** Opens the validated remote image request using the resolved safe address. */
+          (response) => {
+            void this.handleDownloadResponse(response, url, redirectCount).then(resolve, reject);
+          },
+        );
+        remoteRequest.setTimeout(
+          remoteTimeoutMs,
+          /** Destroys the remote image request when its timeout expires. */ () => {
+            remoteRequest.destroy(new BadGatewayException('The avatar URL timed out.'));
+          },
+        );
+        remoteRequest.on('error', reject);
+        remoteRequest.end();
+      },
+    );
   }
 
   /**
@@ -306,23 +312,35 @@ export class AvatarService {
    * @throws BadRequestException - When the completed image fails format or dimension validation.
    */
   private readDownloadBody(response: IncomingMessage, mimeType: string): Promise<AvatarSource> {
-    return new Promise<AvatarSource>((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      let receivedBytes = 0;
-      response.on('data', (chunk: Buffer) => {
-        receivedBytes += chunk.length;
-        if (receivedBytes > maximumInputBytes) {
-          response.destroy(new PayloadTooLargeException('Avatar images may not exceed 2 MB.'));
-          return;
-        }
-        chunks.push(chunk);
-      });
-      response.on('end', () => {
-        const source = { data: Buffer.concat(chunks), mimeType };
-        void this.assertValidSource(source).then(() => resolve(source), reject);
-      });
-      response.on('error', reject);
-    });
+    return new Promise<AvatarSource>(
+      /** Collects response bytes while enforcing the image download size limit. */ (resolve, reject) => {
+        const chunks: Buffer[] = [];
+        let receivedBytes = 0;
+        response.on(
+          'data',
+          /** Handles 'data' events for this subscription. */ (chunk: Buffer) => {
+            receivedBytes += chunk.length;
+            if (receivedBytes > maximumInputBytes) {
+              response.destroy(new PayloadTooLargeException('Avatar images may not exceed 2 MB.'));
+              return;
+            }
+            chunks.push(chunk);
+          },
+        );
+        response.on(
+          'end',
+          /** Handles 'end' events for this subscription. */ () => {
+            const source = { data: Buffer.concat(chunks), mimeType };
+            void this.assertValidSource(source).then(
+              /** Evaluates `resolve(source)` when this.assertValidSource(source).then invokes this callback. */ () =>
+                resolve(source),
+              reject,
+            );
+          },
+        );
+        response.on('error', reject);
+      },
+    );
   }
 
   /**
@@ -337,7 +355,13 @@ export class AvatarService {
     const addresses = isIP(normalizedHostname)
       ? [{ address: normalizedHostname, family: isIP(normalizedHostname) as 4 | 6 }]
       : await lookup(normalizedHostname, { all: true, verbatim: true });
-    if (addresses.length === 0 || addresses.some(({ address, family }) => this.isBlockedAddress(address, family))) {
+    if (
+      addresses.length === 0 ||
+      addresses.some(
+        /** Checks whether any entry satisfies `this.isBlockedAddress(address, family)`. */ ({ address, family }) =>
+          this.isBlockedAddress(address, family),
+      )
+    ) {
       throw new BadRequestException('The avatar URL must resolve only to public internet addresses.');
     }
     return addresses[0] as { address: string; family: 4 | 6 };

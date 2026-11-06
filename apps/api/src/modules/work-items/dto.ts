@@ -58,8 +58,10 @@ interface WorkItemRelations {
   };
 }
 
-export type IssueResourceModel = Issue & WorkItemRelations;
-export type PullRequestResourceModel = PullRequest & WorkItemRelations;
+/** Defines the issue resource model contract shared by its consumers. */ export type IssueResourceModel = Issue &
+  WorkItemRelations;
+/** Defines the pull request resource model contract shared by its consumers. */ export type PullRequestResourceModel =
+  PullRequest & WorkItemRelations;
 
 /** Public issue representation; descriptions are included only by detail endpoints. */
 export class IssueDto extends createZodDto(ApiIssueSchema) {
@@ -91,8 +93,14 @@ export class IssueDto extends createZodDto(ApiIssueSchema) {
             repositoryOwner: model.repository.owner,
             providerType: model.repository.providerAccount.providerType,
             author: model.author ? WorkItemActorDto.fromModel(model.author) : null,
-            assignees: model.assignees.map(({ actor }) => WorkItemActorDto.fromModel(actor)),
-            labels: model.labels.map(({ label }) => WorkItemLabelDto.fromModel(label)),
+            assignees: model.assignees.map(
+              /** Projects each entry using `WorkItemActorDto.fromModel(actor)`. */ ({ actor }) =>
+                WorkItemActorDto.fromModel(actor),
+            ),
+            labels: model.labels.map(
+              /** Projects each entry using `WorkItemLabelDto.fromModel(label)`. */ ({ label }) =>
+                WorkItemLabelDto.fromModel(label),
+            ),
           }),
         ),
         CaslSubject.Issue,
@@ -138,8 +146,14 @@ export class PullRequestDto extends createZodDto(ApiPullRequestSchema) {
             repositoryOwner: model.repository.owner,
             providerType: model.repository.providerAccount.providerType,
             author: model.author ? WorkItemActorDto.fromModel(model.author) : null,
-            assignees: model.assignees.map(({ actor }) => WorkItemActorDto.fromModel(actor)),
-            labels: model.labels.map(({ label }) => WorkItemLabelDto.fromModel(label)),
+            assignees: model.assignees.map(
+              /** Projects each entry using `WorkItemActorDto.fromModel(actor)`. */ ({ actor }) =>
+                WorkItemActorDto.fromModel(actor),
+            ),
+            labels: model.labels.map(
+              /** Projects each entry using `WorkItemLabelDto.fromModel(label)`. */ ({ label }) =>
+                WorkItemLabelDto.fromModel(label),
+            ),
           }),
         ),
         CaslSubject.PullRequest,

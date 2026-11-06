@@ -2,9 +2,9 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { ProviderAdapter } from './provider-adapter.js';
 import { issueLifecycleEvents, pullRequestLifecycleEvents, WorkItemSyncService } from './work-item-sync.service.js';
 
-describe('WorkItemSyncService', () => {
+describe('WorkItemSyncService', /** Groups scenarios for WorkItemSyncService. */ () => {
   const notifications = { emitIssueEvent: jest.fn(), emitPullRequestEvent: jest.fn() };
-  it('advances each cursor only after its complete provider page sequence succeeds', async () => {
+  it('advances each cursor only after its complete provider page sequence succeeds', /** Verifies advances each cursor only after its complete provider page sequence succeeds. */ async () => {
     const prisma = {
       workItemSyncCursor: { findUnique: jest.fn().mockResolvedValue(null), upsert: jest.fn().mockResolvedValue({}) },
     };
@@ -26,7 +26,7 @@ describe('WorkItemSyncService', () => {
     );
   });
 
-  it('does not advance the issue cursor or begin pull-request sync after an issue fetch fails', async () => {
+  it('does not advance the issue cursor or begin pull-request sync after an issue fetch fails', /** Verifies does not advance the issue cursor or begin pull-request sync after an issue fetch fails. */ async () => {
     const prisma = {
       workItemSyncCursor: { findUnique: jest.fn().mockResolvedValue(null), upsert: jest.fn() },
     };
@@ -52,7 +52,7 @@ describe('WorkItemSyncService', () => {
     expect(adapter.listPullRequests).not.toHaveBeenCalled();
   });
 
-  it('reports indeterminate provider phases before publishing known item totals', async () => {
+  it('reports indeterminate provider phases before publishing known item totals', /** Verifies reports indeterminate provider phases before publishing known item totals. */ async () => {
     const prisma = {
       workItemSyncCursor: { findUnique: jest.fn().mockResolvedValue(null), upsert: jest.fn().mockResolvedValue({}) },
     };
@@ -79,7 +79,7 @@ describe('WorkItemSyncService', () => {
     ]);
   });
 
-  it('propagates a merged pull-request lifecycle to its existing workflow runs', async () => {
+  it('propagates a merged pull-request lifecycle to its existing workflow runs', /** Verifies propagates a merged pull-request lifecycle to its existing workflow runs. */ async () => {
     const mergedAt = new Date('2026-10-04T01:32:04.000Z');
     const providerCreatedAt = new Date('2026-10-03T20:00:00.000Z');
     const providerUpdatedAt = new Date('2026-10-04T01:32:04.000Z');
@@ -117,7 +117,9 @@ describe('WorkItemSyncService', () => {
         findUniqueOrThrow: jest.fn().mockResolvedValue({ state: 'MERGED' }),
         update: jest.fn().mockResolvedValue(undefined),
       },
-      transaction: jest.fn((callback) => callback(transaction)),
+      transaction: jest.fn(
+        /** Provides isolated transaction behavior for this test fixture. */ (callback) => callback(transaction),
+      ),
       workflowRun: {
         findMany: jest.fn().mockResolvedValue([{ awaitingApproval: true, status: 'QUEUED' }]),
       },
@@ -180,30 +182,38 @@ describe('WorkItemSyncService', () => {
     [['CANCELLED', 'SUCCESS'], 'CANCELLED'],
     [['UNKNOWN', 'SUCCESS'], 'SUCCESS'],
     [[], 'UNKNOWN'],
-  ] as const)('aggregates current workflow states %j as %s', async (statuses, expected) => {
-    const prisma = {
-      pullRequest: {
-        findUniqueOrThrow: jest.fn().mockResolvedValue({ state: 'OPEN' }),
-        update: jest.fn().mockResolvedValue(undefined),
-      },
-      workflowRun: {
-        findMany: jest.fn().mockResolvedValue(
-          statuses.map((status, index) => ({
-            awaitingApproval: index === 0 && status === 'QUEUED',
-            status,
-          })),
-        ),
-      },
-    };
-    const service = new WorkItemSyncService(prisma as unknown as PrismaService, notifications as never);
-    await service.refreshPullRequestWorkflowStatus('pull-request-id');
-    expect(prisma.pullRequest.update).toHaveBeenCalledWith({
-      data: { workflowApprovalRequired: String(statuses[0]) === 'QUEUED', workflowStatus: expected },
-      where: { id: 'pull-request-id' },
-    });
-  });
+  ] as const)(
+    'aggregates current workflow states %j as %s',
+    /** Verifies aggregates current workflow states %j as %s. */ async (statuses, expected) => {
+      const prisma = {
+        pullRequest: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ state: 'OPEN' }),
+          update: jest.fn().mockResolvedValue(undefined),
+        },
+        workflowRun: {
+          findMany: jest.fn().mockResolvedValue(
+            statuses.map(
+              /** Projects each entry using `({ awaitingApproval: index === 0 && status === 'QUEUED', status, })`. */ (
+                status,
+                index,
+              ) => ({
+                awaitingApproval: index === 0 && status === 'QUEUED',
+                status,
+              }),
+            ),
+          ),
+        },
+      };
+      const service = new WorkItemSyncService(prisma as unknown as PrismaService, notifications as never);
+      await service.refreshPullRequestWorkflowStatus('pull-request-id');
+      expect(prisma.pullRequest.update).toHaveBeenCalledWith({
+        data: { workflowApprovalRequired: String(statuses[0]) === 'QUEUED', workflowStatus: expected },
+        where: { id: 'pull-request-id' },
+      });
+    },
+  );
 
-  it('does not report workflow approval for a merged pull request', async () => {
+  it('does not report workflow approval for a merged pull request', /** Verifies does not report workflow approval for a merged pull request. */ async () => {
     const prisma = {
       pullRequest: {
         findUniqueOrThrow: jest.fn().mockResolvedValue({ state: 'MERGED' }),
@@ -223,14 +233,15 @@ describe('WorkItemSyncService', () => {
     });
   });
 
-  it('reconciles branch-scoped runs with the pull request active at each run timestamp', async () => {
+  it('reconciles branch-scoped runs with the pull request active at each run timestamp', /** Verifies reconciles branch-scoped runs with the pull request active at each run timestamp. */ async () => {
     const oldRunAt = new Date('2026-08-05T10:00:00.000Z');
     const oldSuccessAt = new Date('2026-08-06T10:00:00.000Z');
     const newRunAt = new Date('2026-09-05T10:00:00.000Z');
     const prisma = {
       pullRequest: {
-        findUniqueOrThrow: jest.fn(({ where }) =>
-          Promise.resolve({ state: where.id === 'new-pull-request' ? 'OPEN' : 'MERGED' }),
+        findUniqueOrThrow: jest.fn(
+          /** Provides isolated findUniqueOrThrow behavior for this test fixture. */ ({ where }) =>
+            Promise.resolve({ state: where.id === 'new-pull-request' ? 'OPEN' : 'MERGED' }),
         ),
         findMany: jest.fn().mockResolvedValue([
           {
@@ -317,9 +328,12 @@ it.each([
   ['OPEN', 'CLOSED', false, ['ISSUE_CLOSED']],
   ['CLOSED', 'OPEN', false, ['ISSUE_REOPENED']],
   ['OPEN', 'OPEN', false, []],
-] as const)('classifies issue lifecycle %s -> %s', (previous, state, createdAfterCursor, expected) => {
-  expect(issueLifecycleEvents(previous, state, createdAfterCursor)).toEqual(expected);
-});
+] as const)(
+  'classifies issue lifecycle %s -> %s',
+  /** Verifies classifies issue lifecycle %s -> %s. */ (previous, state, createdAfterCursor, expected) => {
+    expect(issueLifecycleEvents(previous, state, createdAfterCursor)).toEqual(expected);
+  },
+);
 
 it.each([
   [null, 'OPEN', true, ['PULL_REQUEST_OPENED']],
@@ -329,6 +343,9 @@ it.each([
   ['OPEN', 'MERGED', false, ['PULL_REQUEST_MERGED']],
   ['CLOSED', 'OPEN', false, ['PULL_REQUEST_REOPENED']],
   ['OPEN', 'OPEN', false, []],
-] as const)('classifies pull-request lifecycle %s -> %s', (previous, state, createdAfterCursor, expected) => {
-  expect(pullRequestLifecycleEvents(previous, state, createdAfterCursor)).toEqual(expected);
-});
+] as const)(
+  'classifies pull-request lifecycle %s -> %s',
+  /** Verifies classifies pull-request lifecycle %s -> %s. */ (previous, state, createdAfterCursor, expected) => {
+    expect(pullRequestLifecycleEvents(previous, state, createdAfterCursor)).toEqual(expected);
+  },
+);

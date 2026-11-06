@@ -153,32 +153,44 @@ const auth = useAuthStore();
 const selectedUser = ref<User | null>(null);
 const tokenDialogOpen = ref(false);
 const { isPending, run: runPendingAction } = usePendingActions();
-const userRoleOptions = computed<Array<{ label: string; value: UserRole }>>(() =>
-  (['SYSTEM_ADMIN', 'MANAGER', 'VIEWER'] as UserRole[]).map((role) => ({ label: t(`roles.${role}`), value: role })),
+const userRoleOptions = computed<Array<{ label: string; value: UserRole }>>(
+  /** Derives user role options from the current reactive dependencies. */ () =>
+    (['SYSTEM_ADMIN', 'MANAGER', 'VIEWER'] as UserRole[]).map(
+      /** Projects each entry using `({ label: t(`roles.${role}`), value: role })`. */ (role) => ({
+        label: t(`roles.${role}`),
+        value: role,
+      }),
+    ),
 );
-const columnDefinition = computed<UserTableColumn[]>(() => [
-  { accessorKey: 'username', header: t('users.columns.username'), id: 'username' },
-  { accessorKey: 'role', header: t('users.columns.role'), id: 'role' },
-  { accessorKey: 'authProvider', header: t('users.columns.authProvider'), id: 'authProvider' },
-  { accessorKey: 'createdAt', header: t('users.columns.createdAt'), id: 'createdAt' },
-  { accessorKey: 'updatedAt', header: t('users.columns.updatedAt'), id: 'updatedAt' },
-  { enableHiding: false, header: t('users.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('users.columns.username'), value: 'username' },
-  { label: t('users.columns.role'), value: 'role' },
-  { label: t('users.columns.authProvider'), value: 'authProvider' },
-  { label: t('users.columns.createdAt'), value: 'createdAt' },
-  { label: t('users.columns.updatedAt'), value: 'updatedAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('users.columns.role'),
-    type: FilterFieldType.Enum,
-    value: 'role',
-    values: userRoleOptions.value,
-  },
-]);
+const columnDefinition = computed<UserTableColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'username', header: t('users.columns.username'), id: 'username' },
+    { accessorKey: 'role', header: t('users.columns.role'), id: 'role' },
+    { accessorKey: 'authProvider', header: t('users.columns.authProvider'), id: 'authProvider' },
+    { accessorKey: 'createdAt', header: t('users.columns.createdAt'), id: 'createdAt' },
+    { accessorKey: 'updatedAt', header: t('users.columns.updatedAt'), id: 'updatedAt' },
+    { enableHiding: false, header: t('users.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('users.columns.username'), value: 'username' },
+    { label: t('users.columns.role'), value: 'role' },
+    { label: t('users.columns.authProvider'), value: 'authProvider' },
+    { label: t('users.columns.createdAt'), value: 'createdAt' },
+    { label: t('users.columns.updatedAt'), value: 'updatedAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('users.columns.role'),
+      type: FilterFieldType.Enum,
+      value: 'role',
+      values: userRoleOptions.value,
+    },
+  ],
+);
 const userTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 10,
@@ -200,14 +212,17 @@ const {
   totalItems,
 } = userTable;
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: userTable.columnPinning.value.left, right: userTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     userTable.columnPinning.value = value;
   },
 });
 
-useHead({ title: computed(() => t('users.title')) });
+useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('users.title')) });
 
+/** Opens token management for the selected user. */
 function manageTokens(user: User): void {
   selectedUser.value = user;
   tokenDialogOpen.value = true;
@@ -220,11 +235,14 @@ function formatTimestamp(timestamp: string): string {
 
 /** Delete a system user and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(id, async () => {
-    await api.users.delete(id);
-    await userTable.refresh();
-  });
+  await runPendingAction(
+    id,
+    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+      await api.users.delete(id);
+      await userTable.refresh();
+    },
+  );
 }
 
-onMounted(() => void userTable.initialize());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void userTable.initialize());
 </script>

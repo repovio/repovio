@@ -1,8 +1,8 @@
 import { HealthController } from './health.controller.js';
 import type { HealthService } from './health.service.js';
 
-describe('HealthController', () => {
-  it('returns the health service result', async () => {
+describe('HealthController', /** Groups scenarios for HealthController. */ () => {
+  it('returns the health service result', /** Verifies returns the health service result. */ async () => {
     const health = {
       api: 'ok',
       database: 'ok',

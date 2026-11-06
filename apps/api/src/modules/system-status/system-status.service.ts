@@ -43,7 +43,9 @@ export class SystemStatusService implements OnModuleInit {
    * @returns The current workflow count and active synchronization progress.
    */
   getSnapshot(): SystemStatusSnapshot {
-    const activity = [...this.providerSyncs.values()].sort((left, right) => right.sequence - left.sequence)[0];
+    const activity = [...this.providerSyncs.values()].sort(
+      /** Orders entries using `right.sequence - left.sequence`. */ (left, right) => right.sequence - left.sequence,
+    )[0];
     return {
       activity: activity
         ? {

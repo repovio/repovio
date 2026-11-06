@@ -31,8 +31,13 @@ export function providerRetryAt(headers: Headers, now = new Date()): Date | null
   const retryAfter = parseRetryAfter(headers.get('retry-after'), now);
   const resetAt = parseResetAt(headers.get('ratelimit-reset') ?? headers.get('x-ratelimit-reset'), now);
   const candidate = [retryAfter, resetAt]
-    .filter((value): value is Date => value !== null && value.getTime() > now.getTime())
-    .sort((left, right) => right.getTime() - left.getTime())[0];
+    .filter(
+      /** Keeps entries matching `value !== null && value.getTime() > now.getTime()`. */ (value): value is Date =>
+        value !== null && value.getTime() > now.getTime(),
+    )
+    .sort(
+      /** Orders entries using `right.getTime() - left.getTime()`. */ (left, right) => right.getTime() - left.getTime(),
+    )[0];
   if (!candidate) return null;
   return new Date(Math.min(Math.max(candidate.getTime(), now.getTime()), now.getTime() + maximumProviderDelayMs));
 }

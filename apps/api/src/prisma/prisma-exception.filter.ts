@@ -3,7 +3,7 @@ import type { FastifyReply } from 'fastify';
 
 import { Prisma } from '../generated/prisma/client.js';
 
-export interface MappedDatabaseException {
+/** Defines the mapped database exception contract shared by its consumers. */ export interface MappedDatabaseException {
   error: string;
   message: string;
   status: HttpStatus;

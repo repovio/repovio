@@ -25,7 +25,9 @@
     "test": "nx run-many -t test --all --exclude=repovio --parallel=2",
     "typecheck": "nx run-many -t typecheck --all --exclude=repovio --parallel=2",
     "version-packages": "changeset version",
-    "branding:check": "node scripts/check-branding.mjs"
+    "branding:check": "node scripts/check-branding.mjs",
+    "documentation:check": "node scripts/check-documentation.mjs",
+    "test:guidelines": "node --test scripts/check-documentation.test.mjs scripts/check-api-tsdoc.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

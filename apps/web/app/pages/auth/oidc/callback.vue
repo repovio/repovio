@@ -34,17 +34,19 @@ if (handoffWindow) {
 
 useHead({ title: t('auth.oidc.completing') });
 
-onMounted(async () => {
-  if (!code || error) {
-    await router.replace({ path: '/auth/signin', query: { oidc_error: error ?? 'oidc_invalid_request' } });
-    return;
-  }
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    if (!code || error) {
+      await router.replace({ path: '/auth/signin', query: { oidc_error: error ?? 'oidc_invalid_request' } });
+      return;
+    }
 
-  try {
-    const returnTo = await auth.exchangeOidcCode(code);
-    await router.replace(returnTo);
-  } catch {
-    await router.replace({ path: '/auth/signin', query: { oidc_error: 'oidc_transaction_invalid' } });
-  }
-});
+    try {
+      const returnTo = await auth.exchangeOidcCode(code);
+      await router.replace(returnTo);
+    } catch {
+      await router.replace({ path: '/auth/signin', query: { oidc_error: 'oidc_transaction_invalid' } });
+    }
+  },
+);
 </script>

@@ -20,7 +20,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module.js';
 import { WorkflowRunsModule } from './modules/workflow-runs/workflow-runs.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
-@Module({
+/** Registers the app module providers and imports with Nest. */ @Module({
   imports: [
     ThrottlerModule.forRoot([{ limit: 120, ttl: 60_000 }]),
     PrismaModule,

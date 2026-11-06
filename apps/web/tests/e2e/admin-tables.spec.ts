@@ -11,80 +11,114 @@ async function expectActionTooltip(page: Page, trigger: Locator, text: string): 
 async function expectBundledIcon(icon: Locator): Promise<void> {
   await expect(icon).toBeVisible();
   await expect
-    .poll(() => icon.evaluate((element) => getComputedStyle(element).getPropertyValue('--svg')))
+    .poll(
+      /** Evaluates `icon.evaluate((element) => getComputedStyle(element).getPropertyValue('--svg'))` when expect .poll invokes this callback. */ () =>
+        icon.evaluate(
+          /** Reads or updates browser state for the expect bundled icon scenario. */ (element) =>
+            getComputedStyle(element).getPropertyValue('--svg'),
+        ),
+    )
     .toContain('data:image/svg+xml');
 }
 
 /** Verify that repository and user administration share the full Query Kit table layout. */
-test('repository and user administration render full-page Query Kit tables', async ({ page }, testInfo) => {
+test('repository and user administration render full-page Query Kit tables', /** Verifies repository and user administration render full-page Query Kit tables. */ async ({
+  page,
+}, testInfo) => {
   const externalIconRequests: string[] = [];
-  await page.route(/https?:\/\/(?:api\.iconify\.design|cdn\.jsdelivr\.net|unpkg\.com)\/.*/, async (route) => {
-    externalIconRequests.push(route.request().url());
-    await route.abort();
-  });
+  await page.route(
+    /https?:\/\/(?:api\.iconify\.design|cdn\.jsdelivr\.net|unpkg\.com)\/.*/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      externalIconRequests.push(route.request().url());
+      await route.abort();
+    },
+  );
   let releaseRepositoryUpdate: (() => void) | undefined;
-  const repositoryUpdateResponse = new Promise<void>((resolve) => {
-    releaseRepositoryUpdate = resolve;
-  });
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, async (route) => {
-    expect(route.request().url()).toContain('fields=');
-    expect(route.request().url()).toContain('workflowRunCount');
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
-          {
-            enabled: true,
-            id: 'repository-1',
-            lastSyncAt: null,
-            members: Array.from({ length: 6 }, (_, index) => ({
-              avatarUpdatedAt: null,
-              userId: `member-${index + 1}`,
-              username: `member-${index + 1}`,
-            })),
-            name: 'repovio',
-            owner: 'twaelde',
-            providerAccountId: 'provider-1',
-            providerRepositoryId: 'repository-1',
-            url: 'https://github.com/repovio/repovio',
-            workflowRunCount: 12,
-            workflowRunRetentionDays: 30,
-          },
-        ],
-        meta: { itemCount: 1, pageCount: 1 },
-      },
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1', async (route) => {
-    expect(route.request().method()).toBe('PATCH');
-    await repositoryUpdateResponse;
-    await route.fulfill({ contentType: 'application/json', json: {} });
-  });
-  await page.route(/\/api\/v1\/users(?:\?.*)?$/, async (route) => {
-    expect(route.request().url()).toContain('fields=');
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
-          {
-            createdAt: '2026-09-08T08:00:00.000Z',
-            id: 'playwright-admin',
-            role: 'SYSTEM_ADMIN',
-            updatedAt: '2026-09-08T08:00:00.000Z',
-            username: 'playwright',
-          },
-        ],
-        meta: { itemCount: 1, pageCount: 1 },
-      },
-    });
-  });
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
-    });
-  });
+  const repositoryUpdateResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseRepositoryUpdate = resolve;
+    },
+  );
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      expect(route.request().url()).toContain('fields=');
+      expect(route.request().url()).toContain('workflowRunCount');
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              enabled: true,
+              id: 'repository-1',
+              lastSyncAt: null,
+              members: Array.from(
+                { length: 6 },
+                /** Evaluates `({ avatarUpdatedAt: null, userId: `member-${index + 1}`, username: `member-${index + 1}`, })` when Array.from invokes this callback. */ (
+                  _,
+                  index,
+                ) => ({
+                  avatarUpdatedAt: null,
+                  userId: `member-${index + 1}`,
+                  username: `member-${index + 1}`,
+                }),
+              ),
+              name: 'repovio',
+              owner: 'twaelde',
+              providerAccountId: 'provider-1',
+              providerRepositoryId: 'repository-1',
+              url: 'https://github.com/repovio/repovio',
+              workflowRunCount: 12,
+              workflowRunRetentionDays: 30,
+            },
+          ],
+          meta: { itemCount: 1, pageCount: 1 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ async (route) => {
+      expect(route.request().method()).toBe('PATCH');
+      await repositoryUpdateResponse;
+      await route.fulfill({ contentType: 'application/json', json: {} });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/users(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      expect(route.request().url()).toContain('fields=');
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              createdAt: '2026-09-08T08:00:00.000Z',
+              id: 'playwright-admin',
+              role: 'SYSTEM_ADMIN',
+              updatedAt: '2026-09-08T08:00:00.000Z',
+              username: 'playwright',
+            },
+          ],
+          meta: { itemCount: 1, pageCount: 1 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
+      });
+    },
+  );
 
   await page.goto('/repositories');
 
@@ -155,104 +189,128 @@ test('repository and user administration render full-page Query Kit tables', asy
 });
 
 /** Verify that repository discovery supports searching and selecting multiple repositories. */
-test('adds multiple repositories selected from an enabled provider account', async ({ page }, testInfo) => {
+test('adds multiple repositories selected from an enabled provider account', /** Verifies adds multiple repositories selected from an enabled provider account. */ async ({
+  page,
+}, testInfo) => {
   const addedRepositoryIds: string[] = [];
   let releaseRepositoryDiscovery: (() => void) | undefined;
   let releaseRepositoryAdds: (() => void) | undefined;
-  const repositoryDiscoveryResponse = new Promise<void>((resolve) => {
-    releaseRepositoryDiscovery = resolve;
-  });
-  const repositoryAddResponses = new Promise<void>((resolve) => {
-    releaseRepositoryAdds = resolve;
-  });
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route(/\/api\/v1\/provider-accounts(?:\?.*)?$/, async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
+  const repositoryDiscoveryResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseRepositoryDiscovery = resolve;
+    },
+  );
+  const repositoryAddResponses = new Promise<void>(
+    /** Retains the resolver until all repository-add response fixtures are released. */ (resolve) => {
+      releaseRepositoryAdds = resolve;
+    },
+  );
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
+  );
+  await page.route(
+    /\/api\/v1\/provider-accounts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              displayName: 'Production GitHub',
+              enabled: true,
+              id: 'provider-1',
+              providerType: 'GITHUB',
+            },
+            {
+              displayName: 'Disabled GitLab',
+              enabled: false,
+              id: 'provider-2',
+              providerType: 'GITLAB',
+            },
+          ],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 2, page: 1, pageCount: 1, perPage: 100 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/provider-accounts/provider-1/repositories',
+    /** Supplies the mocked response for `/api/v1/provider-accounts/provider-1/repositories`. */ async (route) => {
+      await repositoryDiscoveryResponse;
+      await route.fulfill({
+        contentType: 'application/json',
+        json: [
           {
-            displayName: 'Production GitHub',
-            enabled: true,
-            id: 'provider-1',
-            providerType: 'GITHUB',
+            name: 'already-tracked',
+            owner: 'repovio',
+            providerRepositoryId: 'repository-1',
+            tracked: true,
+            url: 'https://github.com/repovio/already-tracked',
           },
           {
-            displayName: 'Disabled GitLab',
-            enabled: false,
-            id: 'provider-2',
-            providerType: 'GITLAB',
+            name: 'new-repository',
+            owner: 'repovio',
+            providerRepositoryId: 'repository-2',
+            tracked: false,
+            url: 'https://github.com/repovio/new-repository',
+          },
+          {
+            name: 'another-repository',
+            owner: 'repovio',
+            providerRepositoryId: 'repository-3',
+            tracked: false,
+            url: 'https://github.com/repovio/another-repository',
           },
         ],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 2, page: 1, pageCount: 1, perPage: 100 },
-      },
-    });
-  });
-  await page.route('**/api/v1/provider-accounts/provider-1/repositories', async (route) => {
-    await repositoryDiscoveryResponse;
-    await route.fulfill({
-      contentType: 'application/json',
-      json: [
-        {
-          name: 'already-tracked',
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/provider-accounts/provider-1/repositories',
+    /** Supplies the mocked response for `/api/v1/provider-accounts/provider-1/repositories`. */ async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      const body = route.request().postDataJSON() as { providerRepositoryId: string };
+      addedRepositoryIds.push(body.providerRepositoryId);
+      await repositoryAddResponses;
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          enabled: true,
+          id: body.providerRepositoryId,
+          lastSyncAt: null,
+          name: body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository',
           owner: 'repovio',
-          providerRepositoryId: 'repository-1',
-          tracked: true,
-          url: 'https://github.com/repovio/already-tracked',
+          providerAccountId: 'provider-1',
+          url: `https://github.com/repovio/${
+            body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository'
+          }`,
+          workflowRunRetentionDays: null,
         },
-        {
-          name: 'new-repository',
-          owner: 'repovio',
-          providerRepositoryId: 'repository-2',
-          tracked: false,
-          url: 'https://github.com/repovio/new-repository',
+      });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 10 },
         },
-        {
-          name: 'another-repository',
-          owner: 'repovio',
-          providerRepositoryId: 'repository-3',
-          tracked: false,
-          url: 'https://github.com/repovio/another-repository',
-        },
-      ],
-    });
-  });
-  await page.route('**/api/v1/provider-accounts/provider-1/repositories', async (route) => {
-    if (route.request().method() !== 'POST') return route.fallback();
-    const body = route.request().postDataJSON() as { providerRepositoryId: string };
-    addedRepositoryIds.push(body.providerRepositoryId);
-    await repositoryAddResponses;
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        enabled: true,
-        id: body.providerRepositoryId,
-        lastSyncAt: null,
-        name: body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository',
-        owner: 'repovio',
-        providerAccountId: 'provider-1',
-        url: `https://github.com/repovio/${
-          body.providerRepositoryId === 'repository-2' ? 'new-repository' : 'another-repository'
-        }`,
-        workflowRunRetentionDays: null,
-      },
-    });
-  });
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 10 },
-      },
-    });
-  });
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
-    });
-  });
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
+      });
+    },
+  );
 
   await page.goto('/repositories');
   await page.getByRole('button', { name: 'Add repository' }).click();
@@ -275,7 +333,12 @@ test('adds multiple repositories selected from an enabled provider account', asy
   await addButton.click();
   await expect(addButton).toBeDisabled();
   await expect(addButton.locator('[data-slot="leadingIcon"]')).toBeVisible();
-  await expect.poll(() => addedRepositoryIds.length).toBe(2);
+  await expect
+    .poll(
+      /** Evaluates `addedRepositoryIds.length` when expect.poll invokes this callback. */ () =>
+        addedRepositoryIds.length,
+    )
+    .toBe(2);
   releaseRepositoryAdds?.();
 
   await expect(page.getByRole('heading', { name: 'Add repositories' })).not.toBeVisible();
@@ -283,101 +346,127 @@ test('adds multiple repositories selected from an enabled provider account', asy
 });
 
 /** Verify the repository dialog exposes retention, workflow filters, and memberships. */
-test('repository dialog loads retention, filters, and members', async ({ page }) => {
+test('repository dialog loads retention, filters, and members', /** Verifies repository dialog loads retention, filters, and members. */ async ({
+  page,
+}) => {
   const repositoryUpdates: unknown[] = [];
   const createdFilters: unknown[] = [];
   const createdMemberships: unknown[] = [];
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/repositories/repository-1', async (route) => {
-    if (route.request().method() === 'PATCH') {
-      repositoryUpdates.push(route.request().postDataJSON());
-      return route.fulfill({ contentType: 'application/json', json: {} });
-    }
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        enabled: true,
-        id: 'repository-1',
-        lastSyncAt: null,
-        name: 'repovio',
-        owner: 'twaelde',
-        providerAccountId: 'provider-1',
-        url: 'https://github.com/repovio/repovio',
-        workflowRunRetentionDays: 30,
-      },
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1/workflow-filters', async (route) => {
-    if (route.request().method() === 'POST') {
-      const body = route.request().postDataJSON();
-      createdFilters.push(body);
-      return route.fulfill({
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ async (route) => {
+      if (route.request().method() === 'PATCH') {
+        repositoryUpdates.push(route.request().postDataJSON());
+        return route.fulfill({ contentType: 'application/json', json: {} });
+      }
+      await route.fulfill({
         contentType: 'application/json',
-        json: { id: 'filter-2', repositoryId: 'repository-1', ...(body as object) },
-      });
-    }
-    await route.fulfill({
-      contentType: 'application/json',
-      json: [{ id: 'filter-1', mode: 'DENY', pattern: 'draft-*', repositoryId: 'repository-1' }],
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1/memberships/user-2', async (route) => {
-    const body = route.request().postDataJSON();
-    createdMemberships.push(body);
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        id: 'membership-2',
-        repositoryId: 'repository-1',
-        role: (body as { role: string }).role,
-        user: { id: 'user-2', role: 'VIEWER', username: 'viewer' },
-        userId: 'user-2',
-      },
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1/memberships', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: [
-        {
-          id: 'membership-1',
-          repositoryId: 'repository-1',
-          role: 'MANAGER',
-          user: { id: 'user-1', role: 'MANAGER', username: 'maintainer' },
-          userId: 'user-1',
+        json: {
+          enabled: true,
+          id: 'repository-1',
+          lastSyncAt: null,
+          name: 'repovio',
+          owner: 'twaelde',
+          providerAccountId: 'provider-1',
+          url: 'https://github.com/repovio/repovio',
+          workflowRunRetentionDays: 30,
         },
-      ],
-    });
-  });
-  await page.route(/\/api\/v1\/users(?:\?.*)?$/, async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/workflow-filters',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/workflow-filters`. */ async (route) => {
+      if (route.request().method() === 'POST') {
+        const body = route.request().postDataJSON();
+        createdFilters.push(body);
+        return route.fulfill({
+          contentType: 'application/json',
+          json: { id: 'filter-2', repositoryId: 'repository-1', ...(body as object) },
+        });
+      }
+      await route.fulfill({
+        contentType: 'application/json',
+        json: [{ id: 'filter-1', mode: 'DENY', pattern: 'draft-*', repositoryId: 'repository-1' }],
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships/user-2',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships/user-2`. */ async (route) => {
+      const body = route.request().postDataJSON();
+      createdMemberships.push(body);
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          id: 'membership-2',
+          repositoryId: 'repository-1',
+          role: (body as { role: string }).role,
+          user: { id: 'user-2', role: 'VIEWER', username: 'viewer' },
+          userId: 'user-2',
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: [
           {
-            createdAt: '2026-09-08T08:00:00.000Z',
-            id: 'user-2',
-            role: 'VIEWER',
-            updatedAt: '2026-09-08T08:00:00.000Z',
-            username: 'viewer',
+            id: 'membership-1',
+            repositoryId: 'repository-1',
+            role: 'MANAGER',
+            user: { id: 'user-1', role: 'MANAGER', username: 'maintainer' },
+            userId: 'user-1',
           },
         ],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 100 },
-      },
-    });
-  });
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
-    });
-  });
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { items: [], meta: { itemCount: 0, pageCount: 0 } },
-    });
-  });
+      });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/users(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              createdAt: '2026-09-08T08:00:00.000Z',
+              id: 'user-2',
+              role: 'VIEWER',
+              updatedAt: '2026-09-08T08:00:00.000Z',
+              username: 'viewer',
+            },
+          ],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 100 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
+      });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { items: [], meta: { itemCount: 0, pageCount: 0 } },
+      });
+    },
+  );
 
   await page.goto('/repositories?repository=repository-1');
 
@@ -399,7 +488,7 @@ test('repository dialog loads retention, filters, and members', async ({ page })
   await workflowRunRetention.fill('45');
   await repositoryDialog.getByRole('button', { name: 'Save' }).click();
   await expect
-    .poll(() => repositoryUpdates)
+    .poll(/** Evaluates `repositoryUpdates` when expect .poll invokes this callback. */ () => repositoryUpdates)
     .toEqual([
       {
         enabled: true,
@@ -422,93 +511,106 @@ test('repository dialog loads retention, filters, and members', async ({ page })
 });
 
 /** Verify that workflow-run history is available as a child of the workflow-runs navigation group. */
-test('workflow runs render in a filterable and sortable full-page table', async ({ page }, testInfo) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
-    if (!window.localStorage.getItem('table:workflow-runs:filtering')) {
-      window.localStorage.setItem(
-        'table:workflow-runs:filtering',
-        JSON.stringify({
-          filters: [
-            {
-              field: 'repositoryId',
-              id: 'repository-filter',
-              operator: 'in',
-              type: 'enum',
-              value: ['repository-1'],
-            },
-            {
-              field: 'repository.providerAccount.providerType',
-              id: 'provider-filter',
-              operator: 'in',
-              type: 'enum',
-              value: ['GITHUB'],
-            },
-            { field: 'durationMs', id: 'duration-filter', operator: 'gte', type: 'number', value: 90_000 },
-            { field: 'status', id: 'status-filter', operator: 'in', type: 'enum', value: ['SUCCESS'] },
-          ],
-          operator: 'AND',
-        }),
-      );
-    }
-    if (!window.localStorage.getItem('table:workflow-runs:items-per-page')) {
-      window.localStorage.setItem('table:workflow-runs:items-per-page', '50');
-    }
-  });
+test('workflow runs render in a filterable and sortable full-page table', /** Verifies workflow runs render in a filterable and sortable full-page table. */ async ({
+  page,
+}, testInfo) => {
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () => {
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token');
+      if (!window.localStorage.getItem('table:workflow-runs:filtering')) {
+        window.localStorage.setItem(
+          'table:workflow-runs:filtering',
+          JSON.stringify({
+            filters: [
+              {
+                field: 'repositoryId',
+                id: 'repository-filter',
+                operator: 'in',
+                type: 'enum',
+                value: ['repository-1'],
+              },
+              {
+                field: 'repository.providerAccount.providerType',
+                id: 'provider-filter',
+                operator: 'in',
+                type: 'enum',
+                value: ['GITHUB'],
+              },
+              { field: 'durationMs', id: 'duration-filter', operator: 'gte', type: 'number', value: 90_000 },
+              { field: 'status', id: 'status-filter', operator: 'in', type: 'enum', value: ['SUCCESS'] },
+            ],
+            operator: 'AND',
+          }),
+        );
+      }
+      if (!window.localStorage.getItem('table:workflow-runs:items-per-page')) {
+        window.localStorage.setItem('table:workflow-runs:items-per-page', '50');
+      }
+    },
+  );
   const workflowRunRequestUrls: string[] = [];
   let repositoryFilterRequestFails = false;
-  await page.route(/\/api\/v1\/workflow-runs(?:\?.*)?$/, async (route) => {
-    const requestUrl = route.request().url();
-    workflowRunRequestUrls.push(requestUrl);
-    expect(requestUrl).toContain('fields=');
-    expect(requestUrl).toContain('repositoryName');
-    expect(requestUrl).toContain('repositoryOwner');
-    expect(requestUrl).toContain('providerType');
-    expect(requestUrl).toContain('workflowName');
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [
-          {
-            completedAt: '2026-09-08T08:02:30.000Z',
-            displayTitle: 'Build on main',
-            durationMs: 150_000,
-            id: 'run-1',
-            providerCreatedAt: '2026-09-08T08:00:00.000Z',
-            providerRunId: '42',
-            providerType: 'GITHUB',
-            repositoryId: 'repository-1',
-            repositoryName: 'repovio',
-            repositoryOwner: 'twaelde',
-            startedAt: '2026-09-08T08:00:00.000Z',
-            status: 'SUCCESS',
-            url: 'https://github.com/repovio/repovio/actions/runs/42',
-            workflowName: 'Build',
-          },
-        ],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-      },
-    });
-  });
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, async (route) => {
-    if (repositoryFilterRequestFails) return route.abort('failed');
-    const requestUrl = new URL(route.request().url());
-    expect(requestUrl.searchParams.get('fields')).toBe('id,name,owner');
-    expect(requestUrl.searchParams.get('perPage')).toBe('1000');
-    await route.fulfill({
-      contentType: 'application/json',
-      json: {
-        items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
-      },
-    });
-  });
-  await page.route('**/api/v1/auth/me', async (route) => {
-    await route.fulfill({
-      contentType: 'application/json',
-      json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
-    });
-  });
+  await page.route(
+    /\/api\/v1\/workflow-runs(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      const requestUrl = route.request().url();
+      workflowRunRequestUrls.push(requestUrl);
+      expect(requestUrl).toContain('fields=');
+      expect(requestUrl).toContain('repositoryName');
+      expect(requestUrl).toContain('repositoryOwner');
+      expect(requestUrl).toContain('providerType');
+      expect(requestUrl).toContain('workflowName');
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [
+            {
+              completedAt: '2026-09-08T08:02:30.000Z',
+              displayTitle: 'Build on main',
+              durationMs: 150_000,
+              id: 'run-1',
+              providerCreatedAt: '2026-09-08T08:00:00.000Z',
+              providerRunId: '42',
+              providerType: 'GITHUB',
+              repositoryId: 'repository-1',
+              repositoryName: 'repovio',
+              repositoryOwner: 'twaelde',
+              startedAt: '2026-09-08T08:00:00.000Z',
+              status: 'SUCCESS',
+              url: 'https://github.com/repovio/repovio/actions/runs/42',
+              workflowName: 'Build',
+            },
+          ],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+        },
+      });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ async (route) => {
+      if (repositoryFilterRequestFails) return route.abort('failed');
+      const requestUrl = new URL(route.request().url());
+      expect(requestUrl.searchParams.get('fields')).toBe('id,name,owner');
+      expect(requestUrl.searchParams.get('perPage')).toBe('1000');
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          items: [{ id: 'repository-1', name: 'repovio', owner: 'twaelde' }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 1_000 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' },
+      });
+    },
+  );
 
   await page.goto('/workflow-runs');
 
@@ -558,28 +660,51 @@ test('workflow runs render in a filterable and sortable full-page table', async 
   await expect(filteringPopover.getByText('Duration (seconds)', { exact: true })).toBeVisible();
   await expect(filteringPopover.getByText('Status', { exact: true })).toBeVisible();
   await expect(filteringPopover.getByRole('spinbutton')).toHaveValue('90');
-  await expect.poll(() => filteringPopover.evaluate((element) => window.getComputedStyle(element).opacity)).toBe('1');
+  await expect
+    .poll(
+      /** Evaluates `filteringPopover.evaluate((element) => window.getComputedStyle(element).opacity)` when expect.poll invokes this callback. */ () =>
+        filteringPopover.evaluate(
+          /** Reads or updates browser state for the admin tables scenario. */ (element) =>
+            window.getComputedStyle(element).opacity,
+        ),
+    )
+    .toBe('1');
   await page.screenshot({ path: testInfo.outputPath('workflow-run-filters.png'), fullPage: true });
   await filteringPopover.getByRole('spinbutton').fill('120');
   await filteringPopover.getByRole('spinbutton').press('Tab');
   await expect
-    .poll(() => new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where'))
+    .poll(
+      /** Evaluates `new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where')` when expect .poll invokes this callback. */ () =>
+        new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where'),
+    )
     .toContain('"durationMs":{"gte":120000}');
   await expect
-    .poll(() =>
-      page.evaluate(() => {
-        const filtering = JSON.parse(window.localStorage.getItem('table:workflow-runs:filtering') ?? '{}') as {
-          filters?: Array<{ field?: string; value?: unknown }>;
-        };
-        return filtering.filters?.find((filter) => filter.field === 'durationMs')?.value;
-      }),
+    .poll(
+      /** Reads the observable state until the browser assertion settles. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the admin tables scenario. */ () => {
+            const filtering = JSON.parse(window.localStorage.getItem('table:workflow-runs:filtering') ?? '{}') as {
+              filters?: Array<{ field?: string; value?: unknown }>;
+            };
+            return filtering.filters?.find(
+              /** Finds the first entry matching `filter.field === 'durationMs'`. */ (filter) =>
+                filter.field === 'durationMs',
+            )?.value;
+          },
+        ),
     )
     .toBe(120_000);
   await page.keyboard.press('Shift+F');
   await page.locator('footer').getByRole('combobox').click();
   await page.getByRole('option', { name: '100', exact: true }).click();
   await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem('table:workflow-runs:items-per-page')))
+    .poll(
+      /** Evaluates `page.evaluate(() => window.localStorage.getItem('table:workflow-runs:items-per-page'))` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the admin tables scenario. */ () =>
+            window.localStorage.getItem('table:workflow-runs:items-per-page'),
+        ),
+    )
     .toBe('100');
   await page.keyboard.press('Shift+O');
   await expect(page.getByText('Table options', { exact: true })).toBeVisible();
@@ -594,9 +719,22 @@ test('workflow runs render in a filterable and sortable full-page table', async 
   await page.reload();
   await expect(page.getByText('Repository filter options could not be loaded.', { exact: true })).toBeVisible();
   await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
-  await expect.poll(() => workflowRunRequestUrls.length).toBeGreaterThan(requestCountBeforeReload);
-  await expect.poll(() => new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('perPage')).toBe('100');
   await expect
-    .poll(() => new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where'))
+    .poll(
+      /** Evaluates `workflowRunRequestUrls.length` when expect.poll invokes this callback. */ () =>
+        workflowRunRequestUrls.length,
+    )
+    .toBeGreaterThan(requestCountBeforeReload);
+  await expect
+    .poll(
+      /** Evaluates `new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('perPage')` when expect.poll invokes this callback. */ () =>
+        new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('perPage'),
+    )
+    .toBe('100');
+  await expect
+    .poll(
+      /** Evaluates `new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where')` when expect .poll invokes this callback. */ () =>
+        new URL(workflowRunRequestUrls.at(-1)!).searchParams.get('where'),
+    )
     .toContain('"durationMs":{"gte":120000}');
 });

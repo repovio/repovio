@@ -49,50 +49,61 @@ function openShortcutsAfterMenu(event: Event): void {
   event.preventDefault();
   menuTrigger.value?.$el?.focus();
   shortcutsRequested.value = false;
-  void nextTick(() => {
-    shortcutsOpen.value = true;
-  });
+  void nextTick(
+    /** Opens the shortcuts dialog after the menu has released focus. */ () => {
+      shortcutsOpen.value = true;
+    },
+  );
 }
 
 const { t } = useI18n();
 const { dropdownMenuItems: localeItems } = useLocales();
 const { dropdownMenuItems: themeItems } = useThemes();
 
-const items = computed<DropdownMenuItem[]>(() => [
-  {
-    icon: 'i-lucide-settings',
-    label: t('layout.settings'),
-    to: '/admin/settings',
-  },
-  { type: 'separator' },
-  {
-    children: localeItems.value,
-    icon: 'i-tabler-language',
-    label: t('layout.language'),
-  },
-  {
-    children: themeItems.value,
-    icon: 'i-tabler-palette',
-    label: t('layout.theme'),
-  },
-  { type: 'separator' },
-  {
-    icon: 'i-tabler-keyboard',
-    label: t('shortcuts.title'),
-    kbds: [...globalShortcuts.find((shortcut) => shortcut.id === 'shortcuts')!.keys],
-    onSelect: () => {
-      shortcutsRequested.value = true;
+const items = computed<DropdownMenuItem[]>(
+  /** Derives items from the current reactive dependencies. */ () => [
+    {
+      icon: 'i-lucide-settings',
+      label: t('layout.settings'),
+      to: '/admin/settings',
     },
-  },
-  {
-    color: 'error',
-    icon: 'i-tabler-logout',
-    label: t('auth.signOut'),
-    onSelect: () => {
-      void signOut();
+    { type: 'separator' },
+    {
+      children: localeItems.value,
+      icon: 'i-tabler-language',
+      label: t('layout.language'),
     },
-  },
-]);
+    {
+      children: themeItems.value,
+      icon: 'i-tabler-palette',
+      label: t('layout.theme'),
+    },
+    { type: 'separator' },
+    {
+      icon: 'i-tabler-keyboard',
+      label: t('shortcuts.title'),
+      kbds: [
+        ...globalShortcuts.find(
+          /** Finds the first entry matching `shortcut.id === 'shortcuts'`. */ (shortcut) =>
+            shortcut.id === 'shortcuts',
+        )!.keys,
+      ],
+      /** Runs the selected menu action. */
+      onSelect: () => {
+        shortcutsRequested.value = true;
+      },
+    },
+    {
+      color: 'error',
+      icon: 'i-tabler-logout',
+      label: t('auth.signOut'),
+      /** Runs the selected menu action. */
+      onSelect: () => {
+        void signOut();
+      },
+    },
+  ],
+);
 
 /** End the browser session before returning to the public sign-in route. */
 async function signOut(): Promise<void> {

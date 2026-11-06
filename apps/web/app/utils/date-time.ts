@@ -29,6 +29,8 @@ function formatIsoDateTime(date: Date, timeZone?: string): string {
     timeZone,
     year: 'numeric',
   }).formatToParts(date);
-  const getPart = (type: Intl.DateTimeFormatPartTypes): string => parts.find((part) => part.type === type)?.value ?? '';
+  /** Retrieves part. */
+  const getPart = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find(/** Finds the first entry matching `part.type === type`. */ (part) => part.type === type)?.value ?? '';
   return `${getPart('year')}-${getPart('month')}-${getPart('day')} ${getPart('hour')}:${getPart('minute')}`;
 }

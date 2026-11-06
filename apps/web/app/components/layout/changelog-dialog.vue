@@ -37,10 +37,13 @@ interface ChangelogRelease {
 
 const open = defineModel<boolean>('open', { default: false });
 const current = useRuntimeConfig().public.appVersion;
-const releases = changelog.split('\n').reduce<ChangelogRelease[]>((result, line) => {
-  const version = line.match(/^## (\d+\.\d+\.\d+)$/)?.[1];
-  if (version) result.push({ items: [], version });
-  else if (line.startsWith('- ') && result.length) result.at(-1)!.items.push(line.slice(2));
-  return result;
-}, []);
+const releases = changelog.split('\n').reduce<ChangelogRelease[]>(
+  /** Accumulates entries using the releases mapping. */ (result, line) => {
+    const version = line.match(/^## (\d+\.\d+\.\d+)$/)?.[1];
+    if (version) result.push({ items: [], version });
+    else if (line.startsWith('- ') && result.length) result.at(-1)!.items.push(line.slice(2));
+    return result;
+  },
+  [],
+);
 </script>

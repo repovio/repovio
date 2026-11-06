@@ -13,12 +13,14 @@ export function createZodDto<T extends z.ZodType>(schema: T) {
   const metadata = dto as unknown as { _OPENAPI_METADATA_FACTORY: (this: typeof dto) => Record<string, unknown> };
   const original = metadata._OPENAPI_METADATA_FACTORY;
   const cache = new WeakMap<object, Record<string, unknown>>();
-  metadata._OPENAPI_METADATA_FACTORY = function () {
-    const cached = cache.get(this);
-    if (cached) return cached;
-    const result = original.call(this);
-    cache.set(this, result);
-    return result;
-  };
+  metadata._OPENAPI_METADATA_FACTORY =
+    /** Exposes the empty Swagger metadata factory required by the schema-backed DTO. */
+    function () {
+      const cached = cache.get(this);
+      if (cached) return cached;
+      const result = original.call(this);
+      cache.set(this, result);
+      return result;
+    };
   return dto;
 }

@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { ForgejoActionsAdapter, ForgejoActionsUnsupportedError } from './forgejo-actions.adapter.js';
 
 const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
+/** Reads fixture. */
 const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));
 
-describe('ForgejoActionsAdapter', () => {
+describe('ForgejoActionsAdapter', /** Groups scenarios for ForgejoActionsAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://forgejo.example.test', providerAccountId: 'account' };
 
-  it('retains Forgejo rate-limit timing without exposing the response body', async () => {
+  it('retains Forgejo rate-limit timing without exposing the response body', /** Verifies retains Forgejo rate-limit timing without exposing the response body. */ async () => {
     const adapter = new ForgejoActionsAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),
     );
@@ -22,7 +23,7 @@ describe('ForgejoActionsAdapter', () => {
       status: 429,
     });
   });
-  it('maps Actions workflow runs through the read-only API', async () => {
+  it('maps Actions workflow runs through the read-only API', /** Verifies maps Actions workflow runs through the read-only API. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify(readFixture('workflow-runs.json'))));
     await expect(
       new ForgejoActionsAdapter(fetchFn).listWorkflowRuns(context, {
@@ -52,7 +53,7 @@ describe('ForgejoActionsAdapter', () => {
     );
   });
 
-  it('maps native approval state and duration when Forgejo has not started the run', async () => {
+  it('maps native approval state and duration when Forgejo has not started the run', /** Verifies maps native approval state and duration when Forgejo has not started the run. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -95,15 +96,18 @@ describe('ForgejoActionsAdapter', () => {
     ]);
   });
 
-  it('paginates more than 100 incremental workflow runs', async () => {
-    const firstPage = Array.from({ length: 100 }, (_, index) => ({
-      created: '2026-08-01T10:00:00Z',
-      html_url: `https://forgejo.example.test/org/repo/actions/runs/${index + 1}`,
-      id: index + 1,
-      status: 'success',
-      updated: '2026-08-01T10:05:00Z',
-      workflow_id: 'ci.yml',
-    }));
+  it('paginates more than 100 incremental workflow runs', /** Verifies paginates more than 100 incremental workflow runs. */ async () => {
+    const firstPage = Array.from(
+      { length: 100 },
+      /** Creates the indexed workflow-run fixtures used by this scenario. */ (_, index) => ({
+        created: '2026-08-01T10:00:00Z',
+        html_url: `https://forgejo.example.test/org/repo/actions/runs/${index + 1}`,
+        id: index + 1,
+        status: 'success',
+        updated: '2026-08-01T10:05:00Z',
+        workflow_id: 'ci.yml',
+      }),
+    );
     const secondPage = [
       {
         created: '2026-08-01T10:01:00Z',
@@ -128,7 +132,7 @@ describe('ForgejoActionsAdapter', () => {
     ).resolves.toHaveLength(101);
     expect(fetchFn).toHaveBeenNthCalledWith(2, expect.stringContaining('page=2&limit=100'), expect.anything());
   });
-  it('loads current repository metadata through the stable Forgejo repository ID', async () => {
+  it('loads current repository metadata through the stable Forgejo repository ID', /** Verifies loads current repository metadata through the stable Forgejo repository ID. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -148,13 +152,13 @@ describe('ForgejoActionsAdapter', () => {
     ).resolves.toMatchObject({ providerRepositoryId: '1', owner: 'new-org', name: 'renamed' });
     expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/api/v1/repositories/1'), expect.anything());
   });
-  it('explains when a Forgejo server has no Actions run API', async () => {
+  it('explains when a Forgejo server has no Actions run API', /** Verifies explains when a Forgejo server has no Actions run API. */ async () => {
     const adapter = new ForgejoActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(
       adapter.listWorkflowRuns(context, { providerRepositoryId: '1', owner: 'org', name: 'repo' }),
     ).rejects.toBeInstanceOf(ForgejoActionsUnsupportedError);
   });
-  it('verifies Forgejo HMAC signatures while retaining Gitea header compatibility', async () => {
+  it('verifies Forgejo HMAC signatures while retaining Gitea header compatibility', /** Verifies verifies Forgejo HMAC signatures while retaining Gitea header compatibility. */ async () => {
     const adapter = new ForgejoActionsAdapter();
     const payload = Buffer.from(JSON.stringify(readFixture('webhook.json')));
     const signature = createHmac('sha256', 'webhook-secret').update(payload).digest('hex');
@@ -176,7 +180,7 @@ describe('ForgejoActionsAdapter', () => {
   });
 });
 
-describe('ForgejoActionsAdapter change requests', () => {
+describe('ForgejoActionsAdapter change requests', /** Groups scenarios for ForgejoActionsAdapter change requests. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://forgejo.example.test', providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
@@ -186,6 +190,7 @@ describe('ForgejoActionsAdapter change requests', () => {
     ['closed', true, '2026-09-12T10:00:00.000Z', 'MERGED'],
   ] as const)(
     'normalizes a %s pull request with merged=%s and merged-at %s as %s',
+    /** Verifies normalizes a %s pull request with merged=%s and merged-at %s as %s. */
     async (state, merged, mergedAt, expected) => {
       const adapter = new ForgejoActionsAdapter(
         jest
@@ -203,7 +208,7 @@ describe('ForgejoActionsAdapter change requests', () => {
     },
   );
 
-  it('normalizes Forgejo issue and pull-request fixtures', async () => {
+  it('normalizes Forgejo issue and pull-request fixtures', /** Verifies normalizes Forgejo issue and pull-request fixtures. */ async () => {
     const adapter = new ForgejoActionsAdapter(
       jest
         .fn()
@@ -219,7 +224,7 @@ describe('ForgejoActionsAdapter change requests', () => {
     ]);
   });
 
-  it('returns null when the pull request is unavailable', async () => {
+  it('returns null when the pull request is unavailable', /** Verifies returns null when the pull request is unavailable. */ async () => {
     const adapter = new ForgejoActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toBeNull();
   });

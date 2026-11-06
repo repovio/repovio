@@ -6,7 +6,7 @@ import sharp from 'sharp';
 
 import { AvatarService } from './avatar.service.js';
 
-describe('AvatarService', () => {
+describe('AvatarService', /** Groups scenarios for AvatarService. */ () => {
   const updatedAt = new Date('2026-09-12T10:00:00.000Z');
   const prisma = {
     userAvatar: {
@@ -17,9 +17,9 @@ describe('AvatarService', () => {
   };
   const service = new AvatarService(prisma as never);
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('normalizes uploaded images to a metadata-free 256 pixel WebP', async () => {
+  it('normalizes uploaded images to a metadata-free 256 pixel WebP', /** Verifies normalizes uploaded images to a metadata-free 256 pixel WebP. */ async () => {
     const source = await sharp({
       create: { background: '#79c1b6', channels: 3, height: 200, width: 400 },
     })
@@ -36,13 +36,13 @@ describe('AvatarService', () => {
     expect(create.etag).toMatch(/^[a-f0-9]{64}$/);
   });
 
-  it('rejects files over two megabytes before decoding', async () => {
+  it('rejects files over two megabytes before decoding', /** Verifies rejects files over two megabytes before decoding. */ async () => {
     await expect(
       service.save('user-id', { data: Buffer.alloc(2 * 1024 * 1024 + 1), mimeType: 'image/png' }),
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
   });
 
-  it('rejects a declared image type that does not match the encoded data', async () => {
+  it('rejects a declared image type that does not match the encoded data', /** Verifies rejects a declared image type that does not match the encoded data. */ async () => {
     const source = await sharp({ create: { background: 'white', channels: 3, height: 10, width: 10 } })
       .png()
       .toBuffer();
@@ -51,18 +51,19 @@ describe('AvatarService', () => {
     );
   });
 
-  it('blocks insecure and private remote avatar targets', async () => {
+  it('blocks insecure and private remote avatar targets', /** Verifies blocks insecure and private remote avatar targets. */ async () => {
     await expect(service.download('http://example.com/avatar.png')).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.download('https://example.com:8443/avatar.png')).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.download('https://127.0.0.1/avatar.png')).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.download('https://[::1]/avatar.png')).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  /** Builds the remote image response consumed by avatar validation. */
   function remoteResponse(chunks: Buffer[], headers: IncomingMessage['headers'], statusCode = 200): IncomingMessage {
     return Object.assign(Readable.from(chunks), { headers, statusCode }) as unknown as IncomingMessage;
   }
 
-  it('reads a streamed remote image and validates the declared format', async () => {
+  it('reads a streamed remote image and validates the declared format', /** Verifies reads a streamed remote image and validates the declared format. */ async () => {
     const data = await sharp({ create: { background: 'white', channels: 3, height: 10, width: 10 } })
       .png()
       .toBuffer();
@@ -83,22 +84,25 @@ describe('AvatarService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it.each(['declared', 'streamed'])('enforces the %s remote image size limit', async (lengthSource) => {
-    const response = remoteResponse(
-      lengthSource === 'streamed' ? [Buffer.alloc(2 * 1024 * 1024), Buffer.from([1])] : [],
-      {
-        'content-type': 'image/png',
-        ...(lengthSource === 'declared' ? { 'content-length': String(2 * 1024 * 1024 + 1) } : {}),
-      },
-    );
+  it.each(['declared', 'streamed'])(
+    'enforces the %s remote image size limit',
+    /** Verifies enforces the %s remote image size limit. */ async (lengthSource) => {
+      const response = remoteResponse(
+        lengthSource === 'streamed' ? [Buffer.alloc(2 * 1024 * 1024), Buffer.from([1])] : [],
+        {
+          'content-type': 'image/png',
+          ...(lengthSource === 'declared' ? { 'content-length': String(2 * 1024 * 1024 + 1) } : {}),
+        },
+      );
 
-    await expect(
-      service['handleDownloadResponse'](response, new URL('https://example.test/avatar.png'), 0),
-    ).rejects.toBeInstanceOf(PayloadTooLargeException);
-    expect(response.destroyed).toBe(true);
-  });
+      await expect(
+        service['handleDownloadResponse'](response, new URL('https://example.test/avatar.png'), 0),
+      ).rejects.toBeInstanceOf(PayloadTooLargeException);
+      expect(response.destroyed).toBe(true);
+    },
+  );
 
-  it('revalidates redirect destinations and enforces the redirect limit', async () => {
+  it('revalidates redirect destinations and enforces the redirect limit', /** Verifies revalidates redirect destinations and enforces the redirect limit. */ async () => {
     const url = new URL('https://example.test/avatar.png');
     await expect(
       service['handleDownloadResponse'](remoteResponse([], { location: 'https://127.0.0.1/avatar.png' }, 302), url, 0),
@@ -111,13 +115,13 @@ describe('AvatarService', () => {
     ).rejects.toBeInstanceOf(BadGatewayException);
   });
 
-  it('rejects unsuccessful remote responses before decoding their body', async () => {
+  it('rejects unsuccessful remote responses before decoding their body', /** Verifies rejects unsuccessful remote responses before decoding their body. */ async () => {
     await expect(
       service['handleDownloadResponse'](remoteResponse([], {}, 503), new URL('https://example.test/avatar.png'), 0),
     ).rejects.toBeInstanceOf(BadGatewayException);
   });
 
-  it('removes and retrieves stored avatar records without loading a user', async () => {
+  it('removes and retrieves stored avatar records without loading a user', /** Verifies removes and retrieves stored avatar records without loading a user. */ async () => {
     prisma.userAvatar.findUnique.mockResolvedValue({ data: new Uint8Array([1, 2, 3]), etag: 'etag' });
     await expect(service.get('user-id')).resolves.toEqual({ data: new Uint8Array([1, 2, 3]), etag: 'etag' });
     await service.remove('user-id');

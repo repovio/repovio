@@ -67,7 +67,10 @@ export class NotificationDeliveryService {
    */
   @Interval(60_000)
   async scheduleRetries(): Promise<void> {
-    await this.jobs.run('notification-delivery-retry', () => this.deliverPending());
+    await this.jobs.run(
+      'notification-delivery-retry',
+      /** Evaluates `this.deliverPending()` when this.jobs.run invokes this callback. */ () => this.deliverPending(),
+    );
   }
 
   /**
@@ -105,13 +108,20 @@ export class NotificationDeliveryService {
     }
 
     const payload = this.createPayload(delivery);
-    const attemptNumber = Math.max(0, ...delivery.attempts.map((attempt) => attempt.attempt)) + 1;
+    const attemptNumber =
+      Math.max(
+        0,
+        ...delivery.attempts.map(/** Projects each entry using `attempt.attempt`. */ (attempt) => attempt.attempt),
+      ) + 1;
     const deliveredSubscriptionIds = new Set(
-      delivery.attempts.flatMap((attempt) =>
-        attempt.deliveredAt && attempt.browserPushSubscriptionId ? [attempt.browserPushSubscriptionId] : [],
+      delivery.attempts.flatMap(
+        /** Flattens entries produced by `attempt.deliveredAt && attempt.browserPushSubscriptionId ? [attempt.browserPushSubscriptionId] : []`. */ (
+          attempt,
+        ) => (attempt.deliveredAt && attempt.browserPushSubscriptionId ? [attempt.browserPushSubscriptionId] : []),
       ),
     );
     const channelAlreadyDelivered = delivery.attempts.some(
+      /** Checks whether any entry satisfies `attempt.deliveredAt && !attempt.browserPushSubscriptionId`. */
       (attempt) => attempt.deliveredAt && !attempt.browserPushSubscriptionId,
     );
     const delivered =

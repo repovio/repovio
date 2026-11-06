@@ -129,42 +129,59 @@ const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const detailsOpen = ref(false);
 const selectedDelivery = ref<NotificationDelivery | null>(null);
-const columnDefinition = computed<DeliveryColumn[]>(() => [
-  { accessorKey: 'createdAt', header: t('notifications.columns.createdAt'), id: 'createdAt' },
-  { accessorKey: 'kind', header: t('notifications.columns.kind'), id: 'kind' },
-  { accessorKey: 'eventType', header: t('notifications.columns.event'), id: 'eventType' },
-  { accessorKey: 'repositoryName', header: t('notifications.columns.repository'), id: 'repositoryName' },
-  { accessorKey: 'subjectTitle', header: t('notifications.columns.subject'), id: 'subjectTitle' },
-  { accessorKey: 'notificationChannelName', header: t('notifications.columns.channel'), id: 'notificationChannelName' },
-  { accessorKey: 'status', header: t('notifications.columns.status'), id: 'status' },
-  { header: t('notifications.columns.attempts'), id: 'attempts' },
-  { accessorKey: 'nextAttemptAt', header: t('notifications.columns.nextAttempt'), id: 'nextAttemptAt' },
-  { accessorKey: 'finalError', header: t('notifications.columns.error'), id: 'finalError' },
-  { enableHiding: false, header: t('notifications.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('notifications.columns.createdAt'), value: 'createdAt' },
-  { label: t('notifications.columns.kind'), value: 'kind' },
-  { label: t('notifications.columns.status'), value: 'status' },
-  { label: t('notifications.columns.nextAttempt'), value: 'nextAttemptAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('notifications.columns.kind'),
-    type: FilterFieldType.Enum,
-    value: 'kind',
-    values: ['EVENT', 'TEST'].map((value) => ({ label: t(`notifications.deliveryKinds.${value}`), value })),
-  },
-  {
-    label: t('notifications.columns.status'),
-    type: FilterFieldType.Enum,
-    value: 'status',
-    values: ['PENDING', 'DELIVERED', 'FAILED'].map((value) => ({
-      label: t(`notificationDeliveryStatus.${value}`),
-      value,
-    })),
-  },
-]);
+const columnDefinition = computed<DeliveryColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'createdAt', header: t('notifications.columns.createdAt'), id: 'createdAt' },
+    { accessorKey: 'kind', header: t('notifications.columns.kind'), id: 'kind' },
+    { accessorKey: 'eventType', header: t('notifications.columns.event'), id: 'eventType' },
+    { accessorKey: 'repositoryName', header: t('notifications.columns.repository'), id: 'repositoryName' },
+    { accessorKey: 'subjectTitle', header: t('notifications.columns.subject'), id: 'subjectTitle' },
+    {
+      accessorKey: 'notificationChannelName',
+      header: t('notifications.columns.channel'),
+      id: 'notificationChannelName',
+    },
+    { accessorKey: 'status', header: t('notifications.columns.status'), id: 'status' },
+    { header: t('notifications.columns.attempts'), id: 'attempts' },
+    { accessorKey: 'nextAttemptAt', header: t('notifications.columns.nextAttempt'), id: 'nextAttemptAt' },
+    { accessorKey: 'finalError', header: t('notifications.columns.error'), id: 'finalError' },
+    { enableHiding: false, header: t('notifications.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('notifications.columns.createdAt'), value: 'createdAt' },
+    { label: t('notifications.columns.kind'), value: 'kind' },
+    { label: t('notifications.columns.status'), value: 'status' },
+    { label: t('notifications.columns.nextAttempt'), value: 'nextAttemptAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('notifications.columns.kind'),
+      type: FilterFieldType.Enum,
+      value: 'kind',
+      values: ['EVENT', 'TEST'].map(
+        /** Projects each entry using `({ label: t(`notifications.deliveryKinds.${value}`), value })`. */ (value) => ({
+          label: t(`notifications.deliveryKinds.${value}`),
+          value,
+        }),
+      ),
+    },
+    {
+      label: t('notifications.columns.status'),
+      type: FilterFieldType.Enum,
+      value: 'status',
+      values: ['PENDING', 'DELIVERED', 'FAILED'].map(
+        /** Projects each entry using `({ label: t(`notificationDeliveryStatus.${value}`), value, })`. */ (value) => ({
+          label: t(`notificationDeliveryStatus.${value}`),
+          value,
+        }),
+      ),
+    },
+  ],
+);
 const deliveryTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 10,
@@ -202,17 +219,21 @@ const {
   totalItems,
 } = deliveryTable;
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: deliveryTable.columnPinning.value.left, right: deliveryTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     deliveryTable.columnPinning.value = value;
   },
 });
+/** Maps the current delivery or token state to its UI color. */
 function statusColor(status: NotificationDeliveryStatus): 'info' | 'success' | 'error' {
   return status === 'DELIVERED' ? 'success' : status === 'FAILED' ? 'error' : 'info';
 }
+/** Opens details. */
 function openDetails(delivery: NotificationDelivery): void {
   selectedDelivery.value = delivery;
   detailsOpen.value = true;
 }
-onMounted(() => void deliveryTable.initialize());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void deliveryTable.initialize());
 </script>

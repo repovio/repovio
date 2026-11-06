@@ -4,7 +4,7 @@ import { ProvidersModule } from '../providers/providers.module.js';
 import { WebhookController } from './webhook.controller.js';
 import { WebhookService } from './webhook.service.js';
 
-@Module({
+/** Registers the webhooks module providers and imports with Nest. */ @Module({
   imports: [ProvidersModule],
   controllers: [WebhookController],
   providers: [WebhookService],

@@ -176,7 +176,9 @@ export class GitHubActionsAdapter implements ProviderAdapter {
    */
   async listRepositories(context: ProviderAccountContext): Promise<ProviderRepository[]> {
     const repositories = await this.request<GitHubRepositoryResponse[]>(context, '/user/repos?per_page=100');
-    return repositories.map((repository) => this.toRepository(repository));
+    return repositories.map(
+      /** Projects each entry using `this.toRepository(repository)`. */ (repository) => this.toRepository(repository),
+    );
   }
 
   /**
@@ -259,7 +261,12 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       runs.push(...response.workflow_runs);
       if (response.workflow_runs.length < 100) break;
     }
-    return Promise.all(runs.map((run) => this.resolveWorkflowRun(context, repository, run)));
+    return Promise.all(
+      runs.map(
+        /** Projects each entry using `this.resolveWorkflowRun(context, repository, run)`. */ (run) =>
+          this.resolveWorkflowRun(context, repository, run),
+      ),
+    );
   }
 
   /**
@@ -314,8 +321,8 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       ? await this.listPages<GitHubIssueResponse>(context, path, { direction: 'desc', sort: 'updated', state: 'open' })
       : [];
     return this.uniqueById([...recent, ...open])
-      .filter((issue) => !issue.pull_request)
-      .map((issue) => this.toIssue(issue));
+      .filter(/** Keeps entries matching `!issue.pull_request`. */ (issue) => !issue.pull_request)
+      .map(/** Projects each entry using `this.toIssue(issue)`. */ (issue) => this.toIssue(issue));
   }
 
   /**
@@ -339,12 +346,16 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       context,
       path,
       { direction: 'desc', sort: 'updated', state: 'all' },
+      /** Evaluates `new Date(pullRequest.updated_at) >= query.updatedAfter` when this.listPages invokes this callback. */
       (pullRequest) => new Date(pullRequest.updated_at) >= query.updatedAfter,
     );
     const open = query.includeAllOpen
       ? await this.listPages<GitHubPullResponse>(context, path, { direction: 'desc', sort: 'updated', state: 'open' })
       : [];
-    return this.uniqueById([...recent, ...open]).map((pullRequest) => this.toPullRequest(pullRequest));
+    return this.uniqueById([...recent, ...open]).map(
+      /** Projects each entry using `this.toPullRequest(pullRequest)`. */ (pullRequest) =>
+        this.toPullRequest(pullRequest),
+    );
   }
 
   /**
@@ -360,20 +371,44 @@ export class GitHubActionsAdapter implements ProviderAdapter {
   ): Promise<ProviderSecurityAlertResult[]> {
     const base = `/repos/${repository.owner}/${repository.name}`;
     return Promise.all([
-      this.readAlertKind('DEPENDENCY', () =>
-        this.listAlertPages<GitHubDependabotAlert>(context, `${base}/dependabot/alerts`).then((alerts) =>
-          alerts.map((alert) => this.toDependabotAlert(alert)),
-        ),
+      this.readAlertKind(
+        'DEPENDENCY',
+        /** Reads this alert category using the provider permission and availability guard. */ () =>
+          this.listAlertPages<GitHubDependabotAlert>(context, `${base}/dependabot/alerts`).then(
+            /** Evaluates `alerts.map((alert) => this.toDependabotAlert(alert))` when this.listAlertPages<GitHubDependabotAlert>(context, `${base}/dependabot/alerts`).then invokes this callback. */ (
+              alerts,
+            ) =>
+              alerts.map(
+                /** Projects each entry using `this.toDependabotAlert(alert)`. */ (alert) =>
+                  this.toDependabotAlert(alert),
+              ),
+          ),
       ),
-      this.readAlertKind('CODE', () =>
-        this.listAlertPages<GitHubCodeScanningAlert>(context, `${base}/code-scanning/alerts`).then((alerts) =>
-          alerts.map((alert) => this.toCodeScanningAlert(alert)),
-        ),
+      this.readAlertKind(
+        'CODE',
+        /** Reads this alert category using the provider permission and availability guard. */ () =>
+          this.listAlertPages<GitHubCodeScanningAlert>(context, `${base}/code-scanning/alerts`).then(
+            /** Evaluates `alerts.map((alert) => this.toCodeScanningAlert(alert))` when this.listAlertPages<GitHubCodeScanningAlert>(context, `${base}/code-scanning/alerts`).then invokes this callback. */ (
+              alerts,
+            ) =>
+              alerts.map(
+                /** Projects each entry using `this.toCodeScanningAlert(alert)`. */ (alert) =>
+                  this.toCodeScanningAlert(alert),
+              ),
+          ),
       ),
-      this.readAlertKind('SECRET', () =>
-        this.listAlertPages<GitHubSecretScanningAlert>(context, `${base}/secret-scanning/alerts`).then((alerts) =>
-          alerts.map((alert) => this.toSecretScanningAlert(alert)),
-        ),
+      this.readAlertKind(
+        'SECRET',
+        /** Reads this alert category using the provider permission and availability guard. */ () =>
+          this.listAlertPages<GitHubSecretScanningAlert>(context, `${base}/secret-scanning/alerts`).then(
+            /** Evaluates `alerts.map((alert) => this.toSecretScanningAlert(alert))` when this.listAlertPages<GitHubSecretScanningAlert>(context, `${base}/secret-scanning/alerts`).then invokes this callback. */ (
+              alerts,
+            ) =>
+              alerts.map(
+                /** Projects each entry using `this.toSecretScanningAlert(alert)`. */ (alert) =>
+                  this.toSecretScanningAlert(alert),
+              ),
+          ),
       ),
     ]);
   }
@@ -434,7 +469,7 @@ export class GitHubActionsAdapter implements ProviderAdapter {
     context: ProviderAccountContext,
     path: string,
     parameters: Record<string, string>,
-    keepReading: (item: T) => boolean = () => true,
+    keepReading: (item: T) => boolean = /** Returns `true` to the caller. */ () => true,
   ): Promise<T[]> {
     const items: T[] = [];
     for (let page = 1; ; page += 1) {
@@ -508,7 +543,9 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       description: alert.security_advisory?.description ?? null,
       ecosystem: alert.dependency.package.ecosystem,
       fixedVersion: vulnerability?.first_patched_version?.identifier ?? null,
-      identifiers: (alert.security_advisory?.identifiers ?? []).map(({ type, value }) => `${type}:${value}`),
+      identifiers: (alert.security_advisory?.identifiers ?? []).map(
+        /** Projects each entry using ``${type}:${value}``. */ ({ type, value }) => `${type}:${value}`,
+      ),
       kind: 'DEPENDENCY',
       location: null,
       manifest: alert.dependency.manifest_path,
@@ -650,7 +687,9 @@ export class GitHubActionsAdapter implements ProviderAdapter {
    * @returns One record per ID in first-insertion order, containing the last value for that ID.
    */
   private uniqueById<T extends { id: number }>(items: T[]): T[] {
-    return [...new Map(items.map((item) => [item.id, item])).values()];
+    return [
+      ...new Map(items.map(/** Projects each entry using `[item.id, item]`. */ (item) => [item.id, item])).values(),
+    ];
   }
 
   /**
@@ -694,11 +733,15 @@ export class GitHubActionsAdapter implements ProviderAdapter {
    */
   private toIssue(issue: GitHubIssueResponse): ProviderIssue {
     return {
-      assignees: (issue.assignees ?? []).flatMap((actor) => this.toActor(actor) ?? []),
+      assignees: (issue.assignees ?? []).flatMap(
+        /** Flattens entries produced by `this.toActor(actor) ?? []`. */ (actor) => this.toActor(actor) ?? [],
+      ),
       author: this.toActor(issue.user),
       body: issue.body ?? null,
       closedAt: issue.closed_at ? new Date(issue.closed_at) : null,
-      labels: (issue.labels ?? []).map((label) => this.toLabel(label)),
+      labels: (issue.labels ?? []).map(
+        /** Projects each entry using `this.toLabel(label)`. */ (label) => this.toLabel(label),
+      ),
       milestone: issue.milestone?.title ?? null,
       number: String(issue.number),
       providerCreatedAt: new Date(issue.created_at),
@@ -719,12 +762,16 @@ export class GitHubActionsAdapter implements ProviderAdapter {
   private toPullRequest(pullRequest: GitHubPullResponse): ProviderPullRequest {
     const mergedAt = pullRequest.merged_at ? new Date(pullRequest.merged_at) : null;
     return {
-      assignees: (pullRequest.assignees ?? []).flatMap((actor) => this.toActor(actor) ?? []),
+      assignees: (pullRequest.assignees ?? []).flatMap(
+        /** Flattens entries produced by `this.toActor(actor) ?? []`. */ (actor) => this.toActor(actor) ?? [],
+      ),
       author: this.toActor(pullRequest.user),
       body: pullRequest.body ?? null,
       closedAt: pullRequest.closed_at ? new Date(pullRequest.closed_at) : null,
       draft: pullRequest.draft ?? false,
-      labels: (pullRequest.labels ?? []).map((label) => this.toLabel(label)),
+      labels: (pullRequest.labels ?? []).map(
+        /** Projects each entry using `this.toLabel(label)`. */ (label) => this.toLabel(label),
+      ),
       mergedAt,
       number: String(pullRequest.number),
       providerCreatedAt: new Date(pullRequest.created_at),

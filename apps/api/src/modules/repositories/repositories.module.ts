@@ -8,7 +8,7 @@ import { RepositoriesQueryService } from './repositories-query.service.js';
 import { RepositoryConfigurationService } from './repository-configuration.service.js';
 import { WorkflowFilterService } from './workflow-filter.service.js';
 
-@Module({
+/** Registers the repositories module providers and imports with Nest. */ @Module({
   imports: [CaslModule, SecurityModule],
   controllers: [RepositoriesController],
   providers: [RepositoriesQueryService, RepositoryConfigurationService, WorkflowFilterService],

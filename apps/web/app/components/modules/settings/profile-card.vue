@@ -92,7 +92,10 @@ const originalUsername = ref(form.username);
 const error = ref('');
 const saved = ref(false);
 const saving = ref(false);
-const usernameChanged = computed(() => form.username.trim() !== originalUsername.value);
+const usernameChanged = computed(
+  /** Derives username changed from the current reactive dependencies. */ () =>
+    form.username.trim() !== originalUsername.value,
+);
 const { reset: resetDirtyState } = useUnsavedChangesGuard(form);
 
 /** Persist personal identity fields and immediately refresh the authenticated-user store. */

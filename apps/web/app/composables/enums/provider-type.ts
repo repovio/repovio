@@ -7,11 +7,13 @@ import type { ProviderType } from '~/types/api/resources';
 export const useProviderType = (value?: Ref<ProviderType | undefined>) => {
   const { t } = useI18n();
 
+  /** Retrieves label. */
   const getLabel = (providerType?: ProviderType): string => {
     if (!providerType) return '';
     return t(`providers.types.${providerType}`);
   };
 
+  /** Retrieves icon. */
   const getIcon = (providerType?: ProviderType): string | undefined => {
     switch (providerType) {
       case 'GITHUB':
@@ -27,6 +29,7 @@ export const useProviderType = (value?: Ref<ProviderType | undefined>) => {
     }
   };
 
+  /** Retrieves color. */
   const getColor = (providerType?: ProviderType): BadgeProps['color'] | undefined => {
     switch (providerType) {
       case 'GITHUB':
@@ -42,9 +45,9 @@ export const useProviderType = (value?: Ref<ProviderType | undefined>) => {
     }
   };
 
-  const label = computed(() => getLabel(toValue(value)));
-  const icon = computed(() => getIcon(toValue(value)));
-  const color = computed(() => getColor(toValue(value)));
+  const label = computed(/** Derives label from the current reactive dependencies. */ () => getLabel(toValue(value)));
+  const icon = computed(/** Derives icon from the current reactive dependencies. */ () => getIcon(toValue(value)));
+  const color = computed(/** Derives color from the current reactive dependencies. */ () => getColor(toValue(value)));
 
   return {
     color,

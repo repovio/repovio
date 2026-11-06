@@ -76,16 +76,18 @@ export class WebhookService {
       throw new UnauthorizedException('Webhook signature validation failed.');
 
     try {
-      await this.prisma.transaction(async (transaction) => {
-        await transaction.webhookDelivery.create({
-          data: {
-            deliveryId,
-            event: verified.event,
-            repositoryId,
-          },
-        });
-        await this.syncQueue.enqueueWebhookRepository(repositoryId, transaction, verified.syncScopes);
-      });
+      await this.prisma.transaction(
+        /** Atomically records the verified webhook delivery and queues its synchronization. */ async (transaction) => {
+          await transaction.webhookDelivery.create({
+            data: {
+              deliveryId,
+              event: verified.event,
+              repositoryId,
+            },
+          });
+          await this.syncQueue.enqueueWebhookRepository(repositoryId, transaction, verified.syncScopes);
+        },
+      );
     } catch (error) {
       if (this.isDuplicateDeliveryError(error)) return { accepted: true, duplicate: true };
       throw error;
@@ -112,7 +114,13 @@ export class WebhookService {
           : providerType === 'FORGEJO'
             ? [headers['x-forgejo-delivery'], headers['x-gitea-delivery']]
             : [headers['x-gitea-delivery']];
-    return candidates.find((header): header is string => typeof header === 'string' && header.length > 0) ?? null;
+    return (
+      candidates.find(
+        /** Finds the first entry matching `typeof header === 'string' && header.length > 0`. */ (
+          header,
+        ): header is string => typeof header === 'string' && header.length > 0,
+      ) ?? null
+    );
   }
 
   /**

@@ -37,7 +37,9 @@ async function main(): Promise<void> {
   stdout.write('Password changed and all existing sessions invalidated.\n');
 }
 
-void main().catch((error: unknown) => {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
-});
+void main().catch(
+  /** Reports password-reset failure and sets a nonzero process exit code. */ (error: unknown) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  },
+);

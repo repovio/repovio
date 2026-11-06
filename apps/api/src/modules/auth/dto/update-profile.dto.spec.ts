@@ -1,7 +1,7 @@
 import { UpdateProfileDto } from './update-profile.dto.js';
 
-describe('UpdateProfileDto', () => {
-  it('accepts nullable personal names and trims every identity field', () => {
+describe('UpdateProfileDto', /** Groups scenarios for UpdateProfileDto. */ () => {
+  it('accepts nullable personal names and trims every identity field', /** Verifies accepts nullable personal names and trims every identity field. */ () => {
     const result = UpdateProfileDto.schema.safeParse({
       firstName: ' Vera ',
       lastName: null,
@@ -12,14 +12,18 @@ describe('UpdateProfileDto', () => {
     expect(result.data).toEqual({ firstName: 'Vera', lastName: null, username: 'viewer' });
   });
 
-  it('requires both personal-name keys and a non-empty trimmed username', () => {
+  it('requires both personal-name keys and a non-empty trimmed username', /** Verifies requires both personal-name keys and a non-empty trimmed username. */ () => {
     const result = UpdateProfileDto.schema.safeParse({ username: '   ' });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues.map(({ path }) => path[0]).sort()).toEqual(['firstName', 'lastName', 'username']);
+    expect(result.error?.issues.map(/** Projects each entry using `path[0]`. */ ({ path }) => path[0]).sort()).toEqual([
+      'firstName',
+      'lastName',
+      'username',
+    ]);
   });
 
-  it('rejects unknown request keys instead of accepting writable role changes', () => {
+  it('rejects unknown request keys instead of accepting writable role changes', /** Verifies rejects unknown request keys instead of accepting writable role changes. */ () => {
     const result = UpdateProfileDto.schema.safeParse({
       firstName: null,
       lastName: null,

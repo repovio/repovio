@@ -6,6 +6,7 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 import { WorkflowRunsQueryService } from '../workflow-runs/workflow-runs-query.service.js';
 import { DashboardService } from './dashboard.service.js';
 
+/** Builds isolated Prisma query stubs for permission-aware dashboard tests. */
 function prisma(retainedRunDurationMs = 0n, currentRunDurationMs = 0n): PrismaService {
   return {
     repository: { aggregate: jest.fn().mockResolvedValue({ _sum: { retainedRunDurationMs } }) },
@@ -13,16 +14,18 @@ function prisma(retainedRunDurationMs = 0n, currentRunDurationMs = 0n): PrismaSe
   } as unknown as PrismaService;
 }
 
-describe('DashboardService', () => {
-  it('limits the needs-attention dashboard preview to 15 newest visible runs', async () => {
+describe('DashboardService', /** Groups scenarios for DashboardService. */ () => {
+  it('limits the needs-attention dashboard preview to 15 newest visible runs', /** Verifies limits the needs-attention dashboard preview to 15 newest visible runs. */ async () => {
     const ability = {};
-    const failures = Array.from({ length: 15 }, (_, index) =>
-      run({
-        completedAt: `2026-08-26T${String(23 - index).padStart(2, '0')}:00:00.000Z`,
-        repositoryId: 'repository-a',
-        status: 'FAILED',
-        workflowName: `Workflow ${index}`,
-      }),
+    const failures = Array.from(
+      { length: 15 },
+      /** Creates the indexed workflow-run fixtures used by this scenario. */ (_, index) =>
+        run({
+          completedAt: `2026-08-26T${String(23 - index).padStart(2, '0')}:00:00.000Z`,
+          repositoryId: 'repository-a',
+          status: 'FAILED',
+          workflowName: `Workflow ${index}`,
+        }),
     );
     const workflowRuns = {
       findNeedsAttention: jest.fn().mockResolvedValue(failures),
@@ -42,7 +45,7 @@ describe('DashboardService', () => {
     );
   });
 
-  it('limits the latest-run dashboard result to ten visible runs', async () => {
+  it('limits the latest-run dashboard result to ten visible runs', /** Verifies limits the latest-run dashboard result to ten visible runs. */ async () => {
     const ability = {};
     const workflowRuns = {
       findMany: jest.fn().mockResolvedValue([
@@ -69,7 +72,7 @@ describe('DashboardService', () => {
     );
   });
 
-  it('returns visible approval-gated runs ordered by provider creation time', async () => {
+  it('returns visible approval-gated runs ordered by provider creation time', /** Verifies returns visible approval-gated runs ordered by provider creation time. */ async () => {
     const ability = {};
     const workflowRuns = {
       findAwaitingApproval: jest.fn().mockResolvedValue([
@@ -101,7 +104,7 @@ describe('DashboardService', () => {
     );
   });
 
-  it('aggregates visible completed runs into continuous UTC trend buckets', async () => {
+  it('aggregates visible completed runs into continuous UTC trend buckets', /** Verifies aggregates visible completed runs into continuous UTC trend buckets. */ async () => {
     const ability = {};
     const workflowRuns = {
       findMany: jest.fn().mockResolvedValue([
@@ -146,7 +149,7 @@ describe('DashboardService', () => {
     );
   });
 
-  it('summarizes visible completed and active workflow runs', async () => {
+  it('summarizes visible completed and active workflow runs', /** Verifies summarizes visible completed and active workflow runs. */ async () => {
     const ability = new CaslAbilityFactory().createForUser(
       { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' },
       [],
@@ -189,7 +192,7 @@ describe('DashboardService', () => {
     expect(workflowRuns.findAwaitingApproval).toHaveBeenCalledWith({ select: { id: true } }, ability);
   });
 
-  it('ranks visible repository health by failures and success rate', async () => {
+  it('ranks visible repository health by failures and success rate', /** Verifies ranks visible repository health by failures and success rate. */ async () => {
     const ability = {};
     const repositoryA = { id: 'repository-a', name: 'alpha', owner: 'repovio', url: 'https://example.test/alpha' };
     const repositoryB = { id: 'repository-b', name: 'beta', owner: 'repovio', url: 'https://example.test/beta' };
@@ -236,7 +239,7 @@ describe('DashboardService', () => {
     );
   });
 
-  it('rejects an inverted trend time range before reading workflow runs', async () => {
+  it('rejects an inverted trend time range before reading workflow runs', /** Verifies rejects an inverted trend time range before reading workflow runs. */ async () => {
     const workflowRuns = { getReadAbility: jest.fn() } as unknown as WorkflowRunsQueryService;
 
     await expect(
@@ -248,7 +251,7 @@ describe('DashboardService', () => {
     expect(workflowRuns.getReadAbility).not.toHaveBeenCalled();
   });
 
-  it('does not aggregate workflow activity from repositories outside the user membership', async () => {
+  it('does not aggregate workflow activity from repositories outside the user membership', /** Verifies does not aggregate workflow activity from repositories outside the user membership. */ async () => {
     const visibleRuns = [
       run({
         completedAt: '2026-08-26T10:00:00.000Z',
@@ -268,13 +271,24 @@ describe('DashboardService', () => {
         findMany: jest.fn().mockResolvedValue([{ repositoryId: 'repository-a', role: 'VIEWER' }]),
       },
       workflowRun: {
-        findMany: jest.fn().mockImplementation((args: { take?: number; where: { AND: unknown[] } }) => {
-          const accessCondition = args.where.AND[0] as { OR: { repositoryId: { in: string[] } }[] };
-          const allowedRepositoryIds = accessCondition.OR.flatMap((condition) => condition.repositoryId.in);
-          return visibleRuns
-            .filter((workflowRun) => allowedRepositoryIds.includes(workflowRun.repositoryId))
-            .slice(0, args.take);
-        }),
+        findMany: jest.fn().mockImplementation(
+          /** Provides isolated findMany behavior for this test fixture. */ (args: {
+            take?: number;
+            where: { AND: unknown[] };
+          }) => {
+            const accessCondition = args.where.AND[0] as { OR: { repositoryId: { in: string[] } }[] };
+            const allowedRepositoryIds = accessCondition.OR.flatMap(
+              /** Flattens entries produced by `condition.repositoryId.in`. */ (condition) => condition.repositoryId.in,
+            );
+            return visibleRuns
+              .filter(
+                /** Keeps entries matching `allowedRepositoryIds.includes(workflowRun.repositoryId)`. */ (
+                  workflowRun,
+                ) => allowedRepositoryIds.includes(workflowRun.repositoryId),
+              )
+              .slice(0, args.take);
+          },
+        ),
       },
     } as unknown as PrismaService;
     const dashboard = new DashboardService(new WorkflowRunsQueryService(prisma, new CaslAbilityFactory()), prisma);
@@ -297,6 +311,7 @@ describe('DashboardService', () => {
   });
 });
 
+/** Runs dashboard.service. */
 function run(input: {
   completedAt: string | null;
   providerCreatedAt?: string;

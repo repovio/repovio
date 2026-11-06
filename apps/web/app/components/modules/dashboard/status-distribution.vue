@@ -63,34 +63,41 @@ const props = defineProps<{
 
 const { locale, t } = useI18n();
 
-const segmentDefinitions = computed(() => [
-  { class: 'status-success', dotClass: 'bg-success', key: 'success', label: t('workflowStatus.SUCCESS') },
-  { class: 'status-failed', dotClass: 'bg-error', key: 'failed', label: t('workflowStatus.FAILED') },
-  { class: 'status-cancelled', dotClass: 'bg-warning', key: 'cancelled', label: t('workflowStatus.CANCELLED') },
-  { class: 'status-skipped', dotClass: 'bg-info', key: 'skipped', label: t('workflowStatus.SKIPPED') },
-  { class: 'status-unknown', dotClass: 'bg-muted', key: 'unknown', label: t('workflowStatus.UNKNOWN') },
-]);
+const segmentDefinitions = computed(
+  /** Derives segment definitions from the current reactive dependencies. */ () => [
+    { class: 'status-success', dotClass: 'bg-success', key: 'success', label: t('workflowStatus.SUCCESS') },
+    { class: 'status-failed', dotClass: 'bg-error', key: 'failed', label: t('workflowStatus.FAILED') },
+    { class: 'status-cancelled', dotClass: 'bg-warning', key: 'cancelled', label: t('workflowStatus.CANCELLED') },
+    { class: 'status-skipped', dotClass: 'bg-info', key: 'skipped', label: t('workflowStatus.SKIPPED') },
+    { class: 'status-unknown', dotClass: 'bg-muted', key: 'unknown', label: t('workflowStatus.UNKNOWN') },
+  ],
+);
 
-const segments = computed(() => {
-  let offset = 0;
-  const total = props.summary?.completedCount ?? 0;
-  return segmentDefinitions.value.map((definition) => {
-    const value = props.summary?.statuses[definition.key as keyof DashboardSummary['statuses']] ?? 0;
-    const percentage = total === 0 ? 0 : (value / total) * 100;
-    const segment = { ...definition, offset, percentage, value };
-    offset += percentage;
-    return segment;
-  });
-});
+const segments = computed(
+  /** Derives segments from the current reactive dependencies. */ () => {
+    let offset = 0;
+    const total = props.summary?.completedCount ?? 0;
+    return segmentDefinitions.value.map(
+      /** Projects each entry using the segments mapping. */ (definition) => {
+        const value = props.summary?.statuses[definition.key as keyof DashboardSummary['statuses']] ?? 0;
+        const percentage = total === 0 ? 0 : (value / total) * 100;
+        const segment = { ...definition, offset, percentage, value };
+        offset += percentage;
+        return segment;
+      },
+    );
+  },
+);
 
-const distributionLabel = computed(() =>
-  t('dashboard.statusDistributionLabel', {
-    cancelled: props.summary?.statuses.cancelled ?? 0,
-    failed: props.summary?.statuses.failed ?? 0,
-    skipped: props.summary?.statuses.skipped ?? 0,
-    success: props.summary?.statuses.success ?? 0,
-    unknown: props.summary?.statuses.unknown ?? 0,
-  }),
+const distributionLabel = computed(
+  /** Derives distribution label from the current reactive dependencies. */ () =>
+    t('dashboard.statusDistributionLabel', {
+      cancelled: props.summary?.statuses.cancelled ?? 0,
+      failed: props.summary?.statuses.failed ?? 0,
+      skipped: props.summary?.statuses.skipped ?? 0,
+      success: props.summary?.statuses.success ?? 0,
+      unknown: props.summary?.statuses.unknown ?? 0,
+    }),
 );
 
 /** Format a status count using the active interface locale. */

@@ -1,8 +1,8 @@
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { HealthService } from './health.service.js';
 
-describe('HealthService', () => {
-  it('returns the last persisted provider sync state without exposing errors', async () => {
+describe('HealthService', /** Groups scenarios for HealthService. */ () => {
+  it('returns the last persisted provider sync state without exposing errors', /** Verifies returns the last persisted provider sync state without exposing errors. */ async () => {
     const prisma = {
       $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
       providerAccount: {
@@ -63,7 +63,7 @@ describe('HealthService', () => {
     });
   });
 
-  it('reports a degraded response when the database is unavailable', async () => {
+  it('reports a degraded response when the database is unavailable', /** Verifies reports a degraded response when the database is unavailable. */ async () => {
     const prisma = {
       $queryRaw: jest.fn().mockRejectedValue(new Error('Connection refused')),
       providerAccount: { findMany: jest.fn() },

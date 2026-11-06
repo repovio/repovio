@@ -40,7 +40,13 @@ function hasOwn(value: object, key: string): boolean {
 export function readClaimPath(claims: Claims, path: string): { found: boolean; unsafe?: boolean; value?: unknown } {
   if (hasOwn(claims, path)) return { found: true, value: claims[path] };
   const segments = path.split('.');
-  if (segments.some((segment) => !segment || forbiddenSegments.has(segment))) return { found: false, unsafe: true };
+  if (
+    segments.some(
+      /** Checks whether any entry satisfies `!segment || forbiddenSegments.has(segment)`. */ (segment) =>
+        !segment || forbiddenSegments.has(segment),
+    )
+  )
+    return { found: false, unsafe: true };
   let current: unknown = claims;
   for (const segment of segments) {
     if (!isPlainObject(current) || !hasOwn(current, segment)) return { found: false };
@@ -98,10 +104,24 @@ export function decideOidcAccess(status: OidcGroupsStatus, rules: OidcRoleRules)
   if (status.status === 'malformed') return { ok: false, reason: 'groups_malformed' };
   const groups = status.status === 'ok' ? status.groups : [];
   const available = new Set(groups);
-  if (rules.systemAdministratorGroups.some((group) => available.has(group)))
+  if (
+    rules.systemAdministratorGroups.some(
+      /** Checks whether any entry satisfies `available.has(group)`. */ (group) => available.has(group),
+    )
+  )
     return { groups, ok: true, role: 'SYSTEM_ADMIN' };
-  if (rules.managerGroups.some((group) => available.has(group))) return { groups, ok: true, role: 'MANAGER' };
-  if (rules.viewerGroups.some((group) => available.has(group))) return { groups, ok: true, role: 'VIEWER' };
+  if (
+    rules.managerGroups.some(
+      /** Checks whether any entry satisfies `available.has(group)`. */ (group) => available.has(group),
+    )
+  )
+    return { groups, ok: true, role: 'MANAGER' };
+  if (
+    rules.viewerGroups.some(
+      /** Checks whether any entry satisfies `available.has(group)`. */ (group) => available.has(group),
+    )
+  )
+    return { groups, ok: true, role: 'VIEWER' };
   if (rules.allowUnmatchedViewer) return { groups, ok: true, role: 'VIEWER' };
   return { ok: false, reason: status.status === 'missing' ? 'groups_missing' : 'no_matching_group' };
 }
@@ -127,6 +147,13 @@ export function deriveOidcUsername(issuer: string, subject: string, attempt = 0)
  */
 export function sanitizeObservedGroups(groups: readonly string[]): string[] {
   return [
-    ...new Set(groups.map((group) => group.trim()).filter((group) => group.length > 0 && group.length <= 128)),
+    ...new Set(
+      groups
+        .map(/** Projects each entry using `group.trim()`. */ (group) => group.trim())
+        .filter(
+          /** Keeps entries matching `group.length > 0 && group.length <= 128`. */ (group) =>
+            group.length > 0 && group.length <= 128,
+        ),
+    ),
   ].slice(-MAX_OBSERVED_GROUPS);
 }

@@ -19,12 +19,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const payload = exception instanceof HttpException ? exception.getResponse() : undefined;
     const message =
       exception instanceof ZodValidationException
-        ? (exception.getZodError() as z.ZodError).issues.map((issue) => {
-            const path = issue.path
-              .filter((part) => typeof part === 'number' || (typeof part === 'string' && /^[A-Za-z_]\w*$/.test(part)))
-              .join('.');
-            return `${path || 'request'}: Invalid value (${issue.code}).`;
-          })
+        ? (exception.getZodError() as z.ZodError).issues.map(
+            /** Projects each entry using the message mapping. */ (issue) => {
+              const path = issue.path
+                .filter(
+                  /** Keeps entries matching `typeof part === 'number' || (typeof part === 'string' && /^[A-Za-z_]\w*$/.test(part))`. */ (
+                    part,
+                  ) => typeof part === 'number' || (typeof part === 'string' && /^[A-Za-z_]\w*$/.test(part)),
+                )
+                .join('.');
+              return `${path || 'request'}: Invalid value (${issue.code}).`;
+            },
+          )
         : status >= HttpStatus.INTERNAL_SERVER_ERROR
           ? 'Internal server error'
           : typeof payload === 'object' && payload && 'message' in payload

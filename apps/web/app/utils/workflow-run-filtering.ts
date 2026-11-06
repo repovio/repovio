@@ -15,12 +15,19 @@ export interface WorkflowRunRepositoryFilterOption {
 
 /** Convert persisted millisecond duration filters to seconds for the table filter editor. */
 export function durationFilteringToSeconds(filtering: Filtering): Filtering {
-  return mapDurationFilterValues(filtering, (value) => value / 1_000);
+  return mapDurationFilterValues(
+    filtering,
+    /** Evaluates `value / 1_000` when mapDurationFilterValues invokes this callback. */ (value) => value / 1_000,
+  );
 }
 
 /** Convert duration filter values entered in seconds to integer milliseconds for Query Kit. */
 export function durationFilteringToMilliseconds(filtering: Filtering): Filtering {
-  return mapDurationFilterValues(filtering, (value) => Math.round(value * 1_000));
+  return mapDurationFilterValues(
+    filtering,
+    /** Evaluates `Math.round(value * 1_000)` when mapDurationFilterValues invokes this callback. */ (value) =>
+      Math.round(value * 1_000),
+  );
 }
 
 /**
@@ -43,20 +50,27 @@ export async function loadWorkflowRunRepositoryFilterOptions(
     page += 1;
   }
 
-  return repositories.map((repository) => ({
-    label: `${repository.owner}/${repository.name}`,
-    value: repository.id,
-  }));
+  return repositories.map(
+    /** Projects each entry using `({ label: `${repository.owner}/${repository.name}`, value: repository.id, })`. */ (
+      repository,
+    ) => ({
+      label: `${repository.owner}/${repository.name}`,
+      value: repository.id,
+    }),
+  );
 }
 
 /** Map numeric duration values while preserving every other filter instruction. */
 function mapDurationFilterValues(filtering: Filtering, mapValue: (value: number) => number): Filtering {
   return {
     ...filtering,
-    filters: filtering.filters.map((filter) =>
-      filter.field === durationField && typeof filter.value === 'number'
-        ? { ...filter, value: mapValue(filter.value) }
-        : filter,
+    filters: filtering.filters.map(
+      /** Projects each entry using `filter.field === durationField && typeof filter.value === 'number' ? { ...filter, value: mapValue(filter.value) } : filter`. */ (
+        filter,
+      ) =>
+        filter.field === durationField && typeof filter.value === 'number'
+          ? { ...filter, value: mapValue(filter.value) }
+          : filter,
     ),
   };
 }

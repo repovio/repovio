@@ -1,8 +1,8 @@
 import { DefaultDateTimeFormat } from '../../../generated/prisma/client.js';
 import { UpdateApplicationSettingsDto } from './application-settings.dto.js';
 
-describe('UpdateApplicationSettingsDto', () => {
-  it('accepts a supported date format and bounded whole-day retention', () => {
+describe('UpdateApplicationSettingsDto', /** Groups scenarios for UpdateApplicationSettingsDto. */ () => {
+  it('accepts a supported date format and bounded whole-day retention', /** Verifies accepts a supported date format and bounded whole-day retention. */ () => {
     const input = {
       dateTimeFormat: DefaultDateTimeFormat.ISO,
       issueRetentionDays: 3650,
@@ -15,7 +15,7 @@ describe('UpdateApplicationSettingsDto', () => {
     expect(result.data).toEqual(input);
   });
 
-  it('rejects unsupported formats and invalid retention periods', () => {
+  it('rejects unsupported formats and invalid retention periods', /** Verifies rejects unsupported formats and invalid retention periods. */ () => {
     const result = UpdateApplicationSettingsDto.schema.safeParse({
       dateTimeFormat: 'CUSTOM',
       issueRetentionDays: 0,
@@ -24,7 +24,7 @@ describe('UpdateApplicationSettingsDto', () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues.map(({ path }) => path[0])).toEqual([
+    expect(result.error?.issues.map(/** Projects each entry using `path[0]`. */ ({ path }) => path[0])).toEqual([
       'dateTimeFormat',
       'issueRetentionDays',
       'pullRequestRetentionDays',
@@ -32,7 +32,7 @@ describe('UpdateApplicationSettingsDto', () => {
     ]);
   });
 
-  it('rejects unknown settings keys', () => {
+  it('rejects unknown settings keys', /** Verifies rejects unknown settings keys. */ () => {
     const result = UpdateApplicationSettingsDto.schema.safeParse({
       dateTimeFormat: DefaultDateTimeFormat.ISO,
       issueRetentionDays: 30,

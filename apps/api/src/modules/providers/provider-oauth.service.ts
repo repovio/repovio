@@ -80,10 +80,12 @@ export class ProviderOAuthService {
    * @returns The supported providers with complete OAuth configuration.
    */
   availableProviderTypes(): ProviderType[] {
-    return (['GITHUB', 'GITLAB', 'FORGEJO'] as const).filter((providerType) => {
-      const configuration = getProviderOAuthConfiguration(providerType);
-      return Boolean(configuration.clientId && configuration.clientSecret);
-    });
+    return (['GITHUB', 'GITLAB', 'FORGEJO'] as const).filter(
+      /** Keeps entries matching the availableProviderTypes predicate. */ (providerType) => {
+        const configuration = getProviderOAuthConfiguration(providerType);
+        return Boolean(configuration.clientId && configuration.clientSecret);
+      },
+    );
   }
 
   /**

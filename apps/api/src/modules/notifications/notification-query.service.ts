@@ -20,7 +20,7 @@ interface NotificationTypeMapBase extends BaseDelegateTypeMap {
   uncheckedUpdateInput: never;
 }
 
-export interface NotificationChannelTypeMap extends NotificationTypeMapBase {
+/** Defines the notification channel type map contract shared by its consumers. */ export interface NotificationChannelTypeMap extends NotificationTypeMapBase {
   select: Prisma.NotificationChannelSelect;
   include: Prisma.NotificationChannelInclude;
   whereInput: Prisma.NotificationChannelWhereInput;
@@ -30,7 +30,7 @@ export interface NotificationChannelTypeMap extends NotificationTypeMapBase {
   aggregateInputType: Prisma.NotificationChannelAggregateArgs;
 }
 
-export interface NotificationDeliveryTypeMap extends NotificationTypeMapBase {
+/** Defines the notification delivery type map contract shared by its consumers. */ export interface NotificationDeliveryTypeMap extends NotificationTypeMapBase {
   select: Prisma.NotificationDeliverySelect;
   include: Prisma.NotificationDeliveryInclude;
   whereInput: Prisma.NotificationDeliveryWhereInput;

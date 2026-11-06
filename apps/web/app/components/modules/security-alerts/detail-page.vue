@@ -83,21 +83,25 @@ const { formatDateTime } = useDateTime();
 const alert = ref<SecurityAlert | null>(null);
 const loading = ref(true);
 const error = ref(false);
-const listPath = computed(() =>
-  alert.value
-    ? `/alerts/${{ DEPENDENCY: 'dependencies', CODE: 'code', SECRET: 'secrets' }[alert.value.kind]}`
-    : '/alerts/dependencies',
+const listPath = computed(
+  /** Derives list path from the current reactive dependencies. */ () =>
+    alert.value
+      ? `/alerts/${{ DEPENDENCY: 'dependencies', CODE: 'code', SECRET: 'secrets' }[alert.value.kind]}`
+      : '/alerts/dependencies',
 );
-const locationPath = computed(() =>
-  typeof alert.value?.location?.path === 'string' ? alert.value.location.path : null,
+const locationPath = computed(
+  /** Derives location path from the current reactive dependencies. */ () =>
+    typeof alert.value?.location?.path === 'string' ? alert.value.location.path : null,
 );
-onMounted(async () => {
-  try {
-    alert.value = (await api.securityAlerts.get(props.id)).data;
-  } catch {
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    try {
+      alert.value = (await api.securityAlerts.get(props.id)).data;
+    } catch {
+      error.value = true;
+    } finally {
+      loading.value = false;
+    }
+  },
+);
 </script>

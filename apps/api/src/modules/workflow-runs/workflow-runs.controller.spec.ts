@@ -3,8 +3,8 @@ import type { WorkflowRunQueryDto } from './dto/workflow-run-query.dto.js';
 import type { WorkflowRunsQueryService } from './workflow-runs-query.service.js';
 import { WorkflowRunsController } from './workflow-runs.controller.js';
 
-describe('WorkflowRunsController', () => {
-  it('loads and projects the repository and provider context required by the history table', async () => {
+describe('WorkflowRunsController', /** Groups scenarios for WorkflowRunsController. */ () => {
+  it('loads and projects the repository and provider context required by the history table', /** Verifies loads and projects the repository and provider context required by the history table. */ async () => {
     const workflowRun = {
       awaitingApproval: false,
       completedAt: new Date('2026-09-08T08:02:30.000Z'),
@@ -85,7 +85,7 @@ describe('WorkflowRunsController', () => {
     ]);
   });
 
-  it('applies the canonical needs-attention predicate before Query Kit pagination and projection', async () => {
+  it('applies the canonical needs-attention predicate before Query Kit pagination and projection', /** Verifies applies the canonical needs-attention predicate before Query Kit pagination and projection. */ async () => {
     const ability = {};
     const query = { page: 2, perPage: 10, search: 'deploy' } as WorkflowRunQueryDto;
     const needsAttentionQuery = {

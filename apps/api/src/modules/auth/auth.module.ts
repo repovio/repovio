@@ -14,7 +14,7 @@ import { OidcService } from './oidc/oidc.service.js';
 import { UsersQueryService } from './users-query.service.js';
 import { UsersController } from './users.controller.js';
 
-@Module({
+/** Registers the auth module providers and imports with Nest. */ @Module({
   imports: [
     CaslModule,
     SecurityModule,

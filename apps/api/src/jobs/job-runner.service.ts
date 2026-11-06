@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { ENV } from '../config/env.js';
 
-export interface JobExecutionConfiguration {
+/** Defines the job execution configuration contract shared by its consumers. */ export interface JobExecutionConfiguration {
   SCHEDULER_ENABLED: boolean;
   isTest: boolean;
 }

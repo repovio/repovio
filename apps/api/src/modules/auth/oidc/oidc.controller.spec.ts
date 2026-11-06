@@ -2,7 +2,7 @@ import { ForbiddenException } from '@nestjs/common';
 
 import { OidcController } from './oidc.controller.js';
 
-describe('OidcController authorization and browser handoff', () => {
+describe('OidcController authorization and browser handoff', /** Groups scenarios for OidcController authorization and browser handoff. */ () => {
   const service = {
     begin: jest.fn(),
     callback: jest.fn(),
@@ -26,9 +26,9 @@ describe('OidcController authorization and browser handoff', () => {
     username: 'viewer',
   };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('keeps status and exchange public while restricting configuration and checks to system administrators', async () => {
+  it('keeps status and exchange public while restricting configuration and checks to system administrators', /** Verifies keeps status and exchange public while restricting configuration and checks to system administrators. */ async () => {
     service.status.mockResolvedValue({ enabled: false });
     service.exchange.mockResolvedValue({ accessToken: 'jwt', returnTo: '/', user: viewer });
     service.config.mockResolvedValue({ enabled: false });
@@ -38,12 +38,21 @@ describe('OidcController authorization and browser handoff', () => {
     await expect(controller.exchange({ code: 'x'.repeat(43) })).resolves.toMatchObject({ accessToken: 'jwt' });
     await expect(controller.config({ user: administrator })).resolves.toEqual({ enabled: false });
     await expect(controller.check({ user: administrator })).resolves.toEqual({ ok: true });
-    expect(() => controller.config({ user: viewer })).toThrow(ForbiddenException);
-    expect(() => controller.check({ user: viewer })).toThrow(ForbiddenException);
-    expect(() => controller.updateConfig({ user: viewer }, {})).toThrow(ForbiddenException);
+    expect(
+      /** Evaluates `controller.config({ user: viewer })` when expect invokes this callback. */ () =>
+        controller.config({ user: viewer }),
+    ).toThrow(ForbiddenException);
+    expect(
+      /** Evaluates `controller.check({ user: viewer })` when expect invokes this callback. */ () =>
+        controller.check({ user: viewer }),
+    ).toThrow(ForbiddenException);
+    expect(
+      /** Evaluates `controller.updateConfig({ user: viewer }, {})` when expect invokes this callback. */ () =>
+        controller.updateConfig({ user: viewer }, {}),
+    ).toThrow(ForbiddenException);
   });
 
-  it('places only the opaque one-time code in the web URL fragment', async () => {
+  it('places only the opaque one-time code in the web URL fragment', /** Verifies places only the opaque one-time code in the web URL fragment. */ async () => {
     service.callback.mockResolvedValue({ code: 'opaque-handoff-code' });
     const response = { header: jest.fn(), redirect: jest.fn() };
 
@@ -63,7 +72,7 @@ describe('OidcController authorization and browser handoff', () => {
     expect(response.redirect.mock.calls[0]?.[0]).not.toContain('jwt');
   });
 
-  it('sets the Fastify binding cookie with a one-day lifetime in seconds', async () => {
+  it('sets the Fastify binding cookie with a one-day lifetime in seconds', /** Verifies sets the Fastify binding cookie with a one-day lifetime in seconds. */ async () => {
     service.begin.mockResolvedValue({
       bindingIsNew: true,
       bindingValue: 'new-binding',
@@ -82,7 +91,7 @@ describe('OidcController authorization and browser handoff', () => {
     expect(response.redirect).toHaveBeenCalledWith('https://identity.example/authorize', 302);
   });
 
-  it('rejects duplicate callback parameters before invoking the OIDC service', async () => {
+  it('rejects duplicate callback parameters before invoking the OIDC service', /** Verifies rejects duplicate callback parameters before invoking the OIDC service. */ async () => {
     const response = { header: jest.fn(), redirect: jest.fn() };
 
     await controller.callback(

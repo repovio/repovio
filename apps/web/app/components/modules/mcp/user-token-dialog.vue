@@ -75,20 +75,26 @@ const loading = ref(false);
 const loadError = ref(false);
 const revokingId = ref<string>();
 
+/** Formats timestamp. */
 function formatTimestamp(timestamp: string): string {
   return formatDateTime(timestamp);
 }
 
+/** Maps the current delivery or token state to its UI color. */
 function statusColor(status: McpAccessTokenStatus): 'error' | 'neutral' | 'success' {
   if (status === 'ACTIVE') return 'success';
   if (status === 'REVOKED') return 'error';
   return 'neutral';
 }
 
-watch(open, (isOpen) => {
-  if (isOpen) void load();
-});
+watch(
+  open,
+  /** Synchronizes user token dialog when the observed state changes. */ (isOpen) => {
+    if (isOpen) void load();
+  },
+);
 
+/** Loads user token dialog. */
 async function load(): Promise<void> {
   if (!props.user) return;
   loading.value = true;
@@ -102,6 +108,7 @@ async function load(): Promise<void> {
   }
 }
 
+/** Revokes the selected MCP access token and updates the displayed list. */
 async function revoke(token: McpAccessToken): Promise<void> {
   if (!window.confirm(t('mcp.revokeConfirm', { name: token.name }))) return;
   revokingId.value = token.id;

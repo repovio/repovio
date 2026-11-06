@@ -198,146 +198,190 @@ const filterOptions = ref<SecurityAlertFilterOptions>({
 });
 const supportingLoading = ref(true);
 const supportingError = ref(false);
-const pageTitle = computed(() => t(`securityAlerts.kindTitles.${props.kind}`));
+const pageTitle = computed(
+  /** Derives page title from the current reactive dependencies. */ () => t(`securityAlerts.kindTitles.${props.kind}`),
+);
 const kindIcon = computed(
+  /** Derives kind icon from the current reactive dependencies. */
   () =>
     ({ DEPENDENCY: 'i-lucide-package-search', CODE: 'i-lucide-file-search-2', SECRET: 'i-lucide-key-round' })[
       props.kind
     ],
 );
 const unavailableCount = computed(
+  /** Derives unavailable count from the current reactive dependencies. */
   () =>
     filterOptions.value.availability.filter(
+      /** Keeps entries matching `availability === 'UNAVAILABLE' && kind === props.kind`. */
       ({ availability, kind }) => availability === 'UNAVAILABLE' && kind === props.kind,
     ).length,
 );
-const columnDefinition = computed<AlertColumn[]>(() => [
-  { accessorKey: 'title', header: t('securityAlerts.columns.title'), id: 'title' },
-  { accessorKey: 'repositoryName', header: t('securityAlerts.columns.repository'), id: 'repositoryName' },
-  { accessorKey: 'providerType', header: t('workItems.provider'), id: 'providerType' },
-  { accessorKey: 'severity', header: t('securityAlerts.columns.severity'), id: 'severity' },
-  { accessorKey: 'state', header: t('securityAlerts.columns.state'), id: 'state' },
-  ...(props.kind === 'DEPENDENCY'
-    ? [{ accessorKey: 'packageName', header: t('securityAlerts.columns.package'), id: 'packageName' }]
-    : []),
-  ...(props.kind === 'CODE'
-    ? [{ accessorKey: 'scanner', header: t('securityAlerts.columns.scanner'), id: 'scanner' }]
-    : []),
-  ...(props.kind === 'SECRET'
-    ? [{ accessorKey: 'secretType', header: t('securityAlerts.columns.secretType'), id: 'secretType' }]
-    : []),
-  { accessorKey: 'providerUpdatedAt', header: t('securityAlerts.columns.updated'), id: 'providerUpdatedAt' },
-  { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('securityAlerts.columns.title'), value: 'title' },
-  { label: t('securityAlerts.columns.severity'), value: 'severity' },
-  { label: t('securityAlerts.columns.updated'), value: 'providerUpdatedAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('securityAlerts.columns.state'),
-    type: FilterFieldType.Enum,
-    value: 'state',
-    values: ['OPEN', 'RESOLVED', 'DISMISSED'].map((value) => ({ label: t(`securityAlerts.states.${value}`), value })),
-  },
-  {
-    label: t('securityAlerts.columns.severity'),
-    type: FilterFieldType.Enum,
-    value: 'severity',
-    values: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO', 'UNKNOWN'].map((value) => ({
-      label: t(`securityAlerts.severities.${value}`),
-      value,
-    })),
-  },
-  {
-    label: t('securityAlerts.columns.repository'),
-    type: FilterFieldType.Enum,
-    value: 'repositoryId',
-    values: filterOptions.value.repositories.map(({ id, name, owner }) => ({ label: `${owner}/${name}`, value: id })),
-  },
-  {
-    label: t('workItems.provider'),
-    type: FilterFieldType.Enum,
-    value: 'repository.providerAccount.providerType',
-    values: providerTypes.map((value: ProviderType) => ({ label: getProviderTypeLabel(value), value })),
-  },
-  ...(props.kind === 'DEPENDENCY'
-    ? [
-        {
-          label: t('securityAlerts.columns.ecosystem'),
-          type: FilterFieldType.Enum,
-          value: 'ecosystem',
-          values: filterOptions.value.ecosystems.map((value) => ({ label: value, value })),
-        },
-        {
-          label: t('securityAlerts.columns.package'),
-          type: FilterFieldType.Enum,
-          value: 'packageName',
-          values: filterOptions.value.packages.map((value) => ({ label: value, value })),
-        },
-        {
-          label: t('securityAlerts.columns.manifest'),
-          type: FilterFieldType.Enum,
-          value: 'manifest',
-          values: filterOptions.value.manifests.map((value) => ({ label: value, value })),
-        },
-      ]
-    : props.kind === 'CODE'
-      ? [
-          {
-            label: t('securityAlerts.columns.scanner'),
-            type: FilterFieldType.Enum,
-            value: 'scanner',
-            values: filterOptions.value.scanners.map((value) => ({ label: value, value })),
-          },
-          {
-            label: t('securityAlerts.columns.rule'),
-            type: FilterFieldType.Enum,
-            value: 'ruleId',
-            values: filterOptions.value.rules.map((value) => ({ label: value, value })),
-          },
-        ]
-      : [
-          {
-            label: t('securityAlerts.columns.secretType'),
-            type: FilterFieldType.Enum,
-            value: 'secretType',
-            values: filterOptions.value.secretTypes.map((value) => ({ label: value, value })),
-          },
-          {
-            label: t('securityAlerts.columns.secretProvider'),
-            type: FilterFieldType.Enum,
-            value: 'secretProvider',
-            values: filterOptions.value.secretProviders.map((value) => ({ label: value, value })),
-          },
-        ]),
-]);
-const staticFilter = computed(() => ({
-  AND: [
-    { kind: props.kind },
-    ...(typeof route.query.repositoryId === 'string' ? [{ repositoryId: route.query.repositoryId }] : []),
-    ...(selectedPath.value ? [{ location: { path: ['path'], equals: selectedPath.value } }] : []),
-    ...(updatedFrom.value
-      ? [{ providerUpdatedAt: { gte: new Date(`${updatedFrom.value}T00:00:00.000Z`).toISOString() } }]
+const columnDefinition = computed<AlertColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'title', header: t('securityAlerts.columns.title'), id: 'title' },
+    { accessorKey: 'repositoryName', header: t('securityAlerts.columns.repository'), id: 'repositoryName' },
+    { accessorKey: 'providerType', header: t('workItems.provider'), id: 'providerType' },
+    { accessorKey: 'severity', header: t('securityAlerts.columns.severity'), id: 'severity' },
+    { accessorKey: 'state', header: t('securityAlerts.columns.state'), id: 'state' },
+    ...(props.kind === 'DEPENDENCY'
+      ? [{ accessorKey: 'packageName', header: t('securityAlerts.columns.package'), id: 'packageName' }]
       : []),
-    ...(updatedTo.value
-      ? [{ providerUpdatedAt: { lte: new Date(`${updatedTo.value}T23:59:59.999Z`).toISOString() } }]
+    ...(props.kind === 'CODE'
+      ? [{ accessorKey: 'scanner', header: t('securityAlerts.columns.scanner'), id: 'scanner' }]
       : []),
-    ...(debouncedSearch.value.trim()
-      ? [
-          {
-            OR: [
-              { title: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
-              { packageName: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
-              { ruleId: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
-              { secretType: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
-            ],
-          },
-        ]
+    ...(props.kind === 'SECRET'
+      ? [{ accessorKey: 'secretType', header: t('securityAlerts.columns.secretType'), id: 'secretType' }]
       : []),
+    { accessorKey: 'providerUpdatedAt', header: t('securityAlerts.columns.updated'), id: 'providerUpdatedAt' },
+    { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
   ],
-}));
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('securityAlerts.columns.title'), value: 'title' },
+    { label: t('securityAlerts.columns.severity'), value: 'severity' },
+    { label: t('securityAlerts.columns.updated'), value: 'providerUpdatedAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('securityAlerts.columns.state'),
+      type: FilterFieldType.Enum,
+      value: 'state',
+      values: ['OPEN', 'RESOLVED', 'DISMISSED'].map(
+        /** Projects each entry using `({ label: t(`securityAlerts.states.${value}`), value })`. */ (value) => ({
+          label: t(`securityAlerts.states.${value}`),
+          value,
+        }),
+      ),
+    },
+    {
+      label: t('securityAlerts.columns.severity'),
+      type: FilterFieldType.Enum,
+      value: 'severity',
+      values: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO', 'UNKNOWN'].map(
+        /** Projects each entry using `({ label: t(`securityAlerts.severities.${value}`), value, })`. */ (value) => ({
+          label: t(`securityAlerts.severities.${value}`),
+          value,
+        }),
+      ),
+    },
+    {
+      label: t('securityAlerts.columns.repository'),
+      type: FilterFieldType.Enum,
+      value: 'repositoryId',
+      values: filterOptions.value.repositories.map(
+        /** Projects each entry using `({ label: `${owner}/${name}`, value: id })`. */ ({ id, name, owner }) => ({
+          label: `${owner}/${name}`,
+          value: id,
+        }),
+      ),
+    },
+    {
+      label: t('workItems.provider'),
+      type: FilterFieldType.Enum,
+      value: 'repository.providerAccount.providerType',
+      values: providerTypes.map(
+        /** Projects each entry using `({ label: getProviderTypeLabel(value), value })`. */ (value: ProviderType) => ({
+          label: getProviderTypeLabel(value),
+          value,
+        }),
+      ),
+    },
+    ...(props.kind === 'DEPENDENCY'
+      ? [
+          {
+            label: t('securityAlerts.columns.ecosystem'),
+            type: FilterFieldType.Enum,
+            value: 'ecosystem',
+            values: filterOptions.value.ecosystems.map(
+              /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+            ),
+          },
+          {
+            label: t('securityAlerts.columns.package'),
+            type: FilterFieldType.Enum,
+            value: 'packageName',
+            values: filterOptions.value.packages.map(
+              /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+            ),
+          },
+          {
+            label: t('securityAlerts.columns.manifest'),
+            type: FilterFieldType.Enum,
+            value: 'manifest',
+            values: filterOptions.value.manifests.map(
+              /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+            ),
+          },
+        ]
+      : props.kind === 'CODE'
+        ? [
+            {
+              label: t('securityAlerts.columns.scanner'),
+              type: FilterFieldType.Enum,
+              value: 'scanner',
+              values: filterOptions.value.scanners.map(
+                /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+              ),
+            },
+            {
+              label: t('securityAlerts.columns.rule'),
+              type: FilterFieldType.Enum,
+              value: 'ruleId',
+              values: filterOptions.value.rules.map(
+                /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+              ),
+            },
+          ]
+        : [
+            {
+              label: t('securityAlerts.columns.secretType'),
+              type: FilterFieldType.Enum,
+              value: 'secretType',
+              values: filterOptions.value.secretTypes.map(
+                /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+              ),
+            },
+            {
+              label: t('securityAlerts.columns.secretProvider'),
+              type: FilterFieldType.Enum,
+              value: 'secretProvider',
+              values: filterOptions.value.secretProviders.map(
+                /** Projects each entry using `({ label: value, value })`. */ (value) => ({ label: value, value }),
+              ),
+            },
+          ]),
+  ],
+);
+const staticFilter = computed(
+  /** Derives static filter from the current reactive dependencies. */ () => ({
+    AND: [
+      { kind: props.kind },
+      ...(typeof route.query.repositoryId === 'string' ? [{ repositoryId: route.query.repositoryId }] : []),
+      ...(selectedPath.value ? [{ location: { path: ['path'], equals: selectedPath.value } }] : []),
+      ...(updatedFrom.value
+        ? [{ providerUpdatedAt: { gte: new Date(`${updatedFrom.value}T00:00:00.000Z`).toISOString() } }]
+        : []),
+      ...(updatedTo.value
+        ? [{ providerUpdatedAt: { lte: new Date(`${updatedTo.value}T23:59:59.999Z`).toISOString() } }]
+        : []),
+      ...(debouncedSearch.value.trim()
+        ? [
+            {
+              OR: [
+                { title: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
+                { packageName: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
+                { ruleId: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
+                { secretType: { contains: debouncedSearch.value.trim(), mode: 'insensitive' } },
+              ],
+            },
+          ]
+        : []),
+    ],
+  }),
+);
 const table = useTable({
   columnDefinition,
   defaultItemsPerPage: 25,
@@ -362,24 +406,27 @@ const {
   sorting,
   totalItems,
 } = table;
-const summaryMetrics = computed(() => [
-  { icon: kindIcon.value, label: t('securityAlerts.open'), value: String(summary.value?.open[props.kind] ?? '—') },
-  {
-    icon: 'i-lucide-octagon-alert',
-    label: t('securityAlerts.severities.CRITICAL'),
-    value: String(summary.value?.severity.CRITICAL ?? '—'),
-  },
-  {
-    icon: 'i-lucide-triangle-alert',
-    label: t('securityAlerts.severities.HIGH'),
-    value: String(summary.value?.severity.HIGH ?? '—'),
-  },
-  {
-    icon: 'i-lucide-circle-alert',
-    label: t('securityAlerts.unavailable'),
-    value: String(summary.value?.unavailableRepositories ?? '—'),
-  },
-]);
+const summaryMetrics = computed(
+  /** Derives summary metrics from the current reactive dependencies. */ () => [
+    { icon: kindIcon.value, label: t('securityAlerts.open'), value: String(summary.value?.open[props.kind] ?? '—') },
+    {
+      icon: 'i-lucide-octagon-alert',
+      label: t('securityAlerts.severities.CRITICAL'),
+      value: String(summary.value?.severity.CRITICAL ?? '—'),
+    },
+    {
+      icon: 'i-lucide-triangle-alert',
+      label: t('securityAlerts.severities.HIGH'),
+      value: String(summary.value?.severity.HIGH ?? '—'),
+    },
+    {
+      icon: 'i-lucide-circle-alert',
+      label: t('securityAlerts.unavailable'),
+      value: String(summary.value?.unavailableRepositories ?? '—'),
+    },
+  ],
+);
+/** Loads supporting data. */
 async function loadSupportingData(): Promise<void> {
   supportingLoading.value = true;
   const [summaryResult, optionsResult] = await Promise.allSettled([
@@ -391,17 +438,21 @@ async function loadSupportingData(): Promise<void> {
   supportingError.value = summaryResult.status === 'rejected' || optionsResult.status === 'rejected';
   supportingLoading.value = false;
 }
+/** Refreshes all. */
 async function refreshAll(): Promise<void> {
   await Promise.all([refresh(), loadSupportingData()]);
 }
+/** Maps alert severity to the corresponding UI color. */
 function severityColor(severity: SecurityAlertSeverity): 'error' | 'warning' | 'info' | 'neutral' {
   if (severity === 'CRITICAL' || severity === 'HIGH') return 'error';
   if (severity === 'MEDIUM') return 'warning';
   if (severity === 'LOW' || severity === 'INFO') return 'info';
   return 'neutral';
 }
-onMounted(() => {
-  void initialize();
-  void loadSupportingData();
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () => {
+    void initialize();
+    void loadSupportingData();
+  },
+);
 </script>

@@ -46,7 +46,9 @@ import {
 import { RepositoriesQueryService } from './repositories-query.service.js';
 import { RepositoryConfigurationService } from './repository-configuration.service.js';
 
-export class UpdateRepositoryDto extends createZodDto(ApiUpdateRepositorySchema) {}
+/** Defines the update repository dto class contract. */ export class UpdateRepositoryDto extends createZodDto(
+  ApiUpdateRepositorySchema,
+) {}
 
 class CreateWorkflowFilterDto extends createZodDto(ApiCreateWorkflowFilterSchema) {}
 
@@ -114,6 +116,7 @@ export class RepositoriesController {
           },
         },
       },
+      /** Maps map. */
       map: (repository: RepositoryResourceModel, currentAbility) => RepositoryDto.fromModel(repository, currentAbility),
       query: this.repositories.toQueryOptions(query),
       schema: repositoryFieldSchema,
@@ -191,8 +194,9 @@ export class RepositoriesController {
     @Req() request: { user: AuthenticatedUser },
     @Param('id') repositoryId: string,
   ): Promise<WorkflowFilterDto[]> {
-    return (await this.configuration.listWorkflowFilters(request.user, repositoryId)).map((filter) =>
-      WorkflowFilterDto.fromModel(filter),
+    return (await this.configuration.listWorkflowFilters(request.user, repositoryId)).map(
+      /** Projects each entry using `WorkflowFilterDto.fromModel(filter)`. */ (filter) =>
+        WorkflowFilterDto.fromModel(filter),
     );
   }
 
@@ -252,8 +256,9 @@ export class RepositoriesController {
     @Req() request: { user: AuthenticatedUser },
     @Param('id') repositoryId: string,
   ): Promise<RepositoryMembershipDto[]> {
-    return (await this.configuration.listMemberships(request.user, repositoryId)).map((membership) =>
-      RepositoryMembershipDto.fromModel(membership),
+    return (await this.configuration.listMemberships(request.user, repositoryId)).map(
+      /** Projects each entry using `RepositoryMembershipDto.fromModel(membership)`. */ (membership) =>
+        RepositoryMembershipDto.fromModel(membership),
     );
   }
 

@@ -59,10 +59,10 @@
     "addRepositoryDescription": "Scopri repository tramite un provider configurato.",
     "description": "Naviga, cerca le risorse autorizzate o avvia un’azione comune.",
     "noResults": "Nessun comando o risorsa corrispondente trovato.",
-    "open": "Apri la palette dei comandi",
+    "open": "Apri ricerca",
     "search": "Cerca comandi e risorse",
     "searchPlaceholder": "Cerca o digita un comando",
-    "title": "Palette dei comandi"
+    "title": "Ricerca"
   },
   "common": {
     "save": "Salva"

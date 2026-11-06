@@ -57,14 +57,19 @@ const usesFullWidthContent = computed(() => route.meta.fullWidth === true);
 const settings = useSettingsStore();
 const changelogOpen = useState('changelog-open', () => false);
 
-const { open: paletteOpen } = useCommandPalette();
+const { open: paletteOpen, show: showPalette } = useCommandPalette();
 const { open: shortcutsOpen } = useShortcuts();
+
+/** Open the shared search without interrupting another dialog. */
+function openSearch(): void {
+  if (document.querySelector('[role="dialog"]:not([data-state="closed"])')) return;
+  showPalette();
+}
 
 defineShortcuts(
   createShortcutBindings({
-    palette: () => {
-      if (!shortcutsOpen.value) paletteOpen.value = !paletteOpen.value;
-    },
+    search: openSearch,
+    palette: openSearch,
     shortcuts: () => {
       if (!paletteOpen.value) shortcutsOpen.value = !shortcutsOpen.value;
     },

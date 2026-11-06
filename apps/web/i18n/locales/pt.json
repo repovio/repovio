@@ -59,10 +59,10 @@
     "addRepositoryDescription": "Descubra repositórios através de um fornecedor configurado.",
     "description": "Navegue, pesquise recursos autorizados ou inicie uma ação comum.",
     "noResults": "Não foram encontrados comandos nem recursos correspondentes.",
-    "open": "Abrir a paleta de comandos",
+    "open": "Abrir pesquisa",
     "search": "Pesquisar comandos e recursos",
     "searchPlaceholder": "Pesquisar ou escrever um comando",
-    "title": "Paleta de comandos"
+    "title": "Pesquisa"
   },
   "common": {
     "save": "Guardar"

@@ -59,10 +59,10 @@
     "addRepositoryDescription": "Découvrez des dépôts via un fournisseur configuré.",
     "description": "Naviguez, recherchez les ressources autorisées ou lancez une action courante.",
     "noResults": "Aucune commande ni ressource correspondante n’a été trouvée.",
-    "open": "Ouvrir la palette de commandes",
+    "open": "Ouvrir la recherche",
     "search": "Rechercher des commandes et des ressources",
     "searchPlaceholder": "Rechercher ou saisir une commande",
-    "title": "Palette de commandes"
+    "title": "Recherche"
   },
   "common": {
     "save": "Enregistrer"

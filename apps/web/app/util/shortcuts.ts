@@ -1,6 +1,6 @@
 /** Global shortcuts shared by the shell handlers and keyboard-shortcuts dialog. */
 export const globalShortcuts = [
-  { id: 'search', keys: ['/'], action: 'layout.search', scope: 'shortcuts.global' },
+  { id: 'search', keys: ['/'], action: 'commandPalette.open', scope: 'shortcuts.global' },
   { id: 'palette', keys: ['meta', 'k'], action: 'commandPalette.open', scope: 'shortcuts.global' },
   { id: 'shortcuts', keys: ['?'], action: 'shortcuts.toggle', scope: 'shortcuts.global' },
 ] as const;

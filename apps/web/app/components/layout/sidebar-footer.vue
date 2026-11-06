@@ -1,12 +1,13 @@
 <template>
   <div data-sidebar-footer class="flex w-full flex-col gap-1" :class="collapsed ? 'items-center' : 'items-start'">
     <UButton
+      v-if="branding.brandRepositoryUrl"
       data-sidebar-footer-item
-      to="https://github.com/repovio/repovio"
       target="_blank"
       color="neutral"
       variant="ghost"
       icon="i-simple-icons-github"
+      :to="branding.brandRepositoryUrl"
       :aria-label="t('sidebar.github')"
       :title="t('sidebar.github')"
       :square="collapsed"
@@ -14,12 +15,13 @@
       :class="collapsed ? undefined : 'w-full justify-start'"
     />
     <UButton
+      v-if="branding.brandDocsUrl"
       data-sidebar-footer-item
-      to="https://repovio.de/docs/"
       target="_blank"
       color="neutral"
       variant="ghost"
       icon="i-tabler-book-2"
+      :to="branding.brandDocsUrl"
       :aria-label="t('sidebar.docs')"
       :title="t('sidebar.docs')"
       :square="collapsed"
@@ -43,6 +45,7 @@
 <script setup lang="ts">
 import { defineProps, onMounted } from 'vue';
 
+import { useBranding } from '~/composables/app/branding';
 import { useVersionCheck } from '~/composables/app/version-check';
 
 defineProps<{
@@ -50,6 +53,7 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
+const branding = useBranding();
 const changelogOpen = useState(
   'changelog-open',
   /** Evaluates `false` when useState invokes this callback. */ () => false,

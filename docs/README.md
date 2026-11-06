@@ -8,6 +8,7 @@ The user and operations handbook is maintained in [repovio/docs](https://github.
 - [Installation](https://repovio.de/docs/installation)
 - [Authentication](https://repovio.de/docs/authentication)
 - [Deployment and backups](https://repovio.de/docs/deployment)
+- [Runtime theming and branding](theming.md)
 - [MCP access](https://repovio.de/docs/mcp)
 
 The following links point to reviewed source files at a fixed documentation commit. They belong to the unpublished

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { QueryOptionsMap } from '@querry-kit/nest/core';
+import { resolveRepositoryAccess } from '../../casl/repository-access.js';
 
 import { CaslAction } from '../../casl/casl-action.js';
 import { accessibleBy } from '../../casl/casl-prisma.js';
@@ -192,12 +193,9 @@ export class DashboardService {
     const repositoryIds =
       user.role === 'SYSTEM_ADMIN'
         ? undefined
-        : (
-            await this.prisma.repositoryMembership.findMany({
-              select: { repositoryId: true },
-              where: { role: 'MANAGER', userId: user.id },
-            })
-          ).map(/** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId);
+        : (await resolveRepositoryAccess(this.prisma, user.id, true)).map(
+            /** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId,
+          );
     const where: Prisma.SecurityAlertWhereInput = {
       state: 'OPEN',
       ...(repositoryIds === undefined ? {} : { repositoryId: { in: repositoryIds } }),

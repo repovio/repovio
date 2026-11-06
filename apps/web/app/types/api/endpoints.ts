@@ -12,6 +12,7 @@ import type {
   SecurityAlert,
   UpdateNotificationChannel,
   User,
+  UserGroup,
   WorkflowRun,
 } from './resources';
 
@@ -55,6 +56,7 @@ export const apiEndpoints = {
   repositorySyncJobs: '/jobs/repository-sync',
   settings: { base: '/settings' },
   users: '/users',
+  userGroups: '/user-groups',
   version: '/version/latest',
   workflowRuns: 'workflow-runs',
   issues: 'issues',
@@ -81,6 +83,7 @@ export interface Endpoints {
     dto: RepositorySyncJob;
     update: never;
   };
+  'user-groups': { create: never; dto: UserGroup; update: never };
   users: {
     create: never;
     dto: User;

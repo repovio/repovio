@@ -6,6 +6,7 @@ describe('CASL authorization contract', /** Groups scenarios for CASL authorizat
     expect(Object.values(CaslSubject)).toEqual([
       'all',
       'User',
+      'UserGroup',
       'ProviderAccount',
       'Repository',
       'WorkflowRun',

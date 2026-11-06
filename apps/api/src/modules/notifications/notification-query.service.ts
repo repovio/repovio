@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
 import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
+import { resolveRepositoryAccess } from '../../casl/repository-access.js';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -53,10 +54,7 @@ async function buildAbility(
   abilityFactory: CaslAbilityFactory,
   user: AuthenticatedUser,
 ): Promise<AppAbility> {
-  const memberships = await prisma.repositoryMembership.findMany({
-    where: { userId: user.id },
-    select: { repositoryId: true, role: true },
-  });
+  const memberships = await resolveRepositoryAccess(prisma, user.id);
   return abilityFactory.createForUser(user, memberships);
 }
 

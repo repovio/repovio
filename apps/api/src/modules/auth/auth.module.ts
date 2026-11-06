@@ -29,6 +29,6 @@ import { UsersController } from './users.controller.js';
   ],
   controllers: [AuthController, OidcController, UsersController],
   providers: [AuthService, AvatarService, JwtStrategy, OidcService, UsersQueryService],
-  exports: [AuthService],
+  exports: [AuthService, UsersQueryService],
 })
 export class AuthModule {}

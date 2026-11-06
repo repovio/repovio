@@ -1,5 +1,11 @@
 /** Explicit fields supported by public resource-query contracts. Credentials and internal model data are excluded. */
 export const queryFields = {
+  UserGroup: {
+    id: { type: 'String', list: false, nullable: false },
+    name: { type: 'String', list: false, nullable: false },
+    createdAt: { type: 'DateTime', list: false, nullable: false },
+    updatedAt: { type: 'DateTime', list: false, nullable: false },
+  },
   IssueAssignee: {
     actor: {
       type: 'ProviderActor',

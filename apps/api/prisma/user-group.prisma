@@ -1,0 +1,35 @@
+model UserGroup {
+  id           String                 @id @default(uuid()) @db.Uuid
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  name         String                 @unique @db.VarChar(255)
+  members      UserGroupMember[]
+  repositories RepositoryGroupGrant[]
+
+  @@map("user_groups")
+}
+
+model UserGroupMember {
+  id      String    @id @default(uuid()) @db.Uuid
+  userId  String    @db.Uuid
+  groupId String    @db.Uuid
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group   UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("user_group_members")
+}
+
+model RepositoryGroupGrant {
+  id           String         @id @default(uuid()) @db.Uuid
+  groupId      String         @db.Uuid
+  repositoryId String         @db.Uuid
+  role         RepositoryRole @default(VIEWER)
+  group        UserGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  repository   Repository     @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, groupId])
+  @@index([groupId])
+  @@map("repository_group_grants")
+}

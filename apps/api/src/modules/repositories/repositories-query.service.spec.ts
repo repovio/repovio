@@ -5,7 +5,11 @@ describe('RepositoriesQueryService', /** Groups scenarios for RepositoriesQueryS
   const abilityFactory = {
     createForUser: jest.fn(/** Provides isolated createForUser behavior for this test fixture. */ () => ability),
   };
-  const prisma = { repository: {}, repositoryMembership: { findMany: jest.fn() } };
+  const prisma = {
+    repository: {},
+    repositoryGroupGrant: { findMany: jest.fn().mockResolvedValue([]) },
+    repositoryMembership: { findMany: jest.fn() },
+  };
   const service = new RepositoriesQueryService(prisma as never, abilityFactory as never);
 
   beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());

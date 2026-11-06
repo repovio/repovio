@@ -267,6 +267,7 @@ describe('DashboardService', /** Groups scenarios for DashboardService. */ () =>
       }),
     ];
     const prisma = {
+      repositoryGroupGrant: { findMany: jest.fn().mockResolvedValue([]) },
       repositoryMembership: {
         findMany: jest.fn().mockResolvedValue([{ repositoryId: 'repository-a', role: 'VIEWER' }]),
       },

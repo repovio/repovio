@@ -13,6 +13,8 @@
       <slot />
     </UPageCard>
 
+    <LayoutAuthPreferences />
+
     <div class="mb-auto flex flex-col items-center gap-2 text-center text-sm text-muted">
       <p>{{ $t('layout.readOnlyStatus') }}</p>
       <p>{{ $t('layout.copyright', { year: currentYear }) }}</p>

@@ -75,7 +75,7 @@ export class RepositoryMetadataService {
     const adapter = this.adapters.get(repository.providerAccount.providerType);
     const metadata = await adapter.getRepository(
       {
-        accessToken: this.credentials.decrypt(repository.providerAccount.encryptedAccessToken),
+        accessToken: await this.credentials.accessToken(repository.providerAccount),
         baseUrl: repository.providerAccount.baseUrl,
         providerAccountId: repository.providerAccount.id,
       },

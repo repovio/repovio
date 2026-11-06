@@ -5,6 +5,7 @@ import { apiEndpoints } from '~/types/api/endpoints';
 import type {
   ApplicationSettings,
   BrowserPushStatus,
+  ConnectGitHubApp,
   CreatedMcpAccessToken,
   CreateMcpAccessToken,
   CreateNotificationChannel,
@@ -12,6 +13,8 @@ import type {
   DashboardPeriodQuery,
   DashboardSummary,
   DashboardWorkflowRun,
+  GitHubAppConfiguration,
+  GitHubAppInstallation,
   HealthResponse,
   Issue,
   IssueSummary,
@@ -33,6 +36,7 @@ import type {
   RepositoryMembership,
   RepositorySyncJobSummary,
   RepositoryWebhookConfiguration,
+  SaveGitHubApp,
   SecurityAlert,
   SecurityAlertFilterOptions,
   SecurityAlertSummary,
@@ -54,6 +58,16 @@ export function useRepovioApi() {
   const api = useApi();
 
   return {
+    githubApp: {
+      configuration: (): Promise<AxiosResponse<GitHubAppConfiguration>> => api.get(apiEndpoints.githubApp),
+      save: (input: SaveGitHubApp): Promise<AxiosResponse<GitHubAppConfiguration>> =>
+        api.put(apiEndpoints.githubApp, input),
+      delete: (): Promise<AxiosResponse<void>> => api.delete(apiEndpoints.githubApp),
+      installations: (): Promise<AxiosResponse<GitHubAppInstallation[]>> =>
+        api.get(`${apiEndpoints.githubApp}/installations`),
+      connect: (input: ConnectGitHubApp): Promise<AxiosResponse<ProviderAccount>> =>
+        api.post(`${apiEndpoints.githubApp}/installations`, input),
+    },
     dashboard: {
       getAwaitingApproval: (): Promise<AxiosResponse<DashboardWorkflowRun[]>> =>
         api.get(apiEndpoints.dashboard.awaitingApproval),

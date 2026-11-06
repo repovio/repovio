@@ -7,6 +7,9 @@ model ProviderAccount {
   displayName            String   @db.VarChar(255)
   baseUrl                String?  @db.VarChar(2048)
   encryptedAccessToken   String   @db.Text
+  authenticationMethod   String   @default("TOKEN") @db.VarChar(32)
+  githubInstallationId   String?  @unique @db.VarChar(32)
+  githubInstallationState String? @db.VarChar(32)
   enabled                Boolean  @default(true)
   lastSyncAt             DateTime?
   lastSyncError          String?  @db.Text

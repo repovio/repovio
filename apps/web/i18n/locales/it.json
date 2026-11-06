@@ -1033,5 +1033,33 @@
     "action": "Azione",
     "global": "Globale",
     "toggle": "Mostra o nascondi le scorciatoie"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Collega installazioni GitHub App con accesso in sola lettura.",
+    "setup": "Registra la tua applicazione",
+    "setupHelp": "Crea una GitHub App con permessi di lettura per Actions, Issues e Pull requests. Configura l’URL webhook indicato sotto.",
+    "appId": "ID applicazione",
+    "slug": "Slug applicazione",
+    "privateKey": "Chiave privata (PEM)",
+    "webhookSecret": "Segreto webhook",
+    "webhookUrl": "URL webhook",
+    "keepSecret": "Lascia vuoto per conservare il segreto salvato.",
+    "save": "Verifica e salva",
+    "remove": "Elimina configurazione",
+    "installations": "Installazioni",
+    "installHelp": "Installa l’applicazione su GitHub, scegli i repository e aggiorna l’elenco. Scollega gli account prima di sostituire o eliminare l’applicazione.",
+    "install": "Installa su GitHub",
+    "refresh": "Aggiorna installazioni",
+    "empty": "Nessuna installazione. Installa l’applicazione e aggiorna.",
+    "connected": "Collegata",
+    "connect": "Collega",
+    "error": "Richiesta non riuscita. Controlla credenziali, permessi e connessione. Scollega gli account prima di sostituire o eliminare l’applicazione e riprova.",
+    "load": "Riprova caricamento",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Sospesa",
+      "REMOVED": "Rimossa"
+    }
   }
 }

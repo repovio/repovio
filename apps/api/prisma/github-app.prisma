@@ -1,0 +1,16 @@
+model GitHubAppConfiguration {
+  id String @id @default("default")
+  updatedAt DateTime @updatedAt
+  appId String @db.VarChar(32)
+  slug String @db.VarChar(255)
+  encryptedPrivateKey String @db.Text
+  encryptedWebhookSecret String @db.Text
+  @@map("github_app_configuration")
+}
+
+model GitHubAppDelivery {
+  deliveryId String @id @db.VarChar(255)
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@map("github_app_deliveries")
+}

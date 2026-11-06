@@ -272,6 +272,7 @@
     "themeDark": "Donker",
     "themeLight": "Licht",
     "themeSystem": "Systeem",
+    "themeToggle": "Thema: {current}. Overschakelen naar {next}.",
     "users": "Gebruikers",
     "workflowRuns": "Workflowuitvoeringen"
   },

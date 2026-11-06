@@ -267,6 +267,7 @@
     "themeDark": "Dunkel",
     "themeLight": "Hell",
     "themeSystem": "System",
+    "themeToggle": "Darstellung: {current}. Zu {next} wechseln.",
     "users": "Benutzer",
     "workflowRuns": "Workflow-Ausführungen"
   },

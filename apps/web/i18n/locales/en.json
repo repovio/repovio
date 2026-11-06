@@ -261,6 +261,7 @@
     "themeDark": "Dark",
     "themeLight": "Light",
     "themeSystem": "System",
+    "themeToggle": "Theme: {current}. Switch to {next}.",
     "users": "Users",
     "workflowRuns": "Workflow runs"
   },

@@ -272,6 +272,7 @@
     "themeDark": "Ciemny",
     "themeLight": "Jasny",
     "themeSystem": "Systemowy",
+    "themeToggle": "Motyw: {current}. Przełącz na {next}.",
     "users": "Użytkownicy",
     "workflowRuns": "Wykonania workflow"
   },

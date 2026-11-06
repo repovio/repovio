@@ -1,5 +1,55 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- d42791a: Use PostgreSQL 18 and mount its volume at /var/lib/postgresql. Existing PostgreSQL 17 installations must follow the documented backup and restore procedure into a separate volume before using the new Compose configuration.
+- 5da0384: Rename the product, packages, runtime configuration and container images to Repovio. Existing deployments must update
+  product-prefixed environment variables, explicitly select their existing PostgreSQL volume and sign in again. Move public
+  documentation to the bilingual, versioned Repovio website.
+
+### Minor Changes
+
+- 999df5d: Add user group administration, searchable member selection, and repository group assignment controls in English and German.
+- ac6b7ca: Add GitHub App configuration, credential rotation, installation discovery and connection controls to provider
+  administration, including connection status, editable account names, and localized loading and error states.
+- ac6b7ca: Add optional administrator-configured GitHub App connections with encrypted credentials, automatically renewed read-only
+  installation tokens, central signed webhooks, and installation lifecycle handling. Existing PAT and OAuth connections
+  remain supported.
+- 999df5d: Add local user groups and additive repository grants with current, query-scoped permission resolution.
+- 999df5d: Add local account creation and administrative password resets to user management, including session invalidation.
+- 8c146a6: Export the installed API contract deterministically for a versioned, bilingual documentation reference without starting
+  network listeners, database connections, background jobs, or provider requests.
+- 97c6f42: Add validated runtime theme and branding settings with public metadata and private mounted asset support.
+- 97c6f42: Serve PWA installation metadata from runtime branding and document Docker environment and mounted asset configuration.
+- 97c6f42: Apply runtime branding and theme settings to sign-in, navigation, browser metadata, typography, and optional links.
+
+### Patch Changes
+
+- 8ae7aa9: Add persistent theme and language selectors to the sign-in and first-administrator setup pages.
+- ae53e7a: Replace authentication-page preference menus with a cycling theme button and a language select with local flags.
+- 5da0384: Add the Branch R logo, outlined wordmarks, monochrome variants, regenerated application icons, and the Indigo/Mint palette.
+- eb1be63: Centralize the user and operations handbook in the documentation repository and update upgrade guidance links.
+- d42791a: Update Swagger, OpenID Connect, Vue typechecking, and the GitHub App token action. Align Fastify versions to preserve cookie plugin types and offline OpenAPI builds.
+
+  Preserve notification form reactivity with explicit refs for the updated Vue template typechecker.
+
+- d42791a: Replace vulnerable glob and minimatch versions and remove deepmerge from runtime and build consumers in favor of prototype-safe merging.
+- 4593ebe: Run guideline and shared-script checks in CI and invalidate lint caches when tooling changes.
+- 32aae75: Add decorative local SVG flags beside language names in the language selector.
+- 4593ebe: Apply deterministic Vue formatting while preserving compiled template behavior.
+- 4593ebe: Apply documentation and Vue layout checks to the newly merged GitHub App integration.
+- 6a5a15f: Make page and table toolbars wrap on mobile devices, with full-width search fields, larger touch targets, and responsive navigation and filter popovers.
+
+  Restore focus to Query Kit toolbar triggers after Escape and update browser assertions for current wordmark assets and repository fixtures.
+
+- 6c2d5af: Migrate the Nest API to Fastify and share Zod contracts with the frontend, including validation for all forms.
+- 4593ebe: Document repository-wide coding standards and contributor verification commands.
+- 93a9f47: Allow all three development targets to run concurrently so the schema watcher and API do not block the web application.
+- 4593ebe: Check documentation coverage across handwritten sources, tests, and configuration.
+- 66b17aa: Combine global search and the command palette into one navbar entry for resource search, navigation, and actions.
+
 ## 1.0.1
 
 ### Patch Changes

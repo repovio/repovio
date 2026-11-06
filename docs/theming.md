@@ -20,3 +20,87 @@ release source continue to identify Repovio. No new translation keys are needed 
 Use supported Tailwind accent names for primary/secondary and slate/gray/zinc/neutral/stone for neutral. Radius accepts
 nonnegative px/rem values. Font settings select installed/system fonts; they do not download custom fonts. Defaults
 retain IBM Plex Sans and JetBrains Mono. All built-in palettes remain available in the production stylesheet.
+
+## Environment variables
+
+All settings apply to the `web` service. The shipped `compose.yml` already reads `.env` through `env_file`.
+The complete defaults are listed in `.env.example`.
+
+| Prefix               | Suffixes                                                                | Behavior                                                                                      |
+| -------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `NUXT_PUBLIC_THEME_` | `PRIMARY`, `SECONDARY`, `NEUTRAL`                                       | Named palettes; defaults indigo, emerald, zinc.                                               |
+| `NUXT_PUBLIC_THEME_` | `RADIUS`                                                                | Nonnegative value in px or rem; default `0.25rem`.                                            |
+| `NUXT_PUBLIC_THEME_` | `FONT_FAMILY`, `DISPLAY_FONT_FAMILY`                                    | CSS font stacks for text and headings.                                                        |
+| `NUXT_PUBLIC_BRAND_` | `NAME`, `DESCRIPTION`, `TITLE_TEMPLATE`                                 | Installation metadata; `%s` substitutes the page title. An empty template uses `%s · <NAME>`. |
+| `NUXT_PUBLIC_BRAND_` | `LOGO_LIGHT`, `LOGO_DARK`, `LOGO_COMPACT`, `FAVICON`                    | Asset URLs; compact logo appears in the collapsed sidebar.                                    |
+| `NUXT_PUBLIC_BRAND_` | `APPLE_TOUCH_ICON`, `PWA_ICON_192`, `PWA_ICON_512`, `PWA_MASKABLE_ICON` | PNG icon URLs; dimensions 180, 192, 512, and 512 pixels respectively.                         |
+| `NUXT_PUBLIC_BRAND_` | `PWA_THEME_COLOR`, `PWA_BACKGROUND_COLOR`                               | Six-digit hexadecimal colors; defaults `#4f46ff` and `#0b1238`.                               |
+| `NUXT_PUBLIC_BRAND_` | `PRODUCT_URL`, `DOCS_URL`, `REPOSITORY_URL`                             | Optional external or local links. Empty values hide them.                                     |
+
+Supported accent palettes: red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet,
+purple, fuchsia, pink, rose. Indigo and emerald retain Repovio's bundled palette values. Neutral palettes: slate,
+gray, zinc, neutral, stone. CSS declaration delimiters and control characters are not accepted in font stacks.
+
+For each image suffix above, `NUXT_BRAND_<SUFFIX>_FILE` specifies a private file override. For example,
+`NUXT_BRAND_PWA_ICON_192_FILE=/app/branding/pwa-192.png`. Paths are resolved inside the running container; relative
+paths resolve against its working directory (`/app` in the shipped image). Logo/favicon files accept SVG, PNG, JPEG,
+WebP, GIF, or ICO extensions. Installation and Apple touch icons require valid PNG data at the stated dimensions.
+Files are limited to 5 MiB each. SVG files must come from a trusted installation administrator.
+
+URLs must be same-origin absolute paths beginning with a single `/`, or absolute HTTP(S) URLs. Protocol-relative,
+file, data, and JavaScript URLs are rejected. URL assets must be reachable by the browser; the server does not inspect
+remote image contents. Keep remote install icons as correctly sized PNGs with an appropriate content type.
+
+## Docker Compose example
+
+Create `branding/` beside `compose.yml` with your light/dark logos, compact mark, favicon, and PNG icons. Create a
+`compose.branding.yml` override:
+
+```yaml
+services:
+  web:
+    volumes:
+      - ./branding:/app/branding:ro
+    environment:
+      NUXT_PUBLIC_THEME_PRIMARY: rose
+      NUXT_PUBLIC_THEME_SECONDARY: amber
+      NUXT_PUBLIC_THEME_NEUTRAL: slate
+      NUXT_PUBLIC_BRAND_NAME: Example Forge
+      NUXT_PUBLIC_BRAND_DESCRIPTION: Our workflow dashboard
+      NUXT_PUBLIC_BRAND_PRODUCT_URL: https://example.com
+      NUXT_PUBLIC_BRAND_DOCS_URL: ''
+      NUXT_PUBLIC_BRAND_PWA_THEME_COLOR: '#e11d48'
+      NUXT_PUBLIC_BRAND_PWA_BACKGROUND_COLOR: '#0f172a'
+      NUXT_BRAND_LOGO_LIGHT_FILE: /app/branding/logo-light.svg
+      NUXT_BRAND_LOGO_DARK_FILE: /app/branding/logo-dark.svg
+      NUXT_BRAND_LOGO_COMPACT_FILE: /app/branding/mark.svg
+      NUXT_BRAND_FAVICON_FILE: /app/branding/favicon.ico
+      NUXT_BRAND_APPLE_TOUCH_ICON_FILE: /app/branding/apple-touch-icon.png
+      NUXT_BRAND_PWA_ICON_192_FILE: /app/branding/pwa-192.png
+      NUXT_BRAND_PWA_ICON_512_FILE: /app/branding/pwa-512.png
+      NUXT_BRAND_PWA_MASKABLE_ICON_FILE: /app/branding/maskable-512.png
+```
+
+Make files readable by the container and recreate only the web service:
+
+```sh
+docker compose -f compose.yml -f compose.branding.yml up -d --no-deps --force-recreate web
+```
+
+Environment/file changes take effect when the web process starts. No registry push, application image rebuild, or
+API/database changes are needed. To omit the maskable icon, unset its private file override and set
+`NUXT_PUBLIC_BRAND_PWA_MASKABLE_ICON` to an empty string. Regular install icons are never automatically marked maskable.
+The Apple touch icon remains independent of the favicon and regular install icons.
+
+## PWA and caching
+
+`/manifest.webmanifest` resolves runtime settings and mounted asset URLs, with `Cache-Control: no-store`.
+The service worker does not precache the manifest or branding API responses and does not cache protected API data.
+Its existing update prompt remains unchanged. Browsers decide when an already installed application's metadata is
+refreshed; reinstalling may be necessary to see a changed name/icon immediately.
+
+Run `pnpm --dir apps/web e2e:pwa` for installability, service-worker lifecycle, runtime overrides, mounted icons, and
+invalid-startup regression tests against the same production build with two configurations.
+
+If using a reverse proxy, route `/api/branding` and `/api/branding/*` to the web service, alongside
+`/manifest.webmanifest`. The existing Nest application endpoints under `/api/v1` still belong to the API service.

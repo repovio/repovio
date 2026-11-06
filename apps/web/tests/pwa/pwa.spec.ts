@@ -42,6 +42,7 @@ test('publishes an installable manifest without caching protected application da
   const manifestResponse = await page.request.get('/manifest.webmanifest');
   expect(manifestResponse.ok()).toBe(true);
   expect(manifestResponse.headers()['content-type']).toContain('application/manifest+json');
+  expect(manifestResponse.headers()['cache-control']).toBe('no-store');
   const manifest = (await manifestResponse.json()) as {
     display: string;
     icons: { purpose?: string; sizes: string; src: string; type: string }[];
@@ -87,9 +88,9 @@ test('publishes an installable manifest without caching protected application da
   expect(cachedUrls.length).toBeGreaterThan(0);
   expect(
     cachedUrls.some(
-      /** Checks whether any entry satisfies `/\/api(?:\/|$)|\/socket\.io(?:\/|$)/.test(new URL(url).pathname)`. */ (
+      /** Checks whether any entry satisfies `/\/api(?:\/|$)|\/socket\.io(?:\/|$)|\/manifest\.webmanifest$/.test(new URL(url).pathname)`. */ (
         url,
-      ) => /\/api(?:\/|$)|\/socket\.io(?:\/|$)/.test(new URL(url).pathname),
+      ) => /\/api(?:\/|$)|\/socket\.io(?:\/|$)|\/manifest\.webmanifest$/.test(new URL(url).pathname),
     ),
   ).toBe(false);
 });

@@ -145,3 +145,30 @@ for (const locale of ['en', 'de']) {
     await expect(logo.locator('img:visible')).toHaveAttribute('src', '/logo.svg');
   });
 }
+
+for (const mode of ['light', 'dark']) {
+  for (const locale of ['en', 'de']) {
+    test(`custom mobile sidebar in ${mode}, ${locale}`, /** Verify the narrow-screen navigation drawer keeps the configured brand and keyboard dismissal. */ async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ width: 390, height: 900 });
+      await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
+      await page.addInitScript(
+        /** Restore the selected theme before opening mobile navigation. */ (value) =>
+          localStorage.setItem('nuxt-color-mode', value),
+        mode,
+      );
+      await prepare(page, true);
+      await page.goto('/');
+      const toggle = page.locator('button[data-slot="toggle"]').first();
+      await toggle.click();
+      const brand = page.getByRole('link', { name: custom.brandName, exact: true });
+      await expect(brand).toBeInViewport({ ratio: 1 });
+      await expect(brand.locator('img:visible')).toHaveAttribute('src', '/logo.svg');
+      await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('custom-mobile-sidebar.png') });
+      await page.keyboard.press('Escape');
+      await expect(brand).not.toBeVisible();
+      await expect(toggle).toBeFocused();
+    });
+  }
+}

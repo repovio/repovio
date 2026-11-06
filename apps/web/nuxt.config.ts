@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { class: 'h-full' },
       bodyAttrs: { class: 'h-full bg-default' },
+      link: [{ rel: 'manifest', href: '/manifest.webmanifest' }],
       meta: [
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
@@ -91,24 +92,7 @@ export default defineNuxtConfig({
     client: {
       registerPlugin: true,
     },
-    manifest: {
-      background_color: '#0b1238',
-      description: 'Read-only workflow status dashboard for GitHub, GitLab, Forgejo, and Gitea.',
-      display: 'standalone',
-      id: '/',
-      icons: [
-        { src: '/pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-        { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-        { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-      ],
-      lang: 'en',
-      name: 'Repovio',
-      scope: '/',
-      short_name: 'Repovio',
-      start_url: '/',
-      theme_color: '#4f46ff',
-    },
+    manifest: false,
     registerType: 'prompt',
     workbox: {
       cleanupOutdatedCaches: true,

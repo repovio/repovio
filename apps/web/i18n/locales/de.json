@@ -1037,5 +1037,33 @@
     "action": "Aktion",
     "global": "Global",
     "toggle": "Tastenkürzel ein-/ausblenden"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "GitHub-App-Installationen mit Lesezugriff verbinden.",
+    "setup": "Eigene App registrieren",
+    "setupHelp": "Erstelle eine eigene GitHub App mit Leserechten für Actions, Issues und Pull requests. Hinterlege die Webhook-URL unten.",
+    "appId": "App-ID",
+    "slug": "App-Slug",
+    "privateKey": "Privater Schlüssel (PEM)",
+    "webhookSecret": "Webhook-Geheimnis",
+    "webhookUrl": "Webhook-URL",
+    "keepSecret": "Leer lassen, um das gespeicherte Geheimnis beizubehalten.",
+    "save": "Prüfen und speichern",
+    "remove": "Konfiguration löschen",
+    "installations": "Installationen",
+    "installHelp": "Installiere die App auf GitHub, wähle Repositories und aktualisiere diese Liste. Trenne Anbieter-Konten vor dem Ersetzen oder Löschen der App.",
+    "install": "Auf GitHub installieren",
+    "refresh": "Installationen aktualisieren",
+    "empty": "Keine Installationen gefunden. App installieren und Liste aktualisieren.",
+    "connected": "Verbunden",
+    "connect": "Verbinden",
+    "error": "Anfrage fehlgeschlagen. App-Zugangsdaten, Berechtigungen und Verbindung prüfen. Vor dem Ersetzen oder Löschen verbundene Installationskonten trennen und erneut versuchen.",
+    "load": "Erneut laden",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Gesperrt",
+      "REMOVED": "Entfernt"
+    }
   }
 }

@@ -1028,5 +1028,33 @@
     "action": "Action",
     "global": "Global",
     "toggle": "Toggle keyboard shortcuts"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Connect GitHub App installations with read-only access.",
+    "setup": "Register your App",
+    "setupHelp": "Create your own GitHub App with read-only Actions, Issues and Pull requests permissions. Configure its webhook URL below.",
+    "appId": "App ID",
+    "slug": "App slug",
+    "privateKey": "Private key (PEM)",
+    "webhookSecret": "Webhook secret",
+    "webhookUrl": "Webhook URL",
+    "keepSecret": "Leave empty to keep the stored secret.",
+    "save": "Verify and save",
+    "remove": "Delete configuration",
+    "installations": "Installations",
+    "installHelp": "Install the App on GitHub, select repositories, then refresh this list. Disconnect provider accounts before replacing or deleting the App.",
+    "install": "Install on GitHub",
+    "refresh": "Refresh installations",
+    "empty": "No installations found. Install the App, then refresh.",
+    "connected": "Connected",
+    "connect": "Connect",
+    "error": "Request failed. Check App credentials, permissions and connection. Disconnect installation accounts before replacing or deleting the App, then retry.",
+    "load": "Retry loading",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Suspended",
+      "REMOVED": "Removed"
+    }
   }
 }

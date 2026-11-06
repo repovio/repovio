@@ -1033,5 +1033,33 @@
     "action": "Ação",
     "global": "Global",
     "toggle": "Mostrar ou ocultar atalhos"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Conecte instalações do GitHub App com acesso somente leitura.",
+    "setup": "Registre seu aplicativo",
+    "setupHelp": "Crie seu GitHub App com permissões de leitura para Actions, Issues e Pull requests. Configure a URL do webhook abaixo.",
+    "appId": "ID do aplicativo",
+    "slug": "Slug do aplicativo",
+    "privateKey": "Chave privada (PEM)",
+    "webhookSecret": "Segredo do webhook",
+    "webhookUrl": "URL do webhook",
+    "keepSecret": "Deixe vazio para manter o segredo salvo.",
+    "save": "Verificar e salvar",
+    "remove": "Excluir configuração",
+    "installations": "Instalações",
+    "installHelp": "Instale o aplicativo no GitHub, selecione os repositórios e atualize a lista. Desconecte as contas antes de substituir ou excluir o aplicativo.",
+    "install": "Instalar no GitHub",
+    "refresh": "Atualizar instalações",
+    "empty": "Nenhuma instalação. Instale o aplicativo e atualize.",
+    "connected": "Conectada",
+    "connect": "Conectar",
+    "error": "Falha na solicitação. Confira credenciais, permissões e conexão. Desconecte as contas antes de substituir ou excluir o aplicativo e tente novamente.",
+    "load": "Tentar carregar novamente",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Suspensa",
+      "REMOVED": "Removida"
+    }
   }
 }

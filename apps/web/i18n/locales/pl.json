@@ -1033,5 +1033,33 @@
     "action": "Działanie",
     "global": "Globalny",
     "toggle": "Pokaż lub ukryj skróty klawiszowe"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Połącz instalacje GitHub App z dostępem tylko do odczytu.",
+    "setup": "Zarejestruj aplikację",
+    "setupHelp": "Utwórz własną GitHub App z uprawnieniami odczytu Actions, Issues i Pull requests. Ustaw poniższy adres webhooka.",
+    "appId": "ID aplikacji",
+    "slug": "Slug aplikacji",
+    "privateKey": "Klucz prywatny (PEM)",
+    "webhookSecret": "Sekret webhooka",
+    "webhookUrl": "Adres webhooka",
+    "keepSecret": "Pozostaw puste, aby zachować zapisany sekret.",
+    "save": "Sprawdź i zapisz",
+    "remove": "Usuń konfigurację",
+    "installations": "Instalacje",
+    "installHelp": "Zainstaluj aplikację na GitHub, wybierz repozytoria i odśwież listę. Odłącz konta przed zastąpieniem lub usunięciem aplikacji.",
+    "install": "Zainstaluj na GitHub",
+    "refresh": "Odśwież instalacje",
+    "empty": "Brak instalacji. Zainstaluj aplikację i odśwież.",
+    "connected": "Połączona",
+    "connect": "Połącz",
+    "error": "Żądanie nie powiodło się. Sprawdź dane aplikacji, uprawnienia i połączenie. Odłącz konta przed zastąpieniem lub usunięciem aplikacji i ponów próbę.",
+    "load": "Ponów ładowanie",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Zawieszona",
+      "REMOVED": "Usunięta"
+    }
   }
 }

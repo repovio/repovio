@@ -59,10 +59,10 @@
     "addRepositoryDescription": "Finde Repositories über einen konfigurierten Anbieter.",
     "description": "Navigiere, durchsuche erlaubte Ressourcen oder starte eine häufige Aktion.",
     "noResults": "Keine passenden Befehle oder Ressourcen gefunden.",
-    "open": "Befehlspalette öffnen",
+    "open": "Suche öffnen",
     "search": "Befehle und Ressourcen durchsuchen",
     "searchPlaceholder": "Suchen oder Befehl eingeben",
-    "title": "Befehlspalette"
+    "title": "Suche"
   },
   "common": {
     "save": "Speichern"

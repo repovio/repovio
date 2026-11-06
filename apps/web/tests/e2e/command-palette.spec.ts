@@ -99,9 +99,10 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
 
-  const trigger = page.getByRole('button', { name: 'Open command palette' });
-  const globalSearch = page.getByRole('combobox', { name: 'Search' });
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
+  const trigger = page.getByRole('button', { name: 'Open search' });
+  await expect(trigger).toHaveCount(1);
+  await expect(page.getByRole('combobox', { name: 'Search', exact: true })).toHaveCount(0);
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   const paletteSearch = page.getByPlaceholder('Search or type a command');
   const shortcut = await commandPaletteShortcut(page);
 
@@ -117,12 +118,7 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   await expect(palette).not.toBeVisible();
   await expect(trigger).toBeFocused();
 
-  await globalSearch.focus();
-  await page.keyboard.press(shortcut);
-  await expect(palette).not.toBeVisible();
-  await globalSearch.press('Escape');
-
-  await page.keyboard.press('Tab');
+  await trigger.focus();
   await page.keyboard.press(shortcut);
   await expect(palette).toBeVisible();
   await expect(paletteSearch).toBeFocused();
@@ -132,7 +128,9 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/workflow-runs$/);
 
+  await expect(palette).not.toBeVisible();
   await page.keyboard.press(shortcut);
+  await expect(palette).toBeVisible();
   await paletteSearch.fill('flow');
   await expect(palette.getByRole('option', { name: /Repovio GitHub/ })).toBeVisible();
   await expect(palette.getByRole('option', { name: /Repovio deployment/ })).toBeVisible();
@@ -141,7 +139,7 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
     .first()
     .click();
   await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  const repositoryDialog = page.getByRole('dialog', { name: 'repovio/repovio' });
+  const repositoryDialog = page.getByRole('dialog', { name: 'tobiaswaelde/repovio' });
   await expect(repositoryDialog).toBeVisible();
   await repositoryDialog.getByRole('button', { name: 'Close' }).click();
   await expect(repositoryDialog).not.toBeVisible();
@@ -163,8 +161,8 @@ test('starts the existing provider creation dialog from an administrative comman
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
 
-  await page.getByRole('button', { name: 'Open command palette' }).click();
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
+  await page.getByRole('button', { name: 'Open search' }).click();
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   await page.getByPlaceholder('Search or type a command').fill('Add provider account');
   await palette.getByRole('option', { name: /Add provider account/ }).click();
 
@@ -177,8 +175,8 @@ test('starts the existing repository creation dialog from an administrative comm
   await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
   await page.goto('/');
 
-  await page.getByRole('button', { name: 'Open command palette' }).click();
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
+  await page.getByRole('button', { name: 'Open search' }).click();
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   await page.getByPlaceholder('Search or type a command').fill('Add repositories');
   await palette.getByRole('option', { name: /Add repositories/ }).click();
 
@@ -199,8 +197,8 @@ test('hides administrative navigation and creation actions from viewers', async 
   });
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Open command palette' }).click();
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
+  await page.getByRole('button', { name: 'Open search' }).click();
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   await expect(palette).toBeVisible();
   await expect(palette.getByText('Provider accounts', { exact: true })).toHaveCount(0);
   await expect(palette.getByText('Add provider account', { exact: true })).toHaveCount(0);
@@ -223,7 +221,7 @@ for (const role of ['SYSTEM_ADMIN', 'VIEWER'] as const) {
     await page.keyboard.press('Enter');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('row')).toHaveCount(4);
-    await expect(dialog.getByText('Open command palette')).toBeVisible();
+    await expect(dialog.getByRole('row').filter({ hasText: 'Open search' })).toHaveCount(2);
     const close = dialog.getByRole('button', { name: 'Close', exact: true });
     await expect(close).toBeFocused();
     await page.keyboard.press('Tab');
@@ -239,7 +237,9 @@ for (const role of ['SYSTEM_ADMIN', 'VIEWER'] as const) {
     await page.keyboard.press('?');
     await expect(dialog).not.toBeVisible();
     await expect(userMenu).toBeFocused();
-    await page.getByRole('combobox', { name: 'Search' }).focus();
+    await page.keyboard.press('/');
+    const search = page.getByPlaceholder('Search or type a command');
+    await expect(search).toBeFocused();
     await page.keyboard.press('?');
     await expect(dialog).not.toBeVisible();
     await page.keyboard.press('Escape');
@@ -269,19 +269,116 @@ test('documents and runs Command+K on macOS and slash after navigation', async (
   await menu.click();
   await page.getByRole('menuitem', { name: 'Keyboard shortcuts' }).click();
   const dialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
-  await expect(dialog.getByRole('row').filter({ hasText: 'Open command palette' })).toContainText('⌘');
+  await expect(dialog.getByRole('row').filter({ hasText: 'Open search' }).filter({ hasText: '⌘' })).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(menu).toBeFocused();
   await page.keyboard.press('Meta+K');
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
   await expect(palette).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('link', { name: 'All runs', exact: true }).click();
-  await page.getByRole('button', { name: 'Open command palette' }).focus();
+  await page.getByRole('button', { name: 'Open search' }).focus();
   await page.keyboard.press('/');
-  await expect(page.getByRole('combobox', { name: 'Search' })).toBeFocused();
+  await expect(page.getByPlaceholder('Search or type a command')).toBeFocused();
   await page.keyboard.press('Escape');
   await menu.focus();
   await page.keyboard.press('?');
   await expect(dialog).toBeVisible();
+});
+
+test('keeps editable controls and other dialogs isolated from global search shortcuts', async ({ page }) => {
+  await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
+  await page.goto('/');
+  const shortcut = await commandPaletteShortcut(page);
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
+  await page.getByRole('button', { name: 'Open search' }).click();
+  await page.getByPlaceholder('Search or type a command').fill('Add provider account');
+  await page.getByRole('option', { name: /Add provider account/ }).click();
+  const providerDialog = page.getByRole('dialog', { name: 'Add provider account' });
+  await expect(providerDialog).toBeVisible();
+  const input = providerDialog.getByRole('textbox').first();
+  await input.fill('');
+  await input.press('/');
+  await expect(input).toHaveValue('/');
+  await input.press(shortcut);
+  await expect(palette).not.toBeVisible();
+  await providerDialog.getByRole('button', { name: 'Close', exact: true }).focus();
+  await page.keyboard.press('/');
+  await page.keyboard.press(shortcut);
+  await expect(providerDialog).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Search', exact: true })).not.toBeVisible();
+});
+
+for (const locale of ['en', 'de'] as const) {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`unified search layout in ${locale} and ${theme}`, async ({ page }, testInfo) => {
+      await mockCommandPaletteShell(page, 'VIEWER');
+      await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
+      await page.addInitScript((mode) => window.localStorage.setItem('nuxt-color-mode', mode), theme);
+      await page.goto('/');
+      const title = locale === 'de' ? 'Suche' : 'Search';
+      const trigger = page.getByRole('button', { name: locale === 'de' ? 'Suche öffnen' : 'Open search' });
+      await expect(trigger).toHaveCount(1);
+      await expect(trigger).toBeVisible();
+      await expect(page.locator('html')).toHaveClass(new RegExp(theme));
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expect(trigger).toBeVisible();
+        await expect.poll(async () => (await trigger.boundingBox())!.height).toBeLessThanOrEqual(40);
+        await expect(trigger.locator('[data-slot="label"]')).toHaveCSS('white-space', 'nowrap');
+        await page.screenshot({ animations: 'disabled', path: testInfo.outputPath(`search-trigger-${width}.png`) });
+        await trigger.click();
+        const palette = page.getByRole('dialog', { name: title, exact: true });
+        await expect(palette).toBeVisible();
+        await expect(palette.getByRole('textbox')).toBeFocused();
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+          .toBe(true);
+        await page.screenshot({ animations: 'disabled', path: testInfo.outputPath(`search-dialog-${width}.png`) });
+        await page.keyboard.press('Escape');
+        await expect(trigger).toBeFocused();
+      }
+    });
+  }
+}
+
+test('closing cancels active requests and reopening starts with an empty search', async ({ page }) => {
+  await mockCommandPaletteShell(page, 'SYSTEM_ADMIN');
+  const pending: Array<() => Promise<void>> = [];
+  await page.route(/\/api\/v1\/(?:provider-accounts|repositories|workflow-runs)\?/, async (route) => {
+    if (new URL(route.request().url()).searchParams.get('search') !== 'obsolete') {
+      return route.fulfill({ json: emptyPage });
+    }
+    await new Promise<void>((resolve) => {
+      pending.push(async () => {
+        try {
+          await route.fulfill({ json: { ...emptyPage, items: [] } });
+        } catch {
+          // Closing the search should abort the intercepted request.
+        } finally {
+          resolve();
+        }
+      });
+    });
+  });
+  await page.goto('/');
+  const trigger = page.getByRole('button', { name: 'Open search' });
+  await trigger.click();
+  const input = page.getByPlaceholder('Search or type a command');
+  const palette = page.getByRole('dialog', { name: 'Search', exact: true });
+  const failedRequests: string[] = [];
+  page.on('requestfailed', (request) => {
+    if (request.url().includes('search=obsolete')) failedRequests.push(request.url());
+  });
+  await input.fill('obsolete');
+  await expect.poll(() => pending.length).toBe(3);
+  await page.keyboard.press('Escape');
+  await expect(palette).not.toBeVisible();
+  await expect.poll(() => failedRequests.length).toBe(3);
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await expect(input).toHaveValue('');
+  await Promise.all(pending.map((complete) => complete()));
+  await expect(palette.getByRole('option', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(palette).not.toContainText('obsolete');
 });

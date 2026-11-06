@@ -144,24 +144,22 @@ test('groups authorized global results and keeps stale responses from replacing 
   await page.route(/\/api\/v1\/users(?:\?.*)?$/, (route) => route.fulfill({ json: emptyPage }));
 
   await page.goto('/');
-  const search = page.getByRole('combobox', { name: 'Search' });
+  await page.getByRole('button', { name: 'Open search' }).click();
+  const search = page.getByPlaceholder('Search or type a command');
   await search.fill('obsolete');
   await expect.poll(() => requestedSearchUrls.filter((url) => url.includes('search=obsolete')).length).toBe(3);
   await search.fill('flow');
 
-  const results = page.getByRole('listbox', { name: 'Search results' });
+  const results = page.getByRole('dialog', { name: 'Search', exact: true });
   await expect(results.getByText('Provider accounts', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'Repovio GitHub, GITHUB' })).toHaveAttribute(
-    'href',
-    '/admin/providers',
-  );
+  await expect(results.getByRole('option', { name: /Repovio GitHub/ })).toHaveAttribute('href', '/admin/providers');
   await expect(results.getByText('Repositories', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'repovio/repovio', exact: true })).toHaveAttribute(
+  await expect(results.getByRole('option', { name: /^tobiaswaelde\/repovio/ })).toHaveAttribute(
     'href',
     '/repositories?repository=repository-1',
   );
   await expect(results.getByText('Workflow runs', { exact: true })).toBeVisible();
-  await expect(results.getByRole('option', { name: 'Repovio deployment, repovio/repovio' })).toHaveAttribute(
+  await expect(results.getByRole('option', { name: /Repovio deployment/ })).toHaveAttribute(
     'href',
     'https://github.com/repovio/repovio/actions/runs/42',
   );
@@ -180,11 +178,11 @@ test('groups authorized global results and keeps stale responses from replacing 
   await expect(results).not.toBeVisible();
   await page.keyboard.press('/');
   await expect(search).toBeFocused();
-  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await search.click();
-  await results.getByRole('option', { name: 'repovio/repovio', exact: true }).click();
+  await expect(search).toHaveValue('');
+  await search.fill('flow');
+  await results.getByRole('option', { name: /^tobiaswaelde\/repovio/ }).click();
   await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  await expect(page.getByRole('dialog', { name: 'repovio/repovio' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'tobiaswaelde/repovio' })).toBeVisible();
 });
 
 test('does not request or expose provider accounts to a viewer and preserves successful groups on partial failure', async ({
@@ -218,9 +216,10 @@ test('does not request or expose provider accounts to a viewer and preserves suc
   await page.route(/\/api\/v1\/workflow-runs(?:\?.*)?$/, (route) => route.fulfill({ status: 503 }));
 
   await page.goto('/');
-  await page.getByRole('combobox', { name: 'Search' }).fill('flow');
-  const results = page.getByRole('listbox', { name: 'Search results' });
-  await expect(results.getByRole('option', { name: 'repovio/repovio', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Open search' }).click();
+  await page.getByPlaceholder('Search or type a command').fill('flow');
+  const results = page.getByRole('dialog', { name: 'Search', exact: true });
+  await expect(results.getByRole('option', { name: /^tobiaswaelde\/repovio/ })).toBeVisible();
   await expect(results.getByText('Some result groups could not be loaded.')).toBeVisible();
   await expect(results.getByText('Workflow runs', { exact: true })).toBeVisible();
   expect(providerRequestCount).toBe(0);

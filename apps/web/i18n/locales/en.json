@@ -59,10 +59,10 @@
     "addRepositoryDescription": "Discover repositories through a configured provider.",
     "description": "Navigate, search authorized resources, or start a common action.",
     "noResults": "No matching commands or resources found.",
-    "open": "Open command palette",
+    "open": "Open search",
     "search": "Search commands and resources",
     "searchPlaceholder": "Search or type a command",
-    "title": "Command palette"
+    "title": "Search"
   },
   "common": {
     "save": "Save"

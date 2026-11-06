@@ -1,6 +1,7 @@
 <template>
   <UModal
     v-model:open="open"
+    :content="{ onOpenAutoFocus: captureFocus, onCloseAutoFocus: restoreFocus }"
     :description="t('commandPalette.description')"
     :title="t('commandPalette.title')"
     :ui="{ body: 'p-0 sm:p-0', content: 'sm:max-w-2xl' }"
@@ -53,11 +54,13 @@ const auth = useAuthStore();
 const { close: closePalette, open } = useCommandPalette();
 const { navigationSearchItems } = useNavigationItems();
 const query = ref('');
+let previousFocus: HTMLElement | null = null;
 const providerDialogOpen = ref(false);
 const repositoryDialogOpen = ref(false);
 const isAdmin = computed(() => auth.user?.role === 'SYSTEM_ADMIN');
 const {
   canSearch,
+  cancelPendingSearch,
   isSearching,
   navigationResults,
   providerAccountResults,
@@ -174,7 +177,26 @@ function openDialog(dialogOpen: { value: boolean }): void {
   });
 }
 
-watch(open, (isOpen) => {
-  if (!isOpen) query.value = '';
-});
+/** Remember the search trigger or shortcut origin before focus enters the palette. */
+function captureFocus(): void {
+  previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
+/** A controlled search dialog has no built-in trigger to restore focus to. */
+function restoreFocus(event: Event): void {
+  event.preventDefault();
+  if (previousFocus?.isConnected) previousFocus.focus();
+  previousFocus = null;
+}
+
+watch(
+  open,
+  (isOpen) => {
+    if (!isOpen) {
+      query.value = '';
+      cancelPendingSearch();
+    }
+  },
+  { flush: 'sync' },
+);
 </script>

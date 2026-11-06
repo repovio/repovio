@@ -8,208 +8,235 @@ import { PullRequestsQueryService } from '../pull-requests/pull-requests-query.s
 import { PullRequestsController } from '../pull-requests/pull-requests.controller.js';
 
 /** Verify work-item access, aggregates, label filtering, metadata isolation, and repository cascades in PostgreSQL. */
-describe('work-item authorization integration', /** Groups scenarios for work-item authorization integration. */ () => {
-  const prisma = new PrismaService();
-  const database = new TestDatabaseService(prisma);
-  const abilities = new CaslAbilityFactory();
-  const issues = new IssuesQueryService(prisma, abilities);
-  const pullRequests = new PullRequestsQueryService(prisma, abilities);
-  const issueController = new IssuesController(prisma, issues);
-  const pullRequestController = new PullRequestsController(prisma, pullRequests);
+describe.each(['direct', 'group'] as const)(
+  'work-item authorization integration',
+  /** Groups scenarios for work-item authorization integration. */ (grantSource) => {
+    const prisma = new PrismaService();
+    const database = new TestDatabaseService(prisma);
 
-  let users: Record<'admin' | 'manager' | 'outsider' | 'viewer', AuthenticatedUser>;
-  let visibleRepositoryId: string;
-  let visibleIssueId: string;
-  let hiddenIssueId: string;
-
-  beforeAll(/** Prepares shared test state for beforeAll. */ async () => prisma.onModuleInit());
-  beforeEach(
-    /** Prepares shared test state for beforeEach. */ async () => {
-      await database.cleanup();
-      const account = await prisma.providerAccount.create({
-        data: { displayName: 'GitHub', encryptedAccessToken: 'encrypted-token', providerType: 'GITHUB' },
+    /**
+     * Seed equivalent authorization through either direct membership or a local access group.
+     * @param input - User, repository and role for the synthetic grant.
+     * @returns The persisted fixture grant, without affecting other repositories.
+     */
+    async function createMembership(input: {
+      data: { userId: string; repositoryId: string; role: 'VIEWER' | 'MANAGER' };
+    }): Promise<unknown> {
+      if (grantSource === 'direct') return prisma.repositoryMembership.create(input);
+      return prisma.userGroup.create({
+        data: {
+          name: `fixture-${input.data.userId}-${input.data.repositoryId}`,
+          members: { create: { userId: input.data.userId } },
+          repositories: { create: { repositoryId: input.data.repositoryId, role: input.data.role } },
+        },
       });
-      const [visibleRepository, hiddenRepository] = await Promise.all([
-        prisma.repository.create({
-          data: {
-            name: 'visible',
-            owner: 'repovio',
-            providerAccountId: account.id,
-            providerRepositoryId: 'visible',
-            url: 'https://github.com/repovio/visible',
-          },
-        }),
-        prisma.repository.create({
-          data: {
-            name: 'hidden',
-            owner: 'repovio',
-            providerAccountId: account.id,
-            providerRepositoryId: 'hidden',
-            url: 'https://github.com/repovio/hidden',
-          },
-        }),
-      ]);
-      const [admin, manager, viewer, outsider] = await Promise.all([
-        prisma.user.create({ data: { passwordHash: 'hash', role: 'SYSTEM_ADMIN', username: 'admin' } }),
-        prisma.user.create({ data: { passwordHash: 'hash', role: 'MANAGER', username: 'manager' } }),
-        prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'viewer' } }),
-        prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'outsider' } }),
-      ]);
-      await Promise.all([
-        prisma.repositoryMembership.create({
-          data: { repositoryId: visibleRepository.id, role: 'MANAGER', userId: manager.id },
-        }),
-        prisma.repositoryMembership.create({
-          data: { repositoryId: visibleRepository.id, role: 'VIEWER', userId: viewer.id },
-        }),
-      ]);
-      users = {
-        admin: { authProvider: 'LOCAL' as const, id: admin.id, role: admin.role, username: admin.username },
-        manager: { authProvider: 'LOCAL' as const, id: manager.id, role: manager.role, username: manager.username },
-        outsider: { authProvider: 'LOCAL' as const, id: outsider.id, role: outsider.role, username: outsider.username },
-        viewer: { authProvider: 'LOCAL' as const, id: viewer.id, role: viewer.role, username: viewer.username },
-      };
-      const [visibleAuthor, hiddenAuthor] = await Promise.all([
-        prisma.providerActor.create({
-          data: { providerAccountId: account.id, providerActorId: 'visible-author', username: 'visible-author' },
-        }),
-        prisma.providerActor.create({
-          data: { providerAccountId: account.id, providerActorId: 'hidden-author', username: 'hidden-author' },
-        }),
-      ]);
-      const [bug, urgent, secret] = await Promise.all([
-        prisma.workItemLabel.create({
-          data: { name: 'Bug', normalizedName: 'bug', repositoryId: visibleRepository.id },
-        }),
-        prisma.workItemLabel.create({
-          data: { name: 'Urgent', normalizedName: 'urgent', repositoryId: visibleRepository.id },
-        }),
-        prisma.workItemLabel.create({
-          data: { name: 'Secret', normalizedName: 'secret', repositoryId: hiddenRepository.id },
-        }),
-      ]);
-      const now = new Date();
-      const [visibleIssue, hiddenIssue] = await Promise.all([
-        prisma.issue.create({
-          data: {
-            authorId: visibleAuthor.id,
-            body: 'visible body',
-            labels: { create: [{ labelId: bug.id }, { labelId: urgent.id }] },
-            milestone: 'Visible milestone',
-            number: '204',
-            providerCreatedAt: now,
-            providerIssueId: 'visible-issue',
-            providerUpdatedAt: now,
-            repositoryId: visibleRepository.id,
-            state: 'OPEN',
-            title: 'Visible issue',
-            url: 'https://github.com/repovio/visible/issues/204',
-          },
-        }),
-        prisma.issue.create({
-          data: {
-            authorId: hiddenAuthor.id,
-            labels: { create: [{ labelId: secret.id }] },
-            milestone: 'Hidden milestone',
-            number: '1',
-            providerCreatedAt: now,
-            providerIssueId: 'hidden-issue',
-            providerUpdatedAt: now,
-            repositoryId: hiddenRepository.id,
-            state: 'OPEN',
-            title: 'Hidden issue',
-            url: 'https://github.com/repovio/hidden/issues/1',
-          },
-        }),
-      ]);
-      await Promise.all([
-        prisma.pullRequest.create({
-          data: {
-            authorId: visibleAuthor.id,
-            number: '213',
-            providerCreatedAt: now,
-            providerPullRequestId: 'visible-pr',
-            providerUpdatedAt: now,
-            repositoryId: visibleRepository.id,
-            sourceBranch: 'feature',
-            state: 'OPEN',
-            targetBranch: 'main',
-            title: 'Visible pull request',
-            url: 'https://github.com/repovio/visible/pull/213',
-            workflowApprovalRequired: true,
-            workflowStatus: 'FAILED',
-          },
-        }),
-        prisma.pullRequest.create({
-          data: {
-            authorId: hiddenAuthor.id,
-            number: '2',
-            providerCreatedAt: now,
-            providerPullRequestId: 'hidden-pr',
-            providerUpdatedAt: now,
-            repositoryId: hiddenRepository.id,
-            sourceBranch: 'secret',
-            state: 'OPEN',
-            targetBranch: 'main',
-            title: 'Hidden pull request',
-            url: 'https://github.com/repovio/hidden/pull/2',
-          },
-        }),
-      ]);
-      visibleRepositoryId = visibleRepository.id;
-      visibleIssueId = visibleIssue.id;
-      hiddenIssueId = hiddenIssue.id;
-    },
-  );
-  afterAll(/** Restores shared test state for afterAll. */ async () => prisma.onModuleDestroy());
+    }
 
-  it.each([
-    ['admin', 2],
-    ['manager', 1],
-    ['viewer', 1],
-    ['outsider', 0],
-  ] as const)(
-    '%s sees only repository-scoped issue and pull-request records',
-    /** Verifies %s sees only repository-scoped issue and pull-request records. */ async (role, count) => {
-      const issueAbility = await issues.getReadAbility(users[role]);
-      const pullRequestAbility = await pullRequests.getReadAbility(users[role]);
-      await expect(issues.findMany({}, issueAbility)).resolves.toHaveLength(count);
-      await expect(pullRequests.findMany({}, pullRequestAbility)).resolves.toHaveLength(count);
-    },
-  );
+    const abilities = new CaslAbilityFactory();
+    const issues = new IssuesQueryService(prisma, abilities);
+    const pullRequests = new PullRequestsQueryService(prisma, abilities);
+    const issueController = new IssuesController(prisma, issues);
+    const pullRequestController = new PullRequestsController(prisma, pullRequests);
 
-  it('applies label AND semantics and excludes hidden filter metadata and summaries', /** Verifies applies label AND semantics and excludes hidden filter metadata and summaries. */ async () => {
-    const ability = await issues.getReadAbility(users.viewer);
-    await expect(
-      issues.findMany(issues.toQueryOptions({ labels: ['BUG', 'urgent'] } as never), ability),
-    ).resolves.toEqual([expect.objectContaining({ id: visibleIssueId })]);
-    await expect(
-      issues.findMany(issues.toQueryOptions({ labels: ['bug', 'missing'] } as never), ability),
-    ).resolves.toEqual([]);
-    await expect(issueController.summary({ user: users.viewer })).resolves.toMatchObject({ open: 1 });
-    await expect(issueController.filterOptions({ user: users.viewer })).resolves.toEqual({
-      assignees: [],
-      authors: ['visible-author'],
-      labels: ['Bug', 'Urgent'],
-      milestones: ['Visible milestone'],
-    });
-    await expect(pullRequestController.summary({ user: users.viewer })).resolves.toEqual({
-      drafts: 0,
-      failedWorkflows: 1,
-      open: 1,
-      workflowApprovalRequired: 1,
-    });
-  });
+    let users: Record<'admin' | 'manager' | 'outsider' | 'viewer', AuthenticatedUser>;
+    let visibleRepositoryId: string;
+    let visibleIssueId: string;
+    let hiddenIssueId: string;
 
-  it('protects details and cascades repository-owned work-item data', /** Verifies protects details and cascades repository-owned work-item data. */ async () => {
-    await expect(issueController.findById({ user: users.viewer }, visibleIssueId)).resolves.toMatchObject({
-      body: 'visible body',
-      id: visibleIssueId,
+    beforeAll(/** Prepares shared test state for beforeAll. */ async () => prisma.onModuleInit());
+    beforeEach(
+      /** Prepares shared test state for beforeEach. */ async () => {
+        await database.cleanup();
+        const account = await prisma.providerAccount.create({
+          data: { displayName: 'GitHub', encryptedAccessToken: 'encrypted-token', providerType: 'GITHUB' },
+        });
+        const [visibleRepository, hiddenRepository] = await Promise.all([
+          prisma.repository.create({
+            data: {
+              name: 'visible',
+              owner: 'repovio',
+              providerAccountId: account.id,
+              providerRepositoryId: 'visible',
+              url: 'https://github.com/repovio/visible',
+            },
+          }),
+          prisma.repository.create({
+            data: {
+              name: 'hidden',
+              owner: 'repovio',
+              providerAccountId: account.id,
+              providerRepositoryId: 'hidden',
+              url: 'https://github.com/repovio/hidden',
+            },
+          }),
+        ]);
+        const [admin, manager, viewer, outsider] = await Promise.all([
+          prisma.user.create({ data: { passwordHash: 'hash', role: 'SYSTEM_ADMIN', username: 'admin' } }),
+          prisma.user.create({ data: { passwordHash: 'hash', role: 'MANAGER', username: 'manager' } }),
+          prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'viewer' } }),
+          prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'outsider' } }),
+        ]);
+        await Promise.all([
+          createMembership({
+            data: { repositoryId: visibleRepository.id, role: 'MANAGER', userId: manager.id },
+          }),
+          createMembership({
+            data: { repositoryId: visibleRepository.id, role: 'VIEWER', userId: viewer.id },
+          }),
+        ]);
+        users = {
+          admin: { authProvider: 'LOCAL' as const, id: admin.id, role: admin.role, username: admin.username },
+          manager: { authProvider: 'LOCAL' as const, id: manager.id, role: manager.role, username: manager.username },
+          outsider: {
+            authProvider: 'LOCAL' as const,
+            id: outsider.id,
+            role: outsider.role,
+            username: outsider.username,
+          },
+          viewer: { authProvider: 'LOCAL' as const, id: viewer.id, role: viewer.role, username: viewer.username },
+        };
+        const [visibleAuthor, hiddenAuthor] = await Promise.all([
+          prisma.providerActor.create({
+            data: { providerAccountId: account.id, providerActorId: 'visible-author', username: 'visible-author' },
+          }),
+          prisma.providerActor.create({
+            data: { providerAccountId: account.id, providerActorId: 'hidden-author', username: 'hidden-author' },
+          }),
+        ]);
+        const [bug, urgent, secret] = await Promise.all([
+          prisma.workItemLabel.create({
+            data: { name: 'Bug', normalizedName: 'bug', repositoryId: visibleRepository.id },
+          }),
+          prisma.workItemLabel.create({
+            data: { name: 'Urgent', normalizedName: 'urgent', repositoryId: visibleRepository.id },
+          }),
+          prisma.workItemLabel.create({
+            data: { name: 'Secret', normalizedName: 'secret', repositoryId: hiddenRepository.id },
+          }),
+        ]);
+        const now = new Date();
+        const [visibleIssue, hiddenIssue] = await Promise.all([
+          prisma.issue.create({
+            data: {
+              authorId: visibleAuthor.id,
+              body: 'visible body',
+              labels: { create: [{ labelId: bug.id }, { labelId: urgent.id }] },
+              milestone: 'Visible milestone',
+              number: '204',
+              providerCreatedAt: now,
+              providerIssueId: 'visible-issue',
+              providerUpdatedAt: now,
+              repositoryId: visibleRepository.id,
+              state: 'OPEN',
+              title: 'Visible issue',
+              url: 'https://github.com/repovio/visible/issues/204',
+            },
+          }),
+          prisma.issue.create({
+            data: {
+              authorId: hiddenAuthor.id,
+              labels: { create: [{ labelId: secret.id }] },
+              milestone: 'Hidden milestone',
+              number: '1',
+              providerCreatedAt: now,
+              providerIssueId: 'hidden-issue',
+              providerUpdatedAt: now,
+              repositoryId: hiddenRepository.id,
+              state: 'OPEN',
+              title: 'Hidden issue',
+              url: 'https://github.com/repovio/hidden/issues/1',
+            },
+          }),
+        ]);
+        await Promise.all([
+          prisma.pullRequest.create({
+            data: {
+              authorId: visibleAuthor.id,
+              number: '213',
+              providerCreatedAt: now,
+              providerPullRequestId: 'visible-pr',
+              providerUpdatedAt: now,
+              repositoryId: visibleRepository.id,
+              sourceBranch: 'feature',
+              state: 'OPEN',
+              targetBranch: 'main',
+              title: 'Visible pull request',
+              url: 'https://github.com/repovio/visible/pull/213',
+              workflowApprovalRequired: true,
+              workflowStatus: 'FAILED',
+            },
+          }),
+          prisma.pullRequest.create({
+            data: {
+              authorId: hiddenAuthor.id,
+              number: '2',
+              providerCreatedAt: now,
+              providerPullRequestId: 'hidden-pr',
+              providerUpdatedAt: now,
+              repositoryId: hiddenRepository.id,
+              sourceBranch: 'secret',
+              state: 'OPEN',
+              targetBranch: 'main',
+              title: 'Hidden pull request',
+              url: 'https://github.com/repovio/hidden/pull/2',
+            },
+          }),
+        ]);
+        visibleRepositoryId = visibleRepository.id;
+        visibleIssueId = visibleIssue.id;
+        hiddenIssueId = hiddenIssue.id;
+      },
+    );
+    afterAll(/** Restores shared test state for afterAll. */ async () => prisma.onModuleDestroy());
+
+    it.each([
+      ['admin', 2],
+      ['manager', 1],
+      ['viewer', 1],
+      ['outsider', 0],
+    ] as const)(
+      '%s sees only repository-scoped issue and pull-request records',
+      /** Verifies %s sees only repository-scoped issue and pull-request records. */ async (role, count) => {
+        const issueAbility = await issues.getReadAbility(users[role]);
+        const pullRequestAbility = await pullRequests.getReadAbility(users[role]);
+        await expect(issues.findMany({}, issueAbility)).resolves.toHaveLength(count);
+        await expect(pullRequests.findMany({}, pullRequestAbility)).resolves.toHaveLength(count);
+      },
+    );
+
+    it('applies label AND semantics and excludes hidden filter metadata and summaries', /** Verifies applies label AND semantics and excludes hidden filter metadata and summaries. */ async () => {
+      const ability = await issues.getReadAbility(users.viewer);
+      await expect(
+        issues.findMany(issues.toQueryOptions({ labels: ['BUG', 'urgent'] } as never), ability),
+      ).resolves.toEqual([expect.objectContaining({ id: visibleIssueId })]);
+      await expect(
+        issues.findMany(issues.toQueryOptions({ labels: ['bug', 'missing'] } as never), ability),
+      ).resolves.toEqual([]);
+      await expect(issueController.summary({ user: users.viewer })).resolves.toMatchObject({ open: 1 });
+      await expect(issueController.filterOptions({ user: users.viewer })).resolves.toEqual({
+        assignees: [],
+        authors: ['visible-author'],
+        labels: ['Bug', 'Urgent'],
+        milestones: ['Visible milestone'],
+      });
+      await expect(pullRequestController.summary({ user: users.viewer })).resolves.toEqual({
+        drafts: 0,
+        failedWorkflows: 1,
+        open: 1,
+        workflowApprovalRequired: 1,
+      });
     });
-    await expect(issueController.findById({ user: users.viewer }, hiddenIssueId)).rejects.toThrow();
-    await prisma.repository.delete({ where: { id: visibleRepositoryId } });
-    await expect(prisma.issue.count()).resolves.toBe(1);
-    await expect(prisma.pullRequest.count()).resolves.toBe(1);
-    await expect(prisma.workItemLabel.count()).resolves.toBe(1);
-  });
-});
+
+    it('protects details and cascades repository-owned work-item data', /** Verifies protects details and cascades repository-owned work-item data. */ async () => {
+      await expect(issueController.findById({ user: users.viewer }, visibleIssueId)).resolves.toMatchObject({
+        body: 'visible body',
+        id: visibleIssueId,
+      });
+      await expect(issueController.findById({ user: users.viewer }, hiddenIssueId)).rejects.toThrow();
+      await prisma.repository.delete({ where: { id: visibleRepositoryId } });
+      await expect(prisma.issue.count()).resolves.toBe(1);
+      await expect(prisma.pullRequest.count()).resolves.toBe(1);
+      await expect(prisma.workItemLabel.count()).resolves.toBe(1);
+    });
+  },
+);

@@ -169,6 +169,12 @@ export function useNavigationItems(attentionCounts: NavigationAttentionCounts = 
           to: '/admin/users',
         },
         {
+          active: isActive('/admin/user-groups'),
+          icon: 'i-lucide-users-round',
+          label: t('userGroups.title'),
+          to: '/admin/user-groups',
+        },
+        {
           active: isActive('/admin/settings'),
           icon: 'i-lucide-settings',
           label: t('layout.settings'),

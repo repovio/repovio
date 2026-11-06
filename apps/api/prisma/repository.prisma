@@ -17,6 +17,7 @@ model Repository {
 
   providerAccountId        String                                    @db.Uuid
   providerAccount          ProviderAccount                           @relation(fields: [providerAccountId], references: [id], onDelete: Cascade)
+  groupMemberships         RepositoryGroupGrant[]
   memberships              RepositoryMembership[]
   notificationEventFilters NotificationEventSubscriptionRepository[]
   notificationDeliveries   NotificationDelivery[]

@@ -2,6 +2,7 @@
 export enum CaslSubject {
   All = 'all',
   User = 'User',
+  UserGroup = 'UserGroup',
   ProviderAccount = 'ProviderAccount',
   Repository = 'Repository',
   WorkflowRun = 'WorkflowRun',

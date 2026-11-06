@@ -6,6 +6,7 @@ The public handbook is maintained in [repovio/docs](https://github.com/repovio/d
 - [Installation](https://repovio.de/docs/installation)
 - [Authentication](https://repovio.de/docs/authentication)
 - [Deployment and backups](https://repovio.de/docs/deployment)
+- [Runtime theming and branding](theming.md)
 - [PostgreSQL 18 upgrade](postgresql-18-upgrade.md)
 - [MCP access](https://repovio.de/docs/mcp)
 

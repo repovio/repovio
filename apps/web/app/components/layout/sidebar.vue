@@ -10,18 +10,7 @@
     :ui="{ footer: 'flex-col items-stretch' }"
   >
     <template #header="{ collapsed }">
-      <NuxtLink
-        to="/"
-        aria-label="Repovio"
-        class="flex items-center gap-2 font-display text-xl font-bold"
-        :class="collapsed ? 'mx-auto' : undefined"
-      >
-        <img v-if="collapsed" src="/logo.svg" alt="" class="size-7 shrink-0" />
-        <template v-else>
-          <img src="/logo-wordmark-light.svg" alt="" class="h-8 w-auto dark:hidden" />
-          <img src="/logo-wordmark-dark.svg" alt="" class="hidden h-8 w-auto dark:block" />
-        </template>
-      </NuxtLink>
+      <LayoutBrandLogo to="/" class="text-xl" :compact="collapsed" :class="collapsed ? 'mx-auto' : undefined" />
     </template>
 
     <template #default="{ collapsed }">

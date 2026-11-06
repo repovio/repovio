@@ -22,7 +22,7 @@ export const useLocales = () => {
     await setLocale(code);
   };
 
-  const dropdownMenuItems = computed<DropdownMenuItem[]>(() =>
+  const selectItems = computed(() =>
     availableLocales.value.map(({ code, name }) => ({
       avatar: {
         alt: '',
@@ -30,11 +30,19 @@ export const useLocales = () => {
         class: 'h-[18px] w-6 rounded-xs bg-transparent',
         ui: { image: 'rounded-xs object-cover' },
       },
-      checked: locale.value === code,
       label: name,
+      value: code,
+    })),
+  );
+
+  const dropdownMenuItems = computed<DropdownMenuItem[]>(() =>
+    selectItems.value.map(({ avatar, label, value }) => ({
+      avatar,
+      checked: locale.value === value,
+      label,
       onSelect: (event: Event) => {
         event.preventDefault();
-        void handleSelectLocale(code);
+        void handleSelectLocale(value);
       },
       type: 'checkbox',
     })),
@@ -45,5 +53,6 @@ export const useLocales = () => {
     dropdownMenuItems,
     handleSelectLocale,
     locale,
+    selectItems,
   };
 };

@@ -272,6 +272,7 @@
     "themeDark": "Scuro",
     "themeLight": "Chiaro",
     "themeSystem": "Sistema",
+    "themeToggle": "Tema: {current}. Passa a {next}.",
     "users": "Utenti",
     "workflowRuns": "Esecuzioni workflow"
   },

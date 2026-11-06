@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+const languageFlags = [
+  ['English', 'gb'],
+  ['Deutsch', 'de'],
+  ['Español', 'es'],
+  ['Français', 'fr'],
+  ['Italiano', 'it'],
+  ['Nederlands', 'nl'],
+  ['Polski', 'pl'],
+  ['Português', 'pt'],
+] as const;
+
 for (const route of [
   { heading: 'Sign in', initialized: true, path: '/auth/signin', translatedHeading: 'Anmelden' },
   { heading: 'First-run setup', initialized: false, path: '/auth/setup', translatedHeading: 'Ersteinrichtung' },
@@ -13,41 +24,68 @@ for (const route of [
     await page.goto(route.path);
     await expect(page.getByRole('heading', { name: route.heading, exact: true })).toBeVisible();
 
-    const languageButton = page.getByRole('button', { name: 'Language', exact: true });
-    await languageButton.focus();
+    const languageSelect = page.getByRole('combobox', { name: 'Language', exact: true });
+    await expect(languageSelect).toContainText('English');
+    await expect(languageSelect.locator('img')).toHaveAttribute('src', '/flags/gb.svg');
+    const flagBounds = await languageSelect.locator('img').boundingBox();
+    const labelBounds = await languageSelect.locator('[data-slot="value"]').boundingBox();
+    expect(labelBounds!.x - (flagBounds!.x + flagBounds!.width)).toBeGreaterThanOrEqual(4);
+    await languageSelect.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('menuitemcheckbox')).toHaveCount(8);
-    await expect(page.getByRole('menuitemcheckbox', { name: 'English', exact: true })).toBeChecked();
-    await expect(page.getByRole('menuitemcheckbox', { name: 'English', exact: true })).toBeFocused();
+    await expect(page.getByRole('option')).toHaveCount(8);
+    for (const [name, country] of languageFlags) {
+      const option = page.getByRole('option', { name, exact: true });
+      await expect(option).toBeVisible();
+      await expect(option).toHaveAttribute('aria-selected', String(country === 'gb'));
+      const flag = option.locator('img');
+      await expect(flag).toHaveAttribute('src', `/flags/${country}.svg`);
+      await expect(flag).toHaveAttribute('alt', '');
+      await expect
+        .poll(() => flag.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
+        .toBe(true);
+    }
+    await page.keyboard.press('Home');
+    await expect(page.getByRole('option', { name: 'English', exact: true })).toBeFocused();
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('menuitemcheckbox', { name: 'Deutsch', exact: true })).toBeFocused();
+    await expect(page.getByRole('option', { name: 'Deutsch', exact: true })).toBeFocused();
     await page.keyboard.press('Enter');
-    await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: route.translatedHeading, exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Sprache', exact: true })).toBeFocused();
+    const translatedSelect = page.getByRole('combobox', { name: 'Sprache', exact: true });
+    await expect(translatedSelect).toBeFocused();
+    await expect(translatedSelect).toContainText('Deutsch');
+    await expect(translatedSelect.locator('img')).toHaveAttribute('src', '/flags/de.svg');
     await expect
       .poll(async () => (await page.context().cookies()).find((cookie) => cookie.name === 'repovio-locale')?.value)
       .toBe('de');
     await page.reload();
     await expect(page.getByRole('heading', { name: route.translatedHeading, exact: true })).toBeVisible();
+    await expect(translatedSelect).toContainText('Deutsch');
 
+    await expect(
+      page.getByRole('button', { name: 'Darstellung: Dunkel. Zu System wechseln.', exact: true }),
+    ).toBeVisible();
     for (const theme of [
-      { label: 'Hell', value: 'light' },
-      { label: 'Dunkel', value: 'dark' },
-      { label: 'System', value: 'system' },
+      { current: 'Dunkel', label: 'System', next: 'Hell', icon: 'device-desktop', value: 'system' },
+      { current: 'System', label: 'Hell', next: 'Dunkel', icon: 'sun', value: 'light' },
+      { current: 'Hell', label: 'Dunkel', next: 'System', icon: 'moon', value: 'dark' },
+      { current: 'Dunkel', label: 'System', next: 'Hell', icon: 'device-desktop', value: 'system' },
     ]) {
-      const themeButton = page.getByRole('button', { name: 'Darstellung', exact: true });
+      const themeButton = page.getByRole('button', {
+        name: `Darstellung: ${theme.current}. Zu ${theme.label} wechseln.`,
+        exact: true,
+      });
       await themeButton.focus();
       await page.keyboard.press('Enter');
-      await page.getByRole('menuitemcheckbox', { name: theme.label, exact: true }).click();
-      await page.keyboard.press('Escape');
-      await expect(themeButton).toBeFocused();
+      const updatedButton = page.getByRole('button', {
+        name: `Darstellung: ${theme.label}. Zu ${theme.next} wechseln.`,
+        exact: true,
+      });
+      await expect(updatedButton).toBeFocused();
+      await expect(updatedButton.locator(`[class~="i-tabler:${theme.icon}"]`)).toBeVisible();
       await expect.poll(() => page.evaluate(() => window.localStorage.getItem('nuxt-color-mode'))).toBe(theme.value);
       await page.reload();
+      await expect(updatedButton).toBeVisible();
       await expect(page.locator('html')).toHaveClass(new RegExp(theme.value === 'dark' ? 'dark' : 'light'));
-      await page.getByRole('button', { name: 'Darstellung', exact: true }).click();
-      await expect(page.getByRole('menuitemcheckbox', { name: theme.label, exact: true })).toBeChecked();
-      await page.keyboard.press('Escape');
 
       if (theme.value !== 'system') {
         for (const viewport of [
@@ -55,21 +93,67 @@ for (const route of [
           { height: 844, width: 390 },
         ]) {
           await page.setViewportSize(viewport);
-          await expect(page.getByRole('button', { name: 'Darstellung', exact: true })).toBeInViewport();
-          await expect(page.getByRole('button', { name: 'Sprache', exact: true })).toBeInViewport();
+          await expect(updatedButton).toBeInViewport();
+          await expect(translatedSelect).toBeInViewport();
           expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
-          await page.screenshot({ path: testInfo.outputPath(`${theme.value}-${viewport.width}.png`), fullPage: true });
+          await page.screenshot({
+            animations: 'disabled',
+            path: testInfo.outputPath(`${theme.value}-${viewport.width}.png`),
+            fullPage: true,
+          });
+          await translatedSelect.click();
+          await expect(page.getByRole('option', { name: 'Deutsch', exact: true })).toHaveAttribute(
+            'aria-selected',
+            'true',
+          );
+          await page.screenshot({
+            animations: 'disabled',
+            path: testInfo.outputPath(`${theme.value}-${viewport.width}-select.png`),
+            fullPage: true,
+          });
+          await page.keyboard.press('Escape');
+          await expect(translatedSelect).toBeFocused();
         }
       }
     }
 
     await page.emulateMedia({ colorScheme: 'dark' });
     await expect(page.locator('html')).toHaveClass(/dark/);
-    await page.getByRole('button', { name: 'Sprache', exact: true }).click();
-    await page.getByRole('menuitemcheckbox', { name: 'English', exact: true }).click();
-    await page.keyboard.press('Escape');
+    await translatedSelect.click();
+    await page.getByRole('option', { name: 'English', exact: true }).click();
     await expect(page.getByRole('heading', { name: route.heading, exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Theme: System. Switch to Light.', exact: true })).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: route.heading, exact: true })).toBeVisible();
   });
 }
+
+test('keeps the language select busy while its locale is loading', async ({ page }) => {
+  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
+  await page.route('**/api/v1/auth/oidc/status', (route) => route.fulfill({ json: { enabled: false } }));
+  let releaseLocale: () => void = () => {};
+  const localeReleased = new Promise<void>((resolve) => {
+    releaseLocale = resolve;
+  });
+  let localeRequested: () => void = () => {};
+  const localePending = new Promise<void>((resolve) => {
+    localeRequested = resolve;
+  });
+  await page.route(/\/de\.json(?:\?|$)/, async (route) => {
+    localeRequested();
+    await localeReleased;
+    await route.continue();
+  });
+  await page.goto('/auth/signin');
+  await page.getByRole('combobox', { name: 'Language', exact: true }).click();
+  await page.getByRole('option', { name: 'Deutsch', exact: true }).click();
+  try {
+    await localePending;
+    await expect(page.getByRole('combobox')).toBeDisabled();
+    await expect(page.getByRole('combobox').locator('.animate-spin')).toBeVisible();
+  } finally {
+    releaseLocale();
+  }
+  await expect(page.getByRole('combobox', { name: 'Sprache', exact: true })).toBeEnabled();
+  await expect(page.getByRole('heading', { name: 'Anmelden', exact: true })).toBeVisible();
+});

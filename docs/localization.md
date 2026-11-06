@@ -10,6 +10,11 @@ Dutch (`nl`), Polish (`pl`), and Portuguese (`pt`). The language menu in the app
 signed-in user. Choosing a language saves the preference in the `repovio-locale` browser cookie and applies it on
 future visits.
 
+The sign-in and first-administrator setup pages provide a language select below the form, showing the active language
+and its flag. The select remains busy while a language is loading. A separate theme button cycles through System,
+Light, and Dark, persisting the preference. Its icon shows the selected preference; its tooltip and accessible name
+describe both the current preference and the next action.
+
 English is the deterministic default and fallback. When a browser preference or saved cookie does not identify a
 supported locale, Repovio renders English. Date, time, and number formatting use the selected locale.
 

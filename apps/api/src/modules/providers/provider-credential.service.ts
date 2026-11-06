@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 
+import type { ProviderAccount } from '../../generated/prisma/client.js';
 import { CredentialEncryptionService } from '../../security/credential-encryption.service.js';
+import { GitHubAppService } from './github/github-app.service.js';
 
 /** Encrypts provider credentials at rest using Repovio's shared credential service. */
 @Injectable()
@@ -9,8 +11,29 @@ export class ProviderCredentialService {
    * Initialize ProviderCredentialService with its required dependencies.
    *
    * @param credentials - Service encrypting and decrypting persisted credentials.
+   * @param githubApp - Optional installation-token issuer; required for App accounts.
    */
-  constructor(private readonly credentials: CredentialEncryptionService) {}
+  constructor(
+    private readonly credentials: CredentialEncryptionService,
+    @Optional() private readonly githubApp?: GitHubAppService,
+  ) {}
+
+  /**
+   * Resolve a server-only credential for either a token or GitHub App account.
+   * @param account - Persisted account authentication metadata.
+   * @returns An existing decrypted token or automatically renewed installation token.
+   * @throws Error - App credentials are unavailable or stored credentials are invalid.
+   */
+  async accessToken(
+    account: Pick<ProviderAccount, 'encryptedAccessToken'> &
+      Partial<Pick<ProviderAccount, 'authenticationMethod' | 'githubInstallationId'>>,
+  ): Promise<string> {
+    if (account.authenticationMethod === 'GITHUB_APP') {
+      if (!this.githubApp || !account.githubInstallationId) throw new Error('GitHub App credentials are unavailable.');
+      return this.githubApp.accessToken(account.githubInstallationId);
+    }
+    return this.decrypt(account.encryptedAccessToken);
+  }
 
   /**
    * Encrypt a provider credential without retaining or logging its plaintext.

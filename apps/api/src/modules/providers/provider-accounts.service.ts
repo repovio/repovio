@@ -128,6 +128,11 @@ export class ProviderAccountsService {
     if (account.providerType === 'GITEA' && input.baseUrl === null) {
       throw new BadRequestException('A Gitea base URL is required.');
     }
+    if (
+      account.authenticationMethod === 'GITHUB_APP' &&
+      (input.accessToken !== undefined || input.baseUrl !== undefined)
+    )
+      throw new BadRequestException('GitHub App accounts cannot use personal tokens or custom base URLs.');
     return this.prisma.providerAccount.update({
       where: { id },
       data: {
@@ -288,9 +293,10 @@ export class ProviderAccountsService {
   private async discoverRepositories(account: ProviderAccount): Promise<ProviderRepository[]> {
     try {
       return await this.adapters.get(account.providerType).listRepositories({
-        accessToken: this.credentials.decrypt(account.encryptedAccessToken),
+        accessToken: await this.credentials.accessToken(account),
         baseUrl: account.baseUrl,
         providerAccountId: account.id,
+        authenticationMethod: account.authenticationMethod === 'GITHUB_APP' ? 'GITHUB_APP' : 'TOKEN',
       });
     } catch {
       throw new BadRequestException('Provider repositories could not be loaded.');

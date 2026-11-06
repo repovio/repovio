@@ -30,6 +30,15 @@
           <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
         </template>
       </QTableOptions>
+      <UButton
+        color="neutral"
+        icon="i-simple-icons-github"
+        variant="outline"
+        :aria-label="$t('githubApp.title')"
+        @click="githubAppOpen = true"
+      >
+        <span class="hidden sm:inline">{{ $t('githubApp.title') }}</span>
+      </UButton>
       <UButton icon="i-lucide-plus" :aria-label="$t('providers.add')" @click="openAddDialog">
         <span class="hidden sm:inline">{{ $t('providers.add') }}</span>
       </UButton>
@@ -73,6 +82,20 @@
     >
       <template #providerType-cell="{ row }">
         <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
+      </template>
+      <template #authenticationMethod-cell="{ row }">
+        <div class="flex flex-col items-start gap-1">
+          <UBadge variant="subtle">
+            {{ row.original.authenticationMethod === 'GITHUB_APP' ? $t('githubApp.title') : $t('githubApp.token') }}
+          </UBadge>
+          <UBadge
+            v-if="row.original.githubInstallationState && row.original.githubInstallationState !== 'ACTIVE'"
+            color="warning"
+            variant="subtle"
+          >
+            {{ $t(`githubApp.states.${row.original.githubInstallationState}`) }}
+          </UBadge>
+        </div>
       </template>
       <template #baseUrl-cell="{ row }">
         <span class="break-all text-sm text-muted">{{ row.original.baseUrl ?? $t('providers.defaultUrl') }}</span>
@@ -126,6 +149,7 @@
       :total-items="totalItems"
       shortcuts
     />
+    <ModulesProvidersGithubAppDialog v-model:open="githubAppOpen" :refresh-accounts="handleProviderCreated" />
     <ModulesProvidersAddDialog v-model:open="dialogOpen" @created="handleProviderCreated" />
   </LayoutPage>
 </template>
@@ -153,6 +177,7 @@ const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
 const route = useRoute();
 const dialogOpen = ref(false);
+const githubAppOpen = ref(false);
 const { isPending, run: runPendingAction } = usePendingActions();
 const oauthStatus = computed(
   /** Derives oauth status from the current reactive dependencies. */ () => route.query.oauth,
@@ -170,6 +195,7 @@ const columnDefinition = computed<ProviderTableColumn[]>(
   /** Derives column definition from the current reactive dependencies. */ () => [
     { accessorKey: 'displayName', header: t('providers.columns.name'), id: 'displayName' },
     { accessorKey: 'providerType', header: t('providers.columns.type'), id: 'providerType' },
+    { accessorKey: 'authenticationMethod', header: t('providers.authentication'), id: 'authenticationMethod' },
     { accessorKey: 'baseUrl', header: t('providers.columns.baseUrl'), id: 'baseUrl' },
     { accessorKey: 'enabled', header: t('providers.columns.status'), id: 'enabled' },
     { accessorKey: 'lastSyncAt', header: t('providers.columns.lastSync'), id: 'lastSyncAt' },
@@ -202,7 +228,7 @@ const providerTable = useTable({
   defaultItemsPerPage: 10,
   endpoint: 'provider-accounts',
   name: 'provider-accounts',
-  staticFields: ['id', 'enabled'],
+  staticFields: ['id', 'enabled', 'githubInstallationState'],
 });
 const {
   columnOrder,

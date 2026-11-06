@@ -8,6 +8,8 @@ import { optionalInput, providerBaseUrlSchema } from './validation.js';
 export const ApiProviderAccountSchema = z.strictObject({
   id: z.string(),
   providerType: z.union([z.literal('GITHUB'), z.literal('GITLAB'), z.literal('FORGEJO'), z.literal('GITEA')]),
+  authenticationMethod: z.enum(['TOKEN', 'GITHUB_APP']).optional(),
+  githubInstallationState: z.enum(['ACTIVE', 'SUSPENDED', 'REMOVED']).nullable().optional(),
   displayName: z.string(),
   baseUrl: z.union([z.null(), z.string()]),
   enabled: z.boolean(),

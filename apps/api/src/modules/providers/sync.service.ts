@@ -177,7 +177,7 @@ export class ProviderSyncService {
       const context = {
         providerAccountId: refreshedRepository.providerAccount.id,
         baseUrl: refreshedRepository.providerAccount.baseUrl,
-        accessToken: this.credentials.decrypt(refreshedRepository.providerAccount.encryptedAccessToken),
+        accessToken: await this.credentials.accessToken(refreshedRepository.providerAccount),
       };
       await this.workItems?.synchronize(context, refreshedRepository, adapter, scopes, reportProgress);
       if (scopes.includes('ALERTS'))

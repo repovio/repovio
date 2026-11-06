@@ -20,6 +20,10 @@ describe('ProviderAccountsService', /** Groups scenarios for ProviderAccountsSer
     decrypt: jest.fn(
       /** Provides isolated decrypt behavior for this test fixture. */ (value: string) => `decrypted:${value}`,
     ),
+    accessToken: jest.fn(
+      /** Provides isolated accessToken behavior for this test fixture. */
+      async (account: { encryptedAccessToken: string }) => `decrypted:${account.encryptedAccessToken}`,
+    ),
     encrypt: jest.fn(
       /** Provides isolated encrypt behavior for this test fixture. */ (value: string) => `encrypted:${value}`,
     ),
@@ -145,6 +149,7 @@ describe('ProviderAccountsService', /** Groups scenarios for ProviderAccountsSer
     ]);
     expect(listRepositories).toHaveBeenCalledWith({
       accessToken: 'decrypted:encrypted-token',
+      authenticationMethod: 'TOKEN',
       baseUrl: null,
       providerAccountId: 'provider-id',
     });

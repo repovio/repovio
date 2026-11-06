@@ -9,6 +9,8 @@ import { SystemStatusModule } from '../system-status/system-status.module.js';
 import { ForgejoActionsAdapter } from './forgejo/forgejo-actions.adapter.js';
 import { GiteaActionsAdapter } from './gitea/gitea-actions.adapter.js';
 import { GitHubActionsAdapter } from './github/github-actions.adapter.js';
+import { GitHubAppController } from './github/github-app.controller.js';
+import { GitHubAppService } from './github/github-app.service.js';
 import { GitLabPipelinesAdapter } from './gitlab/gitlab-pipelines.adapter.js';
 import { ProviderAccountsQueryService } from './provider-accounts-query.service.js';
 import { ProviderAccountsController } from './provider-accounts.controller.js';
@@ -31,6 +33,7 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
 /** Registers the providers module providers and imports with Nest. */ @Module({
   imports: [CaslModule, JobsModule, NotificationsModule, RepositoriesModule, SecurityModule, SystemStatusModule],
   controllers: [
+    GitHubAppController,
     ProviderAccountsController,
     ProviderOAuthController,
     RepositoryRefreshController,
@@ -41,6 +44,7 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
       provide: PROVIDER_FETCH,
       useValue: fetch,
     },
+    GitHubAppService,
     ProviderAccountsService,
     ProviderAccountsQueryService,
     ProviderCredentialService,
@@ -68,6 +72,12 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
     ProviderSyncQueueService,
     WorkItemSyncService,
   ],
-  exports: [ProviderCredentialService, ProviderAdapterRegistry, ProviderSyncQueueService, ProviderSyncService],
+  exports: [
+    GitHubAppService,
+    ProviderCredentialService,
+    ProviderAdapterRegistry,
+    ProviderSyncQueueService,
+    ProviderSyncService,
+  ],
 })
 export class ProvidersModule {}

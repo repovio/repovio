@@ -1033,5 +1033,33 @@
     "action": "Action",
     "global": "Global",
     "toggle": "Afficher ou masquer les raccourcis"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Connectez des installations GitHub App en lecture seule.",
+    "setup": "Enregistrer votre application",
+    "setupHelp": "Créez votre GitHub App avec les droits de lecture Actions, Issues et Pull requests. Configurez son URL de webhook ci-dessous.",
+    "appId": "ID de l’application",
+    "slug": "Slug de l’application",
+    "privateKey": "Clé privée (PEM)",
+    "webhookSecret": "Secret du webhook",
+    "webhookUrl": "URL du webhook",
+    "keepSecret": "Laisser vide pour conserver le secret enregistré.",
+    "save": "Vérifier et enregistrer",
+    "remove": "Supprimer la configuration",
+    "installations": "Installations",
+    "installHelp": "Installez l’application sur GitHub, sélectionnez les dépôts puis actualisez cette liste. Déconnectez les comptes avant de remplacer ou supprimer l’application.",
+    "install": "Installer sur GitHub",
+    "refresh": "Actualiser les installations",
+    "empty": "Aucune installation. Installez l’application puis actualisez.",
+    "connected": "Connectée",
+    "connect": "Connecter",
+    "error": "Échec de la requête. Vérifiez les identifiants, les permissions et la connexion. Déconnectez les comptes avant de remplacer ou supprimer l’application puis réessayez.",
+    "load": "Réessayer le chargement",
+    "token": "Jeton (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Suspendue",
+      "REMOVED": "Supprimée"
+    }
   }
 }

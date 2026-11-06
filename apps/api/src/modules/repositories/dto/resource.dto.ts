@@ -43,6 +43,8 @@ export class ProviderAccountDto extends createZodDto(ApiProviderAccountSchema) {
           toWire({
             id: model.id,
             providerType: model.providerType,
+            authenticationMethod: model.authenticationMethod ?? 'TOKEN',
+            githubInstallationState: model.githubInstallationState ?? null,
             displayName: model.displayName,
             baseUrl: model.baseUrl,
             enabled: model.enabled,

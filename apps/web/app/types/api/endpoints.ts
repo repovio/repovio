@@ -17,6 +17,7 @@ import type {
 
 /** Relative paths for every Repovio endpoint exposed to the web application. */
 export const apiEndpoints = {
+  githubApp: '/github-app',
   auth: {
     currentUser: '/auth/me',
     password: '/auth/password',

@@ -13,6 +13,7 @@ import { ApiAcceptedResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/sw
 import type { FastifyRequest } from 'fastify';
 
 import type { ProviderType } from '../../generated/prisma/client.js';
+import { GitHubAppWebhookService } from './github-app-webhook.service.js';
 import { WebhookService, type WebhookAcceptance } from './webhook.service.js';
 
 /** Accepts signed GitHub, GitLab, Forgejo, and Gitea webhook deliveries. */
@@ -23,8 +24,29 @@ export class WebhookController {
    * Initialize WebhookController with its required dependencies.
    *
    * @param webhooks - Service verifying and durably accepting provider webhooks.
+   * @param githubApp - Central App webhook verification and lifecycle handling.
    */
-  constructor(private readonly webhooks: WebhookService) {}
+  constructor(
+    private readonly webhooks: WebhookService,
+    private readonly githubApp: GitHubAppWebhookService,
+  ) {}
+
+  /**
+   * Accept a central signed GitHub App delivery.
+   * @param request - Unmodified raw request and provider headers.
+   * @returns Durable delivery acceptance.
+   * @throws BadRequestException - Raw body is missing or malformed.
+   * @throws UnauthorizedException - Signature verification failed.
+   */
+  @Post('github-app')
+  @HttpCode(202)
+  @Version(['1', VERSION_NEUTRAL])
+  @ApiOperation({ summary: 'Accept a signed GitHub App delivery' })
+  @ApiAcceptedResponse({ description: 'The App delivery was durably accepted.' })
+  githubAppDelivery(@Req() request: RawBodyRequest<FastifyRequest>): Promise<WebhookAcceptance> {
+    if (!request.rawBody) throw new BadRequestException('The webhook request body is required.');
+    return this.githubApp.receive({ headers: request.headers, payload: request.rawBody });
+  }
 
   /**
    * Accept a signed GitHub webhook delivery.

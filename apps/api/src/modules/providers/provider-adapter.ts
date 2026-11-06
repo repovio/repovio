@@ -12,6 +12,7 @@ export const PROVIDER_FETCH = Symbol('PROVIDER_FETCH');
 
 /** Credentials used only for read-only requests to a configured provider account. */
 export interface ProviderAccountContext {
+  authenticationMethod?: 'TOKEN' | 'GITHUB_APP';
   accessToken: string;
   baseUrl: string | null;
   providerAccountId: string;

@@ -36,7 +36,10 @@ describe('RepositoryMetadataService', /** Groups scenarios for RepositoryMetadat
   const service = new RepositoryMetadataService(
     prisma as never,
     { get: jest.fn().mockReturnValue(adapter) } as never,
-    { decrypt: jest.fn().mockReturnValue('access-token') } as never,
+    {
+      decrypt: jest.fn().mockReturnValue('access-token'),
+      accessToken: jest.fn().mockResolvedValue('access-token'),
+    } as never,
   );
   const admin = { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
 

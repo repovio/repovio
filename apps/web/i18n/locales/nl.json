@@ -1033,5 +1033,33 @@
     "action": "Actie",
     "global": "Globaal",
     "toggle": "Sneltoetsen tonen of verbergen"
+  },
+  "githubApp": {
+    "title": "GitHub App",
+    "description": "Verbind GitHub App-installaties met alleen-lezen toegang.",
+    "setup": "Registreer je app",
+    "setupHelp": "Maak je eigen GitHub App met leesrechten voor Actions, Issues en Pull requests. Stel hieronder de webhook-URL in.",
+    "appId": "App-ID",
+    "slug": "App-slug",
+    "privateKey": "Privésleutel (PEM)",
+    "webhookSecret": "Webhookgeheim",
+    "webhookUrl": "Webhook-URL",
+    "keepSecret": "Laat leeg om het opgeslagen geheim te behouden.",
+    "save": "Controleren en opslaan",
+    "remove": "Configuratie verwijderen",
+    "installations": "Installaties",
+    "installHelp": "Installeer de app op GitHub, selecteer repositories en vernieuw deze lijst. Ontkoppel accounts voordat je de app vervangt of verwijdert.",
+    "install": "Installeren op GitHub",
+    "refresh": "Installaties vernieuwen",
+    "empty": "Geen installaties gevonden. Installeer de app en vernieuw.",
+    "connected": "Verbonden",
+    "connect": "Verbinden",
+    "error": "Verzoek mislukt. Controleer appgegevens, rechten en verbinding. Ontkoppel accounts voordat je de app vervangt of verwijdert en probeer opnieuw.",
+    "load": "Opnieuw laden",
+    "token": "Token (PAT / OAuth)",
+    "states": {
+      "SUSPENDED": "Opgeschort",
+      "REMOVED": "Verwijderd"
+    }
   }
 }

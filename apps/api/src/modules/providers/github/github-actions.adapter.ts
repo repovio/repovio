@@ -175,7 +175,23 @@ export class GitHubActionsAdapter implements ProviderAdapter {
    * @throws TypeError - When the provider request fails at the network layer.
    */
   async listRepositories(context: ProviderAccountContext): Promise<ProviderRepository[]> {
-    const repositories = await this.request<GitHubRepositoryResponse[]>(context, '/user/repos?per_page=100');
+    const repositories: GitHubRepositoryResponse[] = [];
+    for (let page = 1; ; page++) {
+      const result =
+        context.authenticationMethod === 'GITHUB_APP'
+          ? (
+              await this.request<{ repositories: GitHubRepositoryResponse[] }>(
+                context,
+                `/installation/repositories?per_page=100&page=${page}`,
+              )
+            ).repositories
+          : await this.request<GitHubRepositoryResponse[]>(
+              context,
+              page === 1 ? '/user/repos?per_page=100' : `/user/repos?per_page=100&page=${page}`,
+            );
+      repositories.push(...result);
+      if (result.length < 100) break;
+    }
     return repositories.map(
       /** Projects each entry using `this.toRepository(repository)`. */ (repository) => this.toRepository(repository),
     );

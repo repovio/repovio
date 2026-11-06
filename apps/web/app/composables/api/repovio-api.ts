@@ -5,6 +5,7 @@ import { apiEndpoints } from '~/types/api/endpoints';
 import type {
   ApplicationSettings,
   BrowserPushStatus,
+  ConnectGitHubApp,
   CreatedMcpAccessToken,
   CreateMcpAccessToken,
   CreateNotificationChannel,
@@ -12,6 +13,8 @@ import type {
   DashboardPeriodQuery,
   DashboardSummary,
   DashboardWorkflowRun,
+  GitHubAppConfiguration,
+  GitHubAppInstallation,
   HealthResponse,
   Issue,
   IssueSummary,
@@ -33,6 +36,7 @@ import type {
   RepositoryMembership,
   RepositorySyncJobSummary,
   RepositoryWebhookConfiguration,
+  SaveGitHubApp,
   SecurityAlert,
   SecurityAlertFilterOptions,
   SecurityAlertSummary,
@@ -54,6 +58,21 @@ export function useRepovioApi() {
   const api = useApi();
 
   return {
+    githubApp: {
+      /** Fetches safe GitHub App setup metadata without credentials. */
+      configuration: (): Promise<AxiosResponse<GitHubAppConfiguration>> => api.get(apiEndpoints.githubApp),
+      /** Creates or rotates the configured GitHub App credentials. */
+      save: (input: SaveGitHubApp): Promise<AxiosResponse<GitHubAppConfiguration>> =>
+        api.put(apiEndpoints.githubApp, input),
+      /** Removes GitHub App configuration after connected accounts are removed. */
+      delete: (): Promise<AxiosResponse<void>> => api.delete(apiEndpoints.githubApp),
+      /** Lists App installations and their local connection state. */
+      installations: (): Promise<AxiosResponse<GitHubAppInstallation[]>> =>
+        api.get(`${apiEndpoints.githubApp}/installations`),
+      /** Creates a local provider account for the selected App installation. */
+      connect: (input: ConnectGitHubApp): Promise<AxiosResponse<ProviderAccount>> =>
+        api.post(`${apiEndpoints.githubApp}/installations`, input),
+    },
     dashboard: {
       /** Retrieves awaiting approval. */
       getAwaitingApproval: (): Promise<AxiosResponse<DashboardWorkflowRun[]>> =>

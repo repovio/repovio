@@ -1,6 +1,7 @@
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { resolveRepositoryAccess } from './repository-access.js';
 
 import type { AuthenticatedUser } from '../modules/auth/types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -43,10 +44,7 @@ export class PoliciesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     if (!request.user) return false;
 
-    const memberships = await this.prisma.repositoryMembership.findMany({
-      where: { userId: request.user.id },
-      select: { repositoryId: true, role: true },
-    });
+    const memberships = await resolveRepositoryAccess(this.prisma, request.user.id);
     const ability = this.abilityFactory.createForUser(request.user, memberships);
 
     return handlers.every(

@@ -24,7 +24,7 @@ describe('SecurityAlertsQueryService', /** Groups scenarios for SecurityAlertsQu
     await expect(service.visibleRepositoryIds(user)).resolves.toEqual(['managed']);
     expect(prisma.repositoryMembership.findMany).toHaveBeenCalledWith({
       select: { repositoryId: true, role: true },
-      where: { role: 'MANAGER', userId: 'manager' },
+      where: { userId: 'manager' },
     });
   });
 
@@ -42,6 +42,7 @@ describe('SecurityAlertsQueryService', /** Groups scenarios for SecurityAlertsQu
 /** Creates service. */
 function createService() {
   const prisma = {
+    repositoryGroupGrant: { findMany: jest.fn().mockResolvedValue([]) },
     repositoryMembership: { findMany: jest.fn().mockResolvedValue([]) },
     securityAlert: {},
   };

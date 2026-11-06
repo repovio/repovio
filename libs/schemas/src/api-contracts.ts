@@ -6,6 +6,7 @@ export {
   ApiOidcExchangeSchema,
   ApiOidcStatusSchema,
   ApiRemoteAvatarSchema,
+  ApiResetUserPasswordSchema,
   ApiSetupSchema,
   ApiSignInSchema,
   ApiUpdateOidcConfigSchema,
@@ -98,3 +99,5 @@ export {
 export { ApiWorkflowRunQuerySchema, ApiWorkflowRunSchema } from './api/workflow-runs.js';
 
 export * from './api/github-app.js';
+
+export * from './api/user-groups.js';

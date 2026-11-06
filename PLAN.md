@@ -54,7 +54,8 @@ Persist at least:
 - provider account and encrypted read-only access token;
 - optional self-hosted GitLab or Forgejo base URL;
 - optional deployment-owned GitHub App with encrypted private key/webhook secret and installation-backed accounts;
-- tracked repository and repository membership;
+- tracked repository and direct repository membership;
+- local user groups, user-group memberships, and additive Viewer/Manager repository group grants;
 - workflow whitelist and blacklist glob patterns, with blacklist precedence;
 - provider run ID, repository, workflow name, URL, start time, completion time, duration, and normalized status;
 - global retention policy and optional repository override;
@@ -100,7 +101,8 @@ Create these pages:
 - Repository selection, tracking, workflow filters, retention, and memberships.
 - Permission-scoped repository synchronization jobs with administrator-only manual start actions and live progress.
 - Notification channel, rule, and delivery-history management.
-- User administration for system administrators.
+- User administration for system administrators, including local account creation and local password resets.
+- Local user-group administration and repository group grants; Manager grants still require the global Manager role.
 
 All pages, navigation items, API calls, charts, and tables must respect repository-level permissions.
 

@@ -5,6 +5,7 @@ import { WorkflowRunsQueryService } from './workflow-runs-query.service.js';
 describe('WorkflowRunsQueryService', /** Groups scenarios for WorkflowRunsQueryService. */ () => {
   it('combines a workflow-name search with repository-scoped CASL access', /** Verifies combines a workflow-name search with repository-scoped CASL access. */ async () => {
     const mocks = {
+      repositoryGroupGrant: { findMany: jest.fn().mockResolvedValue([]) },
       repositoryMembership: {
         findMany: jest.fn().mockResolvedValue([{ repositoryId: 'repository-a', role: 'VIEWER' }]),
       },

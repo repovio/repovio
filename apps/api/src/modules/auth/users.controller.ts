@@ -1,18 +1,24 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
   Get,
+  HttpCode,
+  NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
+  Put,
   Query,
   Req,
   Res,
   StreamableFile,
 } from '@nestjs/common';
+import { ApiNoContentResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
-import { ApiCreateUserSchema, ApiUserSchema } from '@repovio/schemas';
+import { ApiCreateUserSchema, ApiResetUserPasswordSchema, ApiUserSchema } from '@repovio/schemas';
 import bcrypt from 'bcrypt';
 import { createZodDto } from '../../util/schema-dto.js';
 
@@ -34,6 +40,10 @@ import { UserDto, type UserWithAvatar } from './dto/user.dto.js';
 import type { AuthenticatedUser } from './types.js';
 import { UsersQueryService } from './users-query.service.js';
 
+/** Validated administrative password reset request. */
+class ResetUserPasswordDto extends createZodDto(ApiResetUserPasswordSchema) {}
+
+/** Validated local user creation request. */
 class CreateUserDto extends createZodDto(ApiCreateUserSchema) {}
 
 /** Provides safe system-administrator user management endpoints. */
@@ -103,11 +113,57 @@ export class UsersController {
   @Post()
   async create(@Req() request: { user: AuthenticatedUser }, @Body() body: CreateUserDto) {
     this.assertAdmin(request.user);
-    return UserDto.fromModel(
-      await this.prisma.user.create({
-        data: { username: body.username, role: body.role, passwordHash: await bcrypt.hash(body.password, 12) },
-      }),
-    );
+    const passwordHash = await bcrypt.hash(body.password, 12);
+    try {
+      return UserDto.fromModel(
+        await this.prisma.user.create({
+          data: {
+            username: body.username,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            role: body.role,
+            authProvider: 'LOCAL',
+            passwordHash,
+          },
+        }),
+      );
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+        throw new ConflictException('Username already exists.');
+      }
+      throw error;
+    }
+  }
+  /**
+   * Reset a local account password and invalidate its issued JWT sessions.
+   * @param request - Authenticated administrator request.
+   * @param id - Target local account identifier.
+   * @param body - Validated replacement password, never returned or logged.
+   * @returns Completion after the password and authentication version are persisted.
+   * @throws ForbiddenException - Caller is not an administrator or target uses OIDC.
+   * @throws NotFoundException - Target account no longer exists.
+   */
+  @Put(':id/password')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'User not found.' })
+  @ApiErrorResponses()
+  async resetPassword(
+    @Req() request: { user: AuthenticatedUser },
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: ResetUserPasswordDto,
+  ): Promise<void> {
+    this.assertAdmin(request.user);
+    const passwordHash = await bcrypt.hash(body.newPassword, 12);
+    const result = await this.prisma.user.updateMany({
+      where: { id, authProvider: 'LOCAL' },
+      data: { passwordHash, authVersion: { increment: 1 } },
+    });
+    if (!result.count) {
+      const target = await this.prisma.user.findUnique({ where: { id }, select: { id: true } });
+      if (!target) throw new NotFoundException('User not found.');
+      throw new ForbiddenException('OIDC-managed users do not have a local password.');
+    }
   }
   /**
    * Delete a user after verifying system administrator access.

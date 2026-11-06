@@ -219,6 +219,7 @@ export function createResourceQuerySchema(model: string) {
 /** Endpoint-specific validated resource query contracts. */
 export const resourceQuerySchemas = {
   User: createResourceQuerySchema('User'),
+  UserGroup: createResourceQuerySchema('UserGroup'),
   ProviderAccount: createResourceQuerySchema('ProviderAccount'),
   Repository: createResourceQuerySchema('Repository'),
   WorkflowRun: createResourceQuerySchema('WorkflowRun'),

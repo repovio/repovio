@@ -34,8 +34,11 @@ export function buildTestDatabaseCleanupStatement(databaseUrl: string, tableName
   }
 
   const tables = [...tableNames]
-    .sort((left, right) => left.localeCompare(right))
-    .map((tableName) => `"${tableName.replaceAll('"', '""')}"`)
+    .sort(/** Orders entries using `left.localeCompare(right)`. */ (left, right) => left.localeCompare(right))
+    .map(
+      /** Projects each entry using ``"${tableName.replaceAll('"', '""')}"``. */ (tableName) =>
+        `"${tableName.replaceAll('"', '""')}"`,
+    )
     .join(', ');
 
   return `TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`;
@@ -65,7 +68,7 @@ export class TestDatabaseService {
     const rows = await this.prisma.$queryRawUnsafe<TableNameRow[]>(PUBLIC_TABLES_QUERY);
     const statement = buildTestDatabaseCleanupStatement(
       ENV.DATABASE_URL,
-      rows.map(({ tablename }) => tablename),
+      rows.map(/** Projects each entry using `tablename`. */ ({ tablename }) => tablename),
     );
 
     if (statement) {

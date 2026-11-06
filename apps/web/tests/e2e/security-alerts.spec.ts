@@ -30,74 +30,103 @@ const alert = {
   vulnerableRange: '<7.1.2',
 };
 
+/** Mocks shell. */
 async function mockShell(page: Page, role: 'MANAGER' | 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: role.toLocaleLowerCase(), role, username: role.toLocaleLowerCase() } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/settings', (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: role.toLocaleLowerCase(), role, username: role.toLocaleLowerCase() } }),
   );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/workflow-runs/needs-attention**', (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/settings',
+    /** Supplies the mocked response for `/api/v1/settings`. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
   );
-  await page.route('**/api/v1/version/latest', (route) => route.fulfill({ json: { latest: null } }));
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/workflow-runs/needs-attention**',
+    /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1 },
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/version/latest',
+    /** Supplies the mocked response for `/api/v1/version/latest`. */ (route) =>
+      route.fulfill({ json: { latest: null } }),
+  );
 }
 
-test('renders permission-scoped alerts, availability warnings, details, and a responsive layout', async ({
+test('renders permission-scoped alerts, availability warnings, details, and a responsive layout', /** Verifies renders permission-scoped alerts, availability warnings, details, and a responsive layout. */ async ({
   page,
 }, testInfo) => {
   await mockShell(page, 'MANAGER');
   const listUrls: string[] = [];
-  await page.route('**/api/v1/security-alerts/summary', (route) =>
-    route.fulfill({
-      json: {
-        open: { CODE: 0, DEPENDENCY: 1, SECRET: 0 },
-        severity: { CRITICAL: 0, HIGH: 1, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
-        unavailableRepositories: 1,
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/summary',
+    /** Supplies the mocked response for `/api/v1/security-alerts/summary`. */ (route) =>
+      route.fulfill({
+        json: {
+          open: { CODE: 0, DEPENDENCY: 1, SECRET: 0 },
+          severity: { CRITICAL: 0, HIGH: 1, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
+          unavailableRepositories: 1,
+        },
+      }),
   );
-  await page.route('**/api/v1/security-alerts/filter-options', (route) =>
-    route.fulfill({
-      json: {
-        availability: [
-          {
-            availability: 'UNAVAILABLE',
-            kind: 'DEPENDENCY',
-            lastSuccessfulSyncAt: null,
-            reason: 'Missing permission.',
-            repositoryId: 'repository-1',
-          },
-        ],
-        ecosystems: ['npm'],
-        manifests: ['pnpm-lock.yaml'],
-        packages: ['vite'],
-        paths: [],
-        repositories: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
-        rules: [],
-        scanners: ['Dependabot'],
-        secretProviders: [],
-        secretTypes: [],
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/filter-options',
+    /** Supplies the mocked response for `/api/v1/security-alerts/filter-options`. */ (route) =>
+      route.fulfill({
+        json: {
+          availability: [
+            {
+              availability: 'UNAVAILABLE',
+              kind: 'DEPENDENCY',
+              lastSuccessfulSyncAt: null,
+              reason: 'Missing permission.',
+              repositoryId: 'repository-1',
+            },
+          ],
+          ecosystems: ['npm'],
+          manifests: ['pnpm-lock.yaml'],
+          packages: ['vite'],
+          paths: [],
+          repositories: [{ id: 'repository-1', name: 'repovio', owner: 'tobiaswaelde' }],
+          rules: [],
+          scanners: ['Dependabot'],
+          secretProviders: [],
+          secretTypes: [],
+        },
+      }),
   );
-  await page.route(/\/api\/v1\/security-alerts(?:\?.*)?$/, (route) => {
-    listUrls.push(route.request().url());
-    return route.fulfill({
-      json: {
-        items: [{ ...alert, description: undefined }],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
-      },
-    });
-  });
-  await page.route('**/api/v1/security-alerts/alert-1', (route) => route.fulfill({ json: alert }));
+  await page.route(
+    /\/api\/v1\/security-alerts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      listUrls.push(route.request().url());
+      return route.fulfill({
+        json: {
+          items: [{ ...alert, description: undefined }],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/security-alerts/alert-1',
+    /** Supplies the mocked response for `/api/v1/security-alerts/alert-1`. */ (route) =>
+      route.fulfill({ json: alert }),
+  );
 
   await page.goto('/alerts/dependencies');
 
@@ -114,10 +143,16 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
   await page.getByRole('textbox', { name: 'Search alerts' }).fill('vite');
   await page.getByLabel('Updated from').fill('2026-09-01');
   await expect
-    .poll(() => decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? ''))
+    .poll(
+      /** Evaluates `decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? '')` when expect .poll invokes this callback. */ () =>
+        decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? ''),
+    )
     .toContain('2026-09-01');
   await expect
-    .poll(() => decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? ''))
+    .poll(
+      /** Evaluates `decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? '')` when expect .poll invokes this callback. */ () =>
+        decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? ''),
+    )
     .toContain('vite');
   await page.getByRole('link', { name: 'Vite path traversal' }).click();
   await expect(page.getByText('Upgrade the affected dependency.')).toBeVisible();
@@ -126,31 +161,50 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
 
   await page.setViewportSize({ height: 844, width: 390 });
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the security alerts scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
   await page.screenshot({ path: testInfo.outputPath('security-alert-detail-mobile.png'), fullPage: true });
 });
 
-test('hides alert navigation and routes from viewers', async ({ page }) => {
+test('hides alert navigation and routes from viewers', /** Verifies hides alert navigation and routes from viewers. */ async ({
+  page,
+}) => {
   await mockShell(page, 'VIEWER');
-  await page.route('**/api/v1/dashboard/summary**', (route) =>
-    route.fulfill({
-      json: {
-        activeCount: 0,
-        awaitingApprovalCount: 0,
-        completedCount: 0,
-        medianDurationMs: 0,
-        queuedCount: 0,
-        runningCount: 0,
-        statuses: {},
-        successRate: 0,
-        totalRunDurationMs: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/summary**',
+    /** Supplies the mocked response for `/api/v1/dashboard/summary**`. */ (route) =>
+      route.fulfill({
+        json: {
+          activeCount: 0,
+          awaitingApprovalCount: 0,
+          completedCount: 0,
+          medianDurationMs: 0,
+          queuedCount: 0,
+          runningCount: 0,
+          statuses: {},
+          successRate: 0,
+          totalRunDurationMs: 0,
+        },
+      }),
   );
-  await page.route('**/api/v1/dashboard/failures', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/latest-runs', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/trend**', (route) => route.fulfill({ json: [] }));
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => route.fulfill({ json: [] }),
+  );
 
   await page.goto('/');
   await expect(page.getByText('Alerts', { exact: true })).toHaveCount(0);
@@ -158,43 +212,49 @@ test('hides alert navigation and routes from viewers', async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
 });
 
-test('shows empty and request-error states', async ({ page }) => {
+test('shows empty and request-error states', /** Verifies shows empty and request-error states. */ async ({ page }) => {
   await mockShell(page, 'MANAGER');
   let failList = false;
-  await page.route('**/api/v1/security-alerts/summary', (route) =>
-    route.fulfill({
-      json: {
-        open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 },
-        severity: { CRITICAL: 0, HIGH: 0, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
-        unavailableRepositories: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/summary',
+    /** Supplies the mocked response for `/api/v1/security-alerts/summary`. */ (route) =>
+      route.fulfill({
+        json: {
+          open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 },
+          severity: { CRITICAL: 0, HIGH: 0, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
+          unavailableRepositories: 0,
+        },
+      }),
   );
-  await page.route('**/api/v1/security-alerts/filter-options', (route) =>
-    route.fulfill({
-      json: {
-        availability: [],
-        ecosystems: [],
-        manifests: [],
-        packages: [],
-        paths: [],
-        repositories: [],
-        rules: [],
-        scanners: [],
-        secretProviders: [],
-        secretTypes: [],
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/filter-options',
+    /** Supplies the mocked response for `/api/v1/security-alerts/filter-options`. */ (route) =>
+      route.fulfill({
+        json: {
+          availability: [],
+          ecosystems: [],
+          manifests: [],
+          packages: [],
+          paths: [],
+          repositories: [],
+          rules: [],
+          scanners: [],
+          secretProviders: [],
+          secretTypes: [],
+        },
+      }),
   );
-  await page.route(/\/api\/v1\/security-alerts(?:\?.*)?$/, (route) =>
-    failList
-      ? route.fulfill({ status: 500 })
-      : route.fulfill({
-          json: {
-            items: [],
-            meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 25 },
-          },
-        }),
+  await page.route(
+    /\/api\/v1\/security-alerts(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      failList
+        ? route.fulfill({ status: 500 })
+        : route.fulfill({
+            json: {
+              items: [],
+              meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 25 },
+            },
+          }),
   );
 
   await page.goto('/alerts/dependencies');

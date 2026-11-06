@@ -3,7 +3,7 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { ProviderAdapter, ProviderSecurityAlert } from './provider-adapter.js';
 import { SecurityAlertSyncService } from './security-alert-sync.service.js';
 
-describe('SecurityAlertSyncService', () => {
+describe('SecurityAlertSyncService', /** Groups scenarios for SecurityAlertSyncService. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
   const repository = { id: 'repository', name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
   const dependencyAlert: ProviderSecurityAlert = {
@@ -32,15 +32,17 @@ describe('SecurityAlertSyncService', () => {
     vulnerableRange: '<1.0.0',
   };
 
-  it('establishes independent silent baselines and emits later state transitions once', async () => {
+  it('establishes independent silent baselines and emits later state transitions once', /** Verifies establishes independent silent baselines and emits later state transitions once. */ async () => {
     const prisma = createPrisma();
     let syncRead = 0;
-    prisma.securityAlertSyncState.findUnique.mockImplementation(() => {
-      syncRead += 1;
-      return Promise.resolve(
-        syncRead <= 3 ? null : { baselineEstablished: true, synchronizedThrough: dependencyAlert.providerUpdatedAt },
-      );
-    });
+    prisma.securityAlertSyncState.findUnique.mockImplementation(
+      /** Provides isolated security-alert-sync.service behavior for this test fixture. */ () => {
+        syncRead += 1;
+        return Promise.resolve(
+          syncRead <= 3 ? null : { baselineEstablished: true, synchronizedThrough: dependencyAlert.providerUpdatedAt },
+        );
+      },
+    );
     prisma.securityAlert.findUnique
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ state: 'OPEN' })
@@ -106,7 +108,7 @@ describe('SecurityAlertSyncService', () => {
     );
   });
 
-  it('records unsupported providers without turning them into warnings', async () => {
+  it('records unsupported providers without turning them into warnings', /** Verifies records unsupported providers without turning them into warnings. */ async () => {
     const prisma = createPrisma();
     const service = new SecurityAlertSyncService(
       prisma as unknown as PrismaService,
@@ -121,6 +123,7 @@ describe('SecurityAlertSyncService', () => {
   });
 });
 
+/** Returns the configured security-alert synchronization fixtures. */
 function results(alert: ProviderSecurityAlert) {
   return [
     { alerts: [alert], availability: 'AVAILABLE' as const, kind: 'DEPENDENCY' as const, reason: null },
@@ -129,15 +132,20 @@ function results(alert: ProviderSecurityAlert) {
   ];
 }
 
+/** Creates adapter. */
 function createAdapter(alert: ProviderSecurityAlert): ProviderAdapter {
   return { listSecurityAlerts: jest.fn().mockResolvedValue(results(alert)) } as unknown as ProviderAdapter;
 }
 
+/** Creates prisma. */
 function createPrisma() {
   return {
     securityAlert: {
       findUnique: jest.fn(),
-      upsert: jest.fn(({ create, update }) => Promise.resolve({ id: 'alert', ...create, ...update })),
+      upsert: jest.fn(
+        /** Provides isolated upsert behavior for this test fixture. */ ({ create, update }) =>
+          Promise.resolve({ id: 'alert', ...create, ...update }),
+      ),
     },
     securityAlertSyncState: {
       findUnique: jest.fn().mockResolvedValue(null),

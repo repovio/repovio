@@ -2,7 +2,7 @@ import { ProviderRequestError } from './provider-request.error.js';
 
 export const maximumProviderSyncAttempts = 5;
 
-export interface ProviderRetryDecision {
+/** Defines the provider retry decision contract shared by its consumers. */ export interface ProviderRetryDecision {
   retry: boolean;
   runAfter: Date | null;
   rateLimitedUntil: Date | null;

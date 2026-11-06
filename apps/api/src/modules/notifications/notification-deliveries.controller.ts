@@ -60,6 +60,7 @@ export class NotificationDeliveriesController {
         requestedBy: { select: { username: true } },
         workflowRun: { select: { id: true, url: true, workflowName: true } },
       },
+      /** Maps map. */
       map: (delivery: unknown) => NotificationDeliveryDto.fromModel(delivery as never),
       query: this.deliveryQueries.toQueryOptions(query),
       schema: {

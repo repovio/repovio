@@ -29,10 +29,12 @@ export interface UseTableOptions<TEndpoint extends Endpoint> {
 export function toQueryKitColumns<TItem extends Record<string, unknown>>(
   columnDefinition: readonly ColumnDefinition<TItem>[],
 ): QueryKitTableColumn<TItem>[] {
-  return columnDefinition.flatMap((column) => {
-    if (!column.id) return [];
-    return [{ ...column } as QueryKitTableColumn<TItem>];
-  });
+  return columnDefinition.flatMap(
+    /** Flattens entries produced by the toQueryKitColumns mapping. */ (column) => {
+      if (!column.id) return [];
+      return [{ ...column } as QueryKitTableColumn<TItem>];
+    },
+  );
 }
 
 /**
@@ -46,10 +48,19 @@ export function pinActionsColumnRight(
   columns: readonly { id?: string }[],
   columnPinning: Record<string, string[]>,
 ): Record<string, string[]> {
-  if (!columns.some((column) => column.id === 'actions')) return columnPinning;
+  if (
+    !columns.some(
+      /** Checks whether any entry satisfies `column.id === 'actions'`. */ (column) => column.id === 'actions',
+    )
+  )
+    return columnPinning;
 
-  const left = (columnPinning.left ?? []).filter((columnId) => columnId !== 'actions');
-  const right = (columnPinning.right ?? []).filter((columnId) => columnId !== 'actions');
+  const left = (columnPinning.left ?? []).filter(
+    /** Keeps entries matching `columnId !== 'actions'`. */ (columnId) => columnId !== 'actions',
+  );
+  const right = (columnPinning.right ?? []).filter(
+    /** Keeps entries matching `columnId !== 'actions'`. */ (columnId) => columnId !== 'actions',
+  );
   if (left.length === (columnPinning.left ?? []).length && right.length !== (columnPinning.right ?? []).length) {
     return columnPinning;
   }
@@ -65,8 +76,9 @@ export function pinActionsColumnRight(
  */
 export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TEndpoint>) => {
   const routePage = useRouteQuery('page', 1, { transform: Number });
-  const columns = computed<QueryKitTableColumn<TableRow<TEndpoint>>[]>(() =>
-    toQueryKitColumns(options.columnDefinition.value),
+  const columns = computed<QueryKitTableColumn<TableRow<TEndpoint>>[]>(
+    /** Derives columns from the current reactive dependencies. */ () =>
+      toQueryKitColumns(options.columnDefinition.value),
   );
   const table = useQueryKitTable<TableRow<TEndpoint>>({
     api: useApi(),
@@ -81,6 +93,7 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
 
   watch(
     [columns, table.columnPinning],
+    /** Synchronizes use table when the observed state changes. */
     ([currentColumns, currentPinning]) => {
       const correctedPinning = pinActionsColumnRight(currentColumns, currentPinning);
       if (correctedPinning !== currentPinning) table.columnPinning.value = correctedPinning;

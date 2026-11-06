@@ -153,7 +153,9 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
    */
   async listRepositories(context: ProviderAccountContext): Promise<ProviderRepository[]> {
     const projects = await this.request<GitLabProject[]>(context, '/projects?membership=true&simple=true&per_page=100');
-    return projects.map((project) => this.toRepository(project));
+    return projects.map(
+      /** Projects each entry using `this.toRepository(project)`. */ (project) => this.toRepository(project),
+    );
   }
 
   /**
@@ -237,7 +239,9 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       `/projects/${encodeURIComponent(repository.providerRepositoryId)}/pipelines`,
       parameters,
     );
-    return pipelines.map((pipeline) => this.toWorkflowRun(pipeline));
+    return pipelines.map(
+      /** Projects each entry using `this.toWorkflowRun(pipeline)`. */ (pipeline) => this.toWorkflowRun(pipeline),
+    );
   }
 
   /**
@@ -294,7 +298,9 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
         : [],
       this.listProjectLabels(context, repository),
     ]);
-    return this.uniqueById([...recent, ...open]).map((issue) => this.toIssue(issue, labels));
+    return this.uniqueById([...recent, ...open]).map(
+      /** Projects each entry using `this.toIssue(issue, labels)`. */ (issue) => this.toIssue(issue, labels),
+    );
   }
 
   /**
@@ -330,7 +336,10 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
         : [],
       this.listProjectLabels(context, repository),
     ]);
-    return this.uniqueById([...recent, ...open]).map((pullRequest) => this.toPullRequest(pullRequest, labels));
+    return this.uniqueById([...recent, ...open]).map(
+      /** Projects each entry using `this.toPullRequest(pullRequest, labels)`. */ (pullRequest) =>
+        this.toPullRequest(pullRequest, labels),
+    );
   }
 
   /**
@@ -348,20 +357,30 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
     const kinds = ['DEPENDENCY', 'CODE', 'SECRET'] as const;
     try {
       const vulnerabilities = await this.listVulnerabilities(context, repository);
-      return kinds.map((kind) => ({
-        alerts: vulnerabilities.filter((alert) => alert.kind === kind),
-        availability: 'AVAILABLE',
-        kind,
-        reason: null,
-      }));
+      return kinds.map(
+        /** Projects each entry using `({ alerts: vulnerabilities.filter((alert) => alert.kind === kind), availability: 'AVAILABLE', kind, reason: null, })`. */ (
+          kind,
+        ) => ({
+          alerts: vulnerabilities.filter(
+            /** Keeps entries matching `alert.kind === kind`. */ (alert) => alert.kind === kind,
+          ),
+          availability: 'AVAILABLE',
+          kind,
+          reason: null,
+        }),
+      );
     } catch (error) {
       if (error instanceof Error && error.message === 'GITLAB_SECURITY_UNAVAILABLE')
-        return kinds.map((kind) => ({
-          alerts: [],
-          availability: 'UNAVAILABLE',
-          kind,
-          reason: 'Provider permissions, features, or licensing do not allow security vulnerabilities.',
-        }));
+        return kinds.map(
+          /** Projects each entry using `({ alerts: [], availability: 'UNAVAILABLE', kind, reason: 'Provider permissions, features, or licensing do not allow security vulnerabilities.', })`. */ (
+            kind,
+          ) => ({
+            alerts: [],
+            availability: 'UNAVAILABLE',
+            kind,
+            reason: 'Provider permissions, features, or licensing do not allow security vulnerabilities.',
+          }),
+        );
       throw error;
     }
   }
@@ -437,7 +456,12 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
     const expected = `v1,${createHmac('sha256', key)
       .update(`${id}.${timestamp}.${Buffer.from(request.payload).toString('utf8')}`)
       .digest('base64')}`;
-    return signature.split(' ').some((candidate) => this.hasEqualValue(candidate, expected));
+    return signature
+      .split(' ')
+      .some(
+        /** Checks whether any entry satisfies `this.hasEqualValue(candidate, expected)`. */ (candidate) =>
+          this.hasEqualValue(candidate, expected),
+      );
   }
   /**
    * Compare equal-length webhook authentication values using constant-time comparison.
@@ -499,7 +523,12 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       const page = (await response.json()) as GitLabVulnerabilityPage;
       if (page.errors?.length || !page.data?.project?.vulnerabilities) throw new Error('GITLAB_SECURITY_UNAVAILABLE');
       const collection = page.data.project.vulnerabilities;
-      alerts.push(...collection.nodes.flatMap((alert) => this.toSecurityAlert(alert, providerUrl)));
+      alerts.push(
+        ...collection.nodes.flatMap(
+          /** Flattens entries produced by `this.toSecurityAlert(alert, providerUrl)`. */ (alert) =>
+            this.toSecurityAlert(alert, providerUrl),
+        ),
+      );
       cursor = collection.pageInfo.hasNextPage ? (collection.pageInfo.endCursor ?? null) : null;
     } while (cursor);
     return alerts;
@@ -534,6 +563,7 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
         ecosystem: null,
         fixedVersion: null,
         identifiers: (alert.identifiers ?? []).map(
+          /** Projects each entry using `[externalType, externalId].filter(Boolean).join(':') || name || 'unknown'`. */
           ({ externalId, externalType, name }) =>
             [externalType, externalId].filter(Boolean).join(':') || name || 'unknown',
         ),
@@ -606,7 +636,9 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
    * @returns One record per ID in first-insertion order, containing the last value for that ID.
    */
   private uniqueById<T extends { id: number }>(items: T[]): T[] {
-    return [...new Map(items.map((item) => [item.id, item])).values()];
+    return [
+      ...new Map(items.map(/** Projects each entry using `[item.id, item]`. */ (item) => [item.id, item])).values(),
+    ];
   }
   /**
    * Read project labels into a name-keyed lookup for work-item normalization.
@@ -627,7 +659,14 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       `/projects/${encodeURIComponent(repository.providerRepositoryId)}/labels`,
       { with_counts: 'false' },
     );
-    return new Map(labels.map((label) => [label.name.toLocaleLowerCase('en-US'), label]));
+    return new Map(
+      labels.map(
+        /** Projects each entry using `[label.name.toLocaleLowerCase('en-US'), label]`. */ (label) => [
+          label.name.toLocaleLowerCase('en-US'),
+          label,
+        ],
+      ),
+    );
   }
   /**
    * Normalize an optional provider actor without inventing a missing identity.
@@ -654,16 +693,20 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
    */
   private toIssue(issue: GitLabIssue, labels: Map<string, GitLabLabel>): ProviderIssue {
     return {
-      assignees: (issue.assignees ?? []).flatMap((actor) => this.toActor(actor) ?? []),
+      assignees: (issue.assignees ?? []).flatMap(
+        /** Flattens entries produced by `this.toActor(actor) ?? []`. */ (actor) => this.toActor(actor) ?? [],
+      ),
       author: this.toActor(issue.author),
       body: issue.description ?? null,
       closedAt: issue.closed_at ? new Date(issue.closed_at) : null,
-      labels: (issue.labels ?? []).map((name) => ({
-        color: labels.get(name.toLocaleLowerCase('en-US'))?.color.replace(/^#/, '') ?? null,
-        description: labels.get(name.toLocaleLowerCase('en-US'))?.description ?? null,
-        name,
-        providerLabelId: labels.get(name.toLocaleLowerCase('en-US'))?.id.toString() ?? null,
-      })),
+      labels: (issue.labels ?? []).map(
+        /** Projects each entry using the labels mapping. */ (name) => ({
+          color: labels.get(name.toLocaleLowerCase('en-US'))?.color.replace(/^#/, '') ?? null,
+          description: labels.get(name.toLocaleLowerCase('en-US'))?.description ?? null,
+          name,
+          providerLabelId: labels.get(name.toLocaleLowerCase('en-US'))?.id.toString() ?? null,
+        }),
+      ),
       milestone: issue.milestone?.title ?? null,
       number: String(issue.iid),
       providerCreatedAt: new Date(issue.created_at),
@@ -684,17 +727,21 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
   private toPullRequest(pullRequest: GitLabPullRequestResponse, labels: Map<string, GitLabLabel>): ProviderPullRequest {
     const mergedAt = pullRequest.merged_at ? new Date(pullRequest.merged_at) : null;
     return {
-      assignees: (pullRequest.assignees ?? []).flatMap((actor) => this.toActor(actor) ?? []),
+      assignees: (pullRequest.assignees ?? []).flatMap(
+        /** Flattens entries produced by `this.toActor(actor) ?? []`. */ (actor) => this.toActor(actor) ?? [],
+      ),
       author: this.toActor(pullRequest.author),
       body: pullRequest.description ?? null,
       closedAt: pullRequest.closed_at ? new Date(pullRequest.closed_at) : null,
       draft: pullRequest.draft ?? pullRequest.work_in_progress ?? false,
-      labels: (pullRequest.labels ?? []).map((name) => ({
-        color: labels.get(name.toLocaleLowerCase('en-US'))?.color.replace(/^#/, '') ?? null,
-        description: labels.get(name.toLocaleLowerCase('en-US'))?.description ?? null,
-        name,
-        providerLabelId: labels.get(name.toLocaleLowerCase('en-US'))?.id.toString() ?? null,
-      })),
+      labels: (pullRequest.labels ?? []).map(
+        /** Projects each entry using the labels mapping. */ (name) => ({
+          color: labels.get(name.toLocaleLowerCase('en-US'))?.color.replace(/^#/, '') ?? null,
+          description: labels.get(name.toLocaleLowerCase('en-US'))?.description ?? null,
+          name,
+          providerLabelId: labels.get(name.toLocaleLowerCase('en-US'))?.id.toString() ?? null,
+        }),
+      ),
       mergedAt,
       number: String(pullRequest.iid),
       providerCreatedAt: new Date(pullRequest.created_at),

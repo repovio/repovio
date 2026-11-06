@@ -6,20 +6,30 @@ import { expect, test } from '@playwright/test';
 const serviceWorkerPath = resolve(process.cwd(), '.output/public/sw.js');
 let originalServiceWorker = '';
 
-test.beforeAll(async () => {
-  originalServiceWorker = await readFile(serviceWorkerPath, 'utf8');
-});
+test.beforeAll(
+  /** Prepares shared test state for test.beforeAll. */ async () => {
+    originalServiceWorker = await readFile(serviceWorkerPath, 'utf8');
+  },
+);
 
-test.afterAll(async () => {
-  await writeFile(serviceWorkerPath, originalServiceWorker);
-});
+test.afterAll(
+  /** Restores shared test state for test.afterAll. */ async () => {
+    await writeFile(serviceWorkerPath, originalServiceWorker);
+  },
+);
 
 /** Keep unauthenticated routing stable while exercising the production client. */
 async function mockSetupStatus(page: import('@playwright/test').Page): Promise<void> {
-  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
+  await page.route(
+    '**/api/v1/auth/setup-status',
+    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
+      route.fulfill({ json: { initialized: true } }),
+  );
 }
 
-test('publishes an installable manifest without caching protected application data', async ({ page }) => {
+test('publishes an installable manifest without caching protected application data', /** Verifies publishes an installable manifest without caching protected application data. */ async ({
+  page,
+}) => {
   await mockSetupStatus(page);
   await page.goto('/auth/signin');
 
@@ -50,11 +60,14 @@ test('publishes an installable manifest without caching protected application da
   for (const icon of manifest.icons) expect((await page.request.get(icon.src)).ok()).toBe(true);
 
   await expect
-    .poll(() =>
-      page.evaluate(async () => {
-        const registration = await navigator.serviceWorker.ready;
-        return registration.active?.state;
-      }),
+    .poll(
+      /** Evaluates `page.evaluate(async () => { const registration = await navigator.serviceWorker.ready; return registration.active?.state; })` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the pwa scenario. */ async () => {
+            const registration = await navigator.serviceWorker.ready;
+            return registration.active?.state;
+          },
+        ),
     )
     .toBe('activated');
 
@@ -62,34 +75,59 @@ test('publishes an installable manifest without caching protected application da
   const { installabilityErrors } = await chromiumSession.send('Page.getInstallabilityErrors');
   expect(installabilityErrors).toEqual([]);
 
-  const cachedUrls = await page.evaluate(async () => {
-    const urls: string[] = [];
-    for (const cacheName of await caches.keys()) {
-      for (const request of await (await caches.open(cacheName)).keys()) urls.push(request.url);
-    }
-    return urls;
-  });
+  const cachedUrls = await page.evaluate(
+    /** Reads or updates browser state for the cached urls scenario. */ async () => {
+      const urls: string[] = [];
+      for (const cacheName of await caches.keys()) {
+        for (const request of await (await caches.open(cacheName)).keys()) urls.push(request.url);
+      }
+      return urls;
+    },
+  );
   expect(cachedUrls.length).toBeGreaterThan(0);
-  expect(cachedUrls.some((url) => /\/api(?:\/|$)|\/socket\.io(?:\/|$)/.test(new URL(url).pathname))).toBe(false);
+  expect(
+    cachedUrls.some(
+      /** Checks whether any entry satisfies `/\/api(?:\/|$)|\/socket\.io(?:\/|$)/.test(new URL(url).pathname)`. */ (
+        url,
+      ) => /\/api(?:\/|$)|\/socket\.io(?:\/|$)/.test(new URL(url).pathname),
+    ),
+  ).toBe(false);
 });
 
-test('offers a controlled choice when a new service worker is waiting', async ({ page }) => {
+test('offers a controlled choice when a new service worker is waiting', /** Verifies offers a controlled choice when a new service worker is waiting. */ async ({
+  page,
+}) => {
   await mockSetupStatus(page);
   await page.goto('/auth/signin');
-  await page.evaluate(async () => navigator.serviceWorker.ready);
+  await page.evaluate(
+    /** Reads or updates browser state for the pwa scenario. */ async () => navigator.serviceWorker.ready,
+  );
   await page.reload();
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.state ?? null)).toBe('activated');
+  await expect
+    .poll(
+      /** Evaluates `page.evaluate(() => navigator.serviceWorker.controller?.state ?? null)` when expect.poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the pwa scenario. */ () =>
+            navigator.serviceWorker.controller?.state ?? null,
+        ),
+    )
+    .toBe('activated');
 
   await writeFile(serviceWorkerPath, `${originalServiceWorker}\n// browser-test-update\n`);
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.register('/sw.js?browser-test-update', { scope: '/', updateViaCache: 'none' });
-  });
+  await page.evaluate(
+    /** Reads or updates browser state for the pwa scenario. */ async () => {
+      await navigator.serviceWorker.register('/sw.js?browser-test-update', { scope: '/', updateViaCache: 'none' });
+    },
+  );
   await expect
-    .poll(() =>
-      page.evaluate(async () => {
-        const registration = await navigator.serviceWorker.getRegistration();
-        return registration?.waiting?.state ?? registration?.installing?.state ?? null;
-      }),
+    .poll(
+      /** Reads the observable state until the browser assertion settles. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the pwa scenario. */ async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            return registration?.waiting?.state ?? registration?.installing?.state ?? null;
+          },
+        ),
     )
     .toBe('installed');
 

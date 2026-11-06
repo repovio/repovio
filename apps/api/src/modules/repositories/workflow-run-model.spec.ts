@@ -1,7 +1,7 @@
 import { Prisma, WorkflowKind, WorkflowRunStatus } from '../../generated/prisma/client.js';
 
-describe('Workflow run model', () => {
-  it('records the normalized lifecycle states used by provider adapters', () => {
+describe('Workflow run model', /** Groups scenarios for Workflow run model. */ () => {
+  it('records the normalized lifecycle states used by provider adapters', /** Verifies records the normalized lifecycle states used by provider adapters. */ () => {
     expect(Object.values(WorkflowRunStatus)).toEqual([
       'QUEUED',
       'RUNNING',
@@ -13,11 +13,11 @@ describe('Workflow run model', () => {
     ]);
   });
 
-  it('exposes the workflow run model to Prisma consumers', () => {
+  it('exposes the workflow run model to Prisma consumers', /** Verifies exposes the workflow run model to Prisma consumers. */ () => {
     expect(Prisma.ModelName.WorkflowRun).toBe('WorkflowRun');
   });
 
-  it('exposes stable workflow definitions and their attention classification', () => {
+  it('exposes stable workflow definitions and their attention classification', /** Verifies exposes stable workflow definitions and their attention classification. */ () => {
     expect(Prisma.ModelName.Workflow).toBe('Workflow');
     expect(Object.values(WorkflowKind)).toEqual(['STANDARD', 'DEPENDABOT_INTERNAL']);
   });

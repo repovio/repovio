@@ -12,7 +12,9 @@ type FormState = Record<string, unknown>;
 export function useUnsavedChangesGuard<T extends FormState>(state: UnwrapNestedRefs<T>) {
   const { t } = useI18n();
   const snapshot = ref(serialize(state));
-  const isDirty = computed(() => snapshot.value !== serialize(state));
+  const isDirty = computed(
+    /** Derives is dirty from the current reactive dependencies. */ () => snapshot.value !== serialize(state),
+  );
 
   /** Marks the current form values as saved or intentionally discarded. */
   function reset(): void {
@@ -20,7 +22,10 @@ export function useUnsavedChangesGuard<T extends FormState>(state: UnwrapNestedR
   }
 
   /** Ask for confirmation before Nuxt router navigation. */
-  onBeforeRouteLeave(() => !isDirty.value || window.confirm(t('forms.unsavedChanges')));
+  onBeforeRouteLeave(
+    /** Evaluates `!isDirty.value || window.confirm(t('forms.unsavedChanges'))` when onBeforeRouteLeave invokes this callback. */ () =>
+      !isDirty.value || window.confirm(t('forms.unsavedChanges')),
+  );
 
   /** Let the browser display its native warning before reload, closing, or external navigation. */
   function handleBeforeUnload(event: BeforeUnloadEvent): void {
@@ -29,12 +34,19 @@ export function useUnsavedChangesGuard<T extends FormState>(state: UnwrapNestedR
     event.returnValue = true;
   }
 
-  onMounted(() => window.addEventListener('beforeunload', handleBeforeUnload));
-  onBeforeUnmount(() => window.removeEventListener('beforeunload', handleBeforeUnload));
+  onMounted(
+    /** Initializes component subscriptions and data after mounting. */ () =>
+      window.addEventListener('beforeunload', handleBeforeUnload),
+  );
+  onBeforeUnmount(
+    /** Releases component resources and subscriptions before disposal. */ () =>
+      window.removeEventListener('beforeunload', handleBeforeUnload),
+  );
 
   return { isDirty, reset };
 }
 
+/** Serializes use unsaved changes guard. */
 function serialize(state: FormState): string {
   return JSON.stringify(toRaw(state));
 }

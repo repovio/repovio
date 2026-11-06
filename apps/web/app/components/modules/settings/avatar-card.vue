@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('settings.avatar') }}</h2>
-        <p class="text-sm text-muted">{{ $t('settings.avatarDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('settings.avatar') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('settings.avatarDescription') }}
+        </p>
       </div>
     </template>
 
@@ -102,22 +106,41 @@ const selectedFile = ref<File | null>();
 const remoteForm = reactive({ url: '' });
 const fileValidationError = ref('');
 /** Validate browser files without referencing File during server rendering. */
-const avatarFileSchema = computed(() =>
-  z
-    .custom<File>((value) => typeof File !== 'undefined' && value instanceof File, {
-      error: () => t('forms.invalidValue'),
-    })
-    .refine((file) => file.size <= maximumBytes, { error: () => t('settings.avatarTooLarge') })
-    .refine((file) => supportedTypes.includes(file.type), { error: () => t('settings.avatarInvalidType') }),
+const avatarFileSchema = computed(
+  /** Derives avatar file schema from the current reactive dependencies. */ () =>
+    z
+      .custom<File>(
+        /** Evaluates `typeof File !== 'undefined' && value instanceof File` when z .custom invokes this callback. */ (
+          value,
+        ) => typeof File !== 'undefined' && value instanceof File,
+        {
+          /** Returns the localized validation error for this field. */
+          error: () => t('forms.invalidValue'),
+        },
+      )
+      .refine(/** Validates input against `file.size <= maximumBytes`. */ (file) => file.size <= maximumBytes, {
+        /** Returns the localized validation error for this field. */ error: () => t('settings.avatarTooLarge'),
+      })
+      .refine(
+        /** Validates input against `supportedTypes.includes(file.type)`. */ (file) =>
+          supportedTypes.includes(file.type),
+        { /** Returns the localized validation error for this field. */ error: () => t('settings.avatarInvalidType') },
+      ),
 );
-const avatarUploadSchema = computed(() => z.object({ file: avatarFileSchema.value }));
+const avatarUploadSchema = computed(
+  /** Derives avatar upload schema from the current reactive dependencies. */ () =>
+    z.object({ file: avatarFileSchema.value }),
+);
 const remoteAvatarBaseSchema = ApiRemoteAvatarSchema.pick({ url: true }).extend({ url: z.string().trim() });
-const remoteAvatarSchema = computed(() =>
-  remoteAvatarBaseSchema.superRefine((input, context) => {
-    if (!ApiRemoteAvatarSchema.safeParse(input).success) {
-      context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: ['url'] });
-    }
-  }),
+const remoteAvatarSchema = computed(
+  /** Derives remote avatar schema from the current reactive dependencies. */ () =>
+    remoteAvatarBaseSchema.superRefine(
+      /** Validates input against the remoteAvatarSchema predicate. */ (input, context) => {
+        if (!ApiRemoteAvatarSchema.safeParse(input).success) {
+          context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: ['url'] });
+        }
+      },
+    ),
 );
 type RemoteAvatarForm = z.output<typeof remoteAvatarBaseSchema>;
 const sourceUrl = ref<string>();
@@ -127,7 +150,9 @@ const removing = ref(false);
 const saving = ref(false);
 const saved = ref(false);
 const error = ref('');
-const busy = computed(() => importing.value || removing.value || saving.value);
+const busy = computed(
+  /** Derives busy from the current reactive dependencies. */ () => importing.value || removing.value || saving.value,
+);
 
 /** Validate a selected source and either upload it or open the square crop dialog. */
 async function handleSelectedFile(file?: File | null): Promise<void> {
@@ -186,12 +211,17 @@ async function prepare(file: File): Promise<void> {
 async function readImageDimensions(file: File): Promise<{ height: number; width: number }> {
   const objectUrl = URL.createObjectURL(file);
   try {
-    return await new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve({ height: image.naturalHeight, width: image.naturalWidth });
-      image.onerror = () => reject(new Error('Image decoding failed.'));
-      image.src = objectUrl;
-    });
+    return await new Promise(
+      /** Resolves decoded image dimensions or rejects when image loading fails. */ (resolve, reject) => {
+        const image = new Image();
+        image.onload =
+          /** Returns `resolve({ height: image.naturalHeight, width: image.naturalWidth })` to the caller. */ () =>
+            resolve({ height: image.naturalHeight, width: image.naturalWidth });
+        image.onerror = /** Returns `reject(new Error('Image decoding failed.'))` to the caller. */ () =>
+          reject(new Error('Image decoding failed.'));
+        image.src = objectUrl;
+      },
+    );
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -235,15 +265,19 @@ async function remove(): Promise<void> {
   }
 }
 
+/** Releases the previous preview URL before assigning the replacement. */
 function replaceSourceUrl(nextSource: string | undefined): void {
   if (sourceUrl.value) URL.revokeObjectURL(sourceUrl.value);
   sourceUrl.value = nextSource;
 }
 
+/** Handles crop open. */
 function handleCropOpen(isOpen: boolean): void {
   cropOpen.value = isOpen;
   if (!isOpen && !saving.value) replaceSourceUrl(undefined);
 }
 
-onBeforeUnmount(() => replaceSourceUrl(undefined));
+onBeforeUnmount(
+  /** Releases component resources and subscriptions before disposal. */ () => replaceSourceUrl(undefined),
+);
 </script>

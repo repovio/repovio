@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-6">
     <div class="space-y-1">
-      <h1 class="text-xl font-semibold">{{ $t('auth.signIn') }}</h1>
-      <p class="text-sm text-muted">{{ $t('auth.signInDescription') }}</p>
+      <h1 class="text-xl font-semibold">
+        {{ $t('auth.signIn') }}
+      </h1>
+      <p class="text-sm text-muted">
+        {{ $t('auth.signInDescription') }}
+      </p>
     </div>
 
     <UForm
@@ -86,7 +90,10 @@ const errorMessage = ref<string | null>(null);
 const isSubmitting = ref(false);
 const { reset } = useUnsavedChangesGuard(credentials);
 const oidcStatus = ref<OidcStatus | null>(null);
-const oidcStartUrl = computed(() => `${config.public.apiBaseUrl.replace(/\/$/, '')}/auth/oidc/start`);
+const oidcStartUrl = computed(
+  /** Derives oidc start url from the current reactive dependencies. */ () =>
+    `${config.public.apiBaseUrl.replace(/\/$/, '')}/auth/oidc/start`,
+);
 const oidcErrors = new Set([
   'oidc_not_configured',
   'oidc_invalid_request',
@@ -99,15 +106,17 @@ const oidcErrors = new Set([
 
 useHead({ title: t('auth.signIn') });
 
-onMounted(async () => {
-  const code = typeof route.query.oidc_error === 'string' ? route.query.oidc_error : null;
-  if (code && oidcErrors.has(code)) errorMessage.value = t(`auth.oidc.errors.${code}`);
-  try {
-    oidcStatus.value = (await useApi().get<OidcStatus>('/auth/oidc/status')).data;
-  } catch {
-    oidcStatus.value = null;
-  }
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    const code = typeof route.query.oidc_error === 'string' ? route.query.oidc_error : null;
+    if (code && oidcErrors.has(code)) errorMessage.value = t(`auth.oidc.errors.${code}`);
+    try {
+      oidcStatus.value = (await useApi().get<OidcStatus>('/auth/oidc/status')).data;
+    } catch {
+      oidcStatus.value = null;
+    }
+  },
+);
 
 /** Validate and submit local credentials, then open the authenticated dashboard. */
 async function signIn(event: FormSubmitEvent<SignInRequest>): Promise<void> {

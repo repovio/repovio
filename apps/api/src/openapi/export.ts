@@ -35,6 +35,11 @@ export async function exportApiDocument(): Promise<OpenAPIObject> {
  */
 function sortedKeys(_key: string, value: unknown): unknown {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right, 'en')))
+    ? Object.fromEntries(
+        Object.entries(value).sort(
+          /** Orders entries using `left.localeCompare(right, 'en')`. */ ([left], [right]) =>
+            left.localeCompare(right, 'en'),
+        ),
+      )
     : value;
 }

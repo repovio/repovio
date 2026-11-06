@@ -6,7 +6,7 @@ import { DashboardService } from '../dashboard/dashboard.service.js';
 import { WorkflowRunsQueryService } from './workflow-runs-query.service.js';
 
 /** Verify persisted CASL restrictions through real PostgreSQL queries and dashboard aggregates. */
-describe('workflow-run authorization integration', () => {
+describe('workflow-run authorization integration', /** Groups scenarios for workflow-run authorization integration. */ () => {
   const prisma = new PrismaService();
   const database = new TestDatabaseService(prisma);
   const runs = new WorkflowRunsQueryService(prisma, new CaslAbilityFactory());
@@ -17,115 +17,117 @@ describe('workflow-run authorization integration', () => {
   let hiddenRunId: string;
   let visibleWorkflowId: string;
 
-  beforeAll(async () => prisma.onModuleInit());
-  beforeEach(async () => {
-    await database.cleanup();
+  beforeAll(/** Prepares shared test state for beforeAll. */ async () => prisma.onModuleInit());
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ async () => {
+      await database.cleanup();
 
-    const account = await prisma.providerAccount.create({
-      data: {
-        displayName: 'Integration provider',
-        encryptedAccessToken: 'encrypted-token',
-        providerType: 'GITHUB',
-      },
-    });
-    const [visibleRepository, hiddenRepository] = await Promise.all([
-      prisma.repository.create({
+      const account = await prisma.providerAccount.create({
         data: {
-          name: 'visible',
-          owner: 'repovio',
-          providerAccountId: account.id,
-          providerRepositoryId: 'visible',
-          url: 'https://github.com/repovio/visible',
+          displayName: 'Integration provider',
+          encryptedAccessToken: 'encrypted-token',
+          providerType: 'GITHUB',
         },
-      }),
-      prisma.repository.create({
-        data: {
-          name: 'hidden',
-          owner: 'repovio',
-          providerAccountId: account.id,
-          providerRepositoryId: 'hidden',
-          url: 'https://github.com/repovio/hidden',
-        },
-      }),
-    ]);
-    const [admin, manager, viewer, outsider] = await Promise.all([
-      prisma.user.create({ data: { passwordHash: 'hash', role: 'SYSTEM_ADMIN', username: 'admin' } }),
-      prisma.user.create({ data: { passwordHash: 'hash', role: 'MANAGER', username: 'manager' } }),
-      prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'viewer' } }),
-      prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'outsider' } }),
-    ]);
-    await Promise.all([
-      prisma.repositoryMembership.create({
-        data: { repositoryId: visibleRepository.id, role: 'MANAGER', userId: manager.id },
-      }),
-      prisma.repositoryMembership.create({
-        data: { repositoryId: visibleRepository.id, role: 'VIEWER', userId: viewer.id },
-      }),
-    ]);
-    const [visibleWorkflow, hiddenWorkflow] = await Promise.all([
-      prisma.workflow.create({
-        data: {
-          lastSeenAt: new Date('2026-08-26T10:00:00.000Z'),
-          name: 'Visible workflow',
-          path: '.github/workflows/visible.yml',
-          providerWorkflowId: 'visible-workflow',
-          repositoryId: visibleRepository.id,
-        },
-      }),
-      prisma.workflow.create({
-        data: {
-          lastSeenAt: new Date('2026-08-26T10:00:00.000Z'),
-          name: 'Hidden workflow',
-          path: '.github/workflows/hidden.yml',
-          providerWorkflowId: 'hidden-workflow',
-          repositoryId: hiddenRepository.id,
-        },
-      }),
-    ]);
-    const createdAt = new Date('2026-08-26T10:00:00.000Z');
-    const [visibleRun, hiddenRun] = await Promise.all([
-      prisma.workflowRun.create({
-        data: {
-          completedAt: createdAt,
-          displayTitle: 'Visible workflow',
-          providerCreatedAt: createdAt,
-          providerRunId: 'visible-run',
-          rawStatus: 'failure',
-          repositoryId: visibleRepository.id,
-          scopeKey: 'branch:main',
-          status: 'FAILED',
-          url: 'https://github.com/repovio/visible/actions/runs/1',
-          workflowName: 'Visible workflow',
-          workflowId: visibleWorkflow.id,
-        },
-      }),
-      prisma.workflowRun.create({
-        data: {
-          completedAt: createdAt,
-          displayTitle: 'Hidden workflow',
-          providerCreatedAt: createdAt,
-          providerRunId: 'hidden-run',
-          rawStatus: 'success',
-          repositoryId: hiddenRepository.id,
-          scopeKey: 'branch:main',
-          status: 'SUCCESS',
-          url: 'https://github.com/repovio/hidden/actions/runs/1',
-          workflowName: 'Hidden workflow',
-          workflowId: hiddenWorkflow.id,
-        },
-      }),
-    ]);
-    users = {
-      admin: { authProvider: 'LOCAL' as const, id: admin.id, role: admin.role, username: admin.username },
-      manager: { authProvider: 'LOCAL' as const, id: manager.id, role: manager.role, username: manager.username },
-      outsider: { authProvider: 'LOCAL' as const, id: outsider.id, role: outsider.role, username: outsider.username },
-      viewer: { authProvider: 'LOCAL' as const, id: viewer.id, role: viewer.role, username: viewer.username },
-    };
-    hiddenRunId = hiddenRun.id;
-    visibleRunId = visibleRun.id;
-    visibleWorkflowId = visibleWorkflow.id;
-  });
-  afterAll(async () => prisma.onModuleDestroy());
+      });
+      const [visibleRepository, hiddenRepository] = await Promise.all([
+        prisma.repository.create({
+          data: {
+            name: 'visible',
+            owner: 'repovio',
+            providerAccountId: account.id,
+            providerRepositoryId: 'visible',
+            url: 'https://github.com/repovio/visible',
+          },
+        }),
+        prisma.repository.create({
+          data: {
+            name: 'hidden',
+            owner: 'repovio',
+            providerAccountId: account.id,
+            providerRepositoryId: 'hidden',
+            url: 'https://github.com/repovio/hidden',
+          },
+        }),
+      ]);
+      const [admin, manager, viewer, outsider] = await Promise.all([
+        prisma.user.create({ data: { passwordHash: 'hash', role: 'SYSTEM_ADMIN', username: 'admin' } }),
+        prisma.user.create({ data: { passwordHash: 'hash', role: 'MANAGER', username: 'manager' } }),
+        prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'viewer' } }),
+        prisma.user.create({ data: { passwordHash: 'hash', role: 'VIEWER', username: 'outsider' } }),
+      ]);
+      await Promise.all([
+        prisma.repositoryMembership.create({
+          data: { repositoryId: visibleRepository.id, role: 'MANAGER', userId: manager.id },
+        }),
+        prisma.repositoryMembership.create({
+          data: { repositoryId: visibleRepository.id, role: 'VIEWER', userId: viewer.id },
+        }),
+      ]);
+      const [visibleWorkflow, hiddenWorkflow] = await Promise.all([
+        prisma.workflow.create({
+          data: {
+            lastSeenAt: new Date('2026-08-26T10:00:00.000Z'),
+            name: 'Visible workflow',
+            path: '.github/workflows/visible.yml',
+            providerWorkflowId: 'visible-workflow',
+            repositoryId: visibleRepository.id,
+          },
+        }),
+        prisma.workflow.create({
+          data: {
+            lastSeenAt: new Date('2026-08-26T10:00:00.000Z'),
+            name: 'Hidden workflow',
+            path: '.github/workflows/hidden.yml',
+            providerWorkflowId: 'hidden-workflow',
+            repositoryId: hiddenRepository.id,
+          },
+        }),
+      ]);
+      const createdAt = new Date('2026-08-26T10:00:00.000Z');
+      const [visibleRun, hiddenRun] = await Promise.all([
+        prisma.workflowRun.create({
+          data: {
+            completedAt: createdAt,
+            displayTitle: 'Visible workflow',
+            providerCreatedAt: createdAt,
+            providerRunId: 'visible-run',
+            rawStatus: 'failure',
+            repositoryId: visibleRepository.id,
+            scopeKey: 'branch:main',
+            status: 'FAILED',
+            url: 'https://github.com/repovio/visible/actions/runs/1',
+            workflowName: 'Visible workflow',
+            workflowId: visibleWorkflow.id,
+          },
+        }),
+        prisma.workflowRun.create({
+          data: {
+            completedAt: createdAt,
+            displayTitle: 'Hidden workflow',
+            providerCreatedAt: createdAt,
+            providerRunId: 'hidden-run',
+            rawStatus: 'success',
+            repositoryId: hiddenRepository.id,
+            scopeKey: 'branch:main',
+            status: 'SUCCESS',
+            url: 'https://github.com/repovio/hidden/actions/runs/1',
+            workflowName: 'Hidden workflow',
+            workflowId: hiddenWorkflow.id,
+          },
+        }),
+      ]);
+      users = {
+        admin: { authProvider: 'LOCAL' as const, id: admin.id, role: admin.role, username: admin.username },
+        manager: { authProvider: 'LOCAL' as const, id: manager.id, role: manager.role, username: manager.username },
+        outsider: { authProvider: 'LOCAL' as const, id: outsider.id, role: outsider.role, username: outsider.username },
+        viewer: { authProvider: 'LOCAL' as const, id: viewer.id, role: viewer.role, username: viewer.username },
+      };
+      hiddenRunId = hiddenRun.id;
+      visibleRunId = visibleRun.id;
+      visibleWorkflowId = visibleWorkflow.id;
+    },
+  );
+  afterAll(/** Restores shared test state for afterAll. */ async () => prisma.onModuleDestroy());
 
   it.each([
     ['admin', [expect.any(String), expect.any(String)], 1, 1],
@@ -134,15 +136,19 @@ describe('workflow-run authorization integration', () => {
     ['outsider', [], 0, 0],
   ] as const)(
     '%s sees only permitted runs in lists, failures, summaries, trends, and repository health',
+    /** Verifies %s sees only permitted runs in lists, failures, summaries, trends, and repository health. */
     async (role, expectedRunIds, failures, successes) => {
       const user = users[role];
       const ability = await runs.getReadAbility(user);
       const visible = await runs.findMany<{ id: string }>({ orderBy: { id: 'asc' } }, ability);
 
-      expect(visible.map((run) => run.id)).toEqual(expectedRunIds);
+      expect(visible.map(/** Projects each entry using `run.id`. */ (run) => run.id)).toEqual(expectedRunIds);
       if (role === 'admin')
-        expect(visible.map((run) => run.id)).toEqual(expect.arrayContaining([visibleRunId, hiddenRunId]));
-      if (role !== 'admin') expect(visible.map((run) => run.id)).not.toContain(hiddenRunId);
+        expect(visible.map(/** Projects each entry using `run.id`. */ (run) => run.id)).toEqual(
+          expect.arrayContaining([visibleRunId, hiddenRunId]),
+        );
+      if (role !== 'admin')
+        expect(visible.map(/** Projects each entry using `run.id`. */ (run) => run.id)).not.toContain(hiddenRunId);
 
       await expect(dashboard.getLatestFailures(user)).resolves.toHaveLength(failures);
       await expect(
@@ -175,7 +181,7 @@ describe('workflow-run authorization integration', () => {
     },
   );
 
-  it('removes a failed provider run after the same run is refreshed as successful', async () => {
+  it('removes a failed provider run after the same run is refreshed as successful', /** Verifies removes a failed provider run after the same run is refreshed as successful. */ async () => {
     const ability = await runs.getReadAbility(users.viewer);
 
     await expect(runs.findNeedsAttention<{ id: string }>({ select: { id: true } }, ability)).resolves.toEqual([
@@ -190,9 +196,10 @@ describe('workflow-run authorization integration', () => {
     await expect(runs.findNeedsAttention<{ id: string }>({ select: { id: true } }, ability)).resolves.toEqual([]);
   });
 
-  it('keeps only open change-request failures after closure or merge', async () => {
+  it('keeps only open change-request failures after closure or merge', /** Verifies keeps only open change-request failures after closure or merge. */ async () => {
     const previousFailure = await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } });
     const mergeTime = new Date('2026-08-26T11:00:00.000Z');
+    /** Creates run. */
     const createRun = async (input: {
       changeRequestNumber?: string;
       changeRequestState?: 'OPEN' | 'CLOSED' | 'MERGED';
@@ -291,6 +298,7 @@ describe('workflow-run authorization integration', () => {
     ['SUCCESS', 0],
   ] as const)(
     'reports an earlier failure after a newer %s run only when it remains the latest terminal result',
+    /** Verifies reports an earlier failure after a newer %s run only when it remains the latest terminal result. */
     async (status, expectedFailures) => {
       const previousFailure = await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } });
       const laterTimestamp = new Date('2026-08-26T11:00:00.000Z');
@@ -315,7 +323,7 @@ describe('workflow-run authorization integration', () => {
     },
   );
 
-  it('keeps historical approvals while excluding superseded and merged contexts from current lists and counts', async () => {
+  it('keeps historical approvals while excluding superseded and merged contexts from current lists and counts', /** Verifies keeps historical approvals while excluding superseded and merged contexts from current lists and counts. */ async () => {
     const previousRun = await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } });
     const oldApprovalTimestamp = new Date('2026-08-26T11:00:00.000Z');
     const successTimestamp = new Date('2026-08-26T12:00:00.000Z');
@@ -405,7 +413,7 @@ describe('workflow-run authorization integration', () => {
     await expect(dashboard.getAwaitingApproval(users.outsider)).resolves.toEqual([]);
   });
 
-  it('paginates the complete needs-attention set without leaking inaccessible runs through metadata', async () => {
+  it('paginates the complete needs-attention set without leaking inaccessible runs through metadata', /** Verifies paginates the complete needs-attention set without leaking inaccessible runs through metadata. */ async () => {
     const visibleFailure = await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } });
     const secondFailure = await prisma.workflowRun.create({
       data: {
@@ -444,7 +452,7 @@ describe('workflow-run authorization integration', () => {
     expect(outsiderPage.items).toEqual([]);
   });
 
-  it('keeps internal Dependabot runs in history but excludes them from needs attention', async () => {
+  it('keeps internal Dependabot runs in history but excludes them from needs attention', /** Verifies keeps internal Dependabot runs in history but excludes them from needs attention. */ async () => {
     const timestamp = new Date('2026-08-26T12:00:00.000Z');
     const workflow = await prisma.workflow.create({
       data: {

@@ -11,7 +11,7 @@ import { McpTokensController } from './mcp-tokens.controller.js';
 import { McpToolsService } from './mcp-tools.service.js';
 import { McpController } from './mcp.controller.js';
 
-@Module({
+/** Registers the mcp module providers and imports with Nest. */ @Module({
   controllers: [McpController, McpTokensController],
   imports: [CaslModule, DashboardModule, RepositoriesModule, WorkflowRunsModule],
   providers: [McpHttpService, McpServerFactory, McpTokenService, McpToolsService],

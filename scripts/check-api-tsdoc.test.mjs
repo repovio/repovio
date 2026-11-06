@@ -5,11 +5,12 @@ import ts from 'typescript';
 
 import { checkSource, documentedDeclarations } from './check-api-tsdoc.mjs';
 
+/** Parses a TypeScript snippet with parent links for documentation assertions. */
 function source(text) {
   return ts.createSourceFile('example.ts', text, ts.ScriptTarget.Latest, true);
 }
 
-test('checks private methods, accessors, constructors, arrows, and method contracts', () => {
+test('checks private methods, accessors, constructors, arrows, and method contracts', /** Verifies checks private methods, accessors, constructors, arrows, and method contracts. */ () => {
   const input = source(`
     class Example {
       constructor(value: string) {}
@@ -23,10 +24,15 @@ test('checks private methods, accessors, constructors, arrows, and method contra
     const helpers = { map: (value: string) => value };
   `);
   assert.equal(documentedDeclarations(input).length, 8);
-  assert.equal(checkSource(input).filter((error) => error.includes('summary')).length, 8);
+  assert.equal(
+    checkSource(input).filter(
+      /** Keeps entries matching `error.includes('summary')`. */ (error) => error.includes('summary'),
+    ).length,
+    8,
+  );
 });
 
-test('ignores anonymous callbacks and accepts complete generic documentation', () => {
+test('ignores anonymous callbacks and accepts complete generic documentation', /** Verifies ignores anonymous callbacks and accepts complete generic documentation. */ () => {
   const input = source(`
     /** Map a value.
      * @typeParam T - Value type.
@@ -41,7 +47,7 @@ test('ignores anonymous callbacks and accepts complete generic documentation', (
   assert.deepEqual(checkSource(input), []);
 });
 
-test('detects stale, empty, and missing signature tags', () => {
+test('detects stale, empty, and missing signature tags', /** Verifies detects stale, empty, and missing signature tags. */ () => {
   const errors = checkSource(
     source(`
     /** Return a value.
@@ -54,7 +60,7 @@ test('detects stale, empty, and missing signature tags', () => {
   assert.equal(errors.length, 3);
 });
 
-test('does not require return tags for constructors or setters', () => {
+test('does not require return tags for constructors or setters', /** Verifies does not require return tags for constructors or setters. */ () => {
   assert.deepEqual(
     checkSource(
       source(`
@@ -70,7 +76,7 @@ test('does not require return tags for constructors or setters', () => {
   );
 });
 
-test('requires throws documentation for escaping errors but not handled failures', () => {
+test('requires throws documentation for escaping errors but not handled failures', /** Verifies requires throws documentation for escaping errors but not handled failures. */ () => {
   const undocumented = source(`
     /** Validate input. @returns No return value. */
     function validate() { throw new Error('Invalid input.'); }

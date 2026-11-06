@@ -24,12 +24,16 @@ const props = withDefaults(
 
 const { load } = useAvatarImages();
 const source = ref<string>();
-const identityLabel = computed(() => getUserIdentityLabel(props));
-const initials = computed(() => getUserInitials(props));
+const identityLabel = computed(
+  /** Derives identity label from the current reactive dependencies. */ () => getUserIdentityLabel(props),
+);
+const initials = computed(/** Derives initials from the current reactive dependencies. */ () => getUserInitials(props));
 let loadSequence = 0;
 
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => [props.userId, props.avatarUpdatedAt] as const,
+  /** Synchronizes user avatar when the observed state changes. */
   async ([userId, avatarUpdatedAt]) => {
     const sequence = ++loadSequence;
     const loadedSource = await load(userId, avatarUpdatedAt);

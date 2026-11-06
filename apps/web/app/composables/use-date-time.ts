@@ -10,6 +10,7 @@ export function useDateTime() {
   const { settings } = storeToRefs(useSettingsStore());
 
   return {
+    /** Formats date time. */
     formatDateTime: (timestamp: ApiTimestamp): string =>
       formatDateTimeValue(timestamp, settings.value.dateTimeFormat, locale.value),
   };

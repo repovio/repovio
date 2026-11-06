@@ -148,6 +148,7 @@ export class McpServerFactory {
         outputSchema: paginatedRepositorySchema,
         title: 'List repositories',
       },
+      /** Evaluates `this.result(await this.tools.listRepositories(user, input))` when server.registerTool invokes this callback. */
       async (input) => this.result(await this.tools.listRepositories(user, input)),
     );
     server.registerTool(
@@ -159,6 +160,7 @@ export class McpServerFactory {
         outputSchema: repositorySchema,
         title: 'Get repository',
       },
+      /** Evaluates `this.result(await this.tools.getRepository(user, repositoryId))` when server.registerTool invokes this callback. */
       async ({ repositoryId }) => this.result(await this.tools.getRepository(user, repositoryId)),
     );
     server.registerTool(
@@ -170,6 +172,7 @@ export class McpServerFactory {
         outputSchema: paginatedWorkflowRunSchema,
         title: 'List workflow runs',
       },
+      /** Evaluates `this.result(await this.tools.listWorkflowRuns(user, input))` when server.registerTool invokes this callback. */
       async (input) => this.result(await this.tools.listWorkflowRuns(user, input)),
     );
     server.registerTool(
@@ -181,6 +184,7 @@ export class McpServerFactory {
         outputSchema: paginatedWorkflowRunSchema,
         title: 'List workflow runs needing attention',
       },
+      /** Evaluates `this.result(await this.tools.listNeedsAttention(user, input))` when server.registerTool invokes this callback. */
       async (input) => this.result(await this.tools.listNeedsAttention(user, input)),
     );
     server.registerTool(
@@ -192,6 +196,7 @@ export class McpServerFactory {
         outputSchema: paginatedDashboardRunSchema,
         title: 'List workflow runs awaiting approval',
       },
+      /** Evaluates `this.result(await this.tools.listAwaitingApproval(user, input))` when server.registerTool invokes this callback. */
       async (input) => this.result(await this.tools.listAwaitingApproval(user, input)),
     );
     server.registerTool(
@@ -203,6 +208,7 @@ export class McpServerFactory {
         outputSchema: dashboardSummarySchema,
         title: 'Get dashboard summary',
       },
+      /** Evaluates `this.result(await this.tools.getDashboardSummary(user, from, to))` when server.registerTool invokes this callback. */
       async ({ from, to }) => this.result(await this.tools.getDashboardSummary(user, from, to)),
     );
     server.registerTool(
@@ -214,6 +220,7 @@ export class McpServerFactory {
         outputSchema: trendSchema,
         title: 'Get workflow trend',
       },
+      /** Evaluates `this.result({ buckets: await this.tools.getWorkflowTrend(user, from, to, bucket) })` when server.registerTool invokes this callback. */
       async ({ bucket, from, to }) =>
         this.result({ buckets: await this.tools.getWorkflowTrend(user, from, to, bucket) }),
     );

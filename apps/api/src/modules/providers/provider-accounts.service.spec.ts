@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import { ProviderAccountsService } from './provider-accounts.service.js';
 
-describe('ProviderAccountsService', () => {
+describe('ProviderAccountsService', /** Groups scenarios for ProviderAccountsService. */ () => {
   const prisma = {
     providerAccount: {
       create: jest.fn().mockResolvedValue({ id: 'provider-id' }),
@@ -17,17 +17,24 @@ describe('ProviderAccountsService', () => {
     },
   };
   const credentials = {
-    decrypt: jest.fn((value: string) => `decrypted:${value}`),
+    decrypt: jest.fn(
+      /** Provides isolated decrypt behavior for this test fixture. */ (value: string) => `decrypted:${value}`,
+    ),
     accessToken: jest.fn(
+      /** Provides isolated accessToken behavior for this test fixture. */
       async (account: { encryptedAccessToken: string }) => `decrypted:${account.encryptedAccessToken}`,
     ),
-    encrypt: jest.fn((value: string) => `encrypted:${value}`),
+    encrypt: jest.fn(
+      /** Provides isolated encrypt behavior for this test fixture. */ (value: string) => `encrypted:${value}`,
+    ),
   };
   const adapters = {
-    get: jest.fn(() => ({
-      listRepositories: jest.fn().mockResolvedValue([]),
-      validateAccount: jest.fn().mockResolvedValue({ valid: true }),
-    })),
+    get: jest.fn(
+      /** Provides isolated get behavior for this test fixture. */ () => ({
+        listRepositories: jest.fn().mockResolvedValue([]),
+        validateAccount: jest.fn().mockResolvedValue({ valid: true }),
+      }),
+    ),
   };
   const syncQueue = { enqueueRepositorySync: jest.fn().mockResolvedValue(undefined) };
   const service = new ProviderAccountsService(
@@ -38,9 +45,9 @@ describe('ProviderAccountsService', () => {
   );
   const admin = { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('encrypts OAuth provider credentials before persistence', async () => {
+  it('encrypts OAuth provider credentials before persistence', /** Verifies encrypts OAuth provider credentials before persistence. */ async () => {
     await service.createFromOAuth(admin, {
       accessToken: 'access-token',
       displayName: 'GitHub',
@@ -54,7 +61,7 @@ describe('ProviderAccountsService', () => {
     );
   });
 
-  it('encrypts manually supplied provider tokens before persistence', async () => {
+  it('encrypts manually supplied provider tokens before persistence', /** Verifies encrypts manually supplied provider tokens before persistence. */ async () => {
     await service.create(admin, {
       accessToken: 'personal-access-token',
       displayName: 'GitLab',
@@ -69,7 +76,7 @@ describe('ProviderAccountsService', () => {
     );
   });
 
-  it('requires and encrypts the Gitea base URL and personal access token', async () => {
+  it('requires and encrypts the Gitea base URL and personal access token', /** Verifies requires and encrypts the Gitea base URL and personal access token. */ async () => {
     await expect(
       service.create(admin, { accessToken: 'token', displayName: 'Gitea', providerType: 'GITEA' }),
     ).rejects.toBeInstanceOf(BadRequestException);
@@ -92,14 +99,14 @@ describe('ProviderAccountsService', () => {
     );
   });
 
-  it('rejects non-administrators before querying provider accounts', async () => {
+  it('rejects non-administrators before querying provider accounts', /** Verifies rejects non-administrators before querying provider accounts. */ async () => {
     await expect(
       service.list({ authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' }),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(prisma.providerAccount.findMany).not.toHaveBeenCalled();
   });
 
-  it('does not persist a provider account when its credentials cannot be validated', async () => {
+  it('does not persist a provider account when its credentials cannot be validated', /** Verifies does not persist a provider account when its credentials cannot be validated. */ async () => {
     adapters.get.mockReturnValueOnce({
       validateAccount: jest.fn().mockRejectedValue(new Error('Unauthorized')),
     } as never);
@@ -116,7 +123,7 @@ describe('ProviderAccountsService', () => {
     expect(credentials.encrypt).not.toHaveBeenCalled();
   });
 
-  it('marks repositories that are already tracked for the selected provider account', async () => {
+  it('marks repositories that are already tracked for the selected provider account', /** Verifies marks repositories that are already tracked for the selected provider account. */ async () => {
     prisma.providerAccount.findUnique.mockResolvedValue({
       baseUrl: null,
       enabled: true,
@@ -148,7 +155,7 @@ describe('ProviderAccountsService', () => {
     });
   });
 
-  it('re-validates the selected repository with the provider before creating it', async () => {
+  it('re-validates the selected repository with the provider before creating it', /** Verifies re-validates the selected repository with the provider before creating it. */ async () => {
     prisma.providerAccount.findUnique.mockResolvedValue({
       baseUrl: null,
       enabled: true,

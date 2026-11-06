@@ -22,8 +22,12 @@
     <UCard :ui="{ body: 'space-y-6' }">
       <template #header>
         <div>
-          <h2 class="font-semibold">{{ $t('settings.general') }}</h2>
-          <p class="text-sm text-muted">{{ $t('settings.generalDescription') }}</p>
+          <h2 class="font-semibold">
+            {{ $t('settings.general') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t('settings.generalDescription') }}
+          </p>
         </div>
       </template>
 
@@ -131,8 +135,12 @@
         </UFormField>
 
         <div class="rounded-md bg-elevated p-4">
-          <p class="text-xs font-medium tracking-wide text-muted uppercase">{{ $t('settings.preview') }}</p>
-          <p class="mt-1 font-mono text-sm">{{ dateTimePreview }}</p>
+          <p class="text-xs font-medium tracking-wide text-muted uppercase">
+            {{ $t('settings.preview') }}
+          </p>
+          <p class="mt-1 font-mono text-sm">
+            {{ dateTimePreview }}
+          </p>
         </div>
 
         <div class="flex justify-end border-t border-default pt-6">
@@ -163,10 +171,18 @@ const saveError = ref(false);
 const saved = ref(false);
 const saving = ref(false);
 const { reset: resetDirtyState } = useUnsavedChangesGuard(form);
-const dateTimeFormatOptions = computed(() =>
-  defaultDateTimeFormats.map((format) => ({ label: t(`settings.dateTimeFormats.${format}`), value: format })),
+const dateTimeFormatOptions = computed(
+  /** Derives date time format options from the current reactive dependencies. */ () =>
+    defaultDateTimeFormats.map(
+      /** Projects each entry using `({ label: t(`settings.dateTimeFormats.${format}`), value: format })`. */ (
+        format,
+      ) => ({ label: t(`settings.dateTimeFormats.${format}`), value: format }),
+    ),
 );
-const dateTimePreview = computed(() => formatDateTimeValue(previewTimestamp, form.dateTimeFormat, locale.value, 'UTC'));
+const dateTimePreview = computed(
+  /** Derives date time preview from the current reactive dependencies. */ () =>
+    formatDateTimeValue(previewTimestamp, form.dateTimeFormat, locale.value, 'UTC'),
+);
 
 /** Load persisted settings and initialize the editable form snapshot. */
 async function loadSettings(): Promise<void> {
@@ -193,5 +209,5 @@ async function saveSettings(event: FormSubmitEvent<ApplicationSettings>): Promis
   }
 }
 
-onMounted(() => void loadSettings());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void loadSettings());
 </script>

@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('settings.passwordChange') }}</h2>
-        <p class="text-sm text-muted">{{ $t('settings.passwordChangeDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('settings.passwordChange') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('settings.passwordChangeDescription') }}
+        </p>
       </div>
     </template>
 
@@ -78,7 +82,10 @@ import { createUpdatePasswordFormSchema, type UpdatePasswordForm } from '~/types
 
 const auth = useAuthStore();
 const { t } = useI18n();
-const localizedPasswordFormSchema = computed(() => createUpdatePasswordFormSchema(t('auth.passwordMismatch')));
+const localizedPasswordFormSchema = computed(
+  /** Derives localized password form schema from the current reactive dependencies. */ () =>
+    createUpdatePasswordFormSchema(t('auth.passwordMismatch')),
+);
 const error = ref('');
 const saved = ref(false);
 const saving = ref(false);

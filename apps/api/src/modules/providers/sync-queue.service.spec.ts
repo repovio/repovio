@@ -4,8 +4,8 @@ import { ProviderRequestError } from './provider-request.error.js';
 import { ProviderSyncQueueService } from './sync-queue.service.js';
 import type { ProviderSyncService } from './sync.service.js';
 
-describe('ProviderSyncQueueService', () => {
-  it('enqueues repository webhooks with a 15-second database debounce', async () => {
+describe('ProviderSyncQueueService', /** Groups scenarios for ProviderSyncQueueService. */ () => {
+  it('enqueues repository webhooks with a 15-second database debounce', /** Verifies enqueues repository webhooks with a 15-second database debounce. */ async () => {
     const executeRaw = jest.fn().mockResolvedValue(1);
     const service = createService({
       $executeRaw: executeRaw,
@@ -20,7 +20,7 @@ describe('ProviderSyncQueueService', () => {
     expect(runAfter.getTime() - requestedAt.getTime()).toBe(15_000);
   });
 
-  it('enqueues direct repository requests without a delay', async () => {
+  it('enqueues direct repository requests without a delay', /** Verifies enqueues direct repository requests without a delay. */ async () => {
     const executeRaw = jest.fn().mockResolvedValue(1);
     const service = createService({ $executeRaw: executeRaw });
 
@@ -32,7 +32,7 @@ describe('ProviderSyncQueueService', () => {
     expect(runAfter.getTime()).toBe(requestedAt.getTime());
   });
 
-  it('atomically claims one account and removes a completed request', async () => {
+  it('atomically claims one account and removes a completed request', /** Verifies atomically claims one account and removes a completed request. */ async () => {
     const mocks = processingMocks();
     const service = createService(mocks.prisma, mocks.sync);
 
@@ -51,7 +51,7 @@ describe('ProviderSyncQueueService', () => {
     );
   });
 
-  it('retains a follow-up request when another delivery arrives during synchronization', async () => {
+  it('retains a follow-up request when another delivery arrives during synchronization', /** Verifies retains a follow-up request when another delivery arrives during synchronization. */ async () => {
     const mocks = processingMocks({ completedGeneration: 2 });
     const service = createService(mocks.prisma, mocks.sync);
 
@@ -64,7 +64,7 @@ describe('ProviderSyncQueueService', () => {
     });
   });
 
-  it('retains a warning request when an alert kind is unavailable', async () => {
+  it('retains a warning request when an alert kind is unavailable', /** Verifies retains a warning request when an alert kind is unavailable. */ async () => {
     const mocks = processingMocks({ warningKinds: ['SECRET'] });
     const service = createService(mocks.prisma, mocks.sync);
 
@@ -77,7 +77,7 @@ describe('ProviderSyncQueueService', () => {
     });
   });
 
-  it('defers the repository and provider account to a supplied rate-limit reset', async () => {
+  it('defers the repository and provider account to a supplied rate-limit reset', /** Verifies defers the repository and provider account to a supplied rate-limit reset. */ async () => {
     const retryAt = new Date(Date.now() + 10 * 60_000);
     const error = new ProviderRequestError('GitHub', 429, retryAt);
     const mocks = processingMocks({ error });
@@ -99,19 +99,22 @@ describe('ProviderSyncQueueService', () => {
     [new ProviderRequestError('GitHub', 401, null), 'Provider credentials were rejected.'],
     [new ProviderRequestError('GitHub', 403, null), 'Provider permissions are insufficient.'],
     [new TypeError('fetch failed'), 'Provider network request failed.'],
-  ])('persists a distinct safe provider failure for %s', async (error, message) => {
-    const mocks = processingMocks({ error });
-    const service = createService(mocks.prisma, mocks.sync);
+  ])(
+    'persists a distinct safe provider failure for %s',
+    /** Verifies persists a distinct safe provider failure for %s. */ async (error, message) => {
+      const mocks = processingMocks({ error });
+      const service = createService(mocks.prisma, mocks.sync);
 
-    await service.processDueRequests();
+      await service.processDueRequests();
 
-    expect(mocks.transaction.repositorySyncRequest.update).toHaveBeenCalledWith({
-      data: expect.objectContaining({ lastError: message }),
-      where: { id: mocks.candidate.id },
-    });
-  });
+      expect(mocks.transaction.repositorySyncRequest.update).toHaveBeenCalledWith({
+        data: expect.objectContaining({ lastError: message }),
+        where: { id: mocks.candidate.id },
+      });
+    },
+  );
 
-  it('enqueues only idle or failed repositories for a manual run-all request', async () => {
+  it('enqueues only idle or failed repositories for a manual run-all request', /** Verifies enqueues only idle or failed repositories for a manual run-all request. */ async () => {
     const repository = { id: '00000000-0000-0000-0000-000000000001' };
     const service = createService({
       repository: {
@@ -124,7 +127,7 @@ describe('ProviderSyncQueueService', () => {
     await expect(service.enqueueAvailableRepositories()).resolves.toBe(1);
   });
 
-  it('does not enqueue a repository that is already waiting or running', async () => {
+  it('does not enqueue a repository that is already waiting or running', /** Verifies does not enqueue a repository that is already waiting or running. */ async () => {
     const service = createService({
       repository: {
         findFirst: jest.fn().mockResolvedValue({ id: 'repository-id', syncRequest: { status: 'RUNNING' } }),
@@ -134,12 +137,18 @@ describe('ProviderSyncQueueService', () => {
     await expect(service.enqueueRepositorySyncIfAvailable('repository-id')).resolves.toBe(false);
   });
 
-  it('persists progress only for the active request lease', async () => {
+  it('persists progress only for the active request lease', /** Verifies persists progress only for the active request lease. */ async () => {
     const mocks = processingMocks();
-    mocks.sync.syncRepositoryById.mockImplementation(async (_repositoryId, _scopes, reportProgress) => {
-      await reportProgress({ current: 2, phase: 'SYNCING_ISSUES', total: 5 });
-      return true;
-    });
+    mocks.sync.syncRepositoryById.mockImplementation(
+      /** Provides isolated sync-queue.service behavior for this test fixture. */ async (
+        _repositoryId,
+        _scopes,
+        reportProgress,
+      ) => {
+        await reportProgress({ current: 2, phase: 'SYNCING_ISSUES', total: 5 });
+        return true;
+      },
+    );
     const service = createService(mocks.prisma, mocks.sync);
 
     await service.processDueRequests();
@@ -151,14 +160,18 @@ describe('ProviderSyncQueueService', () => {
   });
 });
 
+/** Creates service. */
 function createService(prisma: object, sync: object = { syncRepositoryById: jest.fn() }): ProviderSyncQueueService {
   return new ProviderSyncQueueService(
     prisma as PrismaService,
-    { run: jest.fn((_name, callback) => callback()) } as unknown as JobRunnerService,
+    {
+      run: jest.fn(/** Provides isolated run behavior for this test fixture. */ (_name, callback) => callback()),
+    } as unknown as JobRunnerService,
     sync as ProviderSyncService,
   );
 }
 
+/** Creates isolated queue-processing dependencies for this scenario. */
 function processingMocks(options: { completedGeneration?: number; error?: Error; warningKinds?: string[] } = {}) {
   const candidate = {
     attempt: 0,
@@ -178,25 +191,32 @@ function processingMocks(options: { completedGeneration?: number; error?: Error;
   let leaseToken: string | null = null;
   const transaction = {
     providerAccount: {
-      updateMany: jest.fn(({ data }) => {
-        if (data.syncLeaseToken) leaseToken = data.syncLeaseToken;
-        return Promise.resolve({ count: 1 });
-      }),
+      updateMany: jest.fn(
+        /** Provides isolated updateMany behavior for this test fixture. */ ({ data }) => {
+          if (data.syncLeaseToken) leaseToken = data.syncLeaseToken;
+          return Promise.resolve({ count: 1 });
+        },
+      ),
     },
     repositorySyncRequest: {
       delete: jest.fn().mockResolvedValue(undefined),
-      findUnique: jest.fn(() =>
-        Promise.resolve({
-          ...candidate,
-          generation: options.completedGeneration ?? candidate.generation,
-          leaseToken,
-        }),
+      findUnique: jest.fn(
+        /** Provides isolated findUnique behavior for this test fixture. */ () =>
+          Promise.resolve({
+            ...candidate,
+            generation: options.completedGeneration ?? candidate.generation,
+            leaseToken,
+          }),
       ),
       update: jest.fn().mockResolvedValue(undefined),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     securityAlertSyncState: {
-      findMany: jest.fn().mockResolvedValue((options.warningKinds ?? []).map((kind) => ({ kind }))),
+      findMany: jest
+        .fn()
+        .mockResolvedValue(
+          (options.warningKinds ?? []).map(/** Projects each entry using `({ kind })`. */ (kind) => ({ kind })),
+        ),
     },
   };
   const prisma = {
@@ -205,7 +225,9 @@ function processingMocks(options: { completedGeneration?: number; error?: Error;
       findMany: jest.fn().mockResolvedValueOnce([candidate]).mockResolvedValueOnce([]),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
-    transaction: jest.fn((callback) => callback(transaction)),
+    transaction: jest.fn(
+      /** Provides isolated transaction behavior for this test fixture. */ (callback) => callback(transaction),
+    ),
   };
   const sync = {
     syncRepositoryById: options.error ? jest.fn().mockRejectedValue(options.error) : jest.fn().mockResolvedValue(true),

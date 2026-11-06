@@ -15,8 +15,8 @@ const base = {
   user: { id: 1, login: 'author' },
 };
 
-describe('Gitea-compatible work-item normalization', () => {
-  it('retains issue actors, labels, milestone, and timestamps', () => {
+describe('Gitea-compatible work-item normalization', /** Groups scenarios for Gitea-compatible work-item normalization. */ () => {
+  it('retains issue actors, labels, milestone, and timestamps', /** Verifies retains issue actors, labels, milestone, and timestamps. */ () => {
     expect(toProviderIssue({ ...base, milestone: { title: 'v1' } })).toMatchObject({
       assignees: [{ providerActorId: '2', username: 'reviewer' }],
       author: { providerActorId: '1', username: 'author' },
@@ -29,7 +29,7 @@ describe('Gitea-compatible work-item normalization', () => {
     });
   });
 
-  it('keeps pull-request lifecycle and branches separate from workflow state', () => {
+  it('keeps pull-request lifecycle and branches separate from workflow state', /** Verifies keeps pull-request lifecycle and branches separate from workflow state. */ () => {
     expect(
       toProviderPullRequest({
         ...base,

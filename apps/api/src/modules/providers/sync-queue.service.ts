@@ -57,7 +57,11 @@ export class ProviderSyncQueueService {
    */
   @Interval(ENV.SCHEDULER_SYNC_INTERVAL_SECONDS * 1000)
   async scheduleReconciliation(): Promise<void> {
-    await this.jobs.run('provider-sync-enqueue', () => this.enqueueEnabledRepositories());
+    await this.jobs.run(
+      'provider-sync-enqueue',
+      /** Evaluates `this.enqueueEnabledRepositories()` when this.jobs.run invokes this callback. */ () =>
+        this.enqueueEnabledRepositories(),
+    );
   }
 
   /**
@@ -67,7 +71,11 @@ export class ProviderSyncQueueService {
    */
   @Interval(queueWorkerIntervalMs)
   async scheduleQueueProcessing(): Promise<void> {
-    await this.jobs.run('provider-sync-worker', () => this.processDueRequests());
+    await this.jobs.run(
+      'provider-sync-worker',
+      /** Evaluates `this.processDueRequests()` when this.jobs.run invokes this callback. */ () =>
+        this.processDueRequests(),
+    );
   }
 
   /**
@@ -329,63 +337,65 @@ export class ProviderSyncQueueService {
   ): Promise<ClaimedSyncRequest | null> {
     const leaseToken = randomUUID();
     const leaseExpiresAt = new Date(now.getTime() + syncLeaseMs);
-    return this.prisma.transaction(async (transaction) => {
-      const accountClaim = await transaction.providerAccount.updateMany({
-        data: { syncLeaseExpiresAt: leaseExpiresAt, syncLeaseToken: leaseToken },
-        where: {
-          enabled: true,
-          id: candidate.repository.providerAccountId,
-          OR: [{ syncLeaseExpiresAt: null }, { syncLeaseExpiresAt: { lte: now } }],
-          AND: [{ OR: [{ rateLimitResetAt: null }, { rateLimitResetAt: { lte: now } }] }],
-        },
-      });
-      if (accountClaim.count === 0) return null;
+    return this.prisma.transaction(
+      /** Claims an eligible queued synchronization request under the transaction lock. */ async (transaction) => {
+        const accountClaim = await transaction.providerAccount.updateMany({
+          data: { syncLeaseExpiresAt: leaseExpiresAt, syncLeaseToken: leaseToken },
+          where: {
+            enabled: true,
+            id: candidate.repository.providerAccountId,
+            OR: [{ syncLeaseExpiresAt: null }, { syncLeaseExpiresAt: { lte: now } }],
+            AND: [{ OR: [{ rateLimitResetAt: null }, { rateLimitResetAt: { lte: now } }] }],
+          },
+        });
+        if (accountClaim.count === 0) return null;
 
-      const requestClaim = await transaction.repositorySyncRequest.updateMany({
-        data: {
-          attempt: { increment: 1 },
-          leaseExpiresAt,
-          leaseToken,
-          progressCurrent: null,
-          progressPhase: 'LOADING_REPOSITORY',
-          progressTotal: null,
-          startedAt: now,
-          status: 'RUNNING',
-        },
-        where: {
+        const requestClaim = await transaction.repositorySyncRequest.updateMany({
+          data: {
+            attempt: { increment: 1 },
+            leaseExpiresAt,
+            leaseToken,
+            progressCurrent: null,
+            progressPhase: 'LOADING_REPOSITORY',
+            progressTotal: null,
+            startedAt: now,
+            status: 'RUNNING',
+          },
+          where: {
+            id: candidate.id,
+            OR: [
+              { runAfter: { lte: now }, status: 'PENDING' },
+              { leaseExpiresAt: { lte: now }, status: 'RUNNING' },
+            ],
+          },
+        });
+        if (requestClaim.count === 0) {
+          await this.releaseAccountLease(transaction, candidate.repository.providerAccountId, leaseToken);
+          return null;
+        }
+
+        return {
+          attempt: candidate.attempt + 1,
+          generation: candidate.generation,
           id: candidate.id,
-          OR: [
-            { runAfter: { lte: now }, status: 'PENDING' },
-            { leaseExpiresAt: { lte: now }, status: 'RUNNING' },
-          ],
-        },
-      });
-      if (requestClaim.count === 0) {
-        await this.releaseAccountLease(transaction, candidate.repository.providerAccountId, leaseToken);
-        return null;
-      }
-
-      return {
-        attempt: candidate.attempt + 1,
-        generation: candidate.generation,
-        id: candidate.id,
-        leaseToken,
-        providerAccountId: candidate.repository.providerAccountId,
-        repositoryId: candidate.repositoryId,
-        scopes:
-          candidate.syncWorkflows === undefined &&
-          candidate.syncIssues === undefined &&
-          candidate.syncPullRequests === undefined &&
-          candidate.syncAlerts === undefined
-            ? allSyncScopes
-            : [
-                ...(candidate.syncWorkflows ? ['WORKFLOWS' as const] : []),
-                ...(candidate.syncIssues ? ['ISSUES' as const] : []),
-                ...(candidate.syncPullRequests ? ['PULL_REQUESTS' as const] : []),
-                ...(candidate.syncAlerts ? ['ALERTS' as const] : []),
-              ],
-      };
-    });
+          leaseToken,
+          providerAccountId: candidate.repository.providerAccountId,
+          repositoryId: candidate.repositoryId,
+          scopes:
+            candidate.syncWorkflows === undefined &&
+            candidate.syncIssues === undefined &&
+            candidate.syncPullRequests === undefined &&
+            candidate.syncAlerts === undefined
+              ? allSyncScopes
+              : [
+                  ...(candidate.syncWorkflows ? ['WORKFLOWS' as const] : []),
+                  ...(candidate.syncIssues ? ['ISSUES' as const] : []),
+                  ...(candidate.syncPullRequests ? ['PULL_REQUESTS' as const] : []),
+                  ...(candidate.syncAlerts ? ['ALERTS' as const] : []),
+                ],
+        };
+      },
+    );
   }
 
   /**
@@ -396,8 +406,12 @@ export class ProviderSyncQueueService {
    */
   private async processClaimedRequest(request: ClaimedSyncRequest): Promise<void> {
     try {
-      await this.sync.syncRepositoryById(request.repositoryId, request.scopes, (update) =>
-        this.updateRequestProgress(request, update),
+      await this.sync.syncRepositoryById(
+        request.repositoryId,
+        request.scopes,
+        /** Evaluates `this.updateRequestProgress(request, update)` when this.sync.syncRepositoryById invokes this callback. */ (
+          update,
+        ) => this.updateRequestProgress(request, update),
       );
       await this.completeRequest(request);
     } catch (error) {
@@ -412,52 +426,54 @@ export class ProviderSyncQueueService {
    * @returns A promise that resolves when the operation completes.
    */
   private async completeRequest(request: ClaimedSyncRequest): Promise<void> {
-    await this.prisma.transaction(async (transaction) => {
-      const current = await transaction.repositorySyncRequest.findUnique({ where: { id: request.id } });
-      if (current?.leaseToken === request.leaseToken) {
-        if (current.generation > request.generation) {
-          await transaction.repositorySyncRequest.update({
-            data: {
-              attempt: 0,
-              lastError: null,
-              leaseExpiresAt: null,
-              leaseToken: null,
-              progressCurrent: null,
-              progressPhase: null,
-              progressTotal: null,
-              startedAt: null,
-              status: 'PENDING',
-            },
-            where: { id: request.id },
-          });
-        } else {
-          const warningKinds = await transaction.securityAlertSyncState.findMany({
-            select: { kind: true },
-            where: { availability: 'UNAVAILABLE', repositoryId: request.repositoryId },
-          });
-          if (request.scopes.includes('ALERTS') && warningKinds.length > 0) {
+    await this.prisma.transaction(
+      /** Persists successful queue completion and releases the repository lease. */ async (transaction) => {
+        const current = await transaction.repositorySyncRequest.findUnique({ where: { id: request.id } });
+        if (current?.leaseToken === request.leaseToken) {
+          if (current.generation > request.generation) {
             await transaction.repositorySyncRequest.update({
               data: {
-                lastError: `Security alerts unavailable: ${warningKinds.map(({ kind }) => kind).join(', ')}.`,
+                attempt: 0,
+                lastError: null,
                 leaseExpiresAt: null,
                 leaseToken: null,
                 progressCurrent: null,
                 progressPhase: null,
                 progressTotal: null,
-                status: 'WARNING',
+                startedAt: null,
+                status: 'PENDING',
               },
               where: { id: request.id },
             });
           } else {
-            await transaction.repositorySyncRequest.delete({ where: { id: request.id } });
+            const warningKinds = await transaction.securityAlertSyncState.findMany({
+              select: { kind: true },
+              where: { availability: 'UNAVAILABLE', repositoryId: request.repositoryId },
+            });
+            if (request.scopes.includes('ALERTS') && warningKinds.length > 0) {
+              await transaction.repositorySyncRequest.update({
+                data: {
+                  lastError: `Security alerts unavailable: ${warningKinds.map(/** Projects each entry using `kind`. */ ({ kind }) => kind).join(', ')}.`,
+                  leaseExpiresAt: null,
+                  leaseToken: null,
+                  progressCurrent: null,
+                  progressPhase: null,
+                  progressTotal: null,
+                  status: 'WARNING',
+                },
+                where: { id: request.id },
+              });
+            } else {
+              await transaction.repositorySyncRequest.delete({ where: { id: request.id } });
+            }
           }
         }
-      }
-      await transaction.providerAccount.updateMany({
-        data: { rateLimitResetAt: null, syncLeaseExpiresAt: null, syncLeaseToken: null },
-        where: { id: request.providerAccountId, syncLeaseToken: request.leaseToken },
-      });
-    });
+        await transaction.providerAccount.updateMany({
+          data: { rateLimitResetAt: null, syncLeaseExpiresAt: null, syncLeaseToken: null },
+          where: { id: request.providerAccountId, syncLeaseToken: request.leaseToken },
+        });
+      },
+    );
   }
 
   /**
@@ -469,42 +485,44 @@ export class ProviderSyncQueueService {
    */
   private async failRequest(request: ClaimedSyncRequest, error: unknown): Promise<void> {
     const decision = providerRetryDecision(error, request.attempt);
-    await this.prisma.transaction(async (transaction) => {
-      const current = await transaction.repositorySyncRequest.findUnique({ where: { id: request.id } });
-      if (current?.leaseToken === request.leaseToken) {
-        const superseded = current.generation > request.generation;
-        await transaction.repositorySyncRequest.update({
-          data: superseded
-            ? {
-                attempt: 0,
-                lastError: null,
-                leaseExpiresAt: null,
-                leaseToken: null,
-                progressCurrent: null,
-                progressPhase: null,
-                progressTotal: null,
-                startedAt: null,
-                status: 'PENDING',
-              }
-            : {
-                lastError: this.failureMessage(error),
-                leaseExpiresAt: null,
-                leaseToken: null,
-                runAfter: decision.runAfter ?? current.runAfter,
-                status: decision.retry ? 'PENDING' : 'FAILED',
-              },
-          where: { id: request.id },
+    await this.prisma.transaction(
+      /** Records the queue failure or retry state and releases its lease. */ async (transaction) => {
+        const current = await transaction.repositorySyncRequest.findUnique({ where: { id: request.id } });
+        if (current?.leaseToken === request.leaseToken) {
+          const superseded = current.generation > request.generation;
+          await transaction.repositorySyncRequest.update({
+            data: superseded
+              ? {
+                  attempt: 0,
+                  lastError: null,
+                  leaseExpiresAt: null,
+                  leaseToken: null,
+                  progressCurrent: null,
+                  progressPhase: null,
+                  progressTotal: null,
+                  startedAt: null,
+                  status: 'PENDING',
+                }
+              : {
+                  lastError: this.failureMessage(error),
+                  leaseExpiresAt: null,
+                  leaseToken: null,
+                  runAfter: decision.runAfter ?? current.runAfter,
+                  status: decision.retry ? 'PENDING' : 'FAILED',
+                },
+            where: { id: request.id },
+          });
+        }
+        await transaction.providerAccount.updateMany({
+          data: {
+            rateLimitResetAt: decision.rateLimitedUntil,
+            syncLeaseExpiresAt: null,
+            syncLeaseToken: null,
+          },
+          where: { id: request.providerAccountId, syncLeaseToken: request.leaseToken },
         });
-      }
-      await transaction.providerAccount.updateMany({
-        data: {
-          rateLimitResetAt: decision.rateLimitedUntil,
-          syncLeaseExpiresAt: null,
-          syncLeaseToken: null,
-        },
-        where: { id: request.providerAccountId, syncLeaseToken: request.leaseToken },
-      });
-    });
+      },
+    );
     this.logger.warn(`Queued synchronization failed for repository ${request.repositoryId}.`);
   }
 

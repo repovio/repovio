@@ -28,7 +28,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import type { AuthResult, AuthenticatedUser } from './types.js';
 
-@ApiTags('auth')
+/** Defines the auth controller class contract. */ @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   /**

@@ -200,74 +200,91 @@ const workflowStatuses: WorkflowRunStatus[] = [
   'SKIPPED',
   'UNKNOWN',
 ];
-const columnDefinition = computed<WorkflowRunTableColumn[]>(() => [
-  { accessorKey: 'displayTitle', header: t('workflowRuns.columns.title'), id: 'displayTitle' },
-  { accessorKey: 'workflowName', header: t('workflowRuns.columns.workflow'), id: 'workflowName' },
-  { accessorKey: 'repositoryName', header: t('repositories.columns.name'), id: 'repositoryName' },
-  { accessorKey: 'providerType', header: t('repositories.addSteps.provider'), id: 'providerType' },
-  { accessorKey: 'status', header: t('workflowRuns.columns.status'), id: 'status' },
-  ...(props.detailedTimestamps
-    ? [
-        { accessorKey: 'providerCreatedAt', header: t('workflowRuns.columns.created'), id: 'providerCreatedAt' },
-        { accessorKey: 'startedAt', header: t('workflowRuns.columns.started'), id: 'startedAt' },
-      ]
-    : []),
-  { accessorKey: 'durationMs', header: t('workflowRuns.columns.duration'), id: 'durationMs' },
-  { accessorKey: 'completedAt', header: t('workflowRuns.columns.completed'), id: 'completedAt' },
-  { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('workflowRuns.columns.title'), value: 'displayTitle' },
-  { label: t('workflowRuns.columns.workflow'), value: 'workflowName' },
-  { label: t('workflowRuns.columns.status'), value: 'status' },
-  ...(props.detailedTimestamps
-    ? [
-        { label: t('workflowRuns.columns.created'), value: 'providerCreatedAt' },
-        { label: t('workflowRuns.columns.started'), value: 'startedAt' },
-      ]
-    : []),
-  { label: t('workflowRuns.columns.duration'), value: 'durationMs' },
-  { label: t('workflowRuns.columns.completed'), value: 'completedAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('workflowRuns.columns.status'),
-    type: FilterFieldType.Enum,
-    value: 'status',
-    values: workflowStatuses.map((status) => ({ label: t(`workflowStatus.${status}`), value: status })),
+const columnDefinition = computed<WorkflowRunTableColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'displayTitle', header: t('workflowRuns.columns.title'), id: 'displayTitle' },
+    { accessorKey: 'workflowName', header: t('workflowRuns.columns.workflow'), id: 'workflowName' },
+    { accessorKey: 'repositoryName', header: t('repositories.columns.name'), id: 'repositoryName' },
+    { accessorKey: 'providerType', header: t('repositories.addSteps.provider'), id: 'providerType' },
+    { accessorKey: 'status', header: t('workflowRuns.columns.status'), id: 'status' },
+    ...(props.detailedTimestamps
+      ? [
+          { accessorKey: 'providerCreatedAt', header: t('workflowRuns.columns.created'), id: 'providerCreatedAt' },
+          { accessorKey: 'startedAt', header: t('workflowRuns.columns.started'), id: 'startedAt' },
+        ]
+      : []),
+    { accessorKey: 'durationMs', header: t('workflowRuns.columns.duration'), id: 'durationMs' },
+    { accessorKey: 'completedAt', header: t('workflowRuns.columns.completed'), id: 'completedAt' },
+    { enableHiding: false, header: t('repositories.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('workflowRuns.columns.title'), value: 'displayTitle' },
+    { label: t('workflowRuns.columns.workflow'), value: 'workflowName' },
+    { label: t('workflowRuns.columns.status'), value: 'status' },
+    ...(props.detailedTimestamps
+      ? [
+          { label: t('workflowRuns.columns.created'), value: 'providerCreatedAt' },
+          { label: t('workflowRuns.columns.started'), value: 'startedAt' },
+        ]
+      : []),
+    { label: t('workflowRuns.columns.duration'), value: 'durationMs' },
+    { label: t('workflowRuns.columns.completed'), value: 'completedAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('workflowRuns.columns.status'),
+      type: FilterFieldType.Enum,
+      value: 'status',
+      values: workflowStatuses.map(
+        /** Projects each entry using `({ label: t(`workflowStatus.${status}`), value: status })`. */ (status) => ({
+          label: t(`workflowStatus.${status}`),
+          value: status,
+        }),
+      ),
+    },
+    {
+      disabled: repositoryFilterLoading.value || repositoryFilterOptions.value.length === 0,
+      label: t('workflowRuns.filters.repository'),
+      type: FilterFieldType.Enum,
+      value: 'repositoryId',
+      values: repositoryFilterOptions.value,
+    },
+    {
+      label: t('workflowRuns.filters.provider'),
+      type: FilterFieldType.Enum,
+      value: 'repository.providerAccount.providerType',
+      values: providerTypes.map(
+        /** Projects each entry using `({ label: getProviderTypeLabel(providerType), value: providerType })`. */ (
+          providerType,
+        ) => ({ label: getProviderTypeLabel(providerType), value: providerType }),
+      ),
+    },
+    {
+      label: t('workflowRuns.filters.durationSeconds'),
+      type: FilterFieldType.Number,
+      value: 'durationMs',
+    },
+  ],
+);
+const staticFilter = computed(
+  /** Derives static filter from the current reactive dependencies. */ () => {
+    const value = debouncedSearch.value.trim();
+    if (!props.searchable || !value) return undefined;
+    const contains = { contains: value, mode: 'insensitive' };
+    return {
+      OR: [
+        { displayTitle: contains },
+        { workflowName: contains },
+        { repository: { name: contains } },
+        { repository: { owner: contains } },
+      ],
+    };
   },
-  {
-    disabled: repositoryFilterLoading.value || repositoryFilterOptions.value.length === 0,
-    label: t('workflowRuns.filters.repository'),
-    type: FilterFieldType.Enum,
-    value: 'repositoryId',
-    values: repositoryFilterOptions.value,
-  },
-  {
-    label: t('workflowRuns.filters.provider'),
-    type: FilterFieldType.Enum,
-    value: 'repository.providerAccount.providerType',
-    values: providerTypes.map((providerType) => ({ label: getProviderTypeLabel(providerType), value: providerType })),
-  },
-  {
-    label: t('workflowRuns.filters.durationSeconds'),
-    type: FilterFieldType.Number,
-    value: 'durationMs',
-  },
-]);
-const staticFilter = computed(() => {
-  const value = debouncedSearch.value.trim();
-  if (!props.searchable || !value) return undefined;
-  const contains = { contains: value, mode: 'insensitive' };
-  return {
-    OR: [
-      { displayTitle: contains },
-      { workflowName: contains },
-      { repository: { name: contains } },
-      { repository: { owner: contains } },
-    ],
-  };
-});
+);
 const workflowRunTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 25,
@@ -295,13 +312,17 @@ if (initialDashboardPreset) {
   page.value = 1;
 }
 const filtering = computed<Filtering>({
+  /** Reads the filtering binding. */
   get: () => durationFilteringToSeconds(queryFiltering.value),
+  /** Writes the filtering binding. */
   set: (value) => {
     queryFiltering.value = durationFilteringToMilliseconds(value);
   },
 });
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: workflowRunTable.columnPinning.value.left, right: workflowRunTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     workflowRunTable.columnPinning.value = value;
   },
@@ -309,11 +330,15 @@ const columnPinning = computed({
 let observedProviderSync = false;
 let refreshAfterSyncTimer: ReturnType<typeof setTimeout> | undefined;
 
-watch(debouncedSearch, () => {
-  page.value = 1;
-});
+watch(
+  debouncedSearch,
+  /** Synchronizes table page when the observed state changes. */ () => {
+    page.value = 1;
+  },
+);
 watch(
   queryFiltering,
+  /** Synchronizes table page when the observed state changes. */
   () => {
     page.value = 1;
     releaseDashboardPreset();
@@ -322,7 +347,9 @@ watch(
 );
 watch(search, releaseDashboardPreset);
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => systemStatus.value.activity,
+  /** Synchronizes table page when the observed state changes. */
   (activity) => {
     if (activity) {
       observedProviderSync = true;
@@ -332,10 +359,13 @@ watch(
     }
     if (!observedProviderSync) return;
     observedProviderSync = false;
-    refreshAfterSyncTimer = setTimeout(() => {
-      refreshAfterSyncTimer = undefined;
-      void refresh();
-    }, 500);
+    refreshAfterSyncTimer = setTimeout(
+      /** Completes the deferred table page operation after its delay. */ () => {
+        refreshAfterSyncTimer = undefined;
+        void refresh();
+      },
+      500,
+    );
   },
 );
 
@@ -343,10 +373,12 @@ watch(
 async function loadRepositoryFilterOptions(): Promise<void> {
   repositoryFilterLoading.value = true;
   try {
-    repositoryFilterOptions.value = await loadWorkflowRunRepositoryFilterOptions(async (repositoryPage) => {
-      const response = await api.repositories.list(repositoryPage);
-      return response.data;
-    });
+    repositoryFilterOptions.value = await loadWorkflowRunRepositoryFilterOptions(
+      /** Fetches the next repository-options page for the workflow filter. */ async (repositoryPage) => {
+        const response = await api.repositories.list(repositoryPage);
+        return response.data;
+      },
+    );
   } catch {
     repositoryFilterOptions.value = [];
     toast.add({ color: 'error', title: t('workflowRuns.repositoryFilterLoadError') });
@@ -400,11 +432,15 @@ function statusColor(status: WorkflowRunStatus): 'error' | 'info' | 'neutral' | 
   return 'neutral';
 }
 
-onMounted(() => {
-  void workflowRunTable.initialize();
-  void loadRepositoryFilterOptions();
-});
-onBeforeUnmount(() => {
-  if (refreshAfterSyncTimer) clearTimeout(refreshAfterSyncTimer);
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () => {
+    void workflowRunTable.initialize();
+    void loadRepositoryFilterOptions();
+  },
+);
+onBeforeUnmount(
+  /** Releases component resources and subscriptions before disposal. */ () => {
+    if (refreshAfterSyncTimer) clearTimeout(refreshAfterSyncTimer);
+  },
+);
 </script>

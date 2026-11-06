@@ -13,7 +13,7 @@ import { toWire } from '../../../util/to-wire.js';
 
 import { NotificationEventType, type NotificationChannel } from '../../../generated/prisma/client.js';
 
-export interface EmailNotificationConfigurationInput {
+/** Defines the email notification configuration input contract shared by its consumers. */ export interface EmailNotificationConfigurationInput {
   from: string;
   password?: string;
   port?: number;
@@ -23,13 +23,13 @@ export interface EmailNotificationConfigurationInput {
   username?: string;
 }
 
-export interface GotifyNotificationConfigurationInput {
+/** Defines the gotify notification configuration input contract shared by its consumers. */ export interface GotifyNotificationConfigurationInput {
   priority?: 'low' | 'moderate' | 'normal' | 'high';
   serverUrl: string;
   token: string;
 }
 
-export interface NtfyNotificationConfigurationInput {
+/** Defines the ntfy notification configuration input contract shared by its consumers. */ export interface NtfyNotificationConfigurationInput {
   password?: string;
   priority?: 'min' | 'low' | 'default' | 'high' | 'max';
   serverUrl?: string;
@@ -38,15 +38,15 @@ export interface NtfyNotificationConfigurationInput {
   username?: string;
 }
 
-export interface DiscordNotificationConfigurationInput {
+/** Defines the discord notification configuration input contract shared by its consumers. */ export interface DiscordNotificationConfigurationInput {
   webhookUrl: string;
 }
 
-export interface CustomAppriseNotificationConfigurationInput {
+/** Defines the custom apprise notification configuration input contract shared by its consumers. */ export interface CustomAppriseNotificationConfigurationInput {
   url: string;
 }
 
-export type NotificationConfigurationInput =
+/** Defines the notification configuration input contract shared by its consumers. */ export type NotificationConfigurationInput =
   | EmailNotificationConfigurationInput
   | GotifyNotificationConfigurationInput
   | NtfyNotificationConfigurationInput
@@ -65,7 +65,7 @@ export class NotificationRulePreviewMatchDto extends createZodDto(ApiNotificatio
 /** Read-only preview result for workflow notification subscriptions. */
 export class NotificationRulePreviewDto extends createZodDto(ApiNotificationRulePreviewSchema) {}
 
-export interface NotificationChannelWithRelations extends NotificationChannel {
+/** Defines the notification channel with relations contract shared by its consumers. */ export interface NotificationChannelWithRelations extends NotificationChannel {
   eventSubscriptions: Array<{
     eventType: NotificationEventType;
     workflowPatterns: string[];
@@ -91,12 +91,18 @@ export class NotificationChannelDto extends createZodDto(ApiNotificationChannelS
         type: model.type,
         enabled: model.enabled,
         urlScheme: model.urlScheme,
-        eventSubscriptions: model.eventSubscriptions.map((subscription) => ({
-          eventType: subscription.eventType,
-          repositoryIds: subscription.repositories.map(({ repositoryId }) => repositoryId),
-          workflowPatterns: subscription.workflowPatterns,
-        })),
-        browserRecipients: model.recipients.map(({ user }) => user),
+        eventSubscriptions: model.eventSubscriptions.map(
+          /** Projects each entry using `({ eventType: subscription.eventType, repositoryIds: subscription.repositories.map(({ repositoryId }) => repositoryId), workflowPatterns: subscription.workflowPatterns, })`. */ (
+            subscription,
+          ) => ({
+            eventType: subscription.eventType,
+            repositoryIds: subscription.repositories.map(
+              /** Projects each entry using `repositoryId`. */ ({ repositoryId }) => repositoryId,
+            ),
+            workflowPatterns: subscription.workflowPatterns,
+          }),
+        ),
+        browserRecipients: model.recipients.map(/** Projects each entry using `user`. */ ({ user }) => user),
         canManage,
         requiresReconfiguration: model.requiresReconfiguration,
         createdAt: model.createdAt,

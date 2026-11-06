@@ -38,7 +38,7 @@ class CreateProviderAccountDto extends createZodDto(ApiCreateProviderAccountSche
 class UpdateProviderAccountDto extends createZodDto(ApiUpdateProviderAccountSchema) {}
 
 class CreateTrackedRepositoryDto extends createZodDto(ApiCreateTrackedRepositorySchema) {}
-@Authenticated()
+/** Defines the provider accounts controller class contract. */ @Authenticated()
 @Controller('provider-accounts')
 export class ProviderAccountsController {
   /**
@@ -70,6 +70,7 @@ export class ProviderAccountsController {
     const ability = this.accountQueries.getReadAbility(req.user);
     return ResourceQuery.query({
       ability,
+      /** Maps map. */
       map: (account: ProviderAccount, currentAbility) => ProviderAccountDto.fromModel(account, currentAbility),
       query: this.accountQueries.toQueryOptions(query),
       schema: resourceFields(ProviderAccountDto),
@@ -111,8 +112,10 @@ export class ProviderAccountsController {
     @Req() req: { user: AuthenticatedUser },
     @Param('id') providerAccountId: string,
   ): Promise<ProviderRepositoryDto[]> {
-    return (await this.accounts.listAvailableRepositories(req.user, providerAccountId)).map((repository) =>
-      ProviderRepositoryDto.fromProvider(repository, repository.tracked),
+    return (await this.accounts.listAvailableRepositories(req.user, providerAccountId)).map(
+      /** Projects each entry using `ProviderRepositoryDto.fromProvider(repository, repository.tracked)`. */ (
+        repository,
+      ) => ProviderRepositoryDto.fromProvider(repository, repository.tracked),
     );
   }
   /**

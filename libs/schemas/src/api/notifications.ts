@@ -45,12 +45,20 @@ export const ApiNotificationEventSubscriptionInputSchema = z.strictObject({
   repositoryIds: optionalInput(
     z
       .array(z.uuid())
-      .refine((value) => new Set(value).size === value.length, { message: 'Duplicate values are not allowed.' }),
+      .refine(
+        /** Validates input against `new Set(value).size === value.length`. */ (value) =>
+          new Set(value).size === value.length,
+        { message: 'Duplicate values are not allowed.' },
+      ),
   ),
   workflowPatterns: optionalInput(
     z
       .array(z.string().max(1024))
-      .refine((value) => new Set(value).size === value.length, { message: 'Duplicate values are not allowed.' }),
+      .refine(
+        /** Validates input against `new Set(value).size === value.length`. */ (value) =>
+          new Set(value).size === value.length,
+        { message: 'Duplicate values are not allowed.' },
+      ),
   ),
 });
 
@@ -186,7 +194,11 @@ export const ApiCreateNotificationChannelSchema = z.strictObject({
   browserRecipientUserIds: optionalInput(
     z
       .array(z.uuid())
-      .refine((value) => new Set(value).size === value.length, { message: 'Duplicate values are not allowed.' }),
+      .refine(
+        /** Validates input against `new Set(value).size === value.length`. */ (value) =>
+          new Set(value).size === value.length,
+        { message: 'Duplicate values are not allowed.' },
+      ),
   ),
   configuration: optionalInput(
     z.union([
@@ -229,7 +241,11 @@ export const ApiUpdateNotificationChannelSchema = z.strictObject({
   browserRecipientUserIds: optionalInput(
     z
       .array(z.uuid())
-      .refine((value) => new Set(value).size === value.length, { message: 'Duplicate values are not allowed.' }),
+      .refine(
+        /** Validates input against `new Set(value).size === value.length`. */ (value) =>
+          new Set(value).size === value.length,
+        { message: 'Duplicate values are not allowed.' },
+      ),
   ),
   configuration: optionalInput(
     z.union([

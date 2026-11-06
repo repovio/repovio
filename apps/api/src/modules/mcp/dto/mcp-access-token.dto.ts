@@ -9,7 +9,8 @@ import { toWire } from '../../../util/to-wire.js';
 
 import type { McpAccessToken } from '../../../generated/prisma/client.js';
 
-export type McpAccessTokenStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+/** Defines the mcp access token status contract shared by its consumers. */ export type McpAccessTokenStatus =
+  'ACTIVE' | 'EXPIRED' | 'REVOKED';
 
 /** Validated request for creating a user-owned MCP access token. */
 export class CreateMcpAccessTokenDto extends createZodDto(ApiCreateMcpAccessTokenSchema) {}

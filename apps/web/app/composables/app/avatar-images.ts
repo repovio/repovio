@@ -18,8 +18,15 @@ export function useAvatarImages() {
         params: { version: avatarUpdatedAt },
         responseType: 'blob',
       })
-      .then(({ data }) => URL.createObjectURL(data))
-      .catch(() => undefined);
+      .then(
+        /** Evaluates `URL.createObjectURL(data)` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: avatarUpdatedAt }, responseType: 'blob', }) .then invokes this callback. */ ({
+          data,
+        }) => URL.createObjectURL(data),
+      )
+      .catch(
+        /** Evaluates `undefined` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: avatarUpdatedAt }, responseType: 'blob', }) .then(({ data }) => URL.createObjectURL(data)) .catch invokes this callback. */ () =>
+          undefined,
+      );
     avatarImagePromises.set(cacheKey, request);
     return request;
   }

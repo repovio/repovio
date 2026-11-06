@@ -7,7 +7,8 @@ import { createZodDto } from '../../../util/schema-dto.js';
 
 /** UTC granularity used to group completed workflow runs in dashboard trends. */
 export const trendBucketSizes = ['hour', 'day', 'week'] as const;
-export type TrendBucketSize = (typeof trendBucketSizes)[number];
+/** Defines the trend bucket size contract shared by its consumers. */ export type TrendBucketSize =
+  (typeof trendBucketSizes)[number];
 
 /** Requested inclusive time range for permission-aware dashboard aggregates. */
 export class DashboardPeriodQueryDto extends createZodDto(ApiDashboardPeriodQuerySchema) {}

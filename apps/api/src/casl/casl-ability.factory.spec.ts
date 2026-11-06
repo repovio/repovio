@@ -4,14 +4,14 @@ import { CaslAbilityFactory } from './casl-ability.factory.js';
 import { CaslAction } from './casl-action.js';
 import { CaslSubject } from './casl-subject.js';
 
-describe('CaslAbilityFactory', () => {
+describe('CaslAbilityFactory', /** Groups scenarios for CaslAbilityFactory. */ () => {
   const factory = new CaslAbilityFactory();
   const memberships = [
     { repositoryId: 'repository-a', role: 'VIEWER' as const },
     { repositoryId: 'repository-b', role: 'MANAGER' as const },
   ];
 
-  it('gives system administrators unrestricted access', () => {
+  it('gives system administrators unrestricted access', /** Verifies gives system administrators unrestricted access. */ () => {
     const ability = factory.createForUser(
       { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN', username: 'admin' },
       [],
@@ -21,7 +21,7 @@ describe('CaslAbilityFactory', () => {
     expect(ability.can(CaslAction.Update, CaslSubject.ProviderAccount)).toBe(true);
   });
 
-  it('limits viewers to reading repositories and runs they are assigned to', () => {
+  it('limits viewers to reading repositories and runs they are assigned to', /** Verifies limits viewers to reading repositories and runs they are assigned to. */ () => {
     const ability = factory.createForUser(
       { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' },
       memberships,
@@ -35,7 +35,7 @@ describe('CaslAbilityFactory', () => {
     expect(ability.can(CaslAction.Update, subject(CaslSubject.Repository, { id: 'repository-b' }))).toBe(false);
   });
 
-  it('does not grant repository managers global notification administration', () => {
+  it('does not grant repository managers global notification administration', /** Verifies does not grant repository managers global notification administration. */ () => {
     const ability = factory.createForUser(
       { authProvider: 'LOCAL' as const, id: 'manager', role: 'MANAGER', username: 'manager' },
       memberships,

@@ -32,7 +32,13 @@ export const ConnectGitHubAppSchema = z.strictObject({
   installationId,
   displayName: z.string().trim().min(1).max(255),
 });
-export type GitHubAppConfiguration = z.infer<typeof GitHubAppConfigurationSchema>;
-export type SaveGitHubApp = z.infer<typeof SaveGitHubAppSchema>;
-export type GitHubAppInstallation = z.infer<typeof GitHubAppInstallationSchema>;
-export type ConnectGitHubApp = z.infer<typeof ConnectGitHubAppSchema>;
+/** Defines the git hub app configuration contract shared by its consumers. */ export type GitHubAppConfiguration =
+  z.infer<typeof GitHubAppConfigurationSchema>;
+/** Defines the save git hub app contract shared by its consumers. */ export type SaveGitHubApp = z.infer<
+  typeof SaveGitHubAppSchema
+>;
+/** Defines the git hub app installation contract shared by its consumers. */ export type GitHubAppInstallation =
+  z.infer<typeof GitHubAppInstallationSchema>;
+/** Defines the connect git hub app contract shared by its consumers. */ export type ConnectGitHubApp = z.infer<
+  typeof ConnectGitHubAppSchema
+>;

@@ -84,7 +84,9 @@ function toLabel(label: GiteaWorkItemLabel): ProviderWorkItemLabel {
  */
 export function toProviderIssue(issue: GiteaIssueResponse): ProviderIssue {
   return {
-    assignees: (issue.assignees ?? []).flatMap((actor) => toActor(actor) ?? []),
+    assignees: (issue.assignees ?? []).flatMap(
+      /** Flattens entries produced by `toActor(actor) ?? []`. */ (actor) => toActor(actor) ?? [],
+    ),
     author: toActor(issue.user),
     body: issue.body ?? null,
     closedAt: issue.closed_at ? new Date(issue.closed_at) : null,
@@ -109,7 +111,9 @@ export function toProviderIssue(issue: GiteaIssueResponse): ProviderIssue {
 export function toProviderPullRequest(pullRequest: GiteaPullRequestResponse): ProviderPullRequest {
   const mergedAt = pullRequest.merged_at ? new Date(pullRequest.merged_at) : null;
   return {
-    assignees: (pullRequest.assignees ?? []).flatMap((actor) => toActor(actor) ?? []),
+    assignees: (pullRequest.assignees ?? []).flatMap(
+      /** Flattens entries produced by `toActor(actor) ?? []`. */ (actor) => toActor(actor) ?? [],
+    ),
     author: toActor(pullRequest.user),
     body: pullRequest.body ?? null,
     closedAt: pullRequest.closed_at ? new Date(pullRequest.closed_at) : null,

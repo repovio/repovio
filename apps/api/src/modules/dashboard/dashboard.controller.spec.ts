@@ -2,12 +2,12 @@ import type { AuthenticatedUser } from '../auth/types.js';
 import { DashboardController } from './dashboard.controller.js';
 import type { DashboardService } from './dashboard.service.js';
 
-describe('DashboardController', () => {
+describe('DashboardController', /** Groups scenarios for DashboardController. */ () => {
   const user: AuthenticatedUser = { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER', username: 'viewer' };
   const request = { user };
   const period = { from: '2026-08-01T00:00:00.000Z', to: '2026-08-31T23:59:59.999Z' };
 
-  it('maps visible approval-gated runs through the public dashboard DTO', async () => {
+  it('maps visible approval-gated runs through the public dashboard DTO', /** Verifies maps visible approval-gated runs through the public dashboard DTO. */ async () => {
     const dashboard = { getAwaitingApproval: jest.fn().mockResolvedValue([]) };
 
     await expect(
@@ -16,7 +16,7 @@ describe('DashboardController', () => {
     expect(dashboard.getAwaitingApproval).toHaveBeenCalledWith(user);
   });
 
-  it('forwards summary requests with the authenticated user and requested period', async () => {
+  it('forwards summary requests with the authenticated user and requested period', /** Verifies forwards summary requests with the authenticated user and requested period. */ async () => {
     const summary = {
       awaitingApprovalCount: 1,
       completedCount: 2,
@@ -35,7 +35,7 @@ describe('DashboardController', () => {
     expect(dashboard.getSummary).toHaveBeenCalledWith(user, period);
   });
 
-  it('forwards repository-health requests with the authenticated user and requested period', async () => {
+  it('forwards repository-health requests with the authenticated user and requested period', /** Verifies forwards repository-health requests with the authenticated user and requested period. */ async () => {
     const repositories = [
       {
         completedCount: 2,

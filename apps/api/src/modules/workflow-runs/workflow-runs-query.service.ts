@@ -251,10 +251,11 @@ export class WorkflowRunsQueryService extends QueryService<
       id: {
         in: latestTerminalRuns
           .filter(
+            /** Keeps entries matching `run.status === 'FAILED' && run.changeRequestState !== 'CLOSED' && run.changeRequestState !== 'MERGED'`. */
             (run) =>
               run.status === 'FAILED' && run.changeRequestState !== 'CLOSED' && run.changeRequestState !== 'MERGED',
           )
-          .map((run) => run.id),
+          .map(/** Projects each entry using `run.id`. */ (run) => run.id),
       },
     };
   }
@@ -275,7 +276,7 @@ export class WorkflowRunsQueryService extends QueryService<
       ability,
     );
 
-    return { id: { in: currentRuns.map((run) => run.id) } };
+    return { id: { in: currentRuns.map(/** Projects each entry using `run.id`. */ (run) => run.id) } };
   }
 
   /**

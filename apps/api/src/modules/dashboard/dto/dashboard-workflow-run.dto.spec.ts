@@ -1,8 +1,8 @@
 import type { ProviderAccount, Repository, WorkflowRun } from '../../../generated/prisma/client.js';
 import { DashboardWorkflowRunDto } from './dashboard-workflow-run.dto.js';
 
-describe('DashboardWorkflowRunDto', () => {
-  it('includes workflow, repository, and provider display context without credentials', () => {
+describe('DashboardWorkflowRunDto', /** Groups scenarios for DashboardWorkflowRunDto. */ () => {
+  it('includes workflow, repository, and provider display context without credentials', /** Verifies includes workflow, repository, and provider display context without credentials. */ () => {
     const dto = DashboardWorkflowRunDto.fromModel({
       awaitingApproval: true,
       completedAt: new Date('2026-08-26T10:01:00.000Z'),

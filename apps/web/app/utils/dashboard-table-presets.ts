@@ -13,8 +13,13 @@ export interface DashboardTablePreset<TName extends string> {
   staticFilter?: Record<string, unknown>;
 }
 
-const emptyFiltering = (): Filtering => ({ filters: [], operator: 'AND' });
+/** Creates an empty AND filter group for table state. */
+const emptyFiltering = (): Filtering => ({
+  filters: [],
+  operator: 'AND',
+});
 
+/** Opens state filter. */
 const openStateFilter = () => ({
   field: 'state',
   id: 'dashboard-state',

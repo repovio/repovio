@@ -10,7 +10,10 @@ export const ApiIssueQuerySchema = resourceQuerySchemas.Issue.extend({
   labels: optionalInput(
     z
       .union([z.string().max(255), z.array(z.string().max(255))])
-      .transform((value) => (typeof value === 'string' ? [value] : value)),
+      .transform(
+        /** Normalizes input using `(typeof value === 'string' ? [value] : value)`. */ (value) =>
+          typeof value === 'string' ? [value] : value,
+      ),
   ),
 });
 
@@ -155,6 +158,9 @@ export const ApiPullRequestQuerySchema = resourceQuerySchemas.PullRequest.extend
   labels: optionalInput(
     z
       .union([z.string().max(255), z.array(z.string().max(255))])
-      .transform((value) => (typeof value === 'string' ? [value] : value)),
+      .transform(
+        /** Normalizes input using `(typeof value === 'string' ? [value] : value)`. */ (value) =>
+          typeof value === 'string' ? [value] : value,
+      ),
   ),
 });

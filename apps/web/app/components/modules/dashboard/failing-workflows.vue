@@ -3,8 +3,12 @@
     <template #header>
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h2 class="font-semibold">{{ $t('dashboard.needsAttention') }}</h2>
-          <p class="mt-1 text-xs text-muted">{{ $t('dashboard.needsAttentionDescription') }}</p>
+          <h2 class="font-semibold">
+            {{ $t('dashboard.needsAttention') }}
+          </h2>
+          <p class="mt-1 text-xs text-muted">
+            {{ $t('dashboard.needsAttentionDescription') }}
+          </p>
         </div>
         <UButton
           color="neutral"
@@ -26,7 +30,9 @@
           <UIcon class="size-4" name="i-lucide-triangle-alert" />
         </span>
         <div class="min-w-0 flex-1">
-          <p class="truncate font-medium">{{ run.displayTitle }}</p>
+          <p class="truncate font-medium">
+            {{ run.displayTitle }}
+          </p>
           <p class="truncate text-xs text-muted">
             {{ run.repository.owner }}/{{ run.repository.name }} · {{ formatTimestamp(run.completedAt) }}
           </p>
@@ -52,7 +58,9 @@
       <span class="mb-3 flex size-10 items-center justify-center rounded-full bg-success/10 text-success">
         <UIcon class="size-5" name="i-lucide-circle-check-big" />
       </span>
-      <p class="text-sm font-medium">{{ $t('dashboard.noFailures') }}</p>
+      <p class="text-sm font-medium">
+        {{ $t('dashboard.noFailures') }}
+      </p>
     </div>
   </UCard>
 </template>

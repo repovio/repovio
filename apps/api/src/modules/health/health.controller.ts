@@ -5,7 +5,7 @@ import { SchemaResponse } from '../../util/resource-contract.js';
 
 import { HealthService, type HealthResponse } from './health.service.js';
 
-@ApiTags('health')
+/** Defines the health controller class contract. */ @ApiTags('health')
 @Controller('health')
 export class HealthController {
   /**

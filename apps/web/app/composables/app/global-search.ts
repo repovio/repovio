@@ -34,40 +34,76 @@ export function useGlobalSearch(query: Ref<string>) {
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   let requestController: AbortController | undefined;
 
-  const normalizedQuery = computed(() => query.value.trim());
-  const canSearch = computed(() => normalizedQuery.value.length >= globalSearchMinimumLength);
-  const navigationResults = computed(() => {
-    if (!canSearch.value) return [];
-    const matchingItems = navigationSearchItems.value.filter((item) =>
-      item.label.toLocaleLowerCase().includes(normalizedQuery.value.toLocaleLowerCase()),
-    );
-    return rankSearchResults(matchingItems, normalizedQuery.value, (item) => ({ id: item.to, label: item.label }));
-  });
-  const providerAccountResults = computed(() =>
-    rankSearchResults(providerAccounts.items.value, normalizedQuery.value, (account) => ({
-      id: account.id,
-      label: account.displayName,
-      supportingText: `${account.providerType} ${account.baseUrl ?? ''}`,
-    })),
+  const normalizedQuery = computed(
+    /** Derives normalized query from the current reactive dependencies. */ () => query.value.trim(),
   );
-  const repositoryResults = computed(() =>
-    rankSearchResults(repositories.items.value, normalizedQuery.value, (repository) => ({
-      id: repository.id,
-      label: `${repository.owner}/${repository.name}`,
-      supportingText: repository.url,
-    })),
+  const canSearch = computed(
+    /** Derives can search from the current reactive dependencies. */ () =>
+      normalizedQuery.value.length >= globalSearchMinimumLength,
   );
-  const workflowRunResults = computed(() =>
-    rankSearchResults(workflowRuns.items.value, normalizedQuery.value, (workflowRun) => ({
-      id: workflowRun.id,
-      label: workflowRun.workflowName,
-      supportingText: `${workflowRun.displayTitle} ${workflowRun.repositoryOwner}/${workflowRun.repositoryName}`,
-    })),
+  const navigationResults = computed(
+    /** Derives navigation results from the current reactive dependencies. */ () => {
+      if (!canSearch.value) return [];
+      const matchingItems = navigationSearchItems.value.filter(
+        /** Keeps entries matching `item.label.toLocaleLowerCase().includes(normalizedQuery.value.toLocaleLowerCase())`. */ (
+          item,
+        ) => item.label.toLocaleLowerCase().includes(normalizedQuery.value.toLocaleLowerCase()),
+      );
+      return rankSearchResults(
+        matchingItems,
+        normalizedQuery.value,
+        /** Evaluates `({ id: item.to, label: item.label })` when rankSearchResults invokes this callback. */ (
+          item,
+        ) => ({ id: item.to, label: item.label }),
+      );
+    },
+  );
+  const providerAccountResults = computed(
+    /** Derives provider account results from the current reactive dependencies. */ () =>
+      rankSearchResults(
+        providerAccounts.items.value,
+        normalizedQuery.value,
+        /** Evaluates `({ id: account.id, label: account.displayName, supportingText: `${account.providerType} ${account.baseUrl ?? ''}`, })` when rankSearchResults invokes this callback. */ (
+          account,
+        ) => ({
+          id: account.id,
+          label: account.displayName,
+          supportingText: `${account.providerType} ${account.baseUrl ?? ''}`,
+        }),
+      ),
+  );
+  const repositoryResults = computed(
+    /** Derives repository results from the current reactive dependencies. */ () =>
+      rankSearchResults(
+        repositories.items.value,
+        normalizedQuery.value,
+        /** Evaluates `({ id: repository.id, label: `${repository.owner}/${repository.name}`, supportingText: repository.url, })` when rankSearchResults invokes this callback. */ (
+          repository,
+        ) => ({
+          id: repository.id,
+          label: `${repository.owner}/${repository.name}`,
+          supportingText: repository.url,
+        }),
+      ),
+  );
+  const workflowRunResults = computed(
+    /** Derives workflow run results from the current reactive dependencies. */ () =>
+      rankSearchResults(
+        workflowRuns.items.value,
+        normalizedQuery.value,
+        /** Selects workflow labels and supporting text used to rank search results. */ (workflowRun) => ({
+          id: workflowRun.id,
+          label: workflowRun.workflowName,
+          supportingText: `${workflowRun.displayTitle} ${workflowRun.repositoryOwner}/${workflowRun.repositoryName}`,
+        }),
+      ),
   );
   const isSearching = computed(
+    /** Derives is searching from the current reactive dependencies. */
     () => providerAccounts.loading.value || repositories.loading.value || workflowRuns.loading.value,
   );
   const hasResults = computed(
+    /** Derives has results from the current reactive dependencies. */
     () =>
       navigationResults.value.length > 0 ||
       providerAccountResults.value.length > 0 ||
@@ -145,14 +181,20 @@ export function useGlobalSearch(query: Ref<string>) {
     );
   }
 
-  watch([normalizedQuery, () => auth.user?.role], ([searchTerm]) => {
-    cancelPendingSearch();
-    resetGroup(providerAccounts, false);
-    resetGroup(repositories, false);
-    resetGroup(workflowRuns, false);
-    if (searchTerm.length < globalSearchMinimumLength) return;
-    debounceTimer = setTimeout(() => runSearch(searchTerm), 250);
-  });
+  watch(
+    [normalizedQuery, /** Returns `auth.user?.role` to the caller. */ () => auth.user?.role],
+    /** Synchronizes use global search when the observed state changes. */ ([searchTerm]) => {
+      cancelPendingSearch();
+      resetGroup(providerAccounts, false);
+      resetGroup(repositories, false);
+      resetGroup(workflowRuns, false);
+      if (searchTerm.length < globalSearchMinimumLength) return;
+      debounceTimer = setTimeout(
+        /** Completes the deferred use global search operation after its delay. */ () => runSearch(searchTerm),
+        250,
+      );
+    },
+  );
 
   onBeforeUnmount(cancelPendingSearch);
 

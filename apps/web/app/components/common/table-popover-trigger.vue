@@ -25,7 +25,9 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const label = computed(() => t(`querrykit.table.${props.kind}.title`));
+const label = computed(
+  /** Derives label from the current reactive dependencies. */ () => t(`querrykit.table.${props.kind}.title`),
+);
 const icons = {
   sorting: 'i-tabler-arrows-sort',
   filtering: 'i-tabler-filter',
@@ -37,6 +39,7 @@ let restoreFocusOnClose = false;
 // Query Kit owns the popover but supplies no Reka trigger to receive focus on Escape.
 useEventListener(
   'keydown',
+  /** Records Escape dismissal so the popover trigger can regain focus. */
   (event) => {
     if (props.open) restoreFocusOnClose = event.key === 'Escape';
   },
@@ -44,6 +47,7 @@ useEventListener(
 );
 useEventListener(
   'pointerdown',
+  /** Cancels keyboard focus restoration after a pointer interaction. */
   () => {
     restoreFocusOnClose = false;
   },
@@ -51,7 +55,9 @@ useEventListener(
 );
 
 watch(
+  /** Reads the reactive dependencies observed by this watcher. */
   () => props.open,
+  /** Synchronizes table popover trigger when the observed state changes. */
   async (open, wasOpen) => {
     const shouldRestore = wasOpen && !open && restoreFocusOnClose;
     restoreFocusOnClose = false;

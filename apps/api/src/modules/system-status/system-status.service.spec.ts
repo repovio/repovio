@@ -2,12 +2,15 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 import { SystemStatusService } from './system-status.service.js';
 import type { SystemStatusSnapshot } from './system-status.types.js';
 
-describe('SystemStatusService', () => {
-  it('publishes running workflow counts and provider synchronization progress', async () => {
+describe('SystemStatusService', /** Groups scenarios for SystemStatusService. */ () => {
+  it('publishes running workflow counts and provider synchronization progress', /** Verifies publishes running workflow counts and provider synchronization progress. */ async () => {
     const prisma = { workflowRun: { count: jest.fn().mockResolvedValue(3) } };
     const service = new SystemStatusService(prisma as unknown as PrismaService);
     const snapshots: SystemStatusSnapshot[] = [];
-    service.changes$.subscribe((snapshot) => snapshots.push(snapshot));
+    service.changes$.subscribe(
+      /** Evaluates `snapshots.push(snapshot)` when service.changes$.subscribe invokes this callback. */ (snapshot) =>
+        snapshots.push(snapshot),
+    );
 
     await service.onModuleInit();
     const syncId = service.beginProviderSync();
@@ -36,7 +39,7 @@ describe('SystemStatusService', () => {
     expect(service.getSnapshot()).toMatchObject({ activity: null, runningWorkflowCount: 3 });
   });
 
-  it('restores the previous visible activity when concurrent synchronization finishes', () => {
+  it('restores the previous visible activity when concurrent synchronization finishes', /** Verifies restores the previous visible activity when concurrent synchronization finishes. */ () => {
     const service = new SystemStatusService({ workflowRun: { count: jest.fn() } } as unknown as PrismaService);
     const firstSyncId = service.beginProviderSync();
     const secondSyncId = service.beginProviderSync();

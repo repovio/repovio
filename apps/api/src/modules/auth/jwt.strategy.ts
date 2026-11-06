@@ -6,7 +6,7 @@ import { ENV } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from './types.js';
 
-@Injectable()
+/** Defines the jwt strategy class contract. */ @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   /**
    * Initialize JwtStrategy with its required dependencies.

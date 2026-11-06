@@ -70,6 +70,7 @@ export class UsersController {
     return ResourceQuery.query({
       ability,
       include: { avatar: { select: { updatedAt: true } } },
+      /** Maps map. */
       map: (user: UserWithAvatar, currentAbility) => UserDto.fromModel(user, currentAbility),
       query: this.users.toQueryOptions(query),
       schema: resourceFields(UserDto),

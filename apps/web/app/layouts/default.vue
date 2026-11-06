@@ -53,9 +53,14 @@ import { createShortcutBindings } from '~/util/shortcuts';
 
 const { t } = useI18n();
 const route = useRoute();
-const usesFullWidthContent = computed(() => route.meta.fullWidth === true);
+const usesFullWidthContent = computed(
+  /** Derives uses full width content from the current reactive dependencies. */ () => route.meta.fullWidth === true,
+);
 const settings = useSettingsStore();
-const changelogOpen = useState('changelog-open', () => false);
+const changelogOpen = useState(
+  'changelog-open',
+  /** Evaluates `false` when useState invokes this callback. */ () => false,
+);
 
 const { open: paletteOpen, show: showPalette } = useCommandPalette();
 const { open: shortcutsOpen } = useShortcuts();
@@ -70,13 +75,16 @@ defineShortcuts(
   createShortcutBindings({
     search: openSearch,
     palette: openSearch,
+    /** Opens the keyboard-shortcuts dialog. */
     shortcuts: () => {
       if (!paletteOpen.value) shortcutsOpen.value = !shortcutsOpen.value;
     },
   }),
 );
 
-onMounted(() => {
-  void settings.load();
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ () => {
+    void settings.load();
+  },
+);
 </script>

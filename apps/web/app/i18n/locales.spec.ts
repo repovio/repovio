@@ -6,10 +6,14 @@ const localeCodes = ['de', 'es', 'fr', 'it', 'nl', 'pl', 'pt'] as const;
 
 /** Return all dot-separated leaf paths in a locale message tree. */
 function messageKeys(messages: Record<string, unknown>, prefix = ''): string[] {
-  return Object.entries(messages).flatMap(([key, value]) =>
-    typeof value === 'object' && value !== null
-      ? messageKeys(value as Record<string, unknown>, `${prefix}${key}.`)
-      : `${prefix}${key}`,
+  return Object.entries(messages).flatMap(
+    /** Flattens entries produced by `typeof value === 'object' && value !== null ? messageKeys(value as Record<string, unknown>, `${prefix}${key}.`) : `${prefix}${key}``. */ ([
+      key,
+      value,
+    ]) =>
+      typeof value === 'object' && value !== null
+        ? messageKeys(value as Record<string, unknown>, `${prefix}${key}.`)
+        : `${prefix}${key}`,
   );
 }
 
@@ -21,8 +25,8 @@ function loadLocale(localeCode: string): Record<string, unknown> {
   >;
 }
 
-describe('locale messages', () => {
-  it('keeps every shipped locale complete relative to English fallback messages', () => {
+describe('locale messages', /** Groups scenarios for locale messages. */ () => {
+  it('keeps every shipped locale complete relative to English fallback messages', /** Verifies keeps every shipped locale complete relative to English fallback messages. */ () => {
     const englishKeys = messageKeys(loadLocale('en')).sort();
 
     for (const localeCode of localeCodes) {

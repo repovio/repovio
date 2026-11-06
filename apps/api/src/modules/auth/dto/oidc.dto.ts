@@ -7,12 +7,20 @@ import {
 } from '@repovio/schemas';
 import { createZodDto } from '../../../util/schema-dto.js';
 
-export class OidcStatusDto extends createZodDto(ApiOidcStatusSchema) {}
+/** Defines the oidc status dto class contract. */ export class OidcStatusDto extends createZodDto(
+  ApiOidcStatusSchema,
+) {}
 
-export class OidcConfigDto extends createZodDto(ApiOidcConfigSchema) {}
+/** Defines the oidc config dto class contract. */ export class OidcConfigDto extends createZodDto(
+  ApiOidcConfigSchema,
+) {}
 
-export class UpdateOidcConfigDto extends createZodDto(ApiUpdateOidcConfigSchema) {}
+/** Defines the update oidc config dto class contract. */ export class UpdateOidcConfigDto extends createZodDto(
+  ApiUpdateOidcConfigSchema,
+) {}
 
-export class OidcExchangeDto extends createZodDto(ApiOidcExchangeSchema) {}
+/** Defines the oidc exchange dto class contract. */ export class OidcExchangeDto extends createZodDto(
+  ApiOidcExchangeSchema,
+) {}
 
-export class OidcCheckDto extends createZodDto(ApiOidcCheckSchema) {}
+/** Defines the oidc check dto class contract. */ export class OidcCheckDto extends createZodDto(ApiOidcCheckSchema) {}

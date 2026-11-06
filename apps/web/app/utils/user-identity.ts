@@ -8,8 +8,11 @@ export interface UserIdentity {
 /** Prefer a user's personal name while retaining their login name as a fallback. */
 export function getUserDisplayName(user: UserIdentity): string {
   return (
-    [user.firstName, user.lastName].filter((value): value is string => Boolean(value?.trim())).join(' ') ||
-    user.username
+    [user.firstName, user.lastName]
+      .filter(
+        /** Keeps entries matching `Boolean(value?.trim())`. */ (value): value is string => Boolean(value?.trim()),
+      )
+      .join(' ') || user.username
   );
 }
 
@@ -21,7 +24,9 @@ export function getUserIdentityLabel(user: UserIdentity): string {
 
 /** Build two-letter avatar initials from personal names or the login-name fallback. */
 export function getUserInitials(user: UserIdentity): string {
-  const personalNames = [user.firstName, user.lastName].filter((value): value is string => Boolean(value?.trim()));
+  const personalNames = [user.firstName, user.lastName].filter(
+    /** Keeps entries matching `Boolean(value?.trim())`. */ (value): value is string => Boolean(value?.trim()),
+  );
   if (personalNames.length > 0) return `${personalNames[0]?.[0] ?? ''}${personalNames.at(-1)?.[0] ?? ''}`.toUpperCase();
 
   const usernameParts = user.username

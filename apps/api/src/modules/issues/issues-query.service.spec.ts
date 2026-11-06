@@ -1,8 +1,8 @@
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { IssuesQueryService } from './issues-query.service.js';
 
-describe('IssuesQueryService', () => {
-  it('AND-combines normalized labels with title or number search', () => {
+describe('IssuesQueryService', /** Groups scenarios for IssuesQueryService. */ () => {
+  it('AND-combines normalized labels with title or number search', /** Verifies AND-combines normalized labels with title or number search. */ () => {
     const service = new IssuesQueryService({ issue: {} } as PrismaService, {} as never);
     expect(service.toQueryOptions({ labels: ['Bug', 'Priority: High'], search: '42' } as never)).toMatchObject({
       where: {

@@ -5,7 +5,7 @@ import { WorkflowRunsModule } from '../workflow-runs/workflow-runs.module.js';
 import { DashboardController } from './dashboard.controller.js';
 import { DashboardService } from './dashboard.service.js';
 
-@Module({
+/** Registers the dashboard module providers and imports with Nest. */ @Module({
   imports: [CaslModule, WorkflowRunsModule],
   controllers: [DashboardController],
   exports: [DashboardService],

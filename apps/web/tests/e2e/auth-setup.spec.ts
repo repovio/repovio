@@ -11,17 +11,26 @@ const administrator = {
   username: 'vera',
 } as const;
 
-test('creates and signs in the first administrator from the guided setup', async ({ page }, testInfo) => {
-  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: false } }));
-  await page.route('**/api/v1/auth/setup', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({
-      firstName: 'Vera',
-      lastName: 'Admin',
-      password: 'secure-password',
-      username: 'vera',
-    });
-    await route.fulfill({ json: { accessToken: 'setup-access-token', user: administrator } });
-  });
+test('creates and signs in the first administrator from the guided setup', /** Verifies creates and signs in the first administrator from the guided setup. */ async ({
+  page,
+}, testInfo) => {
+  await page.route(
+    '**/api/v1/auth/setup-status',
+    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
+      route.fulfill({ json: { initialized: false } }),
+  );
+  await page.route(
+    '**/api/v1/auth/setup',
+    /** Supplies the mocked response for `/api/v1/auth/setup`. */ async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        firstName: 'Vera',
+        lastName: 'Admin',
+        password: 'secure-password',
+        username: 'vera',
+      });
+      await route.fulfill({ json: { accessToken: 'setup-access-token', user: administrator } });
+    },
+  );
 
   await page.goto('/');
   await expect(page).toHaveURL('/auth/setup');
@@ -39,12 +48,24 @@ test('creates and signs in the first administrator from the guided setup', async
 
   await expect(page).toHaveURL('/');
   await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem('repovio.access-token')))
+    .poll(
+      /** Evaluates `page.evaluate(() => window.localStorage.getItem('repovio.access-token'))` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the auth setup scenario. */ () =>
+            window.localStorage.getItem('repovio.access-token'),
+        ),
+    )
     .toBe('setup-access-token');
 });
 
-test('redirects an initialized installation away from setup', async ({ page }) => {
-  await page.route('**/api/v1/auth/setup-status', (route) => route.fulfill({ json: { initialized: true } }));
+test('redirects an initialized installation away from setup', /** Verifies redirects an initialized installation away from setup. */ async ({
+  page,
+}) => {
+  await page.route(
+    '**/api/v1/auth/setup-status',
+    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
+      route.fulfill({ json: { initialized: true } }),
+  );
 
   await page.goto('/auth/setup');
 

@@ -2,12 +2,12 @@ import bcrypt from 'bcrypt';
 
 import { resetPassword } from './password-reset.js';
 
-describe('resetPassword', () => {
+describe('resetPassword', /** Groups scenarios for resetPassword. */ () => {
   const database = { user: { findUnique: jest.fn(), update: jest.fn() } };
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(/** Prepares shared test state for beforeEach. */ () => jest.clearAllMocks());
 
-  it('replaces the hash and invalidates every access token for the user', async () => {
+  it('replaces the hash and invalidates every access token for the user', /** Verifies replaces the hash and invalidates every access token for the user. */ async () => {
     database.user.findUnique.mockResolvedValue({ id: 'user-id' });
 
     await resetPassword(database, ' admin ', 'replacement-password');
@@ -21,14 +21,14 @@ describe('resetPassword', () => {
     await expect(bcrypt.compare('replacement-password', hash)).resolves.toBe(true);
   });
 
-  it('rejects an unknown user without modifying the database', async () => {
+  it('rejects an unknown user without modifying the database', /** Verifies rejects an unknown user without modifying the database. */ async () => {
     database.user.findUnique.mockResolvedValue(null);
 
     await expect(resetPassword(database, 'missing', 'replacement-password')).rejects.toThrow('No local user found');
     expect(database.user.update).not.toHaveBeenCalled();
   });
 
-  it('rejects an OIDC-managed account without creating a local credential', async () => {
+  it('rejects an OIDC-managed account without creating a local credential', /** Verifies rejects an OIDC-managed account without creating a local credential. */ async () => {
     database.user.findUnique.mockResolvedValue({ authProvider: 'OIDC', id: 'oidc-user-id' });
 
     await expect(resetPassword(database, 'oidc-user', 'replacement-password')).rejects.toThrow(

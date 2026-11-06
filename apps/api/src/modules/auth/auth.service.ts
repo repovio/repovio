@@ -22,7 +22,7 @@ interface SetupInput {
 
 const avatarMetadata = { select: { updatedAt: true } } as const;
 
-@Injectable()
+/** Defines the auth service class contract. */ @Injectable()
 export class AuthService {
   /**
    * Initialize AuthService with its required dependencies.
@@ -69,19 +69,22 @@ export class AuthService {
    */
   async setup(input: SetupInput): Promise<AuthResult> {
     const passwordHash = await bcrypt.hash(input.password, 12);
-    const user = await this.prisma.transaction(async (transaction) => {
-      await transaction.$executeRaw`SELECT pg_advisory_xact_lock(1573210845)`;
-      if ((await transaction.user.count()) > 0) throw new ConflictException('The application is already initialized.');
-      return transaction.user.create({
-        data: {
-          firstName: input.firstName?.trim() || null,
-          lastName: input.lastName?.trim() || null,
-          passwordHash,
-          role: 'SYSTEM_ADMIN',
-          username: input.username.trim(),
-        },
-      });
-    });
+    const user = await this.prisma.transaction(
+      /** Keeps the database updates for setup atomic. */ async (transaction) => {
+        await transaction.$executeRaw`SELECT pg_advisory_xact_lock(1573210845)`;
+        if ((await transaction.user.count()) > 0)
+          throw new ConflictException('The application is already initialized.');
+        return transaction.user.create({
+          data: {
+            firstName: input.firstName?.trim() || null,
+            lastName: input.lastName?.trim() || null,
+            passwordHash,
+            role: 'SYSTEM_ADMIN',
+            username: input.username.trim(),
+          },
+        });
+      },
+    );
     const authenticatedUser = this.toAuthenticatedUser({ ...user, avatar: null });
     return { accessToken: await this.createAccessToken(authenticatedUser, user.authVersion), user: authenticatedUser };
   }

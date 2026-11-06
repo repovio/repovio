@@ -100,33 +100,37 @@ export class GitHubAppService {
     const identity = await this.request<{ id: number; slug: string }>('/app', jwt);
     if (String(identity.id) !== input.appId || identity.slug !== input.slug)
       throw new BadRequestException('The GitHub App ID and slug must match the private key.');
-    return this.prisma.transaction(async (tx) => {
-      await this.lock(tx);
-      const current = await tx.gitHubAppConfiguration.findUnique({ where: { id: 'default' } });
-      if (current?.updatedAt.getTime() !== previous?.updatedAt.getTime())
-        throw new ConflictException('GitHub App configuration changed. Refresh and try again.');
-      if (
-        current &&
-        current.appId !== input.appId &&
-        (await tx.providerAccount.count({ where: { authenticationMethod: 'GITHUB_APP' } }))
-      )
-        throw new ConflictException('Disconnect GitHub App accounts before replacing the App.');
-      const data = {
-        appId: input.appId,
-        slug: input.slug,
-        encryptedPrivateKey: this.encryption.encrypt(privateKey),
-        encryptedWebhookSecret: input.webhookSecret
-          ? this.encryption.encrypt(input.webhookSecret)
-          : previous!.encryptedWebhookSecret,
-      };
-      const saved = await tx.gitHubAppConfiguration.upsert({
-        where: { id: 'default' },
-        create: { id: 'default', ...data },
-        update: data,
-      });
-      this.tokens.clear();
-      return this.safe(saved);
-    });
+    return this.prisma.transaction(
+      /** Locks and replaces encrypted App configuration only if its observed revision remains current. */ async (
+        tx,
+      ) => {
+        await this.lock(tx);
+        const current = await tx.gitHubAppConfiguration.findUnique({ where: { id: 'default' } });
+        if (current?.updatedAt.getTime() !== previous?.updatedAt.getTime())
+          throw new ConflictException('GitHub App configuration changed. Refresh and try again.');
+        if (
+          current &&
+          current.appId !== input.appId &&
+          (await tx.providerAccount.count({ where: { authenticationMethod: 'GITHUB_APP' } }))
+        )
+          throw new ConflictException('Disconnect GitHub App accounts before replacing the App.');
+        const data = {
+          appId: input.appId,
+          slug: input.slug,
+          encryptedPrivateKey: this.encryption.encrypt(privateKey),
+          encryptedWebhookSecret: input.webhookSecret
+            ? this.encryption.encrypt(input.webhookSecret)
+            : previous!.encryptedWebhookSecret,
+        };
+        const saved = await tx.gitHubAppConfiguration.upsert({
+          where: { id: 'default' },
+          create: { id: 'default', ...data },
+          update: data,
+        });
+        this.tokens.clear();
+        return this.safe(saved);
+      },
+    );
   }
 
   /**
@@ -138,13 +142,17 @@ export class GitHubAppService {
    */
   async remove(user: AuthenticatedUser): Promise<void> {
     this.assertAdmin(user);
-    await this.prisma.transaction(async (tx) => {
-      await this.lock(tx);
-      if (await tx.providerAccount.count({ where: { authenticationMethod: 'GITHUB_APP' } }))
-        throw new ConflictException('Disconnect GitHub App accounts before deleting configuration.');
-      await tx.gitHubAppConfiguration.deleteMany({ where: { id: 'default' } });
-      this.tokens.clear();
-    });
+    await this.prisma.transaction(
+      /** Locks configuration, rejects connected accounts, and clears persisted credentials and token caches. */ async (
+        tx,
+      ) => {
+        await this.lock(tx);
+        if (await tx.providerAccount.count({ where: { authenticationMethod: 'GITHUB_APP' } }))
+          throw new ConflictException('Disconnect GitHub App accounts before deleting configuration.');
+        await tx.gitHubAppConfiguration.deleteMany({ where: { id: 'default' } });
+        this.tokens.clear();
+      },
+    );
   }
 
   /**
@@ -166,7 +174,10 @@ export class GitHubAppService {
     }
     const connected = await this.prisma.providerAccount.findMany({ where: { authenticationMethod: 'GITHUB_APP' } });
     for (const account of connected) {
-      const remote = installations.find((row) => String(row.id) === account.githubInstallationId);
+      const remote = installations.find(
+        /** Finds the first entry matching `String(row.id) === account.githubInstallationId`. */ (row) =>
+          String(row.id) === account.githubInstallationId,
+      );
       await this.prisma.providerAccount.update({
         where: { id: account.id },
         data: {
@@ -174,12 +185,17 @@ export class GitHubAppService {
         },
       });
     }
-    return installations.map((row) => ({
-      installationId: String(row.id),
-      account: row.account.login,
-      suspended: Boolean(row.suspended_at),
-      connected: connected.some((account) => account.githubInstallationId === String(row.id)),
-    }));
+    return installations.map(
+      /** Projects each entry using the installations mapping. */ (row) => ({
+        installationId: String(row.id),
+        account: row.account.login,
+        suspended: Boolean(row.suspended_at),
+        connected: connected.some(
+          /** Checks whether any entry satisfies `account.githubInstallationId === String(row.id)`. */ (account) =>
+            account.githubInstallationId === String(row.id),
+        ),
+      }),
+    );
   }
 
   /**
@@ -196,25 +212,27 @@ export class GitHubAppService {
     const config = await this.requireConfiguration();
     const installation = await this.installation(config, input.installationId);
     this.validateInstallation(config, installation);
-    return this.prisma.transaction(async (tx) => {
-      await this.lock(tx);
-      const current = await tx.gitHubAppConfiguration.findUnique({ where: { id: 'default' } });
-      if (!current || current.updatedAt.getTime() !== config.updatedAt.getTime())
-        throw new ConflictException('GitHub App configuration changed. Refresh and try again.');
-      if (await tx.providerAccount.findUnique({ where: { githubInstallationId: input.installationId } }))
-        throw new ConflictException('This GitHub App installation is already connected.');
-      return tx.providerAccount.create({
-        data: {
-          id: randomUUID(),
-          providerType: 'GITHUB',
-          displayName: input.displayName,
-          authenticationMethod: 'GITHUB_APP',
-          githubInstallationId: input.installationId,
-          githubInstallationState: 'ACTIVE',
-          encryptedAccessToken: '',
-        },
-      });
-    });
+    return this.prisma.transaction(
+      /** Atomically verifies configuration and creates an account for an unconnected installation. */ async (tx) => {
+        await this.lock(tx);
+        const current = await tx.gitHubAppConfiguration.findUnique({ where: { id: 'default' } });
+        if (!current || current.updatedAt.getTime() !== config.updatedAt.getTime())
+          throw new ConflictException('GitHub App configuration changed. Refresh and try again.');
+        if (await tx.providerAccount.findUnique({ where: { githubInstallationId: input.installationId } }))
+          throw new ConflictException('This GitHub App installation is already connected.');
+        return tx.providerAccount.create({
+          data: {
+            id: randomUUID(),
+            providerType: 'GITHUB',
+            displayName: input.displayName,
+            authenticationMethod: 'GITHUB_APP',
+            githubInstallationId: input.installationId,
+            githubInstallationState: 'ACTIVE',
+            encryptedAccessToken: '',
+          },
+        });
+      },
+    );
   }
 
   /**
@@ -237,7 +255,10 @@ export class GitHubAppService {
     if (cached && cached.expiresAt > Date.now() + 60_000) return cached.value;
     const inflight = this.pending.get(cacheKey);
     if (inflight) return inflight;
-    const promise = this.issueToken(config, installationId, cacheKey).finally(() => this.pending.delete(cacheKey));
+    const promise = this.issueToken(config, installationId, cacheKey).finally(
+      /** Evaluates `this.pending.delete(cacheKey)` when this.issueToken(config, installationId, cacheKey).finally invokes this callback. */ () =>
+        this.pending.delete(cacheKey),
+    );
     this.pending.set(cacheKey, promise);
     return promise;
   }
@@ -311,6 +332,7 @@ export class GitHubAppService {
       String(row.app_id) !== config.appId ||
       row.suspended_at ||
       ['actions', 'issues', 'pull_requests'].some(
+        /** Checks whether any entry satisfies `!['read', 'write'].includes(row.permissions[permission] ?? '')`. */
         (permission) => !['read', 'write'].includes(row.permissions[permission] ?? ''),
       )
     )
@@ -346,7 +368,11 @@ export class GitHubAppService {
       });
     this.validateInstallation(config, row);
     const permissions = Object.fromEntries(
-      readPermissions.filter((permission) => row.permissions[permission]).map((permission) => [permission, 'read']),
+      readPermissions
+        .filter(
+          /** Keeps entries matching `row.permissions[permission]`. */ (permission) => row.permissions[permission],
+        )
+        .map(/** Projects each entry using `[permission, 'read']`. */ (permission) => [permission, 'read']),
     );
     const token = await this.request<{ token: string; expires_at: string }>(
       `/app/installations/${id}/access_tokens`,

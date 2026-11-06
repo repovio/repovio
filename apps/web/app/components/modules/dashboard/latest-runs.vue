@@ -1,7 +1,9 @@
 <template>
   <UCard>
     <template #header>
-      <h2 class="font-semibold">{{ $t('dashboard.latestRuns') }}</h2>
+      <h2 class="font-semibold">
+        {{ $t('dashboard.latestRuns') }}
+      </h2>
     </template>
 
     <div v-if="loading && !runs.length" class="space-y-3">
@@ -11,22 +13,42 @@
       <table class="w-full text-left text-sm">
         <thead class="border-b border-default text-muted">
           <tr>
-            <th class="pb-3">{{ $t('dashboard.workflow') }}</th>
-            <th class="pb-3">{{ $t('dashboard.status') }}</th>
-            <th class="pb-3">{{ $t('dashboard.duration') }}</th>
-            <th class="pb-3">{{ $t('workflowRuns.columns.completed') }}</th>
-            <th class="pb-3 text-right">{{ $t('repositories.columns.actions') }}</th>
+            <th class="pb-3">
+              {{ $t('dashboard.workflow') }}
+            </th>
+            <th class="pb-3">
+              {{ $t('dashboard.status') }}
+            </th>
+            <th class="pb-3">
+              {{ $t('dashboard.duration') }}
+            </th>
+            <th class="pb-3">
+              {{ $t('workflowRuns.columns.completed') }}
+            </th>
+            <th class="pb-3 text-right">
+              {{ $t('repositories.columns.actions') }}
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="run in runs" :key="run.id" class="border-b border-default last:border-0">
             <td class="py-3">
-              <p class="font-medium">{{ run.displayTitle }}</p>
-              <p class="text-xs text-muted">{{ run.repository.owner }}/{{ run.repository.name }}</p>
+              <p class="font-medium">
+                {{ run.displayTitle }}
+              </p>
+              <p class="text-xs text-muted">
+                {{ run.repository.owner }}/{{ run.repository.name }}
+              </p>
             </td>
-            <td class="py-3"><EnumsWorkflowRunStatusBadge :status="run.status" /></td>
-            <td class="py-3">{{ formatDuration(run.durationMs) }}</td>
-            <td class="py-3 whitespace-nowrap">{{ formatTimestamp(run.completedAt) }}</td>
+            <td class="py-3">
+              <EnumsWorkflowRunStatusBadge :status="run.status" />
+            </td>
+            <td class="py-3">
+              {{ formatDuration(run.durationMs) }}
+            </td>
+            <td class="py-3 whitespace-nowrap">
+              {{ formatTimestamp(run.completedAt) }}
+            </td>
             <td class="py-3 text-right">
               <UTooltip :text="$t('dashboard.openProvider')">
                 <UButton
@@ -44,7 +66,9 @@
         </tbody>
       </table>
     </div>
-    <p v-else class="py-12 text-center text-sm text-muted">{{ $t('dashboard.noRuns') }}</p>
+    <p v-else class="py-12 text-center text-sm text-muted">
+      {{ $t('dashboard.noRuns') }}
+    </p>
   </UCard>
 </template>
 

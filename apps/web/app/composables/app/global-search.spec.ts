@@ -8,14 +8,15 @@ interface ResultFixture {
   label: string;
 }
 
-describe('global search ranking', () => {
+describe('global search ranking', /** Groups scenarios for global search ranking. */ () => {
+  /** Retrieves search text. */
   const getSearchText = (item: ResultFixture) => ({
     id: item.id,
     label: item.label,
     supportingText: item.context,
   });
 
-  it('ranks exact, prefix, word-prefix, label, and contextual matches deterministically', () => {
+  it('ranks exact, prefix, word-prefix, label, and contextual matches deterministically', /** Verifies ranks exact, prefix, word-prefix, label, and contextual matches deterministically. */ () => {
     const items: ResultFixture[] = [
       { context: 'deploy production', id: '5', label: 'Nightly checks' },
       { id: '4', label: 'Nightly deployment' },
@@ -33,8 +34,14 @@ describe('global search ranking', () => {
     ]);
   });
 
-  it('bounds every result group after applying ranking', () => {
-    const items = Array.from({ length: 10 }, (_, index) => ({ id: String(index), label: `Result ${index}` }));
+  it('bounds every result group after applying ranking', /** Verifies bounds every result group after applying ranking. */ () => {
+    const items = Array.from(
+      { length: 10 },
+      /** Evaluates `({ id: String(index), label: `Result ${index}` })` when Array.from invokes this callback. */ (
+        _,
+        index,
+      ) => ({ id: String(index), label: `Result ${index}` }),
+    );
     expect(rankSearchResults(items, 'result', getSearchText, 3)).toHaveLength(3);
   });
 });

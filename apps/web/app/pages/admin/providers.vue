@@ -179,35 +179,50 @@ const route = useRoute();
 const dialogOpen = ref(false);
 const githubAppOpen = ref(false);
 const { isPending, run: runPendingAction } = usePendingActions();
-const oauthStatus = computed(() => route.query.oauth);
-const { getLabel: getProviderTypeLabel } = useProviderType();
-const providerTypeOptions = computed(() =>
-  providerTypes.map((providerType) => ({ label: getProviderTypeLabel(providerType), value: providerType })),
+const oauthStatus = computed(
+  /** Derives oauth status from the current reactive dependencies. */ () => route.query.oauth,
 );
-const columnDefinition = computed<ProviderTableColumn[]>(() => [
-  { accessorKey: 'displayName', header: t('providers.columns.name'), id: 'displayName' },
-  { accessorKey: 'providerType', header: t('providers.columns.type'), id: 'providerType' },
-  { accessorKey: 'authenticationMethod', header: t('providers.authentication'), id: 'authenticationMethod' },
-  { accessorKey: 'baseUrl', header: t('providers.columns.baseUrl'), id: 'baseUrl' },
-  { accessorKey: 'enabled', header: t('providers.columns.status'), id: 'enabled' },
-  { accessorKey: 'lastSyncAt', header: t('providers.columns.lastSync'), id: 'lastSyncAt' },
-  { enableHiding: false, header: t('providers.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('providers.columns.name'), value: 'displayName' },
-  { label: t('providers.columns.type'), value: 'providerType' },
-  { label: t('providers.columns.status'), value: 'enabled' },
-  { label: t('providers.columns.lastSync'), value: 'lastSyncAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('providers.columns.type'),
-    type: FilterFieldType.Enum,
-    value: 'providerType',
-    values: providerTypeOptions.value.map(({ label, value }) => ({ label, value })),
-  },
-  { label: t('providers.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
-]);
+const { getLabel: getProviderTypeLabel } = useProviderType();
+const providerTypeOptions = computed(
+  /** Derives provider type options from the current reactive dependencies. */ () =>
+    providerTypes.map(
+      /** Projects each entry using `({ label: getProviderTypeLabel(providerType), value: providerType })`. */ (
+        providerType,
+      ) => ({ label: getProviderTypeLabel(providerType), value: providerType }),
+    ),
+);
+const columnDefinition = computed<ProviderTableColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'displayName', header: t('providers.columns.name'), id: 'displayName' },
+    { accessorKey: 'providerType', header: t('providers.columns.type'), id: 'providerType' },
+    { accessorKey: 'authenticationMethod', header: t('providers.authentication'), id: 'authenticationMethod' },
+    { accessorKey: 'baseUrl', header: t('providers.columns.baseUrl'), id: 'baseUrl' },
+    { accessorKey: 'enabled', header: t('providers.columns.status'), id: 'enabled' },
+    { accessorKey: 'lastSyncAt', header: t('providers.columns.lastSync'), id: 'lastSyncAt' },
+    { enableHiding: false, header: t('providers.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('providers.columns.name'), value: 'displayName' },
+    { label: t('providers.columns.type'), value: 'providerType' },
+    { label: t('providers.columns.status'), value: 'enabled' },
+    { label: t('providers.columns.lastSync'), value: 'lastSyncAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('providers.columns.type'),
+      type: FilterFieldType.Enum,
+      value: 'providerType',
+      values: providerTypeOptions.value.map(
+        /** Projects each entry using `({ label, value })`. */ ({ label, value }) => ({ label, value }),
+      ),
+    },
+    { label: t('providers.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
+  ],
+);
 const providerTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 10,
@@ -229,13 +244,15 @@ const {
   totalItems,
 } = providerTable;
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: providerTable.columnPinning.value.left, right: providerTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     providerTable.columnPinning.value = value;
   },
 });
 
-useHead({ title: computed(() => t('providers.title')) });
+useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('providers.title')) });
 
 /** Format a provider's last successful synchronization in the active interface locale. */
 function formatLastSync(lastSyncAt: string | null): string {
@@ -243,6 +260,7 @@ function formatLastSync(lastSyncAt: string | null): string {
   return formatDateTime(lastSyncAt);
 }
 
+/** Opens add dialog. */
 function openAddDialog(): void {
   dialogOpen.value = true;
 }
@@ -258,6 +276,7 @@ function isProviderPending(providerId: string): boolean {
 }
 
 defineShortcuts({
+  /** Opens the create dialog when its keyboard shortcut is allowed. */
   shift_n: () => openAddDialog(),
 });
 
@@ -269,19 +288,25 @@ async function handleProviderCreated(): Promise<void> {
 
 /** Remove a provider account and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(providerActionKey('delete', id), async () => {
-    await api.providerAccounts.delete(id);
-    await providerTable.refresh();
-  });
+  await runPendingAction(
+    providerActionKey('delete', id),
+    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+      await api.providerAccounts.delete(id);
+      await providerTable.refresh();
+    },
+  );
 }
 
 /** Enable or disable a provider account without changing its stored credentials. */
 async function toggle(provider: ProviderAccount): Promise<void> {
-  await runPendingAction(providerActionKey('toggle', provider.id), async () => {
-    await api.providerAccounts.update(provider.id, { enabled: !provider.enabled });
-    await providerTable.refresh();
-  });
+  await runPendingAction(
+    providerActionKey('toggle', provider.id),
+    /** Performs toggle while retaining the initiating action’s pending state. */ async () => {
+      await api.providerAccounts.update(provider.id, { enabled: !provider.enabled });
+      await providerTable.refresh();
+    },
+  );
 }
 
-onMounted(() => void providerTable.initialize());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void providerTable.initialize());
 </script>

@@ -50,7 +50,11 @@ export class McpController {
       return;
     }
 
-    const authenticated = await this.tokens.authenticate(token).catch(() => undefined);
+    const authenticated = await this.tokens
+      .authenticate(token)
+      .catch(
+        /** Evaluates `undefined` when this.tokens.authenticate(token).catch invokes this callback. */ () => undefined,
+      );
     if (!authenticated) {
       this.unauthorized(response);
       return;

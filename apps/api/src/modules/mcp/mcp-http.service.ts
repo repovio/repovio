@@ -18,11 +18,20 @@ export class McpHttpService implements OnModuleDestroy {
    * @param factory - Factory creating an MCP server bound to the authenticated user.
    */
   constructor(factory: McpServerFactory) {
-    this.handler = createMcpHandler(({ authInfo }) => factory.create(this.getUser(authInfo)), {
-      legacy: 'reject',
-      onerror: (error) => this.logger.error(error.message),
+    this.handler = createMcpHandler(
+      /** Evaluates `factory.create(this.getUser(authInfo))` when createMcpHandler invokes this callback. */ ({
+        authInfo,
+      }) => factory.create(this.getUser(authInfo)),
+      {
+        legacy: 'reject',
+        /** Rejects image loading when the browser cannot decode the selected file. */
+        onerror: (error) => this.logger.error(error.message),
+      },
+    );
+    this.nodeHandler = toNodeHandler(this.handler, {
+      /** Rejects image loading when the browser cannot decode the selected file. */ onerror: (error) =>
+        this.logger.error(error.message),
     });
-    this.nodeHandler = toNodeHandler(this.handler, { onerror: (error) => this.logger.error(error.message) });
   }
 
   /**

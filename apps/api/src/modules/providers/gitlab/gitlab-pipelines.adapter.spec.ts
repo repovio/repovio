@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { GitLabPipelinesAdapter } from './gitlab-pipelines.adapter.js';
 
 const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
+/** Reads fixture. */
 const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));
 
-describe('GitLabPipelinesAdapter', () => {
+describe('GitLabPipelinesAdapter', /** Groups scenarios for GitLabPipelinesAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
 
-  it('retains GitLab rate-limit timing without exposing the response body', async () => {
+  it('retains GitLab rate-limit timing without exposing the response body', /** Verifies retains GitLab rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GitLabPipelinesAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),
     );
@@ -23,7 +24,7 @@ describe('GitLabPipelinesAdapter', () => {
     });
   });
 
-  it('maps projects and pipelines using only GitLab read endpoints', async () => {
+  it('maps projects and pipelines using only GitLab read endpoints', /** Verifies maps projects and pipelines using only GitLab read endpoints. */ async () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(new Response(JSON.stringify(readFixture('projects.json'))))
@@ -57,7 +58,8 @@ describe('GitLabPipelinesAdapter', () => {
     expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/api/v4/projects'), expect.anything());
   });
 
-  it('paginates more than 100 incremental pipelines', async () => {
+  it('paginates more than 100 incremental pipelines', /** Verifies paginates more than 100 incremental pipelines. */ async () => {
+    /** Builds a provider pipeline fixture for synchronization assertions. */
     const pipeline = (id: number) => ({
       created_at: '2026-09-13T10:00:00Z',
       duration: 60,
@@ -70,7 +72,16 @@ describe('GitLabPipelinesAdapter', () => {
     });
     const fetchFn = jest
       .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(Array.from({ length: 100 }, (_, index) => pipeline(index)))))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify(
+            Array.from(
+              { length: 100 },
+              /** Evaluates `pipeline(index)` when Array.from invokes this callback. */ (_, index) => pipeline(index),
+            ),
+          ),
+        ),
+      )
       .mockResolvedValueOnce(new Response(JSON.stringify([pipeline(100)])));
 
     await expect(
@@ -83,7 +94,7 @@ describe('GitLabPipelinesAdapter', () => {
     expect(fetchFn).toHaveBeenNthCalledWith(2, expect.stringContaining('page=2&per_page=100'), expect.anything());
   });
 
-  it('loads current project metadata through the stable GitLab project ID', async () => {
+  it('loads current project metadata through the stable GitLab project ID', /** Verifies loads current project metadata through the stable GitLab project ID. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -105,7 +116,7 @@ describe('GitLabPipelinesAdapter', () => {
     expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/api/v4/projects/1'), expect.anything());
   });
 
-  it('verifies current GitLab HMAC signing tokens against the raw delivery body', async () => {
+  it('verifies current GitLab HMAC signing tokens against the raw delivery body', /** Verifies verifies current GitLab HMAC signing tokens against the raw delivery body. */ async () => {
     const adapter = new GitLabPipelinesAdapter();
     const payload = Buffer.from(JSON.stringify(readFixture('webhook.json')));
     const signingSecret = `whsec_${Buffer.from('signing-key').toString('base64')}`;
@@ -129,7 +140,7 @@ describe('GitLabPipelinesAdapter', () => {
     ).resolves.toEqual({ event: 'Pipeline Hook', providerRepositoryId: '42', syncScopes: ['WORKFLOWS'] });
   });
 
-  it('maps manual merge-request pipelines without issuing a provider write', async () => {
+  it('maps manual merge-request pipelines without issuing a provider write', /** Verifies maps manual merge-request pipelines without issuing a provider write. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify([
@@ -163,7 +174,7 @@ describe('GitLabPipelinesAdapter', () => {
   });
 });
 
-describe('GitLabPipelinesAdapter change requests', () => {
+describe('GitLabPipelinesAdapter change requests', /** Groups scenarios for GitLabPipelinesAdapter change requests. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
@@ -171,19 +182,24 @@ describe('GitLabPipelinesAdapter change requests', () => {
     ['opened', null, 'OPEN'],
     ['closed', null, 'CLOSED'],
     ['merged', '2026-09-12T10:00:00.000Z', 'MERGED'],
-  ] as const)('normalizes a %s merge request with merged-at %s as %s', async (state, mergedAt, expected) => {
-    const adapter = new GitLabPipelinesAdapter(
-      jest.fn().mockResolvedValue(new Response(JSON.stringify({ merged_at: mergedAt, state, target_branch: 'main' }))),
-    );
+  ] as const)(
+    'normalizes a %s merge request with merged-at %s as %s',
+    /** Verifies normalizes a %s merge request with merged-at %s as %s. */ async (state, mergedAt, expected) => {
+      const adapter = new GitLabPipelinesAdapter(
+        jest
+          .fn()
+          .mockResolvedValue(new Response(JSON.stringify({ merged_at: mergedAt, state, target_branch: 'main' }))),
+      );
 
-    await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toEqual({
-      mergedAt: mergedAt ? new Date(mergedAt) : null,
-      state: expected,
-      targetBranch: 'main',
-    });
-  });
+      await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toEqual({
+        mergedAt: mergedAt ? new Date(mergedAt) : null,
+        state: expected,
+        targetBranch: 'main',
+      });
+    },
+  );
 
-  it('normalizes separate GitLab issue and merge-request fixtures', async () => {
+  it('normalizes separate GitLab issue and merge-request fixtures', /** Verifies normalizes separate GitLab issue and merge-request fixtures. */ async () => {
     const adapter = new GitLabPipelinesAdapter(
       jest
         .fn()
@@ -201,17 +217,18 @@ describe('GitLabPipelinesAdapter change requests', () => {
     ]);
   });
 
-  it('returns null when the merge request is unavailable', async () => {
+  it('returns null when the merge request is unavailable', /** Verifies returns null when the merge request is unavailable. */ async () => {
     const adapter = new GitLabPipelinesAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toBeNull();
   });
 });
 
-describe('GitLabPipelinesAdapter security alerts', () => {
+describe('GitLabPipelinesAdapter security alerts', /** Groups scenarios for GitLabPipelinesAdapter security alerts. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'group', providerRepositoryId: '1' };
 
-  it('paginates and normalizes supported report types', async () => {
+  it('paginates and normalizes supported report types', /** Verifies paginates and normalizes supported report types. */ async () => {
+    /** Builds the paginated provider response fixture. */
     const page = (nodes: object[], hasNextPage: boolean, endCursor: string | null) =>
       new Response(
         JSON.stringify({
@@ -291,7 +308,7 @@ describe('GitLabPipelinesAdapter security alerts', () => {
     expect(JSON.stringify(result)).not.toContain('must-not-survive');
   });
 
-  it('returns unavailable kinds for inaccessible GraphQL data', async () => {
+  it('returns unavailable kinds for inaccessible GraphQL data', /** Verifies returns unavailable kinds for inaccessible GraphQL data. */ async () => {
     const adapter = new GitLabPipelinesAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 403 })));
     await expect(adapter.listSecurityAlerts(context, repository)).resolves.toEqual([
       expect.objectContaining({ availability: 'UNAVAILABLE', kind: 'DEPENDENCY' }),

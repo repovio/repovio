@@ -185,12 +185,20 @@ export class ProviderAccountsService {
         select: { providerRepositoryId: true },
       }),
     ]);
-    const trackedIds = new Set(trackedRepositories.map(({ providerRepositoryId }) => providerRepositoryId));
+    const trackedIds = new Set(
+      trackedRepositories.map(
+        /** Projects each entry using `providerRepositoryId`. */ ({ providerRepositoryId }) => providerRepositoryId,
+      ),
+    );
 
-    return repositories.map((repository) => ({
-      ...repository,
-      tracked: trackedIds.has(repository.providerRepositoryId),
-    }));
+    return repositories.map(
+      /** Projects each entry using `({ ...repository, tracked: trackedIds.has(repository.providerRepositoryId), })`. */ (
+        repository,
+      ) => ({
+        ...repository,
+        tracked: trackedIds.has(repository.providerRepositoryId),
+      }),
+    );
   }
 
   /**
@@ -216,6 +224,7 @@ export class ProviderAccountsService {
     this.assertAdmin(user);
     const account = await this.requireEnabled(providerAccountId);
     const repository = (await this.discoverRepositories(account)).find(
+      /** Finds the first entry matching `candidate.providerRepositoryId === providerRepositoryId`. */
       (candidate) => candidate.providerRepositoryId === providerRepositoryId,
     );
     if (!repository) throw new NotFoundException('Provider repository not found.');

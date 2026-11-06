@@ -13,7 +13,9 @@
         <div class="flex min-w-0 items-start gap-3">
           <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-monitor-smartphone" />
           <div>
-            <p class="font-semibold">{{ $t('notifications.push.title') }}</p>
+            <p class="font-semibold">
+              {{ $t('notifications.push.title') }}
+            </p>
             <p class="text-sm text-muted">
               {{
                 $t('notifications.push.description', {
@@ -95,7 +97,9 @@
       }"
     >
       <template #type-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ typeLabel(row.original.type) }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ typeLabel(row.original.type) }}
+        </UBadge>
       </template>
       <template #urlScheme-cell="{ row }">
         <span class="text-sm text-muted">
@@ -223,30 +227,41 @@ const channelTypes: NotificationChannelType[] = [
   'CUSTOM_APPRISE',
   'BROWSER_PUSH',
 ];
-const columnDefinition = computed<ChannelColumn[]>(() => [
-  { accessorKey: 'name', header: t('notifications.columns.name'), id: 'name' },
-  { accessorKey: 'type', header: t('notifications.columns.type'), id: 'type' },
-  { header: t('notifications.columns.target'), id: 'urlScheme' },
-  { header: t('notifications.columns.events'), id: 'eventSubscriptions' },
-  { accessorKey: 'enabled', header: t('notifications.columns.status'), id: 'enabled' },
-  { accessorKey: 'updatedAt', header: t('notifications.columns.updatedAt'), id: 'updatedAt' },
-  { enableHiding: false, header: t('notifications.columns.actions'), id: 'actions' },
-]);
-const sortableFields = computed<SortingField[]>(() => [
-  { label: t('notifications.columns.name'), value: 'name' },
-  { label: t('notifications.columns.type'), value: 'type' },
-  { label: t('notifications.columns.status'), value: 'enabled' },
-  { label: t('notifications.columns.updatedAt'), value: 'updatedAt' },
-]);
-const filterFields = computed<FilterField[]>(() => [
-  {
-    label: t('notifications.columns.type'),
-    type: FilterFieldType.Enum,
-    value: 'type',
-    values: channelTypes.map((value) => ({ label: typeLabel(value), value })),
-  },
-  { label: t('notifications.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
-]);
+const columnDefinition = computed<ChannelColumn[]>(
+  /** Derives column definition from the current reactive dependencies. */ () => [
+    { accessorKey: 'name', header: t('notifications.columns.name'), id: 'name' },
+    { accessorKey: 'type', header: t('notifications.columns.type'), id: 'type' },
+    { header: t('notifications.columns.target'), id: 'urlScheme' },
+    { header: t('notifications.columns.events'), id: 'eventSubscriptions' },
+    { accessorKey: 'enabled', header: t('notifications.columns.status'), id: 'enabled' },
+    { accessorKey: 'updatedAt', header: t('notifications.columns.updatedAt'), id: 'updatedAt' },
+    { enableHiding: false, header: t('notifications.columns.actions'), id: 'actions' },
+  ],
+);
+const sortableFields = computed<SortingField[]>(
+  /** Derives sortable fields from the current reactive dependencies. */ () => [
+    { label: t('notifications.columns.name'), value: 'name' },
+    { label: t('notifications.columns.type'), value: 'type' },
+    { label: t('notifications.columns.status'), value: 'enabled' },
+    { label: t('notifications.columns.updatedAt'), value: 'updatedAt' },
+  ],
+);
+const filterFields = computed<FilterField[]>(
+  /** Derives filter fields from the current reactive dependencies. */ () => [
+    {
+      label: t('notifications.columns.type'),
+      type: FilterFieldType.Enum,
+      value: 'type',
+      values: channelTypes.map(
+        /** Projects each entry using `({ label: typeLabel(value), value })`. */ (value) => ({
+          label: typeLabel(value),
+          value,
+        }),
+      ),
+    },
+    { label: t('notifications.columns.status'), type: FilterFieldType.Boolean, value: 'enabled' },
+  ],
+);
 const channelTable = useTable({
   columnDefinition,
   defaultItemsPerPage: 10,
@@ -268,72 +283,99 @@ const {
   totalItems,
 } = channelTable;
 const columnPinning = computed({
+  /** Reads the column pinning binding. */
   get: () => ({ left: channelTable.columnPinning.value.left, right: channelTable.columnPinning.value.right }),
+  /** Writes the column pinning binding. */
   set: (value: { left?: string[]; right?: string[] }) => {
     channelTable.columnPinning.value = value;
   },
 });
 
+/** Provides the type label fixture for this scenario. */
 function typeLabel(type: NotificationChannelType): string {
   return t(`notifications.channelTypes.${type}`);
 }
 
+/** Checks whether the caller can test. */
 function canTest(): boolean {
   return auth.user?.role === 'SYSTEM_ADMIN';
 }
 
+/** Opens create. */
 function openCreate(): void {
   selectedChannel.value = null;
   dialogOpen.value = true;
 }
 
+/** Opens edit. */
 function openEdit(channel: NotificationChannel): void {
   selectedChannel.value = channel;
   dialogOpen.value = true;
 }
 
+/** Handles saved. */
 async function handleSaved(): Promise<void> {
   await channelTable.refresh();
 }
 
+/** Toggles index. */
 async function toggle(channel: NotificationChannel): Promise<void> {
-  await runPendingAction(`toggle:${channel.id}`, async () => {
-    await api.notificationChannels.update(channel.id, { enabled: !channel.enabled });
-    await channelTable.refresh();
-  });
+  await runPendingAction(
+    `toggle:${channel.id}`,
+    /** Performs toggle while retaining the initiating action’s pending state. */ async () => {
+      await api.notificationChannels.update(channel.id, { enabled: !channel.enabled });
+      await channelTable.refresh();
+    },
+  );
 }
 
+/** Removes index. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(`delete:${id}`, async () => {
-    await api.notificationChannels.delete(id);
-    await channelTable.refresh();
-  });
+  await runPendingAction(
+    `delete:${id}`,
+    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+      await api.notificationChannels.delete(id);
+      await channelTable.refresh();
+    },
+  );
 }
 
+/** Provides the test channel fixture for this scenario. */
 async function testChannel(channel: NotificationChannel): Promise<void> {
-  await runPendingAction(`test:${channel.id}`, async () => {
-    const { data } = await api.notificationChannels.test(channel.id);
-    toast.add({
-      color: data.status === 'DELIVERED' ? 'success' : 'error',
-      title: t(
-        data.status === 'DELIVERED' ? 'notifications.channels.testSuccess' : 'notifications.channels.testFailure',
-      ),
-    });
-  });
+  await runPendingAction(
+    `test:${channel.id}`,
+    /** Performs test channel while retaining the initiating action’s pending state. */ async () => {
+      const { data } = await api.notificationChannels.test(channel.id);
+      toast.add({
+        color: data.status === 'DELIVERED' ? 'success' : 'error',
+        title: t(
+          data.status === 'DELIVERED' ? 'notifications.channels.testSuccess' : 'notifications.channels.testFailure',
+        ),
+      });
+    },
+  );
 }
 
-onMounted(async () => {
-  const requests: Promise<unknown>[] = [channelTable.initialize(), push.refresh()];
-  if (auth.user?.role === 'SYSTEM_ADMIN') {
-    requests.push(
-      api.notificationChannels.manageableRepositories().then(({ data }) => {
-        manageableRepositories.value = data;
-      }),
-      api.users.list().then(({ data }) => {
-        users.value = data.items.map(({ id, username }) => ({ id, username }));
-      }),
-    );
-  }
-  await Promise.all(requests);
-});
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    const requests: Promise<unknown>[] = [channelTable.initialize(), push.refresh()];
+    if (auth.user?.role === 'SYSTEM_ADMIN') {
+      requests.push(
+        api.notificationChannels.manageableRepositories().then(
+          /** Stores the repositories available to notification-channel rules. */ ({ data }) => {
+            manageableRepositories.value = data;
+          },
+        ),
+        api.users.list().then(
+          /** Stores users available as browser-push recipients. */ ({ data }) => {
+            users.value = data.items.map(
+              /** Projects each entry using `({ id, username })`. */ ({ id, username }) => ({ id, username }),
+            );
+          },
+        ),
+      );
+    }
+    await Promise.all(requests);
+  },
+);
 </script>

@@ -10,20 +10,30 @@
       <table class="w-full text-left text-sm">
         <thead class="text-muted">
           <tr>
-            <th class="p-2 font-medium" scope="col">{{ t('shortcuts.scope') }}</th>
-            <th class="p-2 font-medium" scope="col">{{ t('shortcuts.keys') }}</th>
-            <th class="p-2 font-medium" scope="col">{{ t('shortcuts.action') }}</th>
+            <th class="p-2 font-medium" scope="col">
+              {{ t('shortcuts.scope') }}
+            </th>
+            <th class="p-2 font-medium" scope="col">
+              {{ t('shortcuts.keys') }}
+            </th>
+            <th class="p-2 font-medium" scope="col">
+              {{ t('shortcuts.action') }}
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="shortcut in globalShortcuts" :key="shortcut.id" class="border-t border-default">
-            <td class="p-2">{{ t(shortcut.scope) }}</td>
+            <td class="p-2">
+              {{ t(shortcut.scope) }}
+            </td>
             <td class="p-2">
               <span class="flex gap-1">
                 <UKbd v-for="key in shortcut.keys" :key="key" :value="key" />
               </span>
             </td>
-            <td class="p-2">{{ t(shortcut.action) }}</td>
+            <td class="p-2">
+              {{ t(shortcut.action) }}
+            </td>
           </tr>
         </tbody>
       </table>

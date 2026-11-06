@@ -94,6 +94,7 @@ export class NotificationsController {
         },
         recipients: { include: { user: { select: { id: true, username: true } } } },
       },
+      /** Maps map. */
       map: (
         channel: Prisma.NotificationChannelGetPayload<{
           include: {
@@ -133,8 +134,10 @@ export class NotificationsController {
   @ApiOperation({ summary: 'List visible notification channels' })
   @ApiOkResponse({ type: NotificationChannelDto, isArray: true })
   async list(@Req() request: AuthenticatedRequest): Promise<NotificationChannelDto[]> {
-    return (await this.notifications.listChannels()).map((channel) =>
-      NotificationChannelDto.fromModel(channel, request.user.role === 'SYSTEM_ADMIN'),
+    return (await this.notifications.listChannels()).map(
+      /** Projects each entry using `NotificationChannelDto.fromModel(channel, request.user.role === 'SYSTEM_ADMIN')`. */ (
+        channel,
+      ) => NotificationChannelDto.fromModel(channel, request.user.role === 'SYSTEM_ADMIN'),
     );
   }
 

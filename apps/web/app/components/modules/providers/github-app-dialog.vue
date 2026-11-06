@@ -8,7 +8,9 @@
     <template #body>
       <div class="space-y-6" :aria-busy="pending">
         <UAlert v-if="error" color="error" role="alert" :title="$t('githubApp.error')" />
-        <UButton v-if="!configuration" :loading="pending" @click="load">{{ $t('githubApp.load') }}</UButton>
+        <UButton v-if="!configuration" :loading="pending" @click="load">
+          {{ $t('githubApp.load') }}
+        </UButton>
         <template v-else>
           <UAlert color="info" :description="$t('githubApp.setupHelp')" :title="$t('githubApp.setup')" />
           <UForm
@@ -73,8 +75,12 @@
             </div>
           </UForm>
           <section v-if="configuration.configured" class="space-y-4 border-t border-default pt-4">
-            <h3 class="font-semibold">{{ $t('githubApp.installations') }}</h3>
-            <p class="text-sm text-muted">{{ $t('githubApp.installHelp') }}</p>
+            <h3 class="font-semibold">
+              {{ $t('githubApp.installations') }}
+            </h3>
+            <p class="text-sm text-muted">
+              {{ $t('githubApp.installHelp') }}
+            </p>
             <div class="flex flex-wrap gap-2">
               <UButton
                 color="neutral"
@@ -95,7 +101,9 @@
                 {{ $t('githubApp.refresh') }}
               </UButton>
             </div>
-            <p v-if="refreshed && !installations.length" class="text-sm text-muted">{{ $t('githubApp.empty') }}</p>
+            <p v-if="refreshed && !installations.length" class="text-sm text-muted">
+              {{ $t('githubApp.empty') }}
+            </p>
             <ul class="space-y-3">
               <li
                 v-for="installation in installations"
@@ -112,13 +120,15 @@
                     />
                   </UFormField>
                 </div>
-                <UBadge v-if="installation.suspended" color="warning">{{ $t('githubApp.states.SUSPENDED') }}</UBadge>
+                <UBadge v-if="installation.suspended" color="warning">
+                  {{ $t('githubApp.states.SUSPENDED') }}
+                </UBadge>
                 <UButton
                   :disabled="
                     pending ||
-                    installation.connected ||
-                    installation.suspended ||
-                    !displayNames[installation.installationId]?.trim()
+                      installation.connected ||
+                      installation.suspended ||
+                      !displayNames[installation.installationId]?.trim()
                   "
                   :loading="pending && action === installation.installationId"
                   @click="connectInstallation(installation)"
@@ -146,24 +156,41 @@ const { configuration, installations, pending, error, load, save, refresh, remov
 const action = ref('');
 const refreshed = ref(false);
 const displayNames = reactive<Record<string, string>>({});
-watch(installations, (rows) => {
-  for (const row of rows) displayNames[row.installationId] ??= row.account;
-});
+watch(
+  installations,
+  /** Synchronizes github app dialog when the observed state changes. */ (rows) => {
+    for (const row of rows) displayNames[row.installationId] ??= row.account;
+  },
+);
 const formSchema = SaveGitHubAppSchema.extend({
-  privateKey: z.preprocess((value) => (value === '' ? undefined : value), SaveGitHubAppSchema.shape.privateKey),
-  webhookSecret: z.preprocess((value) => (value === '' ? undefined : value), SaveGitHubAppSchema.shape.webhookSecret),
+  privateKey: z.preprocess(
+    /** Evaluates `(value === '' ? undefined : value)` when z.preprocess invokes this callback. */ (value) =>
+      value === '' ? undefined : value,
+    SaveGitHubAppSchema.shape.privateKey,
+  ),
+  webhookSecret: z.preprocess(
+    /** Evaluates `(value === '' ? undefined : value)` when z.preprocess invokes this callback. */ (value) =>
+      value === '' ? undefined : value,
+    SaveGitHubAppSchema.shape.webhookSecret,
+  ),
 });
 const form = reactive({ appId: '', slug: '', privateKey: '', webhookSecret: '' });
 
-watch(configuration, (value) => {
-  form.appId = value?.appId ?? '';
-  form.slug = value?.slug ?? '';
-});
-watch(open, async (value) => {
-  form.privateKey = '';
-  form.webhookSecret = '';
-  if (value) await load();
-});
+watch(
+  configuration,
+  /** Synchronizes github app dialog when the observed state changes. */ (value) => {
+    form.appId = value?.appId ?? '';
+    form.slug = value?.slug ?? '';
+  },
+);
+watch(
+  open,
+  /** Synchronizes github app dialog when the observed state changes. */ async (value) => {
+    form.privateKey = '';
+    form.webhookSecret = '';
+    if (value) await load();
+  },
+);
 
 /** Save or rotate credentials, clearing plaintext fields as soon as persistence succeeds. */
 async function saveConfiguration(): Promise<void> {
@@ -175,6 +202,7 @@ async function saveConfiguration(): Promise<void> {
       privateKey: form.privateKey || undefined,
       webhookSecret: form.webhookSecret || undefined,
     },
+    /** Clears plaintext credentials immediately after successful persistence. */
     () => {
       form.privateKey = '';
       form.webhookSecret = '';

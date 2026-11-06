@@ -1,7 +1,7 @@
 import { AppriseNotificationAdapter } from './apprise-notification.adapter.js';
 
-describe('AppriseNotificationAdapter', () => {
-  it('does not attempt to decrypt a channel that has no replacement URL', async () => {
+describe('AppriseNotificationAdapter', /** Groups scenarios for AppriseNotificationAdapter. */ () => {
+  it('does not attempt to decrypt a channel that has no replacement URL', /** Verifies does not attempt to decrypt a channel that has no replacement URL. */ async () => {
     const credentials = { decrypt: jest.fn() };
     const adapter = new AppriseNotificationAdapter(credentials as never);
 

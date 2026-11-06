@@ -18,12 +18,19 @@ export interface PaginatedDto<TItem> {
 type EndpointDto<TEndpoint extends Endpoint> = Endpoints[TEndpoint]['dto'];
 
 type ModuleApi<TEndpoint extends Endpoint> = {
+  /** Counts matching resources using the supplied query. */
   count(query?: QueryParameters): Promise<AxiosResponse<number>>;
+  /** Creates module api. */
   create(data: Endpoints[TEndpoint]['create'], query?: QueryParameters): Promise<AxiosResponse<EndpointDto<TEndpoint>>>;
+  /** Deletes module api. */
   delete(id: string | number, query?: QueryParameters): Promise<AxiosResponse<EndpointDto<TEndpoint>>>;
+  /** Finds by id. */
   findById(id: string | number, query?: QueryParameters): Promise<AxiosResponse<EndpointDto<TEndpoint>>>;
+  /** Retrieves module api. */
   get(id: string | number, query?: QueryParameters): Promise<AxiosResponse<EndpointDto<TEndpoint>>>;
+  /** Fetches a resource page using the supplied filters, sorting, and pagination. */
   query(query?: QueryParameters): Promise<AxiosResponse<PaginatedDto<EndpointDto<TEndpoint>>>>;
+  /** Updates module api. */
   update(
     id: string | number,
     data: Endpoints[TEndpoint]['update'],

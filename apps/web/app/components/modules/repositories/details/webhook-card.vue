@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositories.webhook.title') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositories.webhook.description') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositories.webhook.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositories.webhook.description') }}
+        </p>
       </div>
     </template>
 
@@ -42,7 +46,9 @@
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <p class="text-sm font-medium">{{ $t('repositories.webhook.status') }}</p>
+          <p class="text-sm font-medium">
+            {{ $t('repositories.webhook.status') }}
+          </p>
           <UBadge class="mt-1" variant="subtle" :color="configuration.configured ? 'success' : 'warning'">
             {{
               $t(configuration.configured ? 'repositories.webhook.configured' : 'repositories.webhook.notConfigured')
@@ -50,8 +56,12 @@
           </UBadge>
         </div>
         <div>
-          <p class="text-sm font-medium">{{ $t('repositories.webhook.lastDelivery') }}</p>
-          <p class="mt-1 text-sm text-muted">{{ lastDelivery }}</p>
+          <p class="text-sm font-medium">
+            {{ $t('repositories.webhook.lastDelivery') }}
+          </p>
+          <p class="mt-1 text-sm text-muted">
+            {{ lastDelivery }}
+          </p>
         </div>
       </div>
 
@@ -194,17 +204,20 @@ const api = useRepovioApi();
 const toast = useToast();
 const { formatDateTime } = useDateTime();
 const form = reactive({ webhookSecret: '' });
-const webhookFormSchema = computed(() =>
-  z.object({ webhookSecret: z.string() }).transform((data, context) => {
-    const parsed = ApiSetRepositoryWebhookSecretSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
-      }
-      return z.NEVER;
-    }
-    return parsed.data;
-  }),
+const webhookFormSchema = computed(
+  /** Derives webhook form schema from the current reactive dependencies. */ () =>
+    z.object({ webhookSecret: z.string() }).transform(
+      /** Normalizes input using the webhookFormSchema mapping. */ (data, context) => {
+        const parsed = ApiSetRepositoryWebhookSecretSchema.safeParse(data);
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues) {
+            context.addIssue({ code: 'custom', message: t('forms.invalidValue'), path: issue.path });
+          }
+          return z.NEVER;
+        }
+        return parsed.data;
+      },
+    ),
 );
 const revealSecret = ref(false);
 const rotationConfirmed = ref(false);
@@ -214,30 +227,40 @@ const saving = ref(false);
 const removing = ref(false);
 const secretCopied = ref(false);
 const urlCopied = ref(false);
-const busy = computed(() => saving.value || removing.value);
+const busy = computed(/** Derives busy from the current reactive dependencies. */ () => saving.value || removing.value);
 const canSave = computed(
+  /** Derives can save from the current reactive dependencies. */
   () =>
     !busy.value &&
     form.webhookSecret.trim().length > 0 &&
     (!props.configuration?.configured || rotationConfirmed.value),
 );
-const lastDelivery = computed(() =>
-  props.configuration?.lastDeliveryAt
-    ? formatDateTime(props.configuration.lastDeliveryAt)
-    : t('repositories.webhook.neverDelivered'),
+const lastDelivery = computed(
+  /** Derives last delivery from the current reactive dependencies. */ () =>
+    props.configuration?.lastDeliveryAt
+      ? formatDateTime(props.configuration.lastDeliveryAt)
+      : t('repositories.webhook.neverDelivered'),
 );
-const publicCallbackUrl = computed(() => {
-  if (!props.configuration) return false;
-  const callbackUrl = new URL(props.configuration.callbackUrl);
-  return callbackUrl.protocol === 'https:' && !['127.0.0.1', '::1', 'localhost'].includes(callbackUrl.hostname);
-});
+const publicCallbackUrl = computed(
+  /** Derives public callback url from the current reactive dependencies. */ () => {
+    if (!props.configuration) return false;
+    const callbackUrl = new URL(props.configuration.callbackUrl);
+    return callbackUrl.protocol === 'https:' && !['127.0.0.1', '::1', 'localhost'].includes(callbackUrl.hostname);
+  },
+);
 
-watch(() => props.repositoryId, resetSensitiveState);
+watch(/** Reads the reactive dependencies observed by this watcher. */ () => props.repositoryId, resetSensitiveState);
 
 /** Create a high-entropy Base64 signing secret without contacting the server. */
 function generateSecret(): void {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  form.webhookSecret = btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''));
+  form.webhookSecret = btoa(
+    Array.from(
+      bytes,
+      /** Evaluates `String.fromCharCode(byte)` when Array.from invokes this callback. */ (byte) =>
+        String.fromCharCode(byte),
+    ).join(''),
+  );
   revealSecret.value = true;
   saved.value = false;
   secretCopied.value = false;

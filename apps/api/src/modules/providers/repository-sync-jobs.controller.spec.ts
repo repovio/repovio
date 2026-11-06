@@ -2,7 +2,7 @@ import { ForbiddenException } from '@nestjs/common';
 
 import { RepositorySyncJobsController } from './repository-sync-jobs.controller.js';
 
-describe('RepositorySyncJobsController', () => {
+describe('RepositorySyncJobsController', /** Groups scenarios for RepositorySyncJobsController. */ () => {
   const jobs = {
     query: jest.fn(),
     start: jest.fn().mockResolvedValue(1),
@@ -11,7 +11,7 @@ describe('RepositorySyncJobsController', () => {
   };
   const controller = new RepositorySyncJobsController(jobs as never);
 
-  it('allows every authenticated user to query visible jobs', async () => {
+  it('allows every authenticated user to query visible jobs', /** Verifies allows every authenticated user to query visible jobs. */ async () => {
     const user = { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER' as const, username: 'viewer' };
     const query = { page: 1, perPage: 10 } as never;
     jobs.query.mockResolvedValueOnce({ items: [], meta: {} });
@@ -21,7 +21,7 @@ describe('RepositorySyncJobsController', () => {
     expect(jobs.query).toHaveBeenCalledWith(user, query);
   });
 
-  it('allows only system administrators to start jobs', async () => {
+  it('allows only system administrators to start jobs', /** Verifies allows only system administrators to start jobs. */ async () => {
     const viewer = { authProvider: 'LOCAL' as const, id: 'viewer', role: 'VIEWER' as const, username: 'viewer' };
     const admin = { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN' as const, username: 'admin' };
 

@@ -10,7 +10,7 @@ import {
 } from './api-contracts.js';
 import { localizeFormSchema } from './forms.js';
 
-test('query scalar types, operators, relation paths, and includes are validated before database access', () => {
+test('query scalar types, operators, relation paths, and includes are validated before database access', /** Verifies query scalar types, operators, relation paths, and includes are validated before database access. */ () => {
   for (const value of [
     { where: { id: 5 } },
     { where: { enabled: { in: [true] } } },
@@ -27,7 +27,7 @@ test('query scalar types, operators, relation paths, and includes are validated 
   );
 });
 
-test('the existing security alert file-path filter remains supported', () => {
+test('the existing security alert file-path filter remains supported', /** Verifies the existing security alert file-path filter remains supported. */ () => {
   assert.equal(
     ApiSecurityAlertQuerySchema.safeParse({ where: { location: { path: ['path'], equals: 'src/main.ts' } } }).success,
     true,
@@ -39,7 +39,7 @@ test('the existing security alert file-path filter remains supported', () => {
   );
 });
 
-test('pagination accepts integer strings and preserves scalar projection fields', () => {
+test('pagination accepts integer strings and preserves scalar projection fields', /** Verifies pagination accepts integer strings and preserves scalar projection fields. */ () => {
   assert.deepEqual(ApiIssueQuerySchema.parse({ page: '2', perPage: '25', fields: '123' }), {
     page: 2,
     perPage: 25,
@@ -48,7 +48,7 @@ test('pagination accepts integer strings and preserves scalar projection fields'
   for (const page of ['', null, true, '1.5', -1]) assert.equal(ApiIssueQuerySchema.safeParse({ page }).success, false);
 });
 
-test('form localization preserves parsed output and field error paths', () => {
+test('form localization preserves parsed output and field error paths', /** Verifies form localization preserves parsed output and field error paths. */ () => {
   const schema = localizeFormSchema(z.strictObject({ name: z.string().trim().min(1) }), 'Gib einen gültigen Wert ein.');
   assert.deepEqual(schema.parse({ name: ' Vera ' }), { name: 'Vera' });
   const invalid = schema.safeParse({ name: '' });

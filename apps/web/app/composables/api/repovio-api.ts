@@ -59,32 +59,47 @@ export function useRepovioApi() {
 
   return {
     githubApp: {
+      /** Fetches safe GitHub App setup metadata without credentials. */
       configuration: (): Promise<AxiosResponse<GitHubAppConfiguration>> => api.get(apiEndpoints.githubApp),
+      /** Creates or rotates the configured GitHub App credentials. */
       save: (input: SaveGitHubApp): Promise<AxiosResponse<GitHubAppConfiguration>> =>
         api.put(apiEndpoints.githubApp, input),
+      /** Removes GitHub App configuration after connected accounts are removed. */
       delete: (): Promise<AxiosResponse<void>> => api.delete(apiEndpoints.githubApp),
+      /** Lists App installations and their local connection state. */
       installations: (): Promise<AxiosResponse<GitHubAppInstallation[]>> =>
         api.get(`${apiEndpoints.githubApp}/installations`),
+      /** Creates a local provider account for the selected App installation. */
       connect: (input: ConnectGitHubApp): Promise<AxiosResponse<ProviderAccount>> =>
         api.post(`${apiEndpoints.githubApp}/installations`, input),
     },
     dashboard: {
+      /** Retrieves awaiting approval. */
       getAwaitingApproval: (): Promise<AxiosResponse<DashboardWorkflowRun[]>> =>
         api.get(apiEndpoints.dashboard.awaitingApproval),
+      /** Retrieves failures. */
       getFailures: (): Promise<AxiosResponse<DashboardWorkflowRun[]>> => api.get(apiEndpoints.dashboard.failures),
+      /** Retrieves latest runs. */
       getLatestRuns: (): Promise<AxiosResponse<DashboardWorkflowRun[]>> => api.get(apiEndpoints.dashboard.latestRuns),
+      /** Retrieves repository health. */
       getRepositoryHealth: (query: DashboardPeriodQuery): Promise<AxiosResponse<RepositoryHealth[]>> =>
         api.get(apiEndpoints.dashboard.repositories, { params: query }),
+      /** Retrieves summary. */
       getSummary: (query: DashboardPeriodQuery): Promise<AxiosResponse<DashboardSummary>> =>
         api.get(apiEndpoints.dashboard.summary, { params: query }),
+      /** Retrieves trend. */
       getTrend: (query: WorkflowRunTrendQuery): Promise<AxiosResponse<WorkflowRunTrendBucket[]>> =>
         api.get(apiEndpoints.dashboard.trend, { params: query }),
     },
+    /** Fetches the API, database, and provider health snapshot. */
     health: (): Promise<AxiosResponse<HealthResponse>> => api.get(apiEndpoints.health),
     issues: {
+      /** Fetches available issue filter values. */
       filterOptions: (): Promise<AxiosResponse<WorkItemFilterOptions>> =>
         api.get(`${apiEndpoints.issues}/filter-options`),
+      /** Fetches issue details by identifier. */
       get: (id: string): Promise<AxiosResponse<Issue>> => api.get(`${apiEndpoints.issues}/${id}`),
+      /** Lists issue resources belonging to the selected repository. */
       listForRepository: (repositoryId: string): Promise<AxiosResponse<PaginatedResource<Issue>>> =>
         api.get(apiEndpoints.issues, {
           params: {
@@ -95,80 +110,112 @@ export function useRepovioApi() {
             where: JSON.stringify({ repositoryId }),
           },
         }),
+      /** Fetches aggregate issue counts and status. */
       summary: (): Promise<AxiosResponse<IssueSummary>> => api.get(`${apiEndpoints.issues}/summary`),
     },
     jobs: {
+      /** Queues synchronization for the selected repository without changing provider resources. */
       start: (repositoryId: string): Promise<AxiosResponse<{ queuedCount: number }>> =>
         api.post(`${apiEndpoints.repositorySyncJobs}/${repositoryId}/run`),
+      /** Queues all enabled repository synchronization jobs. */
       startAll: (): Promise<AxiosResponse<{ queuedCount: number }>> =>
         api.post(`${apiEndpoints.repositorySyncJobs}/run`),
+      /** Fetches aggregate repository synchronization job counts and status. */
       summary: (): Promise<AxiosResponse<RepositorySyncJobSummary>> =>
         api.get(`${apiEndpoints.repositorySyncJobs}/summary`),
     },
     mcpTokens: {
+      /** Creates a MCP access token from validated input. */
       create: (input: CreateMcpAccessToken): Promise<AxiosResponse<CreatedMcpAccessToken>> =>
         api.post(apiEndpoints.mcpTokens, input),
+      /** Lists visible MCP access token resources. */
       list: (userId?: string): Promise<AxiosResponse<McpAccessToken[]>> =>
         api.get(apiEndpoints.mcpTokens, { params: { userId } }),
+      /** Revokes the selected MCP access token. */
       revoke: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.mcpTokens}/${id}`),
     },
     notificationChannels: {
+      /** Creates a notification channel from validated input. */
       create: (input: CreateNotificationChannel): Promise<AxiosResponse<NotificationChannel>> =>
         api.post(apiEndpoints.notificationChannels, input),
+      /** Deletes the selected notification channel. */
       delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.notificationChannels}/${id}`),
+      /** Lists visible notification channel resources. */
       list: (): Promise<AxiosResponse<NotificationChannel[]>> => api.get(apiEndpoints.notificationChannels),
+      /** Lists repositories available for notification-rule management. */
       manageableRepositories: (): Promise<AxiosResponse<Array<{ id: string; name: string; owner: string }>>> =>
         api.get(`${apiEndpoints.notificationChannels}/manageable-repositories`),
+      /** Previews notification-rule matches for the selected event subscriptions. */
       preview: (eventSubscriptions: NotificationEventSubscription[]): Promise<AxiosResponse<NotificationRulePreview>> =>
         api.post(`${apiEndpoints.notificationChannels}/preview`, { eventSubscriptions }),
+      /** Sends a test delivery through the selected notification channel. */
       test: (id: string): Promise<AxiosResponse<NotificationDelivery>> =>
         api.post(`${apiEndpoints.notificationChannels}/${id}/test`),
+      /** Persists the supplied notification channel changes. */
       update: (id: string, input: UpdateNotificationChannel): Promise<AxiosResponse<NotificationChannel>> =>
         api.patch(`${apiEndpoints.notificationChannels}/${id}`, input),
     },
     browserPush: {
+      /** Fetches browser-push availability and subscription state. */
       status: (): Promise<AxiosResponse<BrowserPushStatus>> => api.get(apiEndpoints.browserPush),
+      /** Registers this browser push subscription for the authenticated user. */
       register: (subscription: PushSubscriptionJSON): Promise<AxiosResponse<void>> =>
         api.post(`${apiEndpoints.browserPush}/subscriptions`, {
           endpoint: subscription.endpoint,
           keys: subscription.keys,
         }),
+      /** Unregisters the browser push subscription identified by its endpoint. */
       remove: (endpoint: string): Promise<AxiosResponse<void>> =>
         api.delete(`${apiEndpoints.browserPush}/subscriptions`, { data: { endpoint } }),
     },
     notificationDeliveries: {
+      /** Lists visible notification delivery resources. */
       list: (repositoryId?: string): Promise<AxiosResponse<NotificationDelivery[]>> =>
         api.get(apiEndpoints.notificationDeliveries, { params: { repositoryId } }),
     },
     oidc: {
+      /** Checks the configured OpenID Connect provider connectivity. */
       check: (): Promise<AxiosResponse<OidcCheckResult>> => api.post(apiEndpoints.auth.oidc.check),
+      /** Fetches the current OpenID Connect configuration. */
       config: (): Promise<AxiosResponse<OidcConfig>> => api.get(apiEndpoints.auth.oidc.config),
+      /** Persists the supplied OpenID Connect configuration changes. */
       update: (input: UpdateOidcConfig): Promise<AxiosResponse<OidcConfig>> =>
         api.put(apiEndpoints.auth.oidc.config, input),
     },
     providerAccounts: {
+      /** Starts the configured provider OAuth authorization flow. */
       authorize: (input: StartProviderOAuth): Promise<AxiosResponse<ProviderOAuthAuthorization>> =>
         api.post(apiEndpoints.providerAccounts.authorize, input),
+      /** Fetches the supported provider authentication methods. */
       authenticationOptions: (): Promise<AxiosResponse<ProviderAuthenticationOptions>> =>
         api.get(apiEndpoints.providerAccounts.authenticationOptions),
+      /** Creates a provider account from validated input. */
       create: (input: CreateProviderAccount): Promise<AxiosResponse<ProviderAccount>> =>
         api.post(apiEndpoints.providerAccounts.base, input),
+      /** Deletes the selected provider account. */
       delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.providerAccounts.base}/${id}`),
+      /** Lists visible provider account resources. */
       list: (): Promise<AxiosResponse<PaginatedResource<ProviderAccount>>> =>
         api.get(apiEndpoints.providerAccounts.base, {
           params: { fields: 'id,displayName,providerType,enabled', page: 1, perPage: 100 },
         }),
+      /** Lists repositories. */
       listRepositories: (id: string): Promise<AxiosResponse<ProviderRepository[]>> =>
         api.get(`${apiEndpoints.providerAccounts.base}/${id}/repositories`),
+      /** Adds repository. */
       addRepository: (id: string, providerRepositoryId: string): Promise<AxiosResponse<Repository>> =>
         api.post(`${apiEndpoints.providerAccounts.base}/${id}/repositories`, { providerRepositoryId }),
+      /** Persists the supplied provider account changes. */
       update: (id: string, input: UpdateProviderAccount): Promise<AxiosResponse<ProviderAccount>> =>
         api.patch(`${apiEndpoints.providerAccounts.base}/${id}`, input),
     },
     pullRequests: {
+      /** Fetches available pull request filter values. */
       filterOptions: (): Promise<AxiosResponse<WorkItemFilterOptions>> =>
         api.get(`${apiEndpoints.pullRequests}/filter-options`),
+      /** Fetches pull request details by identifier. */
       get: (id: string): Promise<AxiosResponse<PullRequest>> => api.get(`${apiEndpoints.pullRequests}/${id}`),
+      /** Lists pull request resources belonging to the selected repository. */
       listForRepository: (repositoryId: string): Promise<AxiosResponse<PaginatedResource<PullRequest>>> =>
         api.get(apiEndpoints.pullRequests, {
           params: {
@@ -179,21 +226,28 @@ export function useRepovioApi() {
             where: JSON.stringify({ repositoryId }),
           },
         }),
+      /** Fetches aggregate pull request counts and status. */
       summary: (): Promise<AxiosResponse<PullRequestSummary>> => api.get(`${apiEndpoints.pullRequests}/summary`),
     },
     repositories: {
+      /** Clears webhook configuration. */
       clearWebhookConfiguration: (id: string): Promise<AxiosResponse<void>> =>
         api.delete(`${apiEndpoints.repositories}/${id}/webhook-configuration`),
+      /** Creates workflow filter. */
       createWorkflowFilter: (
         id: string,
         input: Pick<WorkflowFilter, 'mode' | 'pattern'>,
       ): Promise<AxiosResponse<WorkflowFilter>> =>
         api.post(`${apiEndpoints.repositories}/${id}/workflow-filters`, input),
+      /** Deletes membership. */
       deleteMembership: (id: string, userId: string): Promise<AxiosResponse<void>> =>
         api.delete(`${apiEndpoints.repositories}/${id}/memberships/${userId}`),
+      /** Deletes workflow filter. */
       deleteWorkflowFilter: (id: string, filterId: string): Promise<AxiosResponse<void>> =>
         api.delete(`${apiEndpoints.repositories}/${id}/workflow-filters/${filterId}`),
+      /** Fetches repository details by identifier. */
       get: (id: string): Promise<AxiosResponse<RepositoryDetail>> => api.get(`${apiEndpoints.repositories}/${id}`),
+      /** Lists visible repository resources. */
       list: (page: number): Promise<AxiosResponse<PaginatedResource<Pick<Repository, 'id' | 'name' | 'owner'>>>> =>
         api.get(apiEndpoints.repositories, {
           params: {
@@ -203,23 +257,31 @@ export function useRepovioApi() {
             perPage: 1_000,
           },
         }),
+      /** Lists memberships. */
       listMemberships: (id: string): Promise<AxiosResponse<RepositoryMembership[]>> =>
         api.get(`${apiEndpoints.repositories}/${id}/memberships`),
+      /** Lists workflow filters. */
       listWorkflowFilters: (id: string): Promise<AxiosResponse<WorkflowFilter[]>> =>
         api.get(`${apiEndpoints.repositories}/${id}/workflow-filters`),
+      /** Fetches repository webhook setup states without exposing secrets. */
       webhookConfigurations: (): Promise<AxiosResponse<RepositoryWebhookConfiguration[]>> =>
         api.get(`${apiEndpoints.repositories}/webhook-configurations`),
+      /** Refreshes the selected repository’s local metadata from its provider. */
       refresh: (id: string): Promise<AxiosResponse<Repository>> =>
         api.post(`${apiEndpoints.repositories}/${id}/refresh`),
+      /** Queues a repository synchronization without changing provider resources. */
       sync: (id: string): Promise<AxiosResponse<void>> => api.post(`${apiEndpoints.repositories}/${id}/sync`),
+      /** Sets webhook secret. */
       setWebhookSecret: (id: string, webhookSecret: string): Promise<AxiosResponse<RepositoryWebhookConfiguration>> =>
         api.put(`${apiEndpoints.repositories}/${id}/webhook-configuration`, { webhookSecret }),
+      /** Persists the supplied repository changes. */
       update: (
         id: string,
         input: Partial<
           Pick<Repository, 'enabled' | 'issueRetentionDays' | 'pullRequestRetentionDays' | 'workflowRunRetentionDays'>
         >,
       ): Promise<AxiosResponse<void>> => api.patch(`${apiEndpoints.repositories}/${id}`, input),
+      /** Creates or replaces a user role on the selected repository. */
       upsertMembership: (
         id: string,
         userId: string,
@@ -228,9 +290,12 @@ export function useRepovioApi() {
         api.put(`${apiEndpoints.repositories}/${id}/memberships/${userId}`, input),
     },
     securityAlerts: {
+      /** Fetches available security alert filter values. */
       filterOptions: (): Promise<AxiosResponse<SecurityAlertFilterOptions>> =>
         api.get(`${apiEndpoints.securityAlerts}/filter-options`),
+      /** Fetches security alert details by identifier. */
       get: (id: string): Promise<AxiosResponse<SecurityAlert>> => api.get(`${apiEndpoints.securityAlerts}/${id}`),
+      /** Lists security alert resources belonging to the selected repository. */
       listForRepository: (repositoryId: string): Promise<AxiosResponse<PaginatedResource<SecurityAlert>>> =>
         api.get(apiEndpoints.securityAlerts, {
           params: {
@@ -241,9 +306,11 @@ export function useRepovioApi() {
             where: JSON.stringify({ repositoryId }),
           },
         }),
+      /** Fetches aggregate security alert counts and status. */
       summary: (): Promise<AxiosResponse<SecurityAlertSummary>> => api.get(`${apiEndpoints.securityAlerts}/summary`),
     },
     workflowRuns: {
+      /** Lists workflow run resources belonging to the selected repository. */
       listForRepository: (repositoryId: string): Promise<AxiosResponse<PaginatedResource<WorkflowRun>>> =>
         api.get(apiEndpoints.workflowRuns, {
           params: {
@@ -256,12 +323,16 @@ export function useRepovioApi() {
         }),
     },
     settings: {
+      /** Fetches application settings details by identifier. */
       get: (): Promise<AxiosResponse<ApplicationSettings>> => api.get(apiEndpoints.settings.base),
+      /** Persists the supplied application settings changes. */
       update: (input: UpdateApplicationSettings): Promise<AxiosResponse<ApplicationSettings>> =>
         api.patch(apiEndpoints.settings.base, input),
     },
     users: {
+      /** Deletes the selected user. */
       delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.users}/${id}`),
+      /** Lists visible user resources. */
       list: (): Promise<AxiosResponse<PaginatedResource<User>>> =>
         api.get(apiEndpoints.users, {
           params: {
@@ -271,6 +342,7 @@ export function useRepovioApi() {
           },
         }),
     },
+    /** Fetches application version information. */
     version: (): Promise<AxiosResponse<{ latest: string | null }>> => api.get(apiEndpoints.version),
   };
 }

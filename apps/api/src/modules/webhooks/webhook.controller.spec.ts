@@ -6,8 +6,8 @@ import { GitHubAppWebhookService } from './github-app-webhook.service.js';
 import { WebhookController } from './webhook.controller.js';
 import { WebhookService } from './webhook.service.js';
 
-describe('WebhookController', () => {
-  it('passes the unmodified raw body to the provider-specific service', async () => {
+describe('WebhookController', /** Groups scenarios for WebhookController. */ () => {
+  it('passes the unmodified raw body to the provider-specific service', /** Verifies passes the unmodified raw body to the provider-specific service. */ async () => {
     const service = {
       receive: jest.fn().mockResolvedValue({ accepted: true, duplicate: false }),
     } as unknown as WebhookService;
@@ -27,13 +27,16 @@ describe('WebhookController', () => {
     });
   });
 
-  it('rejects a request when the raw signed body is unavailable', () => {
+  it('rejects a request when the raw signed body is unavailable', /** Verifies rejects a request when the raw signed body is unavailable. */ () => {
     const controller = new WebhookController({} as WebhookService, {} as never);
 
-    expect(() => controller.gitlab('account-id', { headers: {} } as never)).toThrow(BadRequestException);
+    expect(
+      /** Evaluates `controller.gitlab('account-id', { headers: {} } as never)` when expect invokes this callback. */ () =>
+        controller.gitlab('account-id', { headers: {} } as never),
+    ).toThrow(BadRequestException);
   });
 
-  it('passes a Gitea delivery to the dedicated provider endpoint', async () => {
+  it('passes a Gitea delivery to the dedicated provider endpoint', /** Verifies passes a Gitea delivery to the dedicated provider endpoint. */ async () => {
     const service = {
       receive: jest.fn().mockResolvedValue({ accepted: true, duplicate: false }),
     } as unknown as WebhookService;
@@ -53,6 +56,7 @@ describe('WebhookController', () => {
 
   it.each(['github', 'gitlab', 'forgejo', 'gitea'] as const)(
     'exposes the %s endpoint through versioned and stable unversioned routes',
+    /** Verifies exposes the %s endpoint through versioned and stable unversioned routes. */
     (method) => {
       expect(Reflect.getMetadata(VERSION_METADATA, WebhookController.prototype[method])).toEqual([
         '1',
@@ -61,7 +65,7 @@ describe('WebhookController', () => {
     },
   );
 
-  it('accepts deliveries through both the stable and versioned webhook URLs', async () => {
+  it('accepts deliveries through both the stable and versioned webhook URLs', /** Verifies accepts deliveries through both the stable and versioned webhook URLs. */ async () => {
     const service = {
       receive: jest.fn().mockResolvedValue({ accepted: true, duplicate: false }),
     };

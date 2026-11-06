@@ -62,6 +62,7 @@ export class PullRequestsController {
     return ResourceQuery.query({
       ability,
       include: pullRequestInclude,
+      /** Maps map. */
       map: (pullRequest: PullRequestResourceModel) => PullRequestDto.fromModel(pullRequest, false, ability),
       query: this.pullRequests.toQueryOptions(query),
       schema: resourceFields(PullRequestDto),
@@ -124,7 +125,10 @@ export class PullRequestsController {
      * @param values - Values used for the calculation or stable filter ordering.
      * @returns The supplied values in stable alphabetical order.
      */
-    const sort = (values: Iterable<string>) => [...values].sort((left, right) => left.localeCompare(right));
+    const sort = (values: Iterable<string>) =>
+      [...values].sort(
+        /** Orders entries using `left.localeCompare(right)`. */ (left, right) => left.localeCompare(right),
+      );
     return { assignees: sort(assignees), authors: sort(authors), labels: sort(labels.values()), milestones: [] };
   }
 

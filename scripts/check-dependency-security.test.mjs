@@ -21,7 +21,7 @@ const pwaRequire = createRequire(webRequire.resolve('@vite-pwa/nuxt'));
 const vitePwaRequire = createRequire(pwaRequire.resolve('vite-plugin-pwa'));
 const workboxRequire = createRequire(vitePwaRequire.resolve('workbox-build'));
 
-test('the lockfile excludes the three vulnerable dependency ranges', async () => {
+test('the lockfile excludes the three vulnerable dependency ranges', /** Verifies the lockfile excludes the three vulnerable dependency ranges. */ async () => {
   const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
   assert.doesNotMatch(lockfile, /^ {2}deepmerge@/m);
   for (const [, major] of lockfile.matchAll(/^ {2}glob@(\d+)\./gm)) {
@@ -34,7 +34,7 @@ test('the lockfile excludes the three vulnerable dependency ranges', async () =>
   assert.doesNotMatch(lockfile, /^ {2}minimatch@11\.0\.0:/m);
 });
 
-test('Jest merging clones arrays and nested objects without inheriting poisoned keys', () => {
+test('Jest merging clones arrays and nested objects without inheriting poisoned keys', /** Verifies Jest merging clones arrays and nested objects without inheriting poisoned keys. */ () => {
   const { mergeConfig } = jestRequire('jest-config');
   const defaults = { globals: { nested: { enabled: true } }, setupFiles: ['first'] };
   const overrides = JSON.parse('{"globals":{"__proto__":{"polluted":true},"other":2},"setupFiles":["second"]}');
@@ -49,7 +49,7 @@ test('Jest merging clones arrays and nested objects without inheriting poisoned 
 });
 
 for (const format of ['commonjs', 'module']) {
-  test(`Rollup resolves real workspace dependencies with safe merge initialization (${format})`, async () => {
+  test(`Rollup resolves real workspace dependencies with safe merge initialization (${format})`, /** Verifies Rollup resolves real workspace dependencies with safe merge initialization ([format]). */ async () => {
     const entry = workboxRequire.resolve('@rollup/plugin-node-resolve');
     const plugin =
       format === 'commonjs'
@@ -62,13 +62,18 @@ for (const format of ['commonjs', 'module']) {
     });
     try {
       const { output } = await bundle.generate({ format: 'es' });
-      assert.ok(output.some((chunk) => chunk.type === 'chunk' && chunk.code.includes('Api')));
+      assert.ok(
+        output.some(
+          /** Checks whether any entry satisfies `chunk.type === 'chunk' && chunk.code.includes('Api')`. */ (chunk) =>
+            chunk.type === 'chunk' && chunk.code.includes('Api'),
+        ),
+      );
     } finally {
       await bundle.close();
     }
   });
 
-  test(`nestjs-zod retains schema cloning and custom intersection array merging (${format})`, async () => {
+  test(`nestjs-zod retains schema cloning and custom intersection array merging (${format})`, /** Verifies nestjs-zod retains schema cloning and custom intersection array merging ([format]). */ async () => {
     const entry = apiRequire.resolve('nestjs-zod');
     const nest =
       format === 'commonjs' ? apiRequire('nestjs-zod') : await import(pathToFileURL(entry.replace(/\.cjs$/, '.mjs')));
@@ -90,7 +95,7 @@ for (const format of ['commonjs', 'module']) {
   });
 }
 
-test('minimatch preserves matching and bounds adversarial preprocessing', () => {
+test('minimatch preserves matching and bounds adversarial preprocessing', /** Verifies minimatch preserves matching and bounds adversarial preprocessing. */ () => {
   const { minimatch } = eslintRequire('minimatch');
   assert.ok(minimatch('src/a/b.spec.ts', 'src/**/*.spec.ts'));
   assert.ok(!minimatch('src/a/b.ts', 'src/**/*.spec.ts'));
@@ -106,7 +111,7 @@ test('minimatch preserves matching and bounds adversarial preprocessing', () => 
   assert.equal(result.status, 0, result.stderr);
 });
 
-test('glob cancellation stops scheduling directory reads after rejection', async () => {
+test('glob cancellation stops scheduling directory reads after rejection', /** Verifies glob cancellation stops scheduling directory reads after rejection. */ async () => {
   const directory = await mkdtemp(resolve(tmpdir(), 'repovio-glob-'));
   try {
     for (let i = 0; i < 12; i++) {
@@ -118,6 +123,7 @@ test('glob cancellation stops scheduling directory reads after rejection', async
     const controller = new globalThis.AbortController();
     let reads = 0;
     const fs = {
+      /** Returns the configured directory-entry fixtures. */
       readdir(...args) {
         reads++;
         controller.abort(new Error('fixture-abort'));

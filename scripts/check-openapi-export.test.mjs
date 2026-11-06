@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-test('exports the real application deterministically without any network access or inherited deployment settings', async () => {
+test('exports the real application deterministically without any network access or inherited deployment settings', /** Verifies exports the real application deterministically without any network access or inherited deployment settings. */ async () => {
   const temporary = await mkdtemp(resolve(tmpdir(), 'repovio-openapi-check-'));
   try {
     const guard = resolve(temporary, 'guard.mjs');
@@ -51,6 +51,7 @@ test('exports the real application deterministically without any network access 
     assert.ok(!document.paths['/api/v1/mcp']);
     assert.ok(!first.includes('private-deployment.example.invalid'));
     assert.ok(!first.includes('inherited-secret-must-not-appear'));
+    /** Visits visit. */
     const visit = (value) => {
       if (!value || typeof value !== 'object') return;
       if (value.$ref) {
@@ -58,7 +59,11 @@ test('exports the real application deterministically without any network access 
         const target = value.$ref
           .slice(2)
           .split('/')
-          .reduce((node, key) => node?.[key.replaceAll('~1', '/').replaceAll('~0', '~')], document);
+          .reduce(
+            /** Accumulates entries using `node?.[key.replaceAll('~1', '/').replaceAll('~0', '~')]`. */ (node, key) =>
+              node?.[key.replaceAll('~1', '/').replaceAll('~0', '~')],
+            document,
+          );
         assert.ok(target, `Unresolved reference: ${value.$ref}`);
       }
       for (const item of Object.values(value)) visit(item);

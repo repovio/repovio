@@ -15,7 +15,11 @@ import { z } from 'zod';
 import { createZodDto } from './schema-dto.js';
 
 /** Minimal API-only bridge accepted by resource documentation and projection. */
-type SchemaDto = { schema: z.ZodObject; name: string; new (): unknown };
+type SchemaDto = {
+  schema: z.ZodObject;
+  name: string;
+  /** Constructs an instance of the runtime schema DTO. */ new (): unknown;
+};
 
 /**
  * Build Query Kit's explicit projection allowlist from a shared resource schema.
@@ -36,10 +40,12 @@ export function resourceFields(dto: SchemaDto): FieldSchema {
     if (schema instanceof z.ZodArray) return build(schema.element as z.ZodType);
     if (!(schema instanceof z.ZodObject)) return undefined;
     return Object.fromEntries(
-      Object.entries(schema.shape).map(([key, item]) => {
-        const nested = build(item as z.ZodType);
-        return [key, nested ? { relation: true, fields: nested } : true];
-      }),
+      Object.entries(schema.shape).map(
+        /** Projects each entry using the build mapping. */ ([key, item]) => {
+          const nested = build(item as z.ZodType);
+          return [key, nested ? { relation: true, fields: nested } : true];
+        },
+      ),
     );
   };
   return build(dto.schema) ?? {};
@@ -67,8 +73,9 @@ export function ApiPaginatedResponse(options: { model: SchemaDto; description?: 
  */
 export function ApiResourceQuery(): MethodDecorator {
   return applyDecorators(
-    ...['page', 'perPage', 'fields', 'where', 'orderBy', 'include', 'select', 'cursor', 'distinct'].map((name) =>
-      ApiQuery({ name, required: false, type: String }),
+    ...['page', 'perPage', 'fields', 'where', 'orderBy', 'include', 'select', 'cursor', 'distinct'].map(
+      /** Projects each entry using `ApiQuery({ name, required: false, type: String })`. */ (name) =>
+        ApiQuery({ name, required: false, type: String }),
     ),
   );
 }
@@ -124,12 +131,20 @@ export function projectedSchema(schema: z.ZodType): z.ZodType {
   if (schema instanceof z.ZodObject)
     return z.strictObject(
       Object.fromEntries(
-        Object.entries(schema.shape).map(([key, value]) => [key, projectedSchema(value as z.ZodType).optional()]),
+        Object.entries(schema.shape).map(
+          /** Projects each entry using `[key, projectedSchema(value as z.ZodType).optional()]`. */ ([key, value]) => [
+            key,
+            projectedSchema(value as z.ZodType).optional(),
+          ],
+        ),
       ),
     );
   if (schema instanceof z.ZodUnion)
     return z.union(
-      schema.options.map((option) => projectedSchema(option as z.ZodType)) as [z.ZodType, z.ZodType, ...z.ZodType[]],
+      schema.options.map(
+        /** Projects each entry using `projectedSchema(option as z.ZodType)`. */ (option) =>
+          projectedSchema(option as z.ZodType),
+      ) as [z.ZodType, z.ZodType, ...z.ZodType[]],
     );
   return schema;
 }
@@ -143,7 +158,11 @@ export function projectedSchema(schema: z.ZodType): z.ZodType {
  */
 export function SchemaResponse(schema: z.ZodType, status?: number): MethodDecorator {
   const response = createZodDto(schema);
-  return (target, property, descriptor) => {
+  return /** Registers the schema-derived response metadata on the decorated handler. */ (
+    target,
+    property,
+    descriptor,
+  ) => {
     Object.defineProperty(response, 'name', { value: `${target.constructor.name}_${String(property)}Response` });
     const handler = descriptor.value as object;
     const responseStatus =

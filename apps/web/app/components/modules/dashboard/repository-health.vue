@@ -2,8 +2,12 @@
   <UCard class="h-full">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('dashboard.repositoryHealth') }}</h2>
-        <p class="mt-1 text-xs text-muted">{{ $t('dashboard.repositoryHealthDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('dashboard.repositoryHealth') }}
+        </h2>
+        <p class="mt-1 text-xs text-muted">
+          {{ $t('dashboard.repositoryHealthDescription') }}
+        </p>
       </div>
     </template>
 
@@ -14,7 +18,9 @@
       <div v-for="repository in repositories" :key="repository.repository.id" class="space-y-2">
         <div class="flex items-start justify-between gap-3 text-sm">
           <div class="min-w-0">
-            <p class="truncate font-medium">{{ repository.repository.owner }}/{{ repository.repository.name }}</p>
+            <p class="truncate font-medium">
+              {{ repository.repository.owner }}/{{ repository.repository.name }}
+            </p>
             <p class="text-xs text-muted">
               {{
                 $t('dashboard.repositoryHealthContext', {
@@ -25,6 +31,7 @@
               }}
             </p>
           </div>
+          <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -- Preserve inline text spacing. -->
           <strong class="shrink-0 tabular-nums">{{ formatNumber(repository.successRate, 1) }} %</strong>
         </div>
         <div
@@ -47,7 +54,9 @@
         </div>
       </div>
     </div>
-    <p v-else class="py-16 text-center text-sm text-muted">{{ $t('dashboard.noRepositoryHealth') }}</p>
+    <p v-else class="py-16 text-center text-sm text-muted">
+      {{ $t('dashboard.noRepositoryHealth') }}
+    </p>
   </UCard>
 </template>
 

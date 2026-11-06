@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-6">
     <div class="space-y-1">
-      <h1 class="text-xl font-semibold">{{ $t('auth.setup') }}</h1>
-      <p class="text-sm text-muted">{{ $t('auth.setupDescription') }}</p>
+      <h1 class="text-xl font-semibold">
+        {{ $t('auth.setup') }}
+      </h1>
+      <p class="text-sm text-muted">
+        {{ $t('auth.setupDescription') }}
+      </p>
     </div>
 
     <UForm
@@ -72,7 +76,10 @@ definePageMeta({ layout: 'auth' });
 
 const auth = useAuthStore();
 const { t } = useI18n();
-const localizedSetupFormSchema = computed(() => createSetupFormSchema(t('auth.passwordMismatch')));
+const localizedSetupFormSchema = computed(
+  /** Derives localized setup form schema from the current reactive dependencies. */ () =>
+    createSetupFormSchema(t('auth.passwordMismatch')),
+);
 const error = ref('');
 const submitting = ref(false);
 const form = reactive({ confirmPassword: '', firstName: '', lastName: '', password: '', username: '' });

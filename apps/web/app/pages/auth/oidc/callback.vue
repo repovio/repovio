@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-4 text-center">
     <UIcon class="mx-auto size-8 animate-spin text-primary" name="i-lucide-loader-circle" />
-    <h1 class="text-xl font-semibold">{{ $t('auth.oidc.completing') }}</h1>
-    <p class="text-sm text-muted">{{ $t('auth.oidc.completingDescription') }}</p>
+    <h1 class="text-xl font-semibold">
+      {{ $t('auth.oidc.completing') }}
+    </h1>
+    <p class="text-sm text-muted">
+      {{ $t('auth.oidc.completingDescription') }}
+    </p>
   </div>
 </template>
 
@@ -34,17 +38,19 @@ if (handoffWindow) {
 
 useHead({ title: t('auth.oidc.completing') });
 
-onMounted(async () => {
-  if (!code || error) {
-    await router.replace({ path: '/auth/signin', query: { oidc_error: error ?? 'oidc_invalid_request' } });
-    return;
-  }
+onMounted(
+  /** Initializes component subscriptions and data after mounting. */ async () => {
+    if (!code || error) {
+      await router.replace({ path: '/auth/signin', query: { oidc_error: error ?? 'oidc_invalid_request' } });
+      return;
+    }
 
-  try {
-    const returnTo = await auth.exchangeOidcCode(code);
-    await router.replace(returnTo);
-  } catch {
-    await router.replace({ path: '/auth/signin', query: { oidc_error: 'oidc_transaction_invalid' } });
-  }
-});
+    try {
+      const returnTo = await auth.exchangeOidcCode(code);
+      await router.replace(returnTo);
+    } catch {
+      await router.replace({ path: '/auth/signin', query: { oidc_error: 'oidc_transaction_invalid' } });
+    }
+  },
+);
 </script>

@@ -5,8 +5,8 @@ import { McpTokensController } from './mcp-tokens.controller.js';
 import { McpController } from './mcp.controller.js';
 import { McpModule } from './mcp.module.js';
 
-describe('McpModule', () => {
-  it('resolves authenticated controller guards and services', async () => {
+describe('McpModule', /** Groups scenarios for McpModule. */ () => {
+  it('resolves authenticated controller guards and services', /** Verifies resolves authenticated controller guards and services. */ async () => {
     const moduleRef = await Test.createTestingModule({ imports: [PrismaModule, McpModule] }).compile();
 
     expect(moduleRef.get(McpController)).toBeInstanceOf(McpController);

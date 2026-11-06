@@ -6,8 +6,8 @@ import type { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import type { ProviderCredentialService } from './provider-credential.service.js';
 import { ProviderSyncService } from './sync.service.js';
 
-describe('ProviderSyncService', () => {
-  it('upserts repeated provider-native run IDs within each repository', async () => {
+describe('ProviderSyncService', /** Groups scenarios for ProviderSyncService. */ () => {
+  it('upserts repeated provider-native run IDs within each repository', /** Verifies upserts repeated provider-native run IDs within each repository. */ async () => {
     const firstRepository = createRepository('first-repository');
     const secondRepository = createRepository('second-repository');
     const mocks = {
@@ -21,7 +21,10 @@ describe('ProviderSyncService', () => {
           findMany: jest.fn().mockResolvedValue([]),
           findUnique: jest.fn().mockResolvedValue(null),
           updateMany: jest.fn().mockResolvedValue({ count: 0 }),
-          upsert: jest.fn(({ create }) => Promise.resolve({ id: 'run-id', ...create })),
+          upsert: jest.fn(
+            /** Provides isolated upsert behavior for this test fixture. */ ({ create }) =>
+              Promise.resolve({ id: 'run-id', ...create }),
+          ),
         },
         workflow: {
           delete: jest.fn().mockResolvedValue(undefined),
@@ -50,7 +53,11 @@ describe('ProviderSyncService', () => {
       mocks.prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(mocks.adapter) } as unknown as ProviderAdapterRegistry,
       mocks.credentials as unknown as ProviderCredentialService,
-      { refresh: jest.fn((repository) => Promise.resolve(repository)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (repository) => Promise.resolve(repository),
+        ),
+      } as never,
       mocks.filters as unknown as WorkflowFilterService,
       mocks.notifications as unknown as NotificationsService,
       mocks.status as unknown as SystemStatusService,
@@ -120,7 +127,7 @@ describe('ProviderSyncService', () => {
     expect(mocks.status.finishProviderSync).toHaveBeenCalledTimes(2);
   });
 
-  it('moves migrated name-based runs to their provider-native workflow on first observation', async () => {
+  it('moves migrated name-based runs to their provider-native workflow on first observation', /** Verifies moves migrated name-based runs to their provider-native workflow on first observation. */ async () => {
     const repository = createRepository('repository');
     const run = createWorkflowRun();
     const prisma = {
@@ -138,7 +145,10 @@ describe('ProviderSyncService', () => {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 3 }),
-        upsert: jest.fn(({ create }) => Promise.resolve({ id: 'run-id', ...create })),
+        upsert: jest.fn(
+          /** Provides isolated upsert behavior for this test fixture. */ ({ create }) =>
+            Promise.resolve({ id: 'run-id', ...create }),
+        ),
       },
     };
     const status = {
@@ -159,7 +169,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
       status as unknown as SystemStatusService,
@@ -182,7 +196,7 @@ describe('ProviderSyncService', () => {
     expect(prisma.workflow.delete).toHaveBeenCalledWith({ where: { id: 'legacy-workflow-id' } });
   });
 
-  it('refreshes current active and failed workflow contexts', async () => {
+  it('refreshes current active and failed workflow contexts', /** Verifies refreshes current active and failed workflow contexts. */ async () => {
     const repository = createRepository('repository');
     const refreshedApproval = { ...createWorkflowRun(), providerRunId: 'current-approval' };
     const refreshedFailure = { ...createWorkflowRun(), providerRunId: 'current-failure', status: 'SUCCESS' as const };
@@ -205,12 +219,16 @@ describe('ProviderSyncService', () => {
         ]),
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 0 }),
-        upsert: jest.fn(({ create }) => Promise.resolve({ id: 'run-id', ...create })),
+        upsert: jest.fn(
+          /** Provides isolated upsert behavior for this test fixture. */ ({ create }) =>
+            Promise.resolve({ id: 'run-id', ...create }),
+        ),
       },
     };
     const adapter = {
-      getWorkflowRun: jest.fn((_, __, providerRunId: string) =>
-        Promise.resolve(providerRunId === 'current-failure' ? refreshedFailure : refreshedApproval),
+      getWorkflowRun: jest.fn(
+        /** Provides isolated getWorkflowRun behavior for this test fixture. */ (_, __, providerRunId: string) =>
+          Promise.resolve(providerRunId === 'current-failure' ? refreshedFailure : refreshedApproval),
       ),
       listWorkflowRuns: jest.fn().mockResolvedValue([]),
     };
@@ -221,7 +239,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
       {
@@ -255,7 +277,7 @@ describe('ProviderSyncService', () => {
     );
   });
 
-  it('refreshes every active run while reusing runs returned by the incremental listing', async () => {
+  it('refreshes every active run while reusing runs returned by the incremental listing', /** Verifies refreshes every active run while reusing runs returned by the incremental listing. */ async () => {
     const repository = createRepository('repository');
     const listedRun = { ...createWorkflowRun(), providerRunId: 'active-new', status: 'SUCCESS' as const };
     const refreshedRun = { ...createWorkflowRun(), providerRunId: 'active-old', status: 'CANCELLED' as const };
@@ -294,7 +316,10 @@ describe('ProviderSyncService', () => {
           .mockResolvedValueOnce([]),
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 0 }),
-        upsert: jest.fn(({ create }) => Promise.resolve({ id: 'run-id', ...create })),
+        upsert: jest.fn(
+          /** Provides isolated upsert behavior for this test fixture. */ ({ create }) =>
+            Promise.resolve({ id: 'run-id', ...create }),
+        ),
       },
     };
     const adapter = {
@@ -308,7 +333,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn().mockReturnValue(false) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
       {
@@ -334,7 +363,7 @@ describe('ProviderSyncService', () => {
     );
   });
 
-  it('marks missing active runs unknown and refreshes linked pull requests', async () => {
+  it('marks missing active runs unknown and refreshes linked pull requests', /** Verifies marks missing active runs unknown and refreshes linked pull requests. */ async () => {
     const repository = createRepository('repository');
     const activeRun = {
       awaitingApproval: true,
@@ -374,7 +403,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -395,7 +428,7 @@ describe('ProviderSyncService', () => {
     expect(workItems.refreshPullRequestWorkflowStatus).toHaveBeenCalledWith(activeRun.pullRequestId);
   });
 
-  it('refreshes current failed pull-request runs missing their change-request context', async () => {
+  it('refreshes current failed pull-request runs missing their change-request context', /** Verifies refreshes current failed pull-request runs missing their change-request context. */ async () => {
     const repository = createRepository('repository');
     const refreshedFailure = {
       ...createWorkflowRun(),
@@ -430,7 +463,10 @@ describe('ProviderSyncService', () => {
           .mockResolvedValueOnce([]),
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 0 }),
-        upsert: jest.fn(({ create }) => Promise.resolve({ id: 'run-id', ...create })),
+        upsert: jest.fn(
+          /** Provides isolated upsert behavior for this test fixture. */ ({ create }) =>
+            Promise.resolve({ id: 'run-id', ...create }),
+        ),
       },
     };
     const adapter = {
@@ -444,7 +480,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
       {
@@ -465,7 +505,7 @@ describe('ProviderSyncService', () => {
     );
   });
 
-  it('deduplicates and persists change-request lifecycle refreshes for current failures', async () => {
+  it('deduplicates and persists change-request lifecycle refreshes for current failures', /** Verifies deduplicates and persists change-request lifecycle refreshes for current failures. */ async () => {
     const repository = createRepository('repository');
     const prisma = {
       providerAccount: { update: jest.fn().mockResolvedValue(undefined) },
@@ -511,7 +551,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -537,7 +581,7 @@ describe('ProviderSyncService', () => {
     });
   });
 
-  it('reports a failed change-request lifecycle lookup to the durable queue', async () => {
+  it('reports a failed change-request lifecycle lookup to the durable queue', /** Verifies reports a failed change-request lifecycle lookup to the durable queue. */ async () => {
     const repository = createRepository('repository');
     const prisma = {
       providerAccount: { update: jest.fn().mockResolvedValue(undefined) },
@@ -573,7 +617,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -598,7 +646,7 @@ describe('ProviderSyncService', () => {
     );
   });
 
-  it('uses refreshed repository metadata for workflow requests', async () => {
+  it('uses refreshed repository metadata for workflow requests', /** Verifies uses refreshed repository metadata for workflow requests. */ async () => {
     const repository = createRepository('repository');
     const adapter = { getWorkflowRun: jest.fn(), listWorkflowRuns: jest.fn().mockResolvedValue([]) };
     const metadata = {
@@ -645,7 +693,7 @@ describe('ProviderSyncService', () => {
     );
   });
 
-  it('records the synchronization start as the next incremental cursor', async () => {
+  it('records the synchronization start as the next incremental cursor', /** Verifies records the synchronization start as the next incremental cursor. */ async () => {
     jest.useFakeTimers();
     const synchronizationStartedAt = new Date('2026-09-13T10:00:00.000Z');
     const synchronizationFinishedAt = new Date('2026-09-13T10:05:00.000Z');
@@ -661,10 +709,12 @@ describe('ProviderSyncService', () => {
     };
     const adapter = {
       getWorkflowRun: jest.fn(),
-      listWorkflowRuns: jest.fn().mockImplementation(async () => {
-        jest.setSystemTime(synchronizationFinishedAt);
-        return [];
-      }),
+      listWorkflowRuns: jest.fn().mockImplementation(
+        /** Provides isolated listWorkflowRuns behavior for this test fixture. */ async () => {
+          jest.setSystemTime(synchronizationFinishedAt);
+          return [];
+        },
+      ),
     };
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
@@ -673,7 +723,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -700,7 +754,7 @@ describe('ProviderSyncService', () => {
     });
   });
 
-  it('reconciles legacy workflow-run contexts during the existing repository sync', async () => {
+  it('reconciles legacy workflow-run contexts during the existing repository sync', /** Verifies reconciles legacy workflow-run contexts during the existing repository sync. */ async () => {
     const repository = createRepository('repository');
     const prisma = {
       providerAccount: { update: jest.fn().mockResolvedValue(undefined) },
@@ -725,7 +779,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -743,7 +801,7 @@ describe('ProviderSyncService', () => {
     expect(workItems.reconcileWorkflowRunChangeRequests).toHaveBeenCalledWith(repository.id);
   });
 
-  it('does not advance the workflow cursor for a work-item-only synchronization', async () => {
+  it('does not advance the workflow cursor for a work-item-only synchronization', /** Verifies does not advance the workflow cursor for a work-item-only synchronization. */ async () => {
     const repository = createRepository('repository');
     const prisma = {
       providerAccount: { update: jest.fn().mockResolvedValue(undefined) },
@@ -760,7 +818,11 @@ describe('ProviderSyncService', () => {
         decrypt: jest.fn().mockReturnValue('access-token'),
         accessToken: jest.fn().mockResolvedValue('access-token'),
       } as unknown as ProviderCredentialService,
-      { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
+      {
+        refresh: jest.fn(
+          /** Provides isolated refresh behavior for this test fixture. */ (value) => Promise.resolve(value),
+        ),
+      } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
       {
@@ -789,6 +851,7 @@ describe('ProviderSyncService', () => {
   });
 });
 
+/** Creates repository. */
 function createRepository(id: string) {
   return {
     id,
@@ -806,6 +869,7 @@ function createRepository(id: string) {
   };
 }
 
+/** Creates workflow run. */
 function createWorkflowRun() {
   return {
     awaitingApproval: false,

@@ -14,8 +14,8 @@ const rules = {
   viewerGroups: ['repovio-viewers'],
 };
 
-describe('OIDC claim handling', () => {
-  it('prefers an exact claim name before traversing a safe dot path', () => {
+describe('OIDC claim handling', /** Groups scenarios for OIDC claim handling. */ () => {
+  it('prefers an exact claim name before traversing a safe dot path', /** Verifies prefers an exact claim name before traversing a safe dot path. */ () => {
     const claims = {
       'realm.groups': ['exact'],
       realm: { groups: ['nested'] },
@@ -26,16 +26,24 @@ describe('OIDC claim handling', () => {
     expect(readClaimPath(claims, '__proto__.groups')).toEqual({ found: false, unsafe: true });
   });
 
-  it('rejects malformed, overage, and oversized group claims', () => {
+  it('rejects malformed, overage, and oversized group claims', /** Verifies rejects malformed, overage, and oversized group claims. */ () => {
     expect(extractGroups({ groups: 'admin' }, 'groups')).toMatchObject({ status: 'malformed' });
     expect(extractGroups({ hasgroups: true }, 'groups')).toEqual({ status: 'overage' });
     expect(
-      extractGroups({ groups: Array.from({ length: MAX_GROUPS_PER_TOKEN + 1 }, () => 'group') }, 'groups'),
+      extractGroups(
+        {
+          groups: Array.from(
+            { length: MAX_GROUPS_PER_TOKEN + 1 },
+            /** Evaluates `'group'` when Array.from invokes this callback. */ () => 'group',
+          ),
+        },
+        'groups',
+      ),
     ).toMatchObject({ status: 'malformed' });
     expect(extractGroups({ groups: ['x'.repeat(513)] }, 'groups')).toMatchObject({ status: 'malformed' });
   });
 
-  it('applies exact group mappings in descending role priority', () => {
+  it('applies exact group mappings in descending role priority', /** Verifies applies exact group mappings in descending role priority. */ () => {
     expect(
       decideOidcAccess({ groups: ['repovio-viewers', 'repovio-admins', 'REPOVIO-ADMINS'], status: 'ok' }, rules),
     ).toMatchObject({ ok: true, role: 'SYSTEM_ADMIN' });
@@ -53,7 +61,7 @@ describe('OIDC claim handling', () => {
     });
   });
 
-  it('derives stable, non-claim usernames and bounds observed group suggestions', () => {
+  it('derives stable, non-claim usernames and bounds observed group suggestions', /** Verifies derives stable, non-claim usernames and bounds observed group suggestions. */ () => {
     expect(deriveOidcUsername('https://issuer.example', 'subject')).toMatch(/^oidc_[a-f0-9]{24}$/);
     expect(deriveOidcUsername('https://issuer.example', 'subject')).toBe(
       deriveOidcUsername('https://issuer.example', 'subject'),

@@ -97,35 +97,54 @@ const oauthProviderTypes = ref<ProviderType[]>([]);
 const authenticationMethod = ref<AuthenticationMethod>('PAT');
 const form = reactive({ accessToken: '', baseUrl: '', displayName: '', providerType: 'GITHUB' as ProviderType });
 const { reset: resetDirtyState } = useUnsavedChangesGuard(form);
-const oauthAvailable = computed(() => oauthProviderTypes.value.includes(form.providerType));
-const usePat = computed(() => !oauthAvailable.value || authenticationMethod.value === 'PAT');
-const requiresBaseUrl = computed(() => form.providerType === 'GITEA');
-const providerFormSchema = computed(() => (usePat.value ? providerPatFormSchema : providerOAuthFormSchema));
-const busy = computed(() => submitting.value || loadingAuthenticationOptions.value);
-const authenticationOptions = computed(() => [
-  { icon: 'i-tabler-key', label: t('providers.authenticationOAuth'), value: 'OAUTH' },
-  { icon: 'i-tabler-password', label: t('providers.authenticationPat'), value: 'PAT' },
-]);
+const oauthAvailable = computed(
+  /** Derives oauth available from the current reactive dependencies. */ () =>
+    oauthProviderTypes.value.includes(form.providerType),
+);
+const usePat = computed(
+  /** Derives use pat from the current reactive dependencies. */ () =>
+    !oauthAvailable.value || authenticationMethod.value === 'PAT',
+);
+const requiresBaseUrl = computed(
+  /** Derives requires base url from the current reactive dependencies. */ () => form.providerType === 'GITEA',
+);
+const providerFormSchema = computed(
+  /** Derives provider form schema from the current reactive dependencies. */ () =>
+    usePat.value ? providerPatFormSchema : providerOAuthFormSchema,
+);
+const busy = computed(
+  /** Derives busy from the current reactive dependencies. */ () =>
+    submitting.value || loadingAuthenticationOptions.value,
+);
+const authenticationOptions = computed(
+  /** Derives authentication options from the current reactive dependencies. */ () => [
+    { icon: 'i-tabler-key', label: t('providers.authenticationOAuth'), value: 'OAUTH' },
+    { icon: 'i-tabler-password', label: t('providers.authenticationPat'), value: 'PAT' },
+  ],
+);
 
-watch(open, async (isOpen) => {
-  if (!isOpen) return;
+watch(
+  open,
+  /** Synchronizes add dialog when the observed state changes. */ async (isOpen) => {
+    if (!isOpen) return;
 
-  Object.assign(form, { accessToken: '', baseUrl: '', displayName: '', providerType: 'GITHUB' });
-  connectionError.value = false;
-  resetDirtyState();
-  loadingAuthenticationOptions.value = true;
+    Object.assign(form, { accessToken: '', baseUrl: '', displayName: '', providerType: 'GITHUB' });
+    connectionError.value = false;
+    resetDirtyState();
+    loadingAuthenticationOptions.value = true;
 
-  try {
-    const { data } = await api.providerAccounts.authenticationOptions();
-    oauthProviderTypes.value = data.oauthProviderTypes;
-    authenticationMethod.value = oauthProviderTypes.value.includes('GITHUB') ? 'OAUTH' : 'PAT';
-  } catch {
-    oauthProviderTypes.value = [];
-    authenticationMethod.value = 'PAT';
-  } finally {
-    loadingAuthenticationOptions.value = false;
-  }
-});
+    try {
+      const { data } = await api.providerAccounts.authenticationOptions();
+      oauthProviderTypes.value = data.oauthProviderTypes;
+      authenticationMethod.value = oauthProviderTypes.value.includes('GITHUB') ? 'OAUTH' : 'PAT';
+    } catch {
+      oauthProviderTypes.value = [];
+      authenticationMethod.value = 'PAT';
+    } finally {
+      loadingAuthenticationOptions.value = false;
+    }
+  },
+);
 
 /** Validate and persist a PAT account, or begin the provider-controlled OAuth flow. */
 async function addProvider(

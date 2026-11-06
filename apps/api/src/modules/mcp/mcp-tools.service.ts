@@ -38,18 +38,18 @@ const dashboardRunInclude = {
   },
 } satisfies Prisma.WorkflowRunInclude;
 
-export interface McpPaginationInput {
+/** Defines the mcp pagination input contract shared by its consumers. */ export interface McpPaginationInput {
   limit: number;
   page: number;
 }
 
-export interface McpRepositoryFilters extends McpPaginationInput {
+/** Defines the mcp repository filters contract shared by its consumers. */ export interface McpRepositoryFilters extends McpPaginationInput {
   enabled?: boolean;
   providerType?: ProviderType;
   search?: string;
 }
 
-export interface McpWorkflowRunFilters extends McpPaginationInput {
+/** Defines the mcp workflow run filters contract shared by its consumers. */ export interface McpWorkflowRunFilters extends McpPaginationInput {
   from?: string;
   providerType?: ProviderType;
   repositoryId?: string;
@@ -58,7 +58,7 @@ export interface McpWorkflowRunFilters extends McpPaginationInput {
   to?: string;
 }
 
-export interface McpPaginatedResult<T> {
+/** Defines the mcp paginated result contract shared by its consumers. */ export interface McpPaginatedResult<T> {
   items: T[];
   page: number;
   perPage: number;
@@ -108,7 +108,10 @@ export class McpToolsService {
       this.repositories.count({ where }, ability),
     ]);
     return this.paginated(
-      items.map((item) => RepositoryDto.fromModel(item, ability)),
+      items.map(
+        /** Projects each entry using `RepositoryDto.fromModel(item, ability)`. */ (item) =>
+          RepositoryDto.fromModel(item, ability),
+      ),
       total,
       input,
     );
@@ -158,7 +161,10 @@ export class McpToolsService {
       this.workflowRuns.count({ where }, ability),
     ]);
     return this.paginated(
-      items.map((item) => WorkflowRunDto.fromModel(item, ability)),
+      items.map(
+        /** Projects each entry using `WorkflowRunDto.fromModel(item, ability)`. */ (item) =>
+          WorkflowRunDto.fromModel(item, ability),
+      ),
       total,
       input,
     );
@@ -190,7 +196,10 @@ export class McpToolsService {
       this.workflowRuns.findNeedsAttention<{ id: string }>({ select: { id: true }, where }, ability),
     ]);
     return this.paginated(
-      items.map((item) => WorkflowRunDto.fromModel(item, ability)),
+      items.map(
+        /** Projects each entry using `WorkflowRunDto.fromModel(item, ability)`. */ (item) =>
+          WorkflowRunDto.fromModel(item, ability),
+      ),
       totalItems.length,
       input,
     );

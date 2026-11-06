@@ -2,7 +2,13 @@ import { ForbiddenException } from '@nestjs/common';
 /** Inspect bounded repository request validation without class-based decorators. */
 async function validateSchema(input: unknown) {
   const result = UpdateRepositoryDto.schema.safeParse(input);
-  return result.success ? [] : result.error.issues.map((issue) => ({ property: String(issue.path[0]) }));
+  return result.success
+    ? []
+    : result.error.issues.map(
+        /** Projects each entry using `({ property: String(issue.path[0]) })`. */ (issue) => ({
+          property: String(issue.path[0]),
+        }),
+      );
 }
 
 import type { PrismaService } from '../../prisma/prisma.service.js';
@@ -12,8 +18,8 @@ import type { RepositoriesQueryService } from './repositories-query.service.js';
 import { RepositoriesController, UpdateRepositoryDto } from './repositories.controller.js';
 import type { RepositoryConfigurationService } from './repository-configuration.service.js';
 
-describe('RepositoriesController', () => {
-  it('validates bounded repository retention overrides while allowing global defaults', async () => {
+describe('RepositoriesController', /** Groups scenarios for RepositoriesController. */ () => {
+  it('validates bounded repository retention overrides while allowing global defaults', /** Verifies validates bounded repository retention overrides while allowing global defaults. */ async () => {
     await expect(
       validateSchema(
         Object.assign(new UpdateRepositoryDto(), {
@@ -31,14 +37,14 @@ describe('RepositoriesController', () => {
         workflowRunRetentionDays: 1.5,
       }),
     );
-    expect(errors.map((error) => error.property)).toEqual([
+    expect(errors.map(/** Projects each entry using `error.property`. */ (error) => error.property)).toEqual([
       'issueRetentionDays',
       'pullRequestRetentionDays',
       'workflowRunRetentionDays',
     ]);
   });
 
-  it('rejects repository retention updates from non-administrators', async () => {
+  it('rejects repository retention updates from non-administrators', /** Verifies rejects repository retention updates from non-administrators. */ async () => {
     const prisma = { repository: { update: jest.fn() } };
     const controller = new RepositoriesController(
       prisma as unknown as PrismaService,
@@ -58,7 +64,7 @@ describe('RepositoriesController', () => {
     expect(prisma.repository.update).not.toHaveBeenCalled();
   });
 
-  it('loads and projects the workflow-run count required by the administration table', async () => {
+  it('loads and projects the workflow-run count required by the administration table', /** Verifies loads and projects the workflow-run count required by the administration table. */ async () => {
     const repository = {
       _count: { workflowRuns: 12 },
       createdAt: new Date('2026-09-09T08:00:00.000Z'),
@@ -139,7 +145,7 @@ describe('RepositoriesController', () => {
     ]);
   });
 
-  it('loads a repository detail through the permission-aware query service', async () => {
+  it('loads a repository detail through the permission-aware query service', /** Verifies loads a repository detail through the permission-aware query service. */ async () => {
     const ability = undefined;
     const repository = {
       enabled: true,

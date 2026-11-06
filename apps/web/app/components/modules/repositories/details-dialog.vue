@@ -104,13 +104,17 @@ const loadError = ref(false);
 const refreshing = ref(false);
 const syncing = ref(false);
 const toast = useToast();
-const isAdmin = computed(() => auth.user?.role === 'SYSTEM_ADMIN');
-const dialogTitle = computed(() =>
-  repository.value ? `${repository.value.owner}/${repository.value.name}` : t('repositoryDetails.title'),
+const isAdmin = computed(
+  /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',
+);
+const dialogTitle = computed(
+  /** Derives dialog title from the current reactive dependencies. */ () =>
+    repository.value ? `${repository.value.owner}/${repository.value.name}` : t('repositoryDetails.title'),
 );
 
 watch(
-  [open, () => props.repositoryId],
+  [open, /** Returns `props.repositoryId` to the caller. */ () => props.repositoryId],
+  /** Synchronizes details dialog when the observed state changes. */
   ([isOpen, repositoryId]) => {
     if (isOpen && repositoryId) void load(repositoryId);
     if (!isOpen) reset();

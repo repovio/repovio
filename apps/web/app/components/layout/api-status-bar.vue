@@ -49,15 +49,21 @@ import { useSystemStatus } from '~/composables/api/system-status';
 const { t } = useI18n();
 const { connection, progress, snapshot } = useSystemStatus();
 
-const connectionIndicatorClass = computed(() => ({
-  'bg-success': connection.value === 'CONNECTED',
-  'bg-warning': connection.value === 'CONNECTING',
-  'bg-error': connection.value === 'DISCONNECTED',
-}));
-const connectionLabel = computed(() => t(`systemStatus.connection.${connection.value}`));
-const activityLabel = computed(() =>
-  snapshot.value.activity
-    ? t(`systemStatus.activity.${snapshot.value.activity.phase}`)
-    : t('systemStatus.activity.IDLE'),
+const connectionIndicatorClass = computed(
+  /** Derives connection indicator class from the current reactive dependencies. */ () => ({
+    'bg-success': connection.value === 'CONNECTED',
+    'bg-warning': connection.value === 'CONNECTING',
+    'bg-error': connection.value === 'DISCONNECTED',
+  }),
+);
+const connectionLabel = computed(
+  /** Derives connection label from the current reactive dependencies. */ () =>
+    t(`systemStatus.connection.${connection.value}`),
+);
+const activityLabel = computed(
+  /** Derives activity label from the current reactive dependencies. */ () =>
+    snapshot.value.activity
+      ? t(`systemStatus.activity.${snapshot.value.activity.phase}`)
+      : t('systemStatus.activity.IDLE'),
 );
 </script>

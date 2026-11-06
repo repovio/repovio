@@ -61,6 +61,7 @@ const cropError = ref('');
 
 watch(
   open,
+  /** Synchronizes avatar crop dialog when the observed state changes. */
   async (isOpen) => {
     destroy();
     cropError.value = '';
@@ -97,12 +98,17 @@ async function apply(): Promise<void> {
   applying.value = true;
   try {
     const canvas = await selection.$toCanvas({ height: 256, width: 256 });
-    const blob = await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob(
-        (result) => (result ? resolve(result) : reject(new Error('Crop rendering failed.'))),
-        'image/webp',
-        0.9,
-      ),
+    const blob = await new Promise<Blob>(
+      /** Returns `canvas.toBlob( (result) => (result ? resolve(result) : reject(new Error('Crop rendering failed.'))), 'image/webp', 0.9, )` to the caller. */ (
+        resolve,
+        reject,
+      ) =>
+        canvas.toBlob(
+          /** Evaluates `(result ? resolve(result) : reject(new Error('Crop rendering failed.')))` when canvas.toBlob invokes this callback. */
+          (result) => (result ? resolve(result) : reject(new Error('Crop rendering failed.'))),
+          'image/webp',
+          0.9,
+        ),
     );
     await props.save(new File([blob], 'avatar.webp', { type: 'image/webp' }));
     open.value = false;
@@ -113,6 +119,7 @@ async function apply(): Promise<void> {
   }
 }
 
+/** Destroys the active cropper instance and releases its references. */
 function destroy(): void {
   cropper.value?.destroy();
   cropper.value = undefined;

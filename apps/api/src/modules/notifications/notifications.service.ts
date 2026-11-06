@@ -136,18 +136,38 @@ export class NotificationsService {
     this.assertAdmin(user);
     await this.prepareSubscriptions(inputs);
     const subscriptions = inputs
-      .filter(({ eventType }) => workflowEvents.has(eventType))
-      .map((input) => ({
-        ...input,
-        workflowPatterns: [...new Set((input.workflowPatterns ?? []).map((pattern) => pattern.trim()).filter(Boolean))],
-      }));
+      .filter(
+        /** Keeps entries matching `workflowEvents.has(eventType)`. */ ({ eventType }) => workflowEvents.has(eventType),
+      )
+      .map(
+        /** Projects each entry using `({ ...input, workflowPatterns: [...new Set((input.workflowPatterns ?? []).map((pattern) => pattern.trim()).filter(Boolean))], })`. */ (
+          input,
+        ) => ({
+          ...input,
+          workflowPatterns: [
+            ...new Set(
+              (input.workflowPatterns ?? [])
+                .map(/** Projects each entry using `pattern.trim()`. */ (pattern) => pattern.trim())
+                .filter(Boolean),
+            ),
+          ],
+        }),
+      );
     if (subscriptions.length === 0)
       throw new BadRequestException('At least one workflow event is required for a preview.');
 
-    const global = subscriptions.some(({ repositoryIds }) => !repositoryIds?.length);
+    const global = subscriptions.some(
+      /** Checks whether any entry satisfies `!repositoryIds?.length`. */ ({ repositoryIds }) => !repositoryIds?.length,
+    );
     const repositoryIds = global
       ? undefined
-      : [...new Set(subscriptions.flatMap(({ repositoryIds: ids }) => ids ?? []))];
+      : [
+          ...new Set(
+            subscriptions.flatMap(
+              /** Flattens entries produced by `ids ?? []`. */ ({ repositoryIds: ids }) => ids ?? [],
+            ),
+          ),
+        ];
     const repositories = await this.prisma.repository.findMany({
       select: {
         id: true,
@@ -158,9 +178,14 @@ export class NotificationsService {
       },
       where: repositoryIds ? { id: { in: repositoryIds } } : undefined,
     });
-    const synchronized = repositories.filter(({ lastSyncAt }) => lastSyncAt);
-    const failed = repositories.filter(({ syncRequest }) => syncRequest?.lastError);
+    const synchronized = repositories.filter(
+      /** Keeps entries matching `lastSyncAt`. */ ({ lastSyncAt }) => lastSyncAt,
+    );
+    const failed = repositories.filter(
+      /** Keeps entries matching `syncRequest?.lastError`. */ ({ syncRequest }) => syncRequest?.lastError,
+    );
     const neverSynchronized = repositories.filter(
+      /** Keeps entries matching `!lastSyncAt && !syncRequest?.lastError`. */
       ({ lastSyncAt, syncRequest }) => !lastSyncAt && !syncRequest?.lastError,
     );
     const incomplete = failed.length + neverSynchronized.length;
@@ -174,9 +199,21 @@ export class NotificationsService {
 
     if (synchronized.length === 0) return { matches: [], status: incompleteStatus ?? 'NO_RESULTS' };
     const statuses: WorkflowRunStatus[] = [];
-    if (subscriptions.some(({ eventType }) => eventType === NotificationEventType.WORKFLOW_RUN_FAILED))
+    if (
+      subscriptions.some(
+        /** Checks whether any entry satisfies `eventType === NotificationEventType.WORKFLOW_RUN_FAILED`. */ ({
+          eventType,
+        }) => eventType === NotificationEventType.WORKFLOW_RUN_FAILED,
+      )
+    )
       statuses.push('FAILED');
-    if (subscriptions.some(({ eventType }) => eventType !== NotificationEventType.WORKFLOW_RUN_FAILED))
+    if (
+      subscriptions.some(
+        /** Checks whether any entry satisfies `eventType !== NotificationEventType.WORKFLOW_RUN_FAILED`. */ ({
+          eventType,
+        }) => eventType !== NotificationEventType.WORKFLOW_RUN_FAILED,
+      )
+    )
       statuses.push('SUCCESS');
     const runs = await this.prisma.workflowRun.findMany({
       orderBy: [{ providerCreatedAt: 'desc' }, { id: 'desc' }],
@@ -192,7 +229,10 @@ export class NotificationsService {
         workflowName: true,
       },
       take: 50,
-      where: { repositoryId: { in: synchronized.map(({ id }) => id) }, status: { in: statuses } },
+      where: {
+        repositoryId: { in: synchronized.map(/** Projects each entry using `id`. */ ({ id }) => id) },
+        status: { in: statuses },
+      },
     });
     const matches: NotificationRulePreviewDto['matches'] = [];
     for (const run of runs) {
@@ -220,12 +260,15 @@ export class NotificationsService {
             : [eventType];
       }
       const matchesSubscription = subscriptions.some(
+        /** Checks whether any entry satisfies the matchesSubscription predicate. */
         (subscription) =>
           matchingEventTypes.includes(subscription.eventType) &&
           (!subscription.repositoryIds?.length || subscription.repositoryIds.includes(run.repositoryId)) &&
           (!subscription.workflowPatterns?.length ||
-            subscription.workflowPatterns.some((pattern) =>
-              picomatch.isMatch(run.workflowName, pattern, { bash: true }),
+            subscription.workflowPatterns.some(
+              /** Checks whether any entry satisfies `picomatch.isMatch(run.workflowName, pattern, { bash: true })`. */ (
+                pattern,
+              ) => picomatch.isMatch(run.workflowName, pattern, { bash: true }),
             )),
       );
       if (!matchesSubscription) continue;
@@ -271,7 +314,11 @@ export class NotificationsService {
         urlScheme: url?.scheme ?? 'browser-push',
         requiresReconfiguration: false,
         eventSubscriptions: { create: subscriptions },
-        recipients: { createMany: { data: recipientIds.map((userId) => ({ userId })) } },
+        recipients: {
+          createMany: {
+            data: recipientIds.map(/** Projects each entry using `({ userId })`. */ (userId) => ({ userId })),
+          },
+        },
       },
       include: notificationChannelInclude,
     });
@@ -321,7 +368,14 @@ export class NotificationsService {
         ...(subscriptions === undefined ? {} : { eventSubscriptions: { create: subscriptions, deleteMany: {} } }),
         ...(recipientIds === undefined
           ? {}
-          : { recipients: { createMany: { data: recipientIds.map((userId) => ({ userId })) }, deleteMany: {} } }),
+          : {
+              recipients: {
+                createMany: {
+                  data: recipientIds.map(/** Projects each entry using `({ userId })`. */ (userId) => ({ userId })),
+                },
+                deleteMany: {},
+              },
+            }),
       },
       include: notificationChannelInclude,
     });
@@ -519,7 +573,7 @@ export class NotificationsService {
     if (channels.length === 0) return;
     await this.createEventDeliveries(
       source,
-      channels.map(({ id }) => id),
+      channels.map(/** Projects each entry using `id`. */ ({ id }) => id),
     );
   }
 
@@ -548,17 +602,24 @@ export class NotificationsService {
         },
       },
     });
-    return channels.filter((channel) =>
-      channel.eventSubscriptions.some(
-        (subscription) =>
-          (subscription.repositories.length === 0 ||
-            subscription.repositories.some(({ repositoryId }) => repositoryId === source.repositoryId)) &&
-          (!source.workflowName ||
-            subscription.workflowPatterns.length === 0 ||
-            subscription.workflowPatterns.some((pattern) =>
-              picomatch.isMatch(source.workflowName as string, pattern, { bash: true }),
-            )),
-      ),
+    return channels.filter(
+      /** Keeps entries matching the findMatchingChannels predicate. */ (channel) =>
+        channel.eventSubscriptions.some(
+          /** Checks whether any entry satisfies the findMatchingChannels predicate. */
+          (subscription) =>
+            (subscription.repositories.length === 0 ||
+              subscription.repositories.some(
+                /** Checks whether any entry satisfies `repositoryId === source.repositoryId`. */ ({ repositoryId }) =>
+                  repositoryId === source.repositoryId,
+              )) &&
+            (!source.workflowName ||
+              subscription.workflowPatterns.length === 0 ||
+              subscription.workflowPatterns.some(
+                /** Checks whether any entry satisfies `picomatch.isMatch(source.workflowName as string, pattern, { bash: true })`. */ (
+                  pattern,
+                ) => picomatch.isMatch(source.workflowName as string, pattern, { bash: true }),
+              )),
+        ),
     );
   }
 
@@ -572,17 +633,19 @@ export class NotificationsService {
    */
   private async createEventDeliveries(source: EventSource, channelIds: string[]): Promise<void> {
     await this.prisma.notificationDelivery.createMany({
-      data: channelIds.map((channelId) => ({
-        deduplicationKey: source.deduplicationKey,
-        eventType: source.eventType,
-        issueId: source.issueId,
-        kind: NotificationDeliveryKind.EVENT,
-        notificationChannelId: channelId,
-        pullRequestId: source.pullRequestId,
-        repositoryId: source.repositoryId,
-        securityAlertId: source.securityAlertId,
-        workflowRunId: source.workflowRunId,
-      })),
+      data: channelIds.map(
+        /** Projects each entry using the data mapping. */ (channelId) => ({
+          deduplicationKey: source.deduplicationKey,
+          eventType: source.eventType,
+          issueId: source.issueId,
+          kind: NotificationDeliveryKind.EVENT,
+          notificationChannelId: channelId,
+          pullRequestId: source.pullRequestId,
+          repositoryId: source.repositoryId,
+          securityAlertId: source.securityAlertId,
+          workflowRunId: source.workflowRunId,
+        }),
+      ),
       skipDuplicates: true,
     });
     const deliveries = await this.prisma.notificationDelivery.findMany({
@@ -593,7 +656,8 @@ export class NotificationsService {
         status: 'PENDING',
       },
     });
-    if (deliveries.length > 0) await this.deliveryService.deliverPending(deliveries.map(({ id }) => id));
+    if (deliveries.length > 0)
+      await this.deliveryService.deliverPending(deliveries.map(/** Projects each entry using `id`. */ ({ id }) => id));
   }
 
   /**
@@ -605,27 +669,45 @@ export class NotificationsService {
    * Workflow patterns are only supported for workflow events.
    */
   private async prepareSubscriptions(inputs: NotificationEventSubscriptionInputDto[]) {
-    const eventTypes = inputs.map(({ eventType }) => eventType);
+    const eventTypes = inputs.map(/** Projects each entry using `eventType`. */ ({ eventType }) => eventType);
     if (new Set(eventTypes).size !== eventTypes.length)
       throw new BadRequestException('Notification events must not be repeated.');
-    const repositoryIds = [...new Set(inputs.flatMap(({ repositoryIds }) => repositoryIds ?? []))];
+    const repositoryIds = [
+      ...new Set(
+        inputs.flatMap(
+          /** Flattens entries produced by `repositoryIds ?? []`. */ ({ repositoryIds }) => repositoryIds ?? [],
+        ),
+      ),
+    ];
     if (repositoryIds.length > 0) {
       const count = await this.prisma.repository.count({ where: { id: { in: repositoryIds } } });
       if (count !== repositoryIds.length) throw new BadRequestException('One or more repository filters are invalid.');
     }
-    return inputs.map((input) => {
-      const patterns = [...new Set((input.workflowPatterns ?? []).map((pattern) => pattern.trim()).filter(Boolean))];
-      if (!workflowEvents.has(input.eventType) && patterns.length > 0)
-        throw new BadRequestException('Workflow patterns are only supported for workflow events.');
-      for (const pattern of patterns) this.workflowFilters.validatePattern(pattern);
-      return {
-        eventType: input.eventType,
-        workflowPatterns: patterns,
-        repositories: {
-          createMany: { data: (input.repositoryIds ?? []).map((repositoryId) => ({ repositoryId })) },
-        },
-      };
-    });
+    return inputs.map(
+      /** Projects each entry using the prepareSubscriptions mapping. */ (input) => {
+        const patterns = [
+          ...new Set(
+            (input.workflowPatterns ?? [])
+              .map(/** Projects each entry using `pattern.trim()`. */ (pattern) => pattern.trim())
+              .filter(Boolean),
+          ),
+        ];
+        if (!workflowEvents.has(input.eventType) && patterns.length > 0)
+          throw new BadRequestException('Workflow patterns are only supported for workflow events.');
+        for (const pattern of patterns) this.workflowFilters.validatePattern(pattern);
+        return {
+          eventType: input.eventType,
+          workflowPatterns: patterns,
+          repositories: {
+            createMany: {
+              data: (input.repositoryIds ?? []).map(
+                /** Projects each entry using `({ repositoryId })`. */ (repositoryId) => ({ repositoryId }),
+              ),
+            },
+          },
+        };
+      },
+    );
   }
 
   /**

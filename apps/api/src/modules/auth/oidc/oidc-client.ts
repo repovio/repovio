@@ -6,7 +6,7 @@ const HTTP_TIMEOUT_SECONDS = 10;
 const responseLimits = { discovery: 512 * 1024, jwks: 256 * 1024, token: 512 * 1024, userinfo: 1024 * 1024 };
 const asymmetricAlgorithms = ['RS256', 'PS256', 'ES256', 'EdDSA', 'RS384', 'PS384', 'ES384', 'RS512', 'PS512', 'ES512'];
 
-export type OidcClientErrorCode =
+/** Defines the oidc client error code contract shared by its consumers. */ export type OidcClientErrorCode =
   | 'endpoint_invalid'
   | 'id_token_invalid'
   | 'issuer_invalid'
@@ -18,7 +18,7 @@ export type OidcClientErrorCode =
   | 'unsupported_client_auth'
   | 'unsupported_id_token_alg';
 
-export class OidcClientError extends Error {
+/** Defines the oidc client error class contract. */ export class OidcClientError extends Error {
   /**
    * Create a stable OIDC client-policy error.
    *
@@ -30,9 +30,10 @@ export class OidcClientError extends Error {
   }
 }
 
-export type TokenAuthenticationMethod = 'client_secret_basic' | 'client_secret_post' | 'none';
+/** Defines the token authentication method contract shared by its consumers. */ export type TokenAuthenticationMethod =
+  'client_secret_basic' | 'client_secret_post' | 'none';
 
-export interface OidcClientHandle {
+/** Defines the oidc client handle contract shared by its consumers. */ export interface OidcClientHandle {
   authenticationMethod: TokenAuthenticationMethod;
   config: oidc.Configuration;
   endpoints: { authorization: boolean; jwks: boolean; token: boolean; userinfo: boolean };
@@ -91,13 +92,25 @@ export function selectTokenAuthenticationMethod(
  */
 export function selectIdTokenAlgorithm(supported: unknown): string {
   if (supported === undefined) return 'RS256';
-  if (!Array.isArray(supported) || !supported.length || supported.some((value) => typeof value !== 'string' || !value))
+  if (
+    !Array.isArray(supported) ||
+    !supported.length ||
+    supported.some(
+      /** Checks whether any entry satisfies `typeof value !== 'string' || !value`. */ (value) =>
+        typeof value !== 'string' || !value,
+    )
+  )
     throw new OidcClientError('unsupported_id_token_alg');
   return (
-    asymmetricAlgorithms.find((algorithm) => supported.includes(algorithm)) ??
-    (() => {
-      throw new OidcClientError('unsupported_id_token_alg');
-    })()
+    asymmetricAlgorithms.find(
+      /** Finds the first entry matching `supported.includes(algorithm)`. */ (algorithm) =>
+        supported.includes(algorithm),
+    ) ??
+    (
+      /** Rejects ID-token signing algorithms outside the configured allowlist. */ () => {
+        throw new OidcClientError('unsupported_id_token_alg');
+      }
+    )()
   );
 }
 
@@ -153,7 +166,7 @@ function withoutQuery(value: string): string {
  * @returns A hardened fetch implementation for openid-client.
  */
 function boundedFetch(endpoints: () => { jwks?: string; token?: string; userinfo?: string }): oidc.CustomFetch {
-  return async (url, options) => {
+  return /** Applies the configured timeout to each OpenID Connect HTTP request. */ async (url, options) => {
     const target = withoutQuery(String(url));
     const known = endpoints();
     const maximum =
@@ -194,7 +207,9 @@ export async function buildOidcClient(input: {
   const issuerUrl = validateOidcUrl(input.issuer, input.allowHttpIssuer, 'issuer_invalid');
   if (issuerUrl.search || input.issuer.includes('?')) throw new OidcClientError('issuer_invalid');
   let endpoints: { jwks?: string; token?: string; userinfo?: string } = {};
-  const customFetch = boundedFetch(() => endpoints);
+  const customFetch = boundedFetch(
+    /** Evaluates `endpoints` when boundedFetch invokes this callback. */ () => endpoints,
+  );
   const execute = input.allowHttpIssuer ? [oidc.allowInsecureRequests] : [];
   const discovered = await oidc.discovery(issuerUrl, input.clientId, undefined, oidc.None(), {
     [oidc.customFetch]: customFetch,
@@ -342,12 +357,33 @@ function errorChain(error: unknown): unknown[] {
  */
 export function classifyOidcError(error: unknown): OidcErrorCode {
   const errors = errorChain(error);
-  const own = errors.find((candidate) => candidate instanceof OidcClientError) as OidcClientError | undefined;
+  const own = errors.find(
+    /** Finds the first entry matching `candidate instanceof OidcClientError`. */ (candidate) =>
+      candidate instanceof OidcClientError,
+  ) as OidcClientError | undefined;
   if (own?.code === 'id_token_invalid') return 'oidc_token_invalid';
   if (own) return own.code === 'not_configured' ? 'oidc_not_configured' : 'oidc_unavailable';
-  if (errors.some((candidate) => candidate instanceof oidc.AuthorizationResponseError)) return 'oidc_provider_error';
-  if (errors.some((candidate) => candidate instanceof oidc.ResponseBodyError)) return 'oidc_provider_error';
-  if (errors.some((candidate) => candidate instanceof TypeError)) return 'oidc_unavailable';
+  if (
+    errors.some(
+      /** Checks whether any entry satisfies `candidate instanceof oidc.AuthorizationResponseError`. */ (candidate) =>
+        candidate instanceof oidc.AuthorizationResponseError,
+    )
+  )
+    return 'oidc_provider_error';
+  if (
+    errors.some(
+      /** Checks whether any entry satisfies `candidate instanceof oidc.ResponseBodyError`. */ (candidate) =>
+        candidate instanceof oidc.ResponseBodyError,
+    )
+  )
+    return 'oidc_provider_error';
+  if (
+    errors.some(
+      /** Checks whether any entry satisfies `candidate instanceof TypeError`. */ (candidate) =>
+        candidate instanceof TypeError,
+    )
+  )
+    return 'oidc_unavailable';
   return 'oidc_token_invalid';
 }
 

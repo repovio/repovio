@@ -30,7 +30,9 @@
         <UStepper ref="stepper" class="mt-4" color="neutral" size="sm" :items="stepperItems">
           <template #provider>
             <div class="space-y-4">
-              <p class="text-sm text-muted">{{ $t('repositories.providerDescription') }}</p>
+              <p class="text-sm text-muted">
+                {{ $t('repositories.providerDescription') }}
+              </p>
               <UFormField name="providerAccountId" :label="$t('repositories.provider')" required>
                 <USelectMenu
                   v-model="selectedProviderAccountId"
@@ -52,7 +54,9 @@
 
           <template #repository>
             <div class="space-y-4">
-              <p class="text-sm text-muted">{{ $t('repositories.repositoryDescription') }}</p>
+              <p class="text-sm text-muted">
+                {{ $t('repositories.repositoryDescription') }}
+              </p>
               <UAlert
                 v-if="repositoriesError"
                 color="error"
@@ -71,9 +75,9 @@
               <UAlert
                 v-if="
                   !repositoriesLoading &&
-                  !repositoriesError &&
-                  selectedProviderAccountId &&
-                  selectableRepositories.length === 0
+                    !repositoriesError &&
+                    selectedProviderAccountId &&
+                    selectableRepositories.length === 0
                 "
                 color="info"
                 :title="$t('repositories.noAvailableRepositories')"
@@ -145,17 +149,20 @@ const selectedProviderAccountId = ref<string>();
 const selectedProviderRepositoryIds = ref<string[]>([]);
 const stepper = useTemplateRef('stepper');
 const selectionError = ref('');
-const selection = computed(() => ({
-  providerAccountId: selectedProviderAccountId.value,
-  providerRepositoryIds: selectedProviderRepositoryIds.value,
-}));
-const selectionSchema = computed(() =>
-  z.strictObject({
-    providerAccountId: z.string({ error: t('forms.invalidValue') }).min(1, t('forms.invalidValue')),
-    providerRepositoryIds: z
-      .array(ApiCreateTrackedRepositorySchema.shape.providerRepositoryId)
-      .min(stepper.value?.hasNext ? 0 : 1, t('forms.invalidValue')),
+const selection = computed(
+  /** Derives selection from the current reactive dependencies. */ () => ({
+    providerAccountId: selectedProviderAccountId.value,
+    providerRepositoryIds: selectedProviderRepositoryIds.value,
   }),
+);
+const selectionSchema = computed(
+  /** Derives selection schema from the current reactive dependencies. */ () =>
+    z.strictObject({
+      providerAccountId: z.string({ error: t('forms.invalidValue') }).min(1, t('forms.invalidValue')),
+      providerRepositoryIds: z
+        .array(ApiCreateTrackedRepositorySchema.shape.providerRepositoryId)
+        .min(stepper.value?.hasNext ? 0 : 1, t('forms.invalidValue')),
+    }),
 );
 /** Validate each wizard stage before navigation or repository enrollment. */
 async function submitSelection(
@@ -166,36 +173,63 @@ async function submitSelection(
     stepper.value.next();
     return;
   }
-  const visibleIds = new Set(selectableRepositories.value.map((repository) => repository.providerRepositoryId));
-  if (!event.data.providerRepositoryIds.every((id) => visibleIds.has(id))) {
+  const visibleIds = new Set(
+    selectableRepositories.value.map(
+      /** Projects each entry using `repository.providerRepositoryId`. */ (repository) =>
+        repository.providerRepositoryId,
+    ),
+  );
+  if (
+    !event.data.providerRepositoryIds.every(
+      /** Checks whether every entry satisfies `visibleIds.has(id)`. */ (id) => visibleIds.has(id),
+    )
+  ) {
     selectionError.value = t('forms.invalidValue');
     return;
   }
   await addRepositories(event.data);
 }
 
-const stepperItems = computed(() => [
-  { icon: 'i-lucide-plug-zap', slot: 'provider', title: t('repositories.addSteps.provider') },
-  { icon: 'i-lucide-git-branch', slot: 'repository', title: t('repositories.addSteps.repository') },
-]);
-const providerOptions = computed(() =>
-  providerAccounts.value.map((account) => ({
-    label: `${account.displayName} (${getProviderTypeLabel(account.providerType)})`,
-    value: account.id,
-  })),
+const stepperItems = computed(
+  /** Derives stepper items from the current reactive dependencies. */ () => [
+    { icon: 'i-lucide-plug-zap', slot: 'provider', title: t('repositories.addSteps.provider') },
+    { icon: 'i-lucide-git-branch', slot: 'repository', title: t('repositories.addSteps.repository') },
+  ],
 );
-const selectableRepositories = computed(() => availableRepositories.value.filter((repository) => !repository.tracked));
+const providerOptions = computed(
+  /** Derives provider options from the current reactive dependencies. */ () =>
+    providerAccounts.value.map(
+      /** Projects each entry using `({ label: `${account.displayName} (${getProviderTypeLabel(account.providerType)})`, value: account.id, })`. */ (
+        account,
+      ) => ({
+        label: `${account.displayName} (${getProviderTypeLabel(account.providerType)})`,
+        value: account.id,
+      }),
+    ),
+);
+const selectableRepositories = computed(
+  /** Derives selectable repositories from the current reactive dependencies. */ () =>
+    availableRepositories.value.filter(
+      /** Keeps entries matching `!repository.tracked`. */ (repository) => !repository.tracked,
+    ),
+);
 
-watch(open, (isOpen) => {
-  if (isOpen) void initialize();
-});
+watch(
+  open,
+  /** Synchronizes add dialog when the observed state changes. */ (isOpen) => {
+    if (isOpen) void initialize();
+  },
+);
 
-watch(selectedProviderAccountId, (providerAccountId) => {
-  selectedProviderRepositoryIds.value = [];
-  availableRepositories.value = [];
-  repositoriesError.value = false;
-  if (providerAccountId) void loadAvailableRepositories(providerAccountId);
-});
+watch(
+  selectedProviderAccountId,
+  /** Synchronizes add dialog when the observed state changes. */ (providerAccountId) => {
+    selectedProviderRepositoryIds.value = [];
+    availableRepositories.value = [];
+    repositoriesError.value = false;
+    if (providerAccountId) void loadAvailableRepositories(providerAccountId);
+  },
+);
 
 /** Reset the dialog before loading enabled provider accounts. */
 async function initialize(): Promise<void> {
@@ -209,7 +243,9 @@ async function initialize(): Promise<void> {
 
   try {
     const { data } = await api.providerAccounts.list();
-    providerAccounts.value = data.items.filter((account) => account.enabled);
+    providerAccounts.value = data.items.filter(
+      /** Keeps entries matching `account.enabled`. */ (account) => account.enabled,
+    );
   } catch {
     providerAccountsError.value = true;
   } finally {
@@ -242,16 +278,28 @@ async function addRepositories(input: { providerAccountId: string; providerRepos
   addingRepositoryError.value = false;
   try {
     const results = await Promise.allSettled(
-      repositoryIds.map((providerRepositoryId) =>
-        api.providerAccounts.addRepository(providerAccountId, providerRepositoryId),
+      repositoryIds.map(
+        /** Projects each entry using `api.providerAccounts.addRepository(providerAccountId, providerRepositoryId)`. */ (
+          providerRepositoryId,
+        ) => api.providerAccounts.addRepository(providerAccountId, providerRepositoryId),
       ),
     );
-    const successfulIds = new Set(repositoryIds.filter((_, index) => results[index]?.status === 'fulfilled'));
-    const failedIds = repositoryIds.filter((_, index) => results[index]?.status === 'rejected');
+    const successfulIds = new Set(
+      repositoryIds.filter(
+        /** Keeps entries matching `results[index]?.status === 'fulfilled'`. */ (_, index) =>
+          results[index]?.status === 'fulfilled',
+      ),
+    );
+    const failedIds = repositoryIds.filter(
+      /** Keeps entries matching `results[index]?.status === 'rejected'`. */ (_, index) =>
+        results[index]?.status === 'rejected',
+    );
 
     if (successfulIds.size > 0) {
-      availableRepositories.value = availableRepositories.value.map((repository) =>
-        successfulIds.has(repository.providerRepositoryId) ? { ...repository, tracked: true } : repository,
+      availableRepositories.value = availableRepositories.value.map(
+        /** Projects each entry using `successfulIds.has(repository.providerRepositoryId) ? { ...repository, tracked: true } : repository`. */ (
+          repository,
+        ) => (successfulIds.has(repository.providerRepositoryId) ? { ...repository, tracked: true } : repository),
       );
       emit('created');
     }

@@ -37,189 +37,217 @@ export function useNavigationItems(attentionCounts: NavigationAttentionCounts = 
     return exact ? route.path === path : route.path === path || route.path.startsWith(`${path}/`);
   }
 
-  const dashboard = computed<AppNavigationItem>(() => ({
-    active: isActive('/', true),
-    icon: 'i-lucide-layout-dashboard',
-    label: t('layout.dashboard'),
-    to: '/',
-  }));
-  const workflowRuns = computed<AppNavigationItem[]>(() => [
-    {
-      active: isActive('/workflow-runs', true),
-      icon: 'i-lucide-list-tree',
-      label: t('workflowRuns.allRuns'),
-      to: '/workflow-runs',
-    },
-    {
-      active: isActive('/workflows/awaiting-approval'),
-      badge:
-        (toValue(attentionCounts.awaitingApproval) ?? 0) > 0
-          ? { color: 'warning', label: toValue(attentionCounts.awaitingApproval)!, variant: 'soft' }
-          : undefined,
-      icon: 'i-lucide-shield-alert',
-      label: t('awaitingApproval.title'),
-      to: '/workflows/awaiting-approval',
-    },
-    {
-      active: isActive('/workflow-runs/needs-attention'),
-      badge:
-        (toValue(attentionCounts.needsAttention) ?? 0) > 0
-          ? { color: 'error', label: toValue(attentionCounts.needsAttention)!, variant: 'soft' }
-          : undefined,
-      icon: 'i-lucide-triangle-alert',
-      label: t('needsAttention.title'),
-      to: '/workflow-runs/needs-attention',
-    },
-  ]);
-  const repositories = computed<AppNavigationItem>(() => ({
-    active: isActive('/repositories'),
-    icon: 'i-lucide-git-fork',
-    label: t('layout.repositories'),
-    to: '/repositories',
-  }));
-  const jobs = computed<AppNavigationItem>(() => ({
-    active: isActive('/jobs'),
-    icon: 'i-lucide-list-checks',
-    label: t('layout.jobs'),
-    to: '/jobs',
-  }));
-  const issues = computed<AppNavigationItem>(() => ({
-    active: isActive('/issues'),
-    icon: 'i-tabler-circle-dot',
-    label: t('layout.issues'),
-    to: '/issues',
-  }));
-  const pullRequests = computed<AppNavigationItem>(() => ({
-    active: isActive('/pull-requests'),
-    icon: 'i-tabler-git-pull-request',
-    label: t('layout.pullRequests'),
-    to: '/pull-requests',
-  }));
-  const alerts = computed<AppNavigationItem[]>(() => {
-    if (!['MANAGER', 'SYSTEM_ADMIN'].includes(auth.user?.role ?? '')) return [];
-    return [
+  const dashboard = computed<AppNavigationItem>(
+    /** Derives dashboard from the current reactive dependencies. */ () => ({
+      active: isActive('/', true),
+      icon: 'i-lucide-layout-dashboard',
+      label: t('layout.dashboard'),
+      to: '/',
+    }),
+  );
+  const workflowRuns = computed<AppNavigationItem[]>(
+    /** Derives workflow runs from the current reactive dependencies. */ () => [
       {
-        active: isActive('/alerts/dependencies'),
-        icon: 'i-lucide-package-search',
-        label: t('securityAlerts.dependencies'),
-        to: '/alerts/dependencies',
-      },
-      {
-        active: isActive('/alerts/code'),
-        icon: 'i-lucide-file-search-2',
-        label: t('securityAlerts.code'),
-        to: '/alerts/code',
-      },
-      {
-        active: isActive('/alerts/secrets'),
-        icon: 'i-lucide-key-round',
-        label: t('securityAlerts.secrets'),
-        to: '/alerts/secrets',
-      },
-    ];
-  });
-  const notifications = computed<AppNavigationItem[]>(() => [
-    {
-      active: isActive('/notifications', true),
-      icon: 'i-lucide-radio-tower',
-      label: t('notifications.tabs.channels'),
-      to: '/notifications',
-    },
-    ...(auth.user?.role === 'SYSTEM_ADMIN'
-      ? [
-          {
-            active: isActive('/notifications/history'),
-            icon: 'i-lucide-history',
-            label: t('notifications.tabs.history'),
-            to: '/notifications/history',
-          },
-        ]
-      : []),
-  ]);
-  const administration = computed<AppNavigationItem[]>(() => {
-    if (auth.user?.role !== 'SYSTEM_ADMIN') return [];
-    return [
-      {
-        active: isActive('/admin/providers'),
-        icon: 'i-lucide-plug-zap',
-        label: t('layout.providers'),
-        to: '/admin/providers',
-      },
-      {
-        active: isActive('/admin/users'),
-        icon: 'i-lucide-users',
-        label: t('layout.users'),
-        to: '/admin/users',
-      },
-      {
-        active: isActive('/admin/settings'),
-        icon: 'i-lucide-settings',
-        label: t('layout.settings'),
-        to: '/admin/settings',
-      },
-    ];
-  });
-
-  const navigationItems = computed<NavigationMenuItem[]>(() => {
-    const items: NavigationMenuItem[] = [
-      { label: t('layout.overview'), type: 'label' },
-      toMenuItem(dashboard.value),
-      {
-        'aria-label': t('layout.workflowRuns'),
-        active: workflowRuns.value.some((item) => item.active),
-        children: workflowRuns.value.map(toMenuItem),
-        defaultOpen: true,
+        active: isActive('/workflow-runs', true),
         icon: 'i-lucide-list-tree',
-        label: t('layout.workflowRuns'),
-        type: 'trigger',
+        label: t('workflowRuns.allRuns'),
+        to: '/workflow-runs',
       },
-      toMenuItem(issues.value),
-      toMenuItem(pullRequests.value),
-      ...(alerts.value.length > 0
+      {
+        active: isActive('/workflows/awaiting-approval'),
+        badge:
+          (toValue(attentionCounts.awaitingApproval) ?? 0) > 0
+            ? { color: 'warning', label: toValue(attentionCounts.awaitingApproval)!, variant: 'soft' }
+            : undefined,
+        icon: 'i-lucide-shield-alert',
+        label: t('awaitingApproval.title'),
+        to: '/workflows/awaiting-approval',
+      },
+      {
+        active: isActive('/workflow-runs/needs-attention'),
+        badge:
+          (toValue(attentionCounts.needsAttention) ?? 0) > 0
+            ? { color: 'error', label: toValue(attentionCounts.needsAttention)!, variant: 'soft' }
+            : undefined,
+        icon: 'i-lucide-triangle-alert',
+        label: t('needsAttention.title'),
+        to: '/workflow-runs/needs-attention',
+      },
+    ],
+  );
+  const repositories = computed<AppNavigationItem>(
+    /** Derives repositories from the current reactive dependencies. */ () => ({
+      active: isActive('/repositories'),
+      icon: 'i-lucide-git-fork',
+      label: t('layout.repositories'),
+      to: '/repositories',
+    }),
+  );
+  const jobs = computed<AppNavigationItem>(
+    /** Derives jobs from the current reactive dependencies. */ () => ({
+      active: isActive('/jobs'),
+      icon: 'i-lucide-list-checks',
+      label: t('layout.jobs'),
+      to: '/jobs',
+    }),
+  );
+  const issues = computed<AppNavigationItem>(
+    /** Derives issues from the current reactive dependencies. */ () => ({
+      active: isActive('/issues'),
+      icon: 'i-tabler-circle-dot',
+      label: t('layout.issues'),
+      to: '/issues',
+    }),
+  );
+  const pullRequests = computed<AppNavigationItem>(
+    /** Derives pull requests from the current reactive dependencies. */ () => ({
+      active: isActive('/pull-requests'),
+      icon: 'i-tabler-git-pull-request',
+      label: t('layout.pullRequests'),
+      to: '/pull-requests',
+    }),
+  );
+  const alerts = computed<AppNavigationItem[]>(
+    /** Derives alerts from the current reactive dependencies. */ () => {
+      if (!['MANAGER', 'SYSTEM_ADMIN'].includes(auth.user?.role ?? '')) return [];
+      return [
+        {
+          active: isActive('/alerts/dependencies'),
+          icon: 'i-lucide-package-search',
+          label: t('securityAlerts.dependencies'),
+          to: '/alerts/dependencies',
+        },
+        {
+          active: isActive('/alerts/code'),
+          icon: 'i-lucide-file-search-2',
+          label: t('securityAlerts.code'),
+          to: '/alerts/code',
+        },
+        {
+          active: isActive('/alerts/secrets'),
+          icon: 'i-lucide-key-round',
+          label: t('securityAlerts.secrets'),
+          to: '/alerts/secrets',
+        },
+      ];
+    },
+  );
+  const notifications = computed<AppNavigationItem[]>(
+    /** Derives notifications from the current reactive dependencies. */ () => [
+      {
+        active: isActive('/notifications', true),
+        icon: 'i-lucide-radio-tower',
+        label: t('notifications.tabs.channels'),
+        to: '/notifications',
+      },
+      ...(auth.user?.role === 'SYSTEM_ADMIN'
         ? [
             {
-              'aria-label': t('securityAlerts.title'),
-              active: alerts.value.some((item) => item.active),
-              children: alerts.value.map(toMenuItem),
-              defaultOpen: true,
-              icon: 'i-lucide-shield-alert',
-              label: t('securityAlerts.title'),
-              type: 'trigger' as const,
+              active: isActive('/notifications/history'),
+              icon: 'i-lucide-history',
+              label: t('notifications.tabs.history'),
+              to: '/notifications/history',
             },
           ]
         : []),
-      { label: t('layout.operations'), type: 'label' },
-      toMenuItem(repositories.value),
-      toMenuItem(jobs.value),
-      {
-        'aria-label': t('layout.notifications'),
-        active: notifications.value.some((item) => item.active),
-        children: notifications.value.map(toMenuItem),
-        defaultOpen: true,
-        icon: 'i-lucide-bell',
-        label: t('layout.notifications'),
-        type: 'trigger',
-      },
-    ];
+    ],
+  );
+  const administration = computed<AppNavigationItem[]>(
+    /** Derives administration from the current reactive dependencies. */ () => {
+      if (auth.user?.role !== 'SYSTEM_ADMIN') return [];
+      return [
+        {
+          active: isActive('/admin/providers'),
+          icon: 'i-lucide-plug-zap',
+          label: t('layout.providers'),
+          to: '/admin/providers',
+        },
+        {
+          active: isActive('/admin/users'),
+          icon: 'i-lucide-users',
+          label: t('layout.users'),
+          to: '/admin/users',
+        },
+        {
+          active: isActive('/admin/settings'),
+          icon: 'i-lucide-settings',
+          label: t('layout.settings'),
+          to: '/admin/settings',
+        },
+      ];
+    },
+  );
 
-    if (administration.value.length > 0) {
-      items.push({ label: t('layout.administration'), type: 'label' }, ...administration.value.map(toMenuItem));
-    }
+  const navigationItems = computed<NavigationMenuItem[]>(
+    /** Derives navigation items from the current reactive dependencies. */ () => {
+      const items: NavigationMenuItem[] = [
+        { label: t('layout.overview'), type: 'label' },
+        toMenuItem(dashboard.value),
+        {
+          'aria-label': t('layout.workflowRuns'),
+          active: workflowRuns.value.some(
+            /** Checks whether any entry satisfies `item.active`. */ (item) => item.active,
+          ),
+          children: workflowRuns.value.map(toMenuItem),
+          defaultOpen: true,
+          icon: 'i-lucide-list-tree',
+          label: t('layout.workflowRuns'),
+          type: 'trigger',
+        },
+        toMenuItem(issues.value),
+        toMenuItem(pullRequests.value),
+        ...(alerts.value.length > 0
+          ? [
+              {
+                'aria-label': t('securityAlerts.title'),
+                active: alerts.value.some(
+                  /** Checks whether any entry satisfies `item.active`. */ (item) => item.active,
+                ),
+                children: alerts.value.map(toMenuItem),
+                defaultOpen: true,
+                icon: 'i-lucide-shield-alert',
+                label: t('securityAlerts.title'),
+                type: 'trigger' as const,
+              },
+            ]
+          : []),
+        { label: t('layout.operations'), type: 'label' },
+        toMenuItem(repositories.value),
+        toMenuItem(jobs.value),
+        {
+          'aria-label': t('layout.notifications'),
+          active: notifications.value.some(
+            /** Checks whether any entry satisfies `item.active`. */ (item) => item.active,
+          ),
+          children: notifications.value.map(toMenuItem),
+          defaultOpen: true,
+          icon: 'i-lucide-bell',
+          label: t('layout.notifications'),
+          type: 'trigger',
+        },
+      ];
 
-    return items;
-  });
+      if (administration.value.length > 0) {
+        items.push({ label: t('layout.administration'), type: 'label' }, ...administration.value.map(toMenuItem));
+      }
 
-  const navigationSearchItems = computed<NavigationSearchItem[]>(() => [
-    dashboard.value,
-    ...workflowRuns.value,
-    issues.value,
-    pullRequests.value,
-    ...alerts.value,
-    repositories.value,
-    jobs.value,
-    ...notifications.value,
-    ...administration.value,
-  ]);
+      return items;
+    },
+  );
+
+  const navigationSearchItems = computed<NavigationSearchItem[]>(
+    /** Derives navigation search items from the current reactive dependencies. */ () => [
+      dashboard.value,
+      ...workflowRuns.value,
+      issues.value,
+      pullRequests.value,
+      ...alerts.value,
+      repositories.value,
+      jobs.value,
+      ...notifications.value,
+      ...administration.value,
+    ],
+  );
 
   return { navigationItems, navigationSearchItems };
 }

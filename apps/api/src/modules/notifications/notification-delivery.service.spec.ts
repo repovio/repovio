@@ -5,14 +5,14 @@ import type { AppriseNotificationAdapter } from './apprise-notification.adapter.
 import type { BrowserPushService } from './browser-push.service.js';
 import { NotificationDeliveryService, notificationRetryDelayMs } from './notification-delivery.service.js';
 
-describe('NotificationDeliveryService', () => {
-  it('uses bounded exponential retry delays', () => {
+describe('NotificationDeliveryService', /** Groups scenarios for NotificationDeliveryService. */ () => {
+  it('uses bounded exponential retry delays', /** Verifies uses bounded exponential retry delays. */ () => {
     expect(notificationRetryDelayMs(1)).toBe(60_000);
     expect(notificationRetryDelayMs(2)).toBe(120_000);
     expect(notificationRetryDelayMs(10)).toBe(60 * 60_000);
   });
 
-  it('records a failed attempt and schedules a retry without resending completed channels', async () => {
+  it('records a failed attempt and schedules a retry without resending completed channels', /** Verifies records a failed attempt and schedules a retry without resending completed channels. */ async () => {
     const prisma = {
       notificationDelivery: {
         findMany: jest.fn().mockResolvedValue([
@@ -72,7 +72,7 @@ describe('NotificationDeliveryService', () => {
     });
   });
 
-  it('excludes browser devices that succeeded during an earlier retry attempt', async () => {
+  it('excludes browser devices that succeeded during an earlier retry attempt', /** Verifies excludes browser devices that succeeded during an earlier retry attempt. */ async () => {
     const prisma = {
       notificationDelivery: {
         findMany: jest.fn().mockResolvedValue([
@@ -154,7 +154,7 @@ describe('NotificationDeliveryService', () => {
     });
   });
 
-  it('builds security-alert payloads only from normalized safe fields', async () => {
+  it('builds security-alert payloads only from normalized safe fields', /** Verifies builds security-alert payloads only from normalized safe fields. */ async () => {
     const prisma = {
       notificationDelivery: {
         findMany: jest.fn().mockResolvedValue([

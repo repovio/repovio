@@ -7,8 +7,8 @@ import {
   loadWorkflowRunRepositoryFilterOptions,
 } from './workflow-run-filtering';
 
-describe('workflow-run filtering', () => {
-  it('converts only duration filter values between milliseconds and seconds', () => {
+describe('workflow-run filtering', /** Groups scenarios for workflow-run filtering. */ () => {
+  it('converts only duration filter values between milliseconds and seconds', /** Verifies converts only duration filter values between milliseconds and seconds. */ () => {
     const filtering: Filtering = {
       filters: [
         { field: 'durationMs', id: 'duration', operator: 'gte', type: 'number', value: 90_500 },
@@ -29,7 +29,7 @@ describe('workflow-run filtering', () => {
     expect(durationFilteringToMilliseconds(seconds)).toEqual(filtering);
   });
 
-  it('rounds fractional milliseconds before sending duration filters to Query Kit', () => {
+  it('rounds fractional milliseconds before sending duration filters to Query Kit', /** Verifies rounds fractional milliseconds before sending duration filters to Query Kit. */ () => {
     expect(
       durationFilteringToMilliseconds({
         filters: [{ field: 'durationMs', id: 'duration', operator: 'equals', type: 'number', value: 1.2345 }],
@@ -38,7 +38,7 @@ describe('workflow-run filtering', () => {
     ).toMatchObject({ filters: [{ value: 1_235 }] });
   });
 
-  it('loads every repository page and creates owner/name options', async () => {
+  it('loads every repository page and creates owner/name options', /** Verifies loads every repository page and creates owner/name options. */ async () => {
     const loadPage = vi
       .fn()
       .mockResolvedValueOnce({

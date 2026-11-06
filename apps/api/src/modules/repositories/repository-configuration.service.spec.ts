@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { RepositoryConfigurationService } from './repository-configuration.service.js';
 
-describe('RepositoryConfigurationService', () => {
+describe('RepositoryConfigurationService', /** Groups scenarios for RepositoryConfigurationService. */ () => {
   const repository = { id: 'repository-id' };
   const prisma = {
     repository: { findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
@@ -10,7 +10,11 @@ describe('RepositoryConfigurationService', () => {
     user: { findUnique: jest.fn() },
     workflowFilter: { create: jest.fn(), delete: jest.fn(), findFirst: jest.fn(), findMany: jest.fn() },
   };
-  const credentials = { encrypt: jest.fn((value: string) => `encrypted:${value}`) };
+  const credentials = {
+    encrypt: jest.fn(
+      /** Provides isolated encrypt behavior for this test fixture. */ (value: string) => `encrypted:${value}`,
+    ),
+  };
   const filters = { validatePattern: jest.fn() };
   const service = new RepositoryConfigurationService(prisma as never, credentials as never, filters as never);
   const administrator = {
@@ -21,27 +25,47 @@ describe('RepositoryConfigurationService', () => {
   };
   const manager = { authProvider: 'LOCAL' as const, id: 'manager', role: 'MANAGER' as const, username: 'manager' };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    prisma.repository.findUnique.mockResolvedValue(repository);
-  });
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ () => {
+      jest.clearAllMocks();
+      prisma.repository.findUnique.mockResolvedValue(repository);
+    },
+  );
 
-  it('rejects non-administrators before reading repository configuration', async () => {
+  it('rejects non-administrators before reading repository configuration', /** Verifies rejects non-administrators before reading repository configuration. */ async () => {
     await expect(service.listWorkflowFilters(manager, repository.id)).rejects.toBeInstanceOf(ForbiddenException);
     expect(prisma.repository.findUnique).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['list', () => service.listWebhookConfigurations(manager)],
-    ['set', () => service.setWebhookSecret(manager, repository.id, 'secret')],
-    ['clear', () => service.clearWebhookSecret(manager, repository.id)],
-  ])('rejects non-administrators attempting to %s repository webhook configuration', async (_operation, call) => {
-    await expect(call()).rejects.toBeInstanceOf(ForbiddenException);
-    expect(prisma.repository.findMany).not.toHaveBeenCalled();
-    expect(prisma.repository.update).not.toHaveBeenCalled();
-  });
+    [
+      'list',
+      /** Returns `service.listWebhookConfigurations(manager)` to the caller. */ () =>
+        service.listWebhookConfigurations(manager),
+    ],
+    [
+      'set',
+      /** Returns `service.setWebhookSecret(manager, repository.id, 'secret')` to the caller. */ () =>
+        service.setWebhookSecret(manager, repository.id, 'secret'),
+    ],
+    [
+      'clear',
+      /** Returns `service.clearWebhookSecret(manager, repository.id)` to the caller. */ () =>
+        service.clearWebhookSecret(manager, repository.id),
+    ],
+  ])(
+    'rejects non-administrators attempting to %s repository webhook configuration',
+    /** Verifies rejects non-administrators attempting to %s repository webhook configuration. */ async (
+      _operation,
+      call,
+    ) => {
+      await expect(call()).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.repository.findMany).not.toHaveBeenCalled();
+      expect(prisma.repository.update).not.toHaveBeenCalled();
+    },
+  );
 
-  it('returns repository webhook metadata without exposing encrypted secrets', async () => {
+  it('returns repository webhook metadata without exposing encrypted secrets', /** Verifies returns repository webhook metadata without exposing encrypted secrets. */ async () => {
     prisma.repository.findMany.mockResolvedValue([
       {
         encryptedWebhookSecret: 'encrypted-secret',
@@ -65,7 +89,7 @@ describe('RepositoryConfigurationService', () => {
     expect(JSON.stringify(configurations)).not.toContain('encrypted-secret');
   });
 
-  it('encrypts a repository webhook secret and returns safe metadata', async () => {
+  it('encrypts a repository webhook secret and returns safe metadata', /** Verifies encrypts a repository webhook secret and returns safe metadata. */ async () => {
     prisma.repository.update.mockResolvedValue({
       id: repository.id,
       providerAccount: { providerType: 'GITHUB' },
@@ -80,7 +104,7 @@ describe('RepositoryConfigurationService', () => {
     );
   });
 
-  it('clears only the selected repository webhook secret', async () => {
+  it('clears only the selected repository webhook secret', /** Verifies clears only the selected repository webhook secret. */ async () => {
     await service.clearWebhookSecret(administrator, repository.id);
 
     expect(prisma.repository.update).toHaveBeenCalledWith({
@@ -89,7 +113,7 @@ describe('RepositoryConfigurationService', () => {
     });
   });
 
-  it('validates a workflow pattern before creating a filter', async () => {
+  it('validates a workflow pattern before creating a filter', /** Verifies validates a workflow pattern before creating a filter. */ async () => {
     prisma.workflowFilter.create.mockResolvedValue({ id: 'filter-id', mode: 'DENY', pattern: 'draft-*' });
 
     await service.createWorkflowFilter(administrator, repository.id, { mode: 'DENY', pattern: ' draft-* ' });
@@ -100,7 +124,7 @@ describe('RepositoryConfigurationService', () => {
     });
   });
 
-  it('rejects a workflow-filter removal outside the selected repository', async () => {
+  it('rejects a workflow-filter removal outside the selected repository', /** Verifies rejects a workflow-filter removal outside the selected repository. */ async () => {
     prisma.workflowFilter.findFirst.mockResolvedValue(null);
 
     await expect(service.deleteWorkflowFilter(administrator, repository.id, 'filter-id')).rejects.toBeInstanceOf(
@@ -109,7 +133,7 @@ describe('RepositoryConfigurationService', () => {
     expect(prisma.workflowFilter.delete).not.toHaveBeenCalled();
   });
 
-  it('upserts a verified user membership for the selected repository', async () => {
+  it('upserts a verified user membership for the selected repository', /** Verifies upserts a verified user membership for the selected repository. */ async () => {
     prisma.user.findUnique.mockResolvedValue({ id: 'user-id' });
     prisma.repositoryMembership.upsert.mockResolvedValue({
       id: 'membership-id',
@@ -127,7 +151,7 @@ describe('RepositoryConfigurationService', () => {
     });
   });
 
-  it('does not create a membership for an unknown user', async () => {
+  it('does not create a membership for an unknown user', /** Verifies does not create a membership for an unknown user. */ async () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
     await expect(

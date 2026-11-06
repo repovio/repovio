@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { getSystemStatusProgress, getSystemStatusSocketUrl } from './system-status';
 
-describe('system status helpers', () => {
-  it('derives the status namespace from absolute and relative API base URLs', () => {
+describe('system status helpers', /** Groups scenarios for system status helpers. */ () => {
+  it('derives the status namespace from absolute and relative API base URLs', /** Verifies derives the status namespace from absolute and relative API base URLs. */ () => {
     expect(getSystemStatusSocketUrl('https://repovio.example/api/v1', 'https://web.example')).toBe(
       'https://repovio.example/status',
     );
     expect(getSystemStatusSocketUrl('/api/v1', 'https://repovio.example')).toBe('https://repovio.example/status');
   });
 
-  it('uses workflow progress while processing and repository progress otherwise', () => {
+  it('uses workflow progress while processing and repository progress otherwise', /** Verifies uses workflow progress while processing and repository progress otherwise. */ () => {
     expect(
       getSystemStatusProgress({
         kind: 'PROVIDER_SYNC',

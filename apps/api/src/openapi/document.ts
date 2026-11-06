@@ -48,30 +48,42 @@ function namespaceParameterDefinitions(document: OpenAPIObject): OpenAPIObject {
     for (const method of ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const) {
       const operation = item[method];
       if (!operation?.parameters) continue;
-      operation.parameters = operation.parameters.map((parameter, index) => {
-        const definitions = (parameter as unknown as Record<string, unknown>)['x-nestjs_zod-$defs'];
-        if (!definitions || typeof definitions !== 'object') return parameter;
-        const prefix = `Query_${Buffer.from(`${method}:${path}:${index}`).toString('hex')}_`;
-        const names = new Map(
-          Object.keys(definitions)
-            .filter((name) => name.startsWith('__schema'))
-            .map((name) => [name, prefix + name]),
-        );
-        return JSON.parse(
-          JSON.stringify(parameter, (key, value) => {
-            if (key === 'x-nestjs_zod-$defs' && value && typeof value === 'object') {
-              return Object.fromEntries(
-                Object.entries(value).map(([name, schema]) => [names.get(name) ?? name, schema]),
-              );
-            }
-            if (key === '$ref' && typeof value === 'string' && value.startsWith('#/$defs/')) {
-              const name = value.slice('#/$defs/'.length);
-              return `#/$defs/${names.get(name) ?? name}`;
-            }
-            return value;
-          }),
-        );
-      });
+      operation.parameters = operation.parameters.map(
+        /** Projects each entry using the namespaceParameterDefinitions mapping. */ (parameter, index) => {
+          const definitions = (parameter as unknown as Record<string, unknown>)['x-nestjs_zod-$defs'];
+          if (!definitions || typeof definitions !== 'object') return parameter;
+          const prefix = `Query_${Buffer.from(`${method}:${path}:${index}`).toString('hex')}_`;
+          const names = new Map(
+            Object.keys(definitions)
+              .filter(
+                /** Keeps entries matching `name.startsWith('__schema')`. */ (name) => name.startsWith('__schema'),
+              )
+              .map(/** Projects each entry using `[name, prefix + name]`. */ (name) => [name, prefix + name]),
+          );
+          return JSON.parse(
+            JSON.stringify(
+              parameter,
+              /** Rewrites parameter-definition references to their namespaced OpenAPI identifiers. */ (key, value) => {
+                if (key === 'x-nestjs_zod-$defs' && value && typeof value === 'object') {
+                  return Object.fromEntries(
+                    Object.entries(value).map(
+                      /** Projects each entry using `[names.get(name) ?? name, schema]`. */ ([name, schema]) => [
+                        names.get(name) ?? name,
+                        schema,
+                      ],
+                    ),
+                  );
+                }
+                if (key === '$ref' && typeof value === 'string' && value.startsWith('#/$defs/')) {
+                  const name = value.slice('#/$defs/'.length);
+                  return `#/$defs/${names.get(name) ?? name}`;
+                }
+                return value;
+              },
+            ),
+          );
+        },
+      );
     }
   }
   return document;

@@ -38,7 +38,10 @@ export class McpTokenService {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       where: { userId },
     });
-    return tokens.map((token) => McpAccessTokenDto.fromModel(token));
+    return tokens.map(
+      /** Projects each entry using `McpAccessTokenDto.fromModel(token)`. */ (token) =>
+        McpAccessTokenDto.fromModel(token),
+    );
   }
 
   /**

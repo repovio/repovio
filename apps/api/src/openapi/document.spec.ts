@@ -9,6 +9,7 @@ const initialized = jest.fn();
 
 @Injectable()
 class LifecycleProbe implements OnModuleInit {
+  /** Runs the initialization hook used by this application-startup fixture. */
   onModuleInit(): void {
     initialized();
   }
@@ -16,6 +17,7 @@ class LifecycleProbe implements OnModuleInit {
 
 @Controller('fixture')
 class ReferenceFixtureController {
+  /** Supplies the first initialization-hook test fixture. */
   @Get('first')
   @ApiQuery({
     name: 'where',
@@ -27,6 +29,7 @@ class ReferenceFixtureController {
     return query;
   }
 
+  /** Supplies the second initialization-hook test fixture. */
   @Get('second')
   @ApiQuery({
     name: 'where',
@@ -40,8 +43,8 @@ class ReferenceFixtureController {
 @Module({ controllers: [ReferenceFixtureController], providers: [LifecycleProbe] })
 class FixtureModule {}
 
-describe('shared API document generation', () => {
-  it('uses versioned server routes without running lifecycle hooks or listening', async () => {
+describe('shared API document generation', /** Groups scenarios for shared API document generation. */ () => {
+  it('uses versioned server routes without running lifecycle hooks or listening', /** Verifies uses versioned server routes without running lifecycle hooks or listening. */ async () => {
     const module = await Test.createTestingModule({ imports: [FixtureModule] }).compile();
     const app = module.createNestApplication(new FastifyAdapter());
     const listen = jest.spyOn(app, 'listen');
@@ -62,7 +65,7 @@ describe('shared API document generation', () => {
       await app.close();
     }
   });
-  it('keeps different anonymous parameter schemas separate with resolvable references', async () => {
+  it('keeps different anonymous parameter schemas separate with resolvable references', /** Verifies keeps different anonymous parameter schemas separate with resolvable references. */ async () => {
     const module = await Test.createTestingModule({ imports: [FixtureModule] }).compile();
     const app = module.createNestApplication(new FastifyAdapter());
     try {
@@ -76,10 +79,12 @@ describe('shared API document generation', () => {
           references.push(parameter.schema.$ref);
       }
       expect(new Set(references).size).toBe(2);
-      expect(references.map((ref) => document.components!.schemas![ref.split('/').at(-1)!])).toEqual([
-        { type: 'string' },
-        { type: 'number' },
-      ]);
+      expect(
+        references.map(
+          /** Projects each entry using `document.components!.schemas![ref.split('/').at(-1)!]`. */ (ref) =>
+            document.components!.schemas![ref.split('/').at(-1)!],
+        ),
+      ).toEqual([{ type: 'string' }, { type: 'number' }]);
     } finally {
       await app.close();
     }

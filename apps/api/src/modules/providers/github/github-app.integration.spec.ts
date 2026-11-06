@@ -32,7 +32,7 @@ const installation = {
   },
 };
 
-describe('GitHub App persistence, authentication and webhook integration', () => {
+describe('GitHub App persistence, authentication and webhook integration', /** Groups scenarios for GitHub App persistence, authentication and webhook integration. */ () => {
   const prisma = new PrismaService();
   const encryption = new CredentialEncryptionService();
   const fetchFn = jest.fn<typeof fetch>();
@@ -42,38 +42,45 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
   const enqueueWebhook = jest.spyOn(queue, 'enqueueWebhookRepository');
   let webhooks: GitHubAppWebhookService;
 
-  beforeAll(async () => prisma.onModuleInit());
-  afterAll(async () => prisma.onModuleDestroy());
-  beforeEach(async () => {
-    await new TestDatabaseService(prisma).cleanup();
-    fetchFn.mockReset();
-    enqueueWebhook.mockClear();
-    fetchFn.mockImplementation(async (url, init) => {
-      const path = String(url).replace('https://api.github.com', '');
-      expect(String(url)).toMatch(/^https:\/\/api\.github\.com\//);
-      if (init?.method === 'POST') {
-        expect(path).toBe('/app/installations/42/access_tokens');
-        return Response.json({
-          token: 'installation-token',
-          expires_at: new Date(Date.now() + 3600_000).toISOString(),
-        });
-      }
-      if (path === '/app') return Response.json({ id: 12, slug: 'repovio-test' });
-      if (path === '/app/installations/42') return Response.json(installation);
-      if (path.startsWith('/app/installations?')) return Response.json([installation]);
-      throw new Error(`Unexpected provider request: ${path}`);
-    });
-    app = new GitHubAppService(prisma, encryption, fetchFn);
-    webhooks = new GitHubAppWebhookService(prisma, app, encryption, queue as never);
-  });
+  beforeAll(/** Prepares shared test state for beforeAll. */ async () => prisma.onModuleInit());
+  afterAll(/** Restores shared test state for afterAll. */ async () => prisma.onModuleDestroy());
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ async () => {
+      await new TestDatabaseService(prisma).cleanup();
+      fetchFn.mockReset();
+      enqueueWebhook.mockClear();
+      fetchFn.mockImplementation(
+        /** Provides isolated github-app.integration behavior for this test fixture. */ async (url, init) => {
+          const path = String(url).replace('https://api.github.com', '');
+          expect(String(url)).toMatch(/^https:\/\/api\.github\.com\//);
+          if (init?.method === 'POST') {
+            expect(path).toBe('/app/installations/42/access_tokens');
+            return Response.json({
+              token: 'installation-token',
+              expires_at: new Date(Date.now() + 3600_000).toISOString(),
+            });
+          }
+          if (path === '/app') return Response.json({ id: 12, slug: 'repovio-test' });
+          if (path === '/app/installations/42') return Response.json(installation);
+          if (path.startsWith('/app/installations?')) return Response.json([installation]);
+          throw new Error(`Unexpected provider request: ${path}`);
+        },
+      );
+      app = new GitHubAppService(prisma, encryption, fetchFn);
+      webhooks = new GitHubAppWebhookService(prisma, app, encryption, queue as never);
+    },
+  );
 
+  /** Stores synthetic GitHub App credentials for each integration scenario. */
   async function configure() {
     return app.save(admin, { appId: '12', slug: 'repovio-test', privateKey, webhookSecret: secret });
   }
+  /** Configures and connects the synthetic App installation used by this scenario. */
   async function connect() {
     await configure();
     return app.connect(admin, { installationId: '42', displayName: 'Example' });
   }
+  /** Creates a connected App account and its tracked repository fixture. */
   async function tracked() {
     const account = await connect();
     const repository = await prisma.repository.create({
@@ -87,6 +94,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     });
     return { account, repository };
   }
+  /** Requests github app.integration. */
   function request(event: string, data: object, deliveryId = 'delivery-1') {
     const payload = Buffer.from(JSON.stringify(data));
     return {
@@ -99,7 +107,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     };
   }
 
-  it('encrypts credentials, validates App JWTs and never returns secrets', async () => {
+  it('encrypts credentials, validates App JWTs and never returns secrets', /** Verifies encrypts credentials, validates App JWTs and never returns secrets. */ async () => {
     const safe = await configure();
     expect(safe).toMatchObject({ configured: true, appId: '12', slug: 'repovio-test' });
     expect(JSON.stringify(safe)).not.toContain(secret);
@@ -122,7 +130,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     expect(payload.exp - payload.iat).toBeLessThanOrEqual(600);
   });
 
-  it('denies every administration operation to non-administrators', async () => {
+  it('denies every administration operation to non-administrators', /** Verifies denies every administration operation to non-administrators. */ async () => {
     await expect(app.configuration(viewer)).rejects.toThrow(ForbiddenException);
     await expect(app.save(viewer, { appId: '12', slug: 'test' })).rejects.toThrow(ForbiddenException);
     await expect(app.installations(viewer)).rejects.toThrow(ForbiddenException);
@@ -133,7 +141,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  it('retains omitted secrets, rotates credentials and blocks deletion with connected accounts', async () => {
+  it('retains omitted secrets, rotates credentials and blocks deletion with connected accounts', /** Verifies retains omitted secrets, rotates credentials and blocks deletion with connected accounts. */ async () => {
     await configure();
     const rotated = 'replacement-webhook-secret';
     await app.save(admin, { appId: '12', slug: 'repovio-test', webhookSecret: rotated });
@@ -145,7 +153,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     await expect(app.save(admin, { appId: '13', slug: 'other', privateKey })).rejects.toThrow(ConflictException);
   });
 
-  it('rejects missing or invalid keys and mismatched App identities', async () => {
+  it('rejects missing or invalid keys and mismatched App identities', /** Verifies rejects missing or invalid keys and mismatched App identities. */ async () => {
     await expect(app.save(admin, { appId: '12', slug: 'repovio-test' })).rejects.toThrow(BadRequestException);
     await expect(
       app.save(admin, { appId: '12', slug: 'repovio-test', privateKey: 'invalid', webhookSecret: secret }),
@@ -156,7 +164,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     expect(await prisma.gitHubAppConfiguration.count()).toBe(0);
   });
 
-  it('revalidates installation ownership and rejects duplicate connections', async () => {
+  it('revalidates installation ownership and rejects duplicate connections', /** Verifies revalidates installation ownership and rejects duplicate connections. */ async () => {
     await connect();
     await expect(app.connect(admin, { installationId: '42', displayName: 'Again' })).rejects.toThrow(ConflictException);
     fetchFn.mockResolvedValueOnce(Response.json({ ...installation, app_id: 999 }));
@@ -166,12 +174,20 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     expect(await prisma.providerAccount.count()).toBe(1);
   });
 
-  it('coalesces refreshes and caches expiring tokens with only read permissions', async () => {
+  it('coalesces refreshes and caches expiring tokens with only read permissions', /** Verifies coalesces refreshes and caches expiring tokens with only read permissions. */ async () => {
     const account = await connect();
     const credentials = new ProviderCredentialService(encryption, app);
-    const tokens = await Promise.all(Array.from({ length: 8 }, () => credentials.accessToken(account)));
+    const tokens = await Promise.all(
+      Array.from(
+        { length: 8 },
+        /** Evaluates `credentials.accessToken(account)` when Array.from invokes this callback. */ () =>
+          credentials.accessToken(account),
+      ),
+    );
     expect(tokens).toEqual(Array(8).fill('installation-token'));
-    const posts = fetchFn.mock.calls.filter(([, init]) => init?.method === 'POST');
+    const posts = fetchFn.mock.calls.filter(
+      /** Keeps entries matching `init?.method === 'POST'`. */ ([, init]) => init?.method === 'POST',
+    );
     expect(posts).toHaveLength(1);
     expect(JSON.parse(posts[0]![1]!.body as string)).toEqual({
       permissions: {
@@ -183,17 +199,25 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
       },
     });
     await credentials.accessToken(account);
-    expect(fetchFn.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+    expect(
+      fetchFn.mock.calls.filter(
+        /** Keeps entries matching `init?.method === 'POST'`. */ ([, init]) => init?.method === 'POST',
+      ),
+    ).toHaveLength(1);
     const clock = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + 3590_000);
     try {
       await credentials.accessToken(account);
     } finally {
       clock.mockRestore();
     }
-    expect(fetchFn.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(2);
+    expect(
+      fetchFn.mock.calls.filter(
+        /** Keeps entries matching `init?.method === 'POST'`. */ ([, init]) => init?.method === 'POST',
+      ),
+    ).toHaveLength(2);
   });
 
-  it('invalidates tokens across workers after credential rotation and excludes unused permissions', async () => {
+  it('invalidates tokens across workers after credential rotation and excludes unused permissions', /** Verifies invalidates tokens across workers after credential rotation and excludes unused permissions. */ async () => {
     await connect();
     const secondWorker = new GitHubAppService(prisma, encryption, fetchFn);
     await secondWorker.accessToken('42');
@@ -210,7 +234,9 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
       }),
     );
     await secondWorker.accessToken('42');
-    const posts = fetchFn.mock.calls.filter(([, init]) => init?.method === 'POST');
+    const posts = fetchFn.mock.calls.filter(
+      /** Keeps entries matching `init?.method === 'POST'`. */ ([, init]) => init?.method === 'POST',
+    );
     expect(posts).toHaveLength(2);
     const requestBody = JSON.parse(posts[1]![1]!.body as string) as { permissions: Record<string, string> };
     expect(requestBody.permissions).not.toHaveProperty('administration');
@@ -218,10 +244,18 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     expect(requestBody.permissions).not.toHaveProperty('contents');
   });
 
-  it('paginates installation discovery and marks lost installations unavailable', async () => {
+  it('paginates installation discovery and marks lost installations unavailable', /** Verifies paginates installation discovery and marks lost installations unavailable. */ async () => {
     await connect();
     fetchFn.mockResolvedValueOnce(
-      Response.json(Array.from({ length: 100 }, (_, i) => ({ ...installation, id: 1000 + i }))),
+      Response.json(
+        Array.from(
+          { length: 100 },
+          /** Evaluates `({ ...installation, id: 1000 + i })` when Array.from invokes this callback. */ (_, i) => ({
+            ...installation,
+            id: 1000 + i,
+          }),
+        ),
+      ),
     );
     fetchFn.mockResolvedValueOnce(Response.json([{ ...installation, id: 2000 }]));
     const choices = await app.installations(admin);
@@ -230,7 +264,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     await expect(app.accessToken('42')).rejects.toThrow(BadRequestException);
   });
 
-  it('paginates installation repositories without using user-token endpoints', async () => {
+  it('paginates installation repositories without using user-token endpoints', /** Verifies paginates installation repositories without using user-token endpoints. */ async () => {
     const fetchRepositories = jest.fn<typeof fetch>();
     const repository = {
       id: 1,
@@ -239,7 +273,15 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
       html_url: 'https://github.com/example/test',
     };
     fetchRepositories.mockResolvedValueOnce(
-      Response.json({ repositories: Array.from({ length: 100 }, (_, i) => ({ ...repository, id: i + 1 })) }),
+      Response.json({
+        repositories: Array.from(
+          { length: 100 },
+          /** Evaluates `({ ...repository, id: i + 1 })` when Array.from invokes this callback. */ (_, i) => ({
+            ...repository,
+            id: i + 1,
+          }),
+        ),
+      }),
     );
     fetchRepositories.mockResolvedValueOnce(Response.json({ repositories: [{ ...repository, id: 101 }] }));
     const result = await new GitHubActionsAdapter(fetchRepositories).listRepositories({
@@ -249,13 +291,15 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
       providerAccountId: 'account',
     });
     expect(result).toHaveLength(101);
-    expect(fetchRepositories.mock.calls.map(([url]) => String(url))).toEqual([
+    expect(
+      fetchRepositories.mock.calls.map(/** Projects each entry using `String(url)`. */ ([url]) => String(url)),
+    ).toEqual([
       'https://api.github.com/installation/repositories?per_page=100&page=1',
       'https://api.github.com/installation/repositories?per_page=100&page=2',
     ]);
   });
 
-  it('deduplicates signed events with durable repository jobs and rejects changed bytes', async () => {
+  it('deduplicates signed events with durable repository jobs and rejects changed bytes', /** Verifies deduplicates signed events with durable repository jobs and rejects changed bytes. */ async () => {
     const { repository } = await tracked();
     const delivery = request('workflow_run', { installation: { id: 42 }, repository: { id: 101 } });
     await expect(webhooks.receive(delivery)).resolves.toEqual({ accepted: true, duplicate: false });
@@ -267,14 +311,14 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     await expect(webhooks.receive({ ...delivery, payload: Buffer.from('{}') })).rejects.toThrow(UnauthorizedException);
   });
 
-  it('never schedules work for unknown installations or untracked repositories', async () => {
+  it('never schedules work for unknown installations or untracked repositories', /** Verifies never schedules work for unknown installations or untracked repositories. */ async () => {
     await tracked();
     await webhooks.receive(request('workflow_run', { installation: { id: 999 }, repository: { id: 101 } }));
     await webhooks.receive(request('workflow_run', { installation: { id: 42 }, repository: { id: 999 } }, 'other'));
     expect(queue.enqueueWebhookRepository).not.toHaveBeenCalled();
   });
 
-  it('preserves historical records through suspend, resume and removal', async () => {
+  it('preserves historical records through suspend, resume and removal', /** Verifies preserves historical records through suspend, resume and removal. */ async () => {
     const { account, repository } = await tracked();
     await webhooks.receive(request('installation', { action: 'suspend', installation: { id: 42 } }));
     await expect(app.accessToken('42')).rejects.toThrow(BadRequestException);
@@ -288,7 +332,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     await expect(app.accessToken('42')).rejects.toThrow(BadRequestException);
   });
 
-  it('rolls back delivery deduplication if queue persistence fails, allowing retry', async () => {
+  it('rolls back delivery deduplication if queue persistence fails, allowing retry', /** Verifies rolls back delivery deduplication if queue persistence fails, allowing retry. */ async () => {
     await tracked();
     enqueueWebhook.mockRejectedValueOnce(new Error('queue unavailable'));
     const delivery = request('issues', { installation: { id: 42 }, repository: { id: 101 } });
@@ -297,7 +341,7 @@ describe('GitHub App persistence, authentication and webhook integration', () =>
     await expect(webhooks.receive(delivery)).resolves.toEqual({ accepted: true, duplicate: false });
   });
 
-  it('keeps encrypted PAT credentials compatible and deletes only disconnected configuration', async () => {
+  it('keeps encrypted PAT credentials compatible and deletes only disconnected configuration', /** Verifies keeps encrypted PAT credentials compatible and deletes only disconnected configuration. */ async () => {
     await configure();
     const account = await prisma.providerAccount.create({
       data: { providerType: 'GITHUB', displayName: 'PAT', encryptedAccessToken: encryption.encrypt('pat-token') },

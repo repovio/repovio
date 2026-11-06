@@ -15,9 +15,9 @@
     "db:generate": "nx run api:db:generate",
     "dev": "nx run-many -t dev --all --exclude=repovio --parallel=2",
     "docker:build": "nx run-many -t docker:build --all --exclude=repovio --parallel=2",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "nx run-many -t lint --all --exclude=repovio --parallel=2",
+    "format": "node scripts/format.mjs --write",
+    "format:check": "node scripts/format.mjs",
+    "lint": "pnpm test:guidelines && pnpm documentation:check && eslint . && nx run-many -t lint --all --exclude=repovio --parallel=2",
     "nx": "nx",
     "release": "changeset tag",
     "test:postgres-upgrade": "node --test scripts/check-postgres-upgrade.test.mjs",
@@ -25,7 +25,9 @@
     "test": "nx run-many -t test --all --exclude=repovio --parallel=2",
     "typecheck": "nx run-many -t typecheck --all --exclude=repovio --parallel=2",
     "version-packages": "changeset version",
-    "branding:check": "node scripts/check-branding.mjs"
+    "branding:check": "node scripts/check-branding.mjs",
+    "documentation:check": "node scripts/check-documentation.mjs",
+    "test:guidelines": "node --test scripts/check-documentation.test.mjs scripts/format.test.mjs scripts/check-api-tsdoc.test.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

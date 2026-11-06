@@ -1,35 +1,41 @@
 import type { CleanedEnv, ReporterOptions } from 'envalid';
 import { bool, cleanEnv, makeValidator, num, str } from 'envalid';
 
-const base64Key = makeValidator<string>((input) => {
-  const decoded = Buffer.from(input, 'base64');
+const base64Key = makeValidator<string>(
+  /** Accepts only a canonical Base64 encryption key decoding to exactly 32 bytes. */ (input) => {
+    const decoded = Buffer.from(input, 'base64');
 
-  if (decoded.length !== 32 || decoded.toString('base64') !== input) {
-    throw new Error('must be a canonical base64 value that decodes to exactly 32 bytes');
-  }
+    if (decoded.length !== 32 || decoded.toString('base64') !== input) {
+      throw new Error('must be a canonical base64 value that decodes to exactly 32 bytes');
+    }
 
-  return input;
-});
+    return input;
+  },
+);
 
-const httpUrl = makeValidator<string>((input) => {
-  const url = new URL(input);
+const httpUrl = makeValidator<string>(
+  /** Accepts only absolute HTTP or HTTPS URLs. */ (input) => {
+    const url = new URL(input);
 
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error('must use the http or https protocol');
-  }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('must use the http or https protocol');
+    }
 
-  return input;
-});
+    return input;
+  },
+);
 
-const positiveInteger = makeValidator<number>((input) => {
-  const value = Number(input);
+const positiveInteger = makeValidator<number>(
+  /** Accepts only positive integers for runtime configuration. */ (input) => {
+    const value = Number(input);
 
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error('must be a positive integer');
-  }
+    if (!Number.isInteger(value) || value < 1) {
+      throw new Error('must be a positive integer');
+    }
 
-  return value;
-});
+    return value;
+  },
+);
 
 const validators = {
   NODE_ENV: str({ choices: ['development', 'production', 'test'], default: 'development' }),
@@ -78,6 +84,7 @@ export type RepovioEnvironment = CleanedEnv<typeof validators>;
  */
 function throwOnInvalidEnvironment<T>({ errors }: ReporterOptions<T>): void {
   const messages = Object.entries(errors as Record<string, Error | undefined>).map(
+    /** Projects each entry using ``${key}: ${error?.message ?? 'is invalid'}``. */
     ([key, error]) => `${key}: ${error?.message ?? 'is invalid'}`,
   );
 

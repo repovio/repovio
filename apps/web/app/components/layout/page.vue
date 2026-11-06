@@ -22,7 +22,9 @@
     </UDashboardToolbar>
 
     <div data-page-content :class="contentClasses">
-      <h1 class="sr-only">{{ title }}</h1>
+      <h1 class="sr-only">
+        {{ title }}
+      </h1>
 
       <slot />
     </div>
@@ -48,12 +50,14 @@ const props = withDefaults(
   { fullWidth: false, padded: true },
 );
 
-const contentClasses = computed(() => {
-  if (!props.padded) return 'flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-y-auto';
+const contentClasses = computed(
+  /** Derives content classes from the current reactive dependencies. */ () => {
+    if (!props.padded) return 'flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-y-auto';
 
-  return [
-    'min-h-0 w-full flex-1 space-y-6 overflow-y-auto p-4 sm:p-6 lg:p-8',
-    props.fullWidth ? undefined : 'mx-auto max-w-7xl',
-  ];
-});
+    return [
+      'min-h-0 w-full flex-1 space-y-6 overflow-y-auto p-4 sm:p-6 lg:p-8',
+      props.fullWidth ? undefined : 'mx-auto max-w-7xl',
+    ];
+  },
+);
 </script>

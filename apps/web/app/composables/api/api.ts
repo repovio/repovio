@@ -6,12 +6,14 @@ export const accessTokenStorageKey = 'repovio.access-token';
 /** Create Repovio's authenticated API client for one configured API base URL. */
 export function createApiClient(baseUrl: string, accessToken?: string | null): AxiosInstance {
   const client = axios.create({ baseURL: baseUrl });
-  client.interceptors.request.use((request) => {
-    request.headers.set('Timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
-    request.headers.set('Request-Source', 'web');
-    if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`);
-    return request;
-  });
+  client.interceptors.request.use(
+    /** Attaches browser metadata and the optional bearer token to each outgoing request. */ (request) => {
+      request.headers.set('Timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+      request.headers.set('Request-Source', 'web');
+      if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`);
+      return request;
+    },
+  );
   return client;
 }
 

@@ -58,6 +58,7 @@ export class WorkflowRunsController {
     return ResourceQuery.query({
       ability,
       include: workflowRunContextInclude,
+      /** Maps map. */
       map: (workflowRun: WorkflowRunResourceModel, currentAbility) =>
         WorkflowRunDto.fromModel(workflowRun, currentAbility),
       query: this.workflowRuns.toQueryOptions(query),
@@ -83,6 +84,7 @@ export class WorkflowRunsController {
     return ResourceQuery.query({
       ability,
       include: workflowRunContextInclude,
+      /** Maps map. */
       map: (workflowRun: WorkflowRunResourceModel, currentAbility) =>
         WorkflowRunDto.fromModel(workflowRun, currentAbility),
       query: await this.workflowRuns.toNeedsAttentionQueryOptions(query, ability),

@@ -69,54 +69,58 @@ export class GitHubAppWebhookService {
       throw new BadRequestException('Invalid GitHub App webhook payload.');
     }
     try {
-      await this.prisma.transaction(async (tx) => {
-        await tx.gitHubAppDelivery.create({ data: { deliveryId } });
-        if (
-          !payload.installation?.id ||
-          (payload.installation.app_id && String(payload.installation.app_id) !== config.appId)
-        )
-          return;
-        const account = await tx.providerAccount.findUnique({
-          where: { githubInstallationId: String(payload.installation.id) },
-        });
-        if (!account || account.authenticationMethod !== 'GITHUB_APP') return;
-        if (event === 'installation') {
-          const state =
-            payload.action === 'deleted'
-              ? 'REMOVED'
-              : payload.action === 'suspend'
-                ? 'SUSPENDED'
-                : ['created', 'unsuspend', 'new_permissions_accepted'].includes(payload.action ?? '')
-                  ? 'ACTIVE'
-                  : null;
-          if (state) {
-            await tx.providerAccount.update({ where: { id: account.id }, data: { githubInstallationState: state } });
-            // Invalidate token caches in every API worker on lifecycle changes.
-            await tx.gitHubAppConfiguration.updateMany({ where: { id: 'default' }, data: { updatedAt: new Date() } });
+      await this.prisma.transaction(
+        /** Atomically records delivery state, updates installation availability, and schedules affected repositories. */ async (
+          tx,
+        ) => {
+          await tx.gitHubAppDelivery.create({ data: { deliveryId } });
+          if (
+            !payload.installation?.id ||
+            (payload.installation.app_id && String(payload.installation.app_id) !== config.appId)
+          )
+            return;
+          const account = await tx.providerAccount.findUnique({
+            where: { githubInstallationId: String(payload.installation.id) },
+          });
+          if (!account || account.authenticationMethod !== 'GITHUB_APP') return;
+          if (event === 'installation') {
+            const state =
+              payload.action === 'deleted'
+                ? 'REMOVED'
+                : payload.action === 'suspend'
+                  ? 'SUSPENDED'
+                  : ['created', 'unsuspend', 'new_permissions_accepted'].includes(payload.action ?? '')
+                    ? 'ACTIVE'
+                    : null;
+            if (state) {
+              await tx.providerAccount.update({ where: { id: account.id }, data: { githubInstallationState: state } });
+              // Invalidate token caches in every API worker on lifecycle changes.
+              await tx.gitHubAppConfiguration.updateMany({ where: { id: 'default' }, data: { updatedAt: new Date() } });
+            }
+            if (state !== 'ACTIVE') return;
           }
-          if (state !== 'ACTIVE') return;
-        }
-        if (!account.enabled || (account.githubInstallationState !== 'ACTIVE' && event !== 'installation')) return;
-        if (event === 'installation_repositories')
-          await tx.gitHubAppConfiguration.updateMany({ where: { id: 'default' }, data: { updatedAt: new Date() } });
-        const lifecycle = event === 'installation' || event === 'installation_repositories';
-        const scopes = providerWebhookSyncScopes(event);
-        if (!lifecycle && (!payload.repository?.id || !scopes.length)) return;
-        const repositories = await tx.repository.findMany({
-          where: {
-            providerAccountId: account.id,
-            enabled: true,
-            ...(!lifecycle ? { providerRepositoryId: String(payload.repository!.id) } : {}),
-          },
-          select: { id: true },
-        });
-        for (const repository of repositories)
-          await this.queue.enqueueWebhookRepository(
-            repository.id,
-            tx,
-            lifecycle ? ['WORKFLOWS', 'ISSUES', 'PULL_REQUESTS', 'ALERTS'] : scopes,
-          );
-      });
+          if (!account.enabled || (account.githubInstallationState !== 'ACTIVE' && event !== 'installation')) return;
+          if (event === 'installation_repositories')
+            await tx.gitHubAppConfiguration.updateMany({ where: { id: 'default' }, data: { updatedAt: new Date() } });
+          const lifecycle = event === 'installation' || event === 'installation_repositories';
+          const scopes = providerWebhookSyncScopes(event);
+          if (!lifecycle && (!payload.repository?.id || !scopes.length)) return;
+          const repositories = await tx.repository.findMany({
+            where: {
+              providerAccountId: account.id,
+              enabled: true,
+              ...(!lifecycle ? { providerRepositoryId: String(payload.repository!.id) } : {}),
+            },
+            select: { id: true },
+          });
+          for (const repository of repositories)
+            await this.queue.enqueueWebhookRepository(
+              repository.id,
+              tx,
+              lifecycle ? ['WORKFLOWS', 'ISSUES', 'PULL_REQUESTS', 'ALERTS'] : scopes,
+            );
+        },
+      );
     } catch (error) {
       if (
         typeof error === 'object' &&

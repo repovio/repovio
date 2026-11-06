@@ -50,13 +50,21 @@ export class HealthService {
         },
         orderBy: { displayName: 'asc' },
       });
-      const providerHealth = providers.map((provider) => this.toProviderHealth(provider));
+      const providerHealth = providers.map(
+        /** Projects each entry using `this.toProviderHealth(provider)`. */ (provider) =>
+          this.toProviderHealth(provider),
+      );
 
       return {
         api: 'ok',
         database: 'ok',
         providers: providerHealth,
-        status: providerHealth.some((provider) => provider.syncStatus === 'failed') ? 'degraded' : 'ok',
+        status: providerHealth.some(
+          /** Checks whether any entry satisfies `provider.syncStatus === 'failed'`. */ (provider) =>
+            provider.syncStatus === 'failed',
+        )
+          ? 'degraded'
+          : 'ok',
       };
     } catch {
       return {

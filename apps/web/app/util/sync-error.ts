@@ -1,4 +1,5 @@
-export type SyncErrorKind = 'rateLimit' | 'invalidCredentials' | 'missingPermissions' | 'network' | 'unknown';
+/** Defines the sync error kind contract shared by its consumers. */ export type SyncErrorKind =
+  'rateLimit' | 'invalidCredentials' | 'missingPermissions' | 'network' | 'unknown';
 
 /** Classify credential-free synchronization messages for localized presentation. */
 export function syncErrorKind(message: string): SyncErrorKind {

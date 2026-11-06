@@ -12,9 +12,11 @@ export function useBrowserPush() {
   const publicKey = ref<string | null>(null);
   const subscriptionCount = ref(0);
   const supported = computed(
+    /** Derives supported from the current reactive dependencies. */
     () => import.meta.client && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window,
   );
 
+  /** Returns the active service-worker registration, creating one if needed. */
   async function registration(): Promise<ServiceWorkerRegistration> {
     return (
       (await navigator.serviceWorker.getRegistration('/')) ?? navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -84,8 +86,13 @@ export function useBrowserPush() {
   return { available, currentDeviceEnabled, disable, enable, error, loading, refresh, subscriptionCount, supported };
 }
 
+/** Decodes a URL-safe Base64 VAPID key into subscription bytes. */
 function decodeBase64Url(value: string): Uint8Array<ArrayBuffer> {
   const padded = `${value}${'='.repeat((4 - (value.length % 4)) % 4)}`.replace(/-/g, '+').replace(/_/g, '/');
   const binary = window.atob(padded);
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return Uint8Array.from(
+    binary,
+    /** Evaluates `character.charCodeAt(0)` when Uint8Array.from invokes this callback. */ (character) =>
+      character.charCodeAt(0),
+  );
 }

@@ -6,6 +6,7 @@ import { loadEnvironment } from './environment.js';
 
 const originalEnv = process.env;
 
+/** Sets required environment. */
 function setRequiredEnvironment(): void {
   process.env.AUTH_JWT_SECRET = 'a-long-test-secret';
   process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/repovio_test';
@@ -13,20 +14,24 @@ function setRequiredEnvironment(): void {
   process.env.TOKEN_ENCRYPTION_KEY = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 }
 
-describe('environment configuration', () => {
-  beforeEach(() => {
-    process.env = { ...originalEnv, NODE_ENV: 'test' };
-    setRequiredEnvironment();
-    delete process.env.WEB_PUSH_VAPID_PUBLIC_KEY;
-    delete process.env.WEB_PUSH_VAPID_PRIVATE_KEY;
-    delete process.env.WEB_PUSH_VAPID_SUBJECT;
-  });
+describe('environment configuration', /** Groups scenarios for environment configuration. */ () => {
+  beforeEach(
+    /** Prepares shared test state for beforeEach. */ () => {
+      process.env = { ...originalEnv, NODE_ENV: 'test' };
+      setRequiredEnvironment();
+      delete process.env.WEB_PUSH_VAPID_PUBLIC_KEY;
+      delete process.env.WEB_PUSH_VAPID_PRIVATE_KEY;
+      delete process.env.WEB_PUSH_VAPID_SUBJECT;
+    },
+  );
 
-  afterAll(() => {
-    process.env = originalEnv;
-  });
+  afterAll(
+    /** Restores shared test state for afterAll. */ () => {
+      process.env = originalEnv;
+    },
+  );
 
-  it('loads defaults for a valid configuration', () => {
+  it('loads defaults for a valid configuration', /** Verifies loads defaults for a valid configuration. */ () => {
     const environment = loadEnvironment(process.env);
 
     expect(environment.CORS_ORIGIN).toBe('http://localhost:3000');
@@ -37,25 +42,34 @@ describe('environment configuration', () => {
     expect(environment.isTest).toBe(true);
   });
 
-  it('requires a complete browser-push VAPID configuration', () => {
+  it('requires a complete browser-push VAPID configuration', /** Verifies requires a complete browser-push VAPID configuration. */ () => {
     process.env.WEB_PUSH_VAPID_PUBLIC_KEY = 'public-key';
 
-    expect(() => loadEnvironment(process.env)).toThrow('WEB_PUSH_VAPID_PRIVATE_KEY');
+    expect(
+      /** Evaluates `loadEnvironment(process.env)` when expect invokes this callback. */ () =>
+        loadEnvironment(process.env),
+    ).toThrow('WEB_PUSH_VAPID_PRIVATE_KEY');
   });
 
-  it('rejects an encryption key that is not 32 bytes', () => {
+  it('rejects an encryption key that is not 32 bytes', /** Verifies rejects an encryption key that is not 32 bytes. */ () => {
     process.env.TOKEN_ENCRYPTION_KEY = 'not-a-valid-32-byte-key';
 
-    expect(() => loadEnvironment(process.env)).toThrow('TOKEN_ENCRYPTION_KEY');
+    expect(
+      /** Evaluates `loadEnvironment(process.env)` when expect invokes this callback. */ () =>
+        loadEnvironment(process.env),
+    ).toThrow('TOKEN_ENCRYPTION_KEY');
   });
 
-  it('requires an OAuth client secret when an OAuth client ID is configured', () => {
+  it('requires an OAuth client secret when an OAuth client ID is configured', /** Verifies requires an OAuth client secret when an OAuth client ID is configured. */ () => {
     process.env.GITHUB_OAUTH_CLIENT_ID = 'github-client';
 
-    expect(() => loadEnvironment(process.env)).toThrow('GITHUB_OAUTH_CLIENT_SECRET');
+    expect(
+      /** Evaluates `loadEnvironment(process.env)` when expect invokes this callback. */ () =>
+        loadEnvironment(process.env),
+    ).toThrow('GITHUB_OAUTH_CLIENT_SECRET');
   });
 
-  it('uses deliberately unusable secret placeholders in the environment template', () => {
+  it('uses deliberately unusable secret placeholders in the environment template', /** Verifies uses deliberately unusable secret placeholders in the environment template. */ () => {
     const template = readFileSync(
       resolve(fileURLToPath(new URL('.', import.meta.url)), '../../../../.env.example'),
       'utf8',

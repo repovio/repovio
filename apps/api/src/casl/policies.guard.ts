@@ -49,6 +49,8 @@ export class PoliciesGuard implements CanActivate {
     });
     const ability = this.abilityFactory.createForUser(request.user, memberships);
 
-    return handlers.every((handler) => handler(ability));
+    return handlers.every(
+      /** Checks whether every entry satisfies `handler(ability)`. */ (handler) => handler(ability),
+    );
   }
 }

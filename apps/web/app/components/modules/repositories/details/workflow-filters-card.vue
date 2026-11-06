@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-4' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositoryDetails.workflowFilters') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositoryDetails.workflowFiltersDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositoryDetails.workflowFilters') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositoryDetails.workflowFiltersDescription') }}
+        </p>
       </div>
     </template>
 
@@ -95,34 +99,43 @@ const loading = ref(true);
 const adding = ref(false);
 const error = ref(false);
 const form = reactive<{ mode: WorkflowFilter['mode']; pattern: string }>({ mode: 'ALLOW', pattern: '' });
-const filterSchema = computed(() =>
-  ApiCreateWorkflowFilterSchema.extend({
-    mode: z.unknown(),
-    pattern: z.unknown(),
-  }).transform((value, context) => {
-    const parsed = ApiCreateWorkflowFilterSchema.safeParse(value, { error: () => t('forms.invalidValue') });
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues)
-        context.addIssue({ code: 'custom', path: issue.path, message: t('forms.invalidValue') });
-      return z.NEVER;
-    }
-    if (!parsed.data.pattern.trim()) {
-      context.addIssue({ code: 'custom', path: ['pattern'], message: t('forms.invalidValue') });
-      return z.NEVER;
-    }
-    return parsed.data;
-  }),
+const filterSchema = computed(
+  /** Derives filter schema from the current reactive dependencies. */ () =>
+    ApiCreateWorkflowFilterSchema.extend({
+      mode: z.unknown(),
+      pattern: z.unknown(),
+    }).transform(
+      /** Normalizes input using the filterSchema mapping. */ (value, context) => {
+        const parsed = ApiCreateWorkflowFilterSchema.safeParse(value, {
+          /** Returns the localized validation error for this field. */ error: () => t('forms.invalidValue'),
+        });
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues)
+            context.addIssue({ code: 'custom', path: issue.path, message: t('forms.invalidValue') });
+          return z.NEVER;
+        }
+        if (!parsed.data.pattern.trim()) {
+          context.addIssue({ code: 'custom', path: ['pattern'], message: t('forms.invalidValue') });
+          return z.NEVER;
+        }
+        return parsed.data;
+      },
+    ),
 );
 type WorkflowFilterValues = z.output<typeof filterSchema.value>;
-const filterModeOptions = computed(() => [
-  { label: t('repositoryDetails.allow'), value: 'ALLOW' },
-  { label: t('repositoryDetails.deny'), value: 'DENY' },
-]);
-const columns = computed(() => [
-  { accessorKey: 'mode', header: t('repositoryDetails.mode') },
-  { accessorKey: 'pattern', header: t('repositoryDetails.pattern') },
-  { id: 'actions', header: t('repositoryDetails.actions') },
-]);
+const filterModeOptions = computed(
+  /** Derives filter mode options from the current reactive dependencies. */ () => [
+    { label: t('repositoryDetails.allow'), value: 'ALLOW' },
+    { label: t('repositoryDetails.deny'), value: 'DENY' },
+  ],
+);
+const columns = computed(
+  /** Derives columns from the current reactive dependencies. */ () => [
+    { accessorKey: 'mode', header: t('repositoryDetails.mode') },
+    { accessorKey: 'pattern', header: t('repositoryDetails.pattern') },
+    { id: 'actions', header: t('repositoryDetails.actions') },
+  ],
+);
 
 /** Load filters attached to the displayed repository. */
 async function load(): Promise<void> {
@@ -147,7 +160,10 @@ async function addWorkflowFilter(event: FormSubmitEvent<WorkflowFilterValues>): 
       mode: event.data.mode,
       pattern: event.data.pattern,
     });
-    filters.value = [...filters.value, data].sort((left, right) => left.pattern.localeCompare(right.pattern));
+    filters.value = [...filters.value, data].sort(
+      /** Orders entries using `left.pattern.localeCompare(right.pattern)`. */ (left, right) =>
+        left.pattern.localeCompare(right.pattern),
+    );
     form.pattern = '';
   } catch {
     error.value = true;
@@ -158,16 +174,21 @@ async function addWorkflowFilter(event: FormSubmitEvent<WorkflowFilterValues>): 
 
 /** Delete a workflow filter without reloading the unchanged table rows. */
 async function removeWorkflowFilter(filterId: string): Promise<void> {
-  await runPendingAction(filterId, async () => {
-    error.value = false;
-    try {
-      await api.repositories.deleteWorkflowFilter(props.repositoryId, filterId);
-      filters.value = filters.value.filter((filter) => filter.id !== filterId);
-    } catch {
-      error.value = true;
-    }
-  });
+  await runPendingAction(
+    filterId,
+    /** Performs remove workflow filter while retaining the initiating action’s pending state. */ async () => {
+      error.value = false;
+      try {
+        await api.repositories.deleteWorkflowFilter(props.repositoryId, filterId);
+        filters.value = filters.value.filter(
+          /** Keeps entries matching `filter.id !== filterId`. */ (filter) => filter.id !== filterId,
+        );
+      } catch {
+        error.value = true;
+      }
+    },
+  );
 }
 
-onMounted(() => void load());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void load());
 </script>

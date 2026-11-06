@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('settings.profile') }}</h2>
-        <p class="text-sm text-muted">{{ $t('settings.profileDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('settings.profile') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('settings.profileDescription') }}
+        </p>
       </div>
     </template>
 
@@ -92,7 +96,10 @@ const originalUsername = ref(form.username);
 const error = ref('');
 const saved = ref(false);
 const saving = ref(false);
-const usernameChanged = computed(() => form.username.trim() !== originalUsername.value);
+const usernameChanged = computed(
+  /** Derives username changed from the current reactive dependencies. */ () =>
+    form.username.trim() !== originalUsername.value,
+);
 const { reset: resetDirtyState } = useUnsavedChangesGuard(form);
 
 /** Persist personal identity fields and immediately refresh the authenticated-user store. */

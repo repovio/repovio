@@ -17,12 +17,18 @@
         :ui="{ body: 'space-y-3' }"
       >
         <div class="flex items-center justify-between gap-3">
-          <p class="text-xs font-medium uppercase tracking-wide text-muted">{{ metric.label }}</p>
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">
+            {{ metric.label }}
+          </p>
           <UIcon class="size-4 text-muted" :name="metric.icon" />
         </div>
         <USkeleton v-if="loading && !summary" class="h-8 w-24" />
-        <p v-else class="text-2xl font-semibold tabular-nums">{{ metric.value }}</p>
-        <p class="text-xs text-muted">{{ metric.context }}</p>
+        <p v-else class="text-2xl font-semibold tabular-nums">
+          {{ metric.value }}
+        </p>
+        <p class="text-xs text-muted">
+          {{ metric.context }}
+        </p>
       </UCard>
     </component>
   </section>
@@ -51,64 +57,66 @@ interface SummaryMetric {
   value: string;
 }
 
-const metrics = computed<SummaryMetric[]>(() => {
-  const summary = props.summary;
-  const activeCount = (summary?.queuedCount ?? 0) + (summary?.runningCount ?? 0);
-  return [
-    {
-      context: t('dashboard.completedRuns', { count: formatNumber(summary?.completedCount ?? 0) }),
-      icon: 'i-lucide-circle-check-big',
-      key: 'success-rate',
-      label: t('dashboard.successRate'),
-      to: '/workflow-runs',
-      value: summary ? `${formatNumber(summary.successRate, 1)} %` : '—',
-    },
-    {
-      context: t('dashboard.failedRuns', { count: formatNumber(summary?.statuses.failed ?? 0) }),
-      icon: 'i-lucide-circle-alert',
-      key: 'failing-workflows',
-      label: t('dashboard.failingNow'),
-      to: '/workflow-runs/needs-attention',
-      value: formatNumber(props.failingWorkflowCount),
-    },
-    {
-      context: t('dashboard.awaitingApprovalContext'),
-      highlighted: true,
-      icon: 'i-lucide-shield-alert',
-      key: 'awaiting-approval',
-      label: t('dashboard.awaitingApproval'),
-      to: '/workflows/awaiting-approval',
-      value: summary ? formatNumber(summary.awaitingApprovalCount) : '—',
-    },
-    {
-      context: t('dashboard.completedDurationContext'),
-      icon: 'i-lucide-timer',
-      key: 'median-duration',
-      label: t('dashboard.medianDuration'),
-      to: '/workflow-runs',
-      value: summary ? formatDuration(summary.medianDurationMs) : '—',
-    },
-    {
-      context: t('dashboard.totalDurationContext'),
-      icon: 'i-lucide-timer-reset',
-      key: 'total-duration',
-      label: t('dashboard.totalDuration'),
-      to: '/workflow-runs',
-      value: summary ? formatTotalDuration(summary.totalRunDurationMs) : '—',
-    },
-    {
-      context: t('dashboard.activeRunsContext', {
-        queued: formatNumber(summary?.queuedCount ?? 0),
-        running: formatNumber(summary?.runningCount ?? 0),
-      }),
-      icon: 'i-lucide-activity',
-      key: 'active-runs',
-      label: t('dashboard.activeRuns'),
-      to: '/workflow-runs?preset=active',
-      value: summary ? formatNumber(activeCount) : '—',
-    },
-  ];
-});
+const metrics = computed<SummaryMetric[]>(
+  /** Derives metrics from the current reactive dependencies. */ () => {
+    const summary = props.summary;
+    const activeCount = (summary?.queuedCount ?? 0) + (summary?.runningCount ?? 0);
+    return [
+      {
+        context: t('dashboard.completedRuns', { count: formatNumber(summary?.completedCount ?? 0) }),
+        icon: 'i-lucide-circle-check-big',
+        key: 'success-rate',
+        label: t('dashboard.successRate'),
+        to: '/workflow-runs',
+        value: summary ? `${formatNumber(summary.successRate, 1)} %` : '—',
+      },
+      {
+        context: t('dashboard.failedRuns', { count: formatNumber(summary?.statuses.failed ?? 0) }),
+        icon: 'i-lucide-circle-alert',
+        key: 'failing-workflows',
+        label: t('dashboard.failingNow'),
+        to: '/workflow-runs/needs-attention',
+        value: formatNumber(props.failingWorkflowCount),
+      },
+      {
+        context: t('dashboard.awaitingApprovalContext'),
+        highlighted: true,
+        icon: 'i-lucide-shield-alert',
+        key: 'awaiting-approval',
+        label: t('dashboard.awaitingApproval'),
+        to: '/workflows/awaiting-approval',
+        value: summary ? formatNumber(summary.awaitingApprovalCount) : '—',
+      },
+      {
+        context: t('dashboard.completedDurationContext'),
+        icon: 'i-lucide-timer',
+        key: 'median-duration',
+        label: t('dashboard.medianDuration'),
+        to: '/workflow-runs',
+        value: summary ? formatDuration(summary.medianDurationMs) : '—',
+      },
+      {
+        context: t('dashboard.totalDurationContext'),
+        icon: 'i-lucide-timer-reset',
+        key: 'total-duration',
+        label: t('dashboard.totalDuration'),
+        to: '/workflow-runs',
+        value: summary ? formatTotalDuration(summary.totalRunDurationMs) : '—',
+      },
+      {
+        context: t('dashboard.activeRunsContext', {
+          queued: formatNumber(summary?.queuedCount ?? 0),
+          running: formatNumber(summary?.runningCount ?? 0),
+        }),
+        icon: 'i-lucide-activity',
+        key: 'active-runs',
+        label: t('dashboard.activeRuns'),
+        to: '/workflow-runs?preset=active',
+        value: summary ? formatNumber(activeCount) : '—',
+      },
+    ];
+  },
+);
 
 /** Format one dashboard number using the active interface locale. */
 function formatNumber(value: number, maximumFractionDigits = 0): string {

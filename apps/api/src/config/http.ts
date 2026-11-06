@@ -11,6 +11,6 @@ export function getCorsOrigins(corsOrigin: string): true | string[] {
 
   return corsOrigin
     .split(',')
-    .map((origin) => origin.trim())
+    .map(/** Projects each entry using `origin.trim()`. */ (origin) => origin.trim())
     .filter(Boolean);
 }

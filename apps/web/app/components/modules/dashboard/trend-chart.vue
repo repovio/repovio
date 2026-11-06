@@ -40,7 +40,9 @@
             :x="point.x - barWidth / 2"
             :y="point.successY"
           >
-            <title>{{ bucketTooltip(point.bucket) }}</title>
+            <title>
+              {{ bucketTooltip(point.bucket) }}
+            </title>
           </rect>
           <rect
             v-for="point in chartPoints"
@@ -53,7 +55,9 @@
             :x="point.x - barWidth / 2"
             :y="point.errorY"
           >
-            <title>{{ bucketTooltip(point.bucket) }}</title>
+            <title>
+              {{ bucketTooltip(point.bucket) }}
+            </title>
           </rect>
           <text
             v-for="label in xLabels"
@@ -80,7 +84,9 @@
       </span>
     </div>
   </div>
-  <p v-else class="py-16 text-center text-sm text-muted">{{ $t('dashboard.noTrendData') }}</p>
+  <p v-else class="py-16 text-center text-sm text-muted">
+    {{ $t('dashboard.noTrendData') }}
+  </p>
 </template>
 
 <script setup lang="ts">
@@ -97,56 +103,97 @@ const plot = { bottom: 270, left: 52, right: 690, top: 28 } as const;
 const plotHeight = plot.bottom - plot.top;
 const plotWidth = plot.right - plot.left;
 
-const maximumRuns = computed(() =>
-  Math.max(1, ...props.buckets.map((bucket) => bucket.successCount + bucket.errorCount)),
+const maximumRuns = computed(
+  /** Derives maximum runs from the current reactive dependencies. */ () =>
+    Math.max(
+      1,
+      ...props.buckets.map(
+        /** Projects each entry using `bucket.successCount + bucket.errorCount`. */ (bucket) =>
+          bucket.successCount + bucket.errorCount,
+      ),
+    ),
 );
-const totalSuccesses = computed(() => props.buckets.reduce((total, bucket) => total + bucket.successCount, 0));
-const totalErrors = computed(() => props.buckets.reduce((total, bucket) => total + bucket.errorCount, 0));
-const barWidth = computed(() => Math.max(4, Math.min(28, (plotWidth / Math.max(1, props.buckets.length)) * 0.62)));
+const totalSuccesses = computed(
+  /** Derives total successes from the current reactive dependencies. */ () =>
+    props.buckets.reduce(
+      /** Accumulates entries using `total + bucket.successCount`. */ (total, bucket) => total + bucket.successCount,
+      0,
+    ),
+);
+const totalErrors = computed(
+  /** Derives total errors from the current reactive dependencies. */ () =>
+    props.buckets.reduce(
+      /** Accumulates entries using `total + bucket.errorCount`. */ (total, bucket) => total + bucket.errorCount,
+      0,
+    ),
+);
+const barWidth = computed(
+  /** Derives bar width from the current reactive dependencies. */ () =>
+    Math.max(4, Math.min(28, (plotWidth / Math.max(1, props.buckets.length)) * 0.62)),
+);
 
-const chartPoints = computed(() => {
-  const denominator = Math.max(1, props.buckets.length - 1);
-  return props.buckets.map((bucket, index) => {
-    const x = props.buckets.length === 1 ? plot.left + plotWidth / 2 : plot.left + (index / denominator) * plotWidth;
-    const successHeight = (bucket.successCount / maximumRuns.value) * plotHeight;
-    const errorHeight = (bucket.errorCount / maximumRuns.value) * plotHeight;
-    return {
-      bucket,
-      errorHeight,
-      errorY: plot.bottom - successHeight - errorHeight,
-      successHeight,
-      successY: plot.bottom - successHeight,
-      x,
-    };
-  });
-});
+const chartPoints = computed(
+  /** Derives chart points from the current reactive dependencies. */ () => {
+    const denominator = Math.max(1, props.buckets.length - 1);
+    return props.buckets.map(
+      /** Projects each entry using the chartPoints mapping. */ (bucket, index) => {
+        const x =
+          props.buckets.length === 1 ? plot.left + plotWidth / 2 : plot.left + (index / denominator) * plotWidth;
+        const successHeight = (bucket.successCount / maximumRuns.value) * plotHeight;
+        const errorHeight = (bucket.errorCount / maximumRuns.value) * plotHeight;
+        return {
+          bucket,
+          errorHeight,
+          errorY: plot.bottom - successHeight - errorHeight,
+          successHeight,
+          successY: plot.bottom - successHeight,
+          x,
+        };
+      },
+    );
+  },
+);
 
-const yTicks = computed(() => createTicks(maximumRuns.value, (value) => scaleValue(value, maximumRuns.value)));
-const xLabels = computed(() => {
-  const lastIndex = props.buckets.length - 1;
-  const indexes = [...new Set([0, Math.floor(lastIndex / 2), lastIndex])];
-  return indexes.map((index, labelIndex) => ({
-    anchor:
-      indexes.length === 1
-        ? 'middle'
-        : labelIndex === 0
-          ? 'start'
-          : labelIndex === indexes.length - 1
-            ? 'end'
-            : 'middle',
-    bucketStart: props.buckets[index]!.bucketStart,
-    text: formatBucket(props.buckets[index]!.bucketStart),
-    x: chartPoints.value[index]!.x,
-  }));
-});
-const chartLabel = computed(() =>
-  t('dashboard.trendChartLabel', { errors: totalErrors.value, successes: totalSuccesses.value }),
+const yTicks = computed(
+  /** Derives y ticks from the current reactive dependencies. */ () =>
+    createTicks(
+      maximumRuns.value,
+      /** Evaluates `scaleValue(value, maximumRuns.value)` when createTicks invokes this callback. */ (value) =>
+        scaleValue(value, maximumRuns.value),
+    ),
+);
+const xLabels = computed(
+  /** Derives x labels from the current reactive dependencies. */ () => {
+    const lastIndex = props.buckets.length - 1;
+    const indexes = [...new Set([0, Math.floor(lastIndex / 2), lastIndex])];
+    return indexes.map(
+      /** Projects each entry using the xLabels mapping. */ (index, labelIndex) => ({
+        anchor:
+          indexes.length === 1
+            ? 'middle'
+            : labelIndex === 0
+              ? 'start'
+              : labelIndex === indexes.length - 1
+                ? 'end'
+                : 'middle',
+        bucketStart: props.buckets[index]!.bucketStart,
+        text: formatBucket(props.buckets[index]!.bucketStart),
+        x: chartPoints.value[index]!.x,
+      }),
+    );
+  },
+);
+const chartLabel = computed(
+  /** Derives chart label from the current reactive dependencies. */ () =>
+    t('dashboard.trendChartLabel', { errors: totalErrors.value, successes: totalSuccesses.value }),
 );
 
 /** Create three readable ticks for one chart scale. */
 function createTicks(maximum: number, scale: (value: number) => number): { value: number; y: number }[] {
   const middle = Math.round(maximum / 2);
-  return [...new Set([maximum, middle, 0])].map((value) => ({ value, y: scale(value) }));
+  return [...new Set([maximum, middle, 0])].map(
+    /** Projects each entry using `({ value, y: scale(value) })`. */ (value) => ({ value, y: scale(value) }),
+  );
 }
 
 /** Map one value to the shared chart drawing area. */

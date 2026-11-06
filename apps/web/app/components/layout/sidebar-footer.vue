@@ -50,7 +50,10 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
-const changelogOpen = useState('changelog-open', () => false);
+const changelogOpen = useState(
+  'changelog-open',
+  /** Evaluates `false` when useState invokes this callback. */ () => false,
+);
 const { current: appVersion, load: loadVersion, updateAvailable } = useVersionCheck();
 
 onMounted(loadVersion);

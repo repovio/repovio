@@ -23,5 +23,7 @@ definePageMeta({ fullWidth: true, path: '/workflow-runs/needs-attention' });
 
 const { t } = useI18n();
 
-useHead({ title: computed(() => t('needsAttention.title')) });
+useHead({
+  title: computed(/** Derives title from the current reactive dependencies. */ () => t('needsAttention.title')),
+});
 </script>

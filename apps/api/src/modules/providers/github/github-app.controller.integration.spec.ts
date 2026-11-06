@@ -16,52 +16,60 @@ import { GitHubAppController } from './github-app.controller.js';
 import { GitHubAppService } from './github-app.service.js';
 
 /** Exercise real validation, authorization, serialization and generated OpenAPI on the HTTP boundary. */
-describe('GitHub App HTTP contract', () => {
+describe('GitHub App HTTP contract', /** Groups scenarios for GitHub App HTTP contract. */ () => {
   const prisma = new PrismaService();
   const privateKey = generateKeyPairSync('rsa', { modulusLength: 2048 })
     .privateKey.export({ type: 'pkcs8', format: 'pem' })
     .toString();
-  const providerFetch = jest.fn<typeof fetch>(async () => Response.json({ id: 12, slug: 'repovio-test' }));
+  const providerFetch = jest.fn<typeof fetch>(
+    /** Provides isolated providerFetch behavior for this test fixture. */ async () =>
+      Response.json({ id: 12, slug: 'repovio-test' }),
+  );
   let http: NestFastifyApplication;
 
-  beforeAll(async () => {
-    await prisma.onModuleInit();
-    await new TestDatabaseService(prisma).cleanup();
-    const service = new GitHubAppService(prisma, new CredentialEncryptionService(), providerFetch);
-    const moduleRef = await Test.createTestingModule({
-      controllers: [GitHubAppController],
-      providers: [{ provide: GitHubAppService, useValue: service }],
-    })
-      .overrideGuard(JwtAuthGuard)
-      .useValue({
-        canActivate(context: ExecutionContext) {
-          const request = context.switchToHttp().getRequest<{ headers: Record<string, string>; user: object }>();
-          if (!request.headers.authorization) throw new UnauthorizedException();
-          request.user = {
-            id: 'admin',
-            username: 'admin',
-            role: request.headers.authorization === 'Bearer admin' ? 'SYSTEM_ADMIN' : 'VIEWER',
-            authProvider: 'LOCAL',
-          };
-          return true;
-        },
+  beforeAll(
+    /** Prepares shared test state for beforeAll. */ async () => {
+      await prisma.onModuleInit();
+      await new TestDatabaseService(prisma).cleanup();
+      const service = new GitHubAppService(prisma, new CredentialEncryptionService(), providerFetch);
+      const moduleRef = await Test.createTestingModule({
+        controllers: [GitHubAppController],
+        providers: [{ provide: GitHubAppService, useValue: service }],
       })
-      .overrideGuard(PoliciesGuard)
-      .useValue({ canActivate: () => true })
-      .compile();
-    http = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
-    configureApiRoutes(http);
-    http.useGlobalPipes(new ZodValidationPipe());
-    http.useGlobalInterceptors(new ZodSerializerInterceptor(http.get(Reflector)));
-    await http.init();
-    await http.getHttpAdapter().getInstance().ready();
-  });
-  afterAll(async () => {
-    await http?.close();
-    await prisma.onModuleDestroy();
-  });
+        .overrideGuard(JwtAuthGuard)
+        .useValue({
+          /** Checks whether the caller can activate. */
+          canActivate(context: ExecutionContext) {
+            const request = context.switchToHttp().getRequest<{ headers: Record<string, string>; user: object }>();
+            if (!request.headers.authorization) throw new UnauthorizedException();
+            request.user = {
+              id: 'admin',
+              username: 'admin',
+              role: request.headers.authorization === 'Bearer admin' ? 'SYSTEM_ADMIN' : 'VIEWER',
+              authProvider: 'LOCAL',
+            };
+            return true;
+          },
+        })
+        .overrideGuard(PoliciesGuard)
+        .useValue({ /** Checks whether the caller can activate. */ canActivate: () => true })
+        .compile();
+      http = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+      configureApiRoutes(http);
+      http.useGlobalPipes(new ZodValidationPipe());
+      http.useGlobalInterceptors(new ZodSerializerInterceptor(http.get(Reflector)));
+      await http.init();
+      await http.getHttpAdapter().getInstance().ready();
+    },
+  );
+  afterAll(
+    /** Restores shared test state for afterAll. */ async () => {
+      await http?.close();
+      await prisma.onModuleDestroy();
+    },
+  );
 
-  it('requires login and denies viewer configuration reads', async () => {
+  it('requires login and denies viewer configuration reads', /** Verifies requires login and denies viewer configuration reads. */ async () => {
     expect((await http.inject({ method: 'GET', url: '/api/v1/github-app' })).statusCode).toBe(401);
     const response = await http.inject({
       method: 'GET',
@@ -72,7 +80,7 @@ describe('GitHub App HTTP contract', () => {
     expect(response.json().message).toBe(new ForbiddenException('System administrator access is required.').message);
   });
 
-  it('rejects malformed input and unknown fields before contacting GitHub', async () => {
+  it('rejects malformed input and unknown fields before contacting GitHub', /** Verifies rejects malformed input and unknown fields before contacting GitHub. */ async () => {
     for (const payload of [
       { appId: '../other', slug: 'repovio-test' },
       { appId: '12', slug: 'repovio-test', webhookSecret: 'short' },
@@ -91,7 +99,7 @@ describe('GitHub App HTTP contract', () => {
     expect(providerFetch).not.toHaveBeenCalled();
   });
 
-  it('serializes safe metadata after saving real encrypted configuration', async () => {
+  it('serializes safe metadata after saving real encrypted configuration', /** Verifies serializes safe metadata after saving real encrypted configuration. */ async () => {
     const response = await http.inject({
       method: 'PUT',
       url: '/api/v1/github-app',
@@ -110,7 +118,7 @@ describe('GitHub App HTTP contract', () => {
     expect(response.body).not.toContain('synthetic-webhook-secret');
   });
 
-  it('connects an installation with matching 201 response and a credential-free account DTO', async () => {
+  it('connects an installation with matching 201 response and a credential-free account DTO', /** Verifies connects an installation with matching 201 response and a credential-free account DTO. */ async () => {
     providerFetch.mockResolvedValueOnce(
       Response.json({
         id: 42,
@@ -136,7 +144,7 @@ describe('GitHub App HTTP contract', () => {
     expect(response.json()).not.toHaveProperty('githubInstallationId');
   });
 
-  it('documents configuration and connection schemas on versioned routes', () => {
+  it('documents configuration and connection schemas on versioned routes', /** Verifies documents configuration and connection schemas on versioned routes. */ () => {
     const document = createApiDocument(http, 'http://localhost:3000');
     expect(document.paths['/api/v1/github-app']?.put?.requestBody).toBeDefined();
     expect(document.paths['/api/v1/github-app/installations']?.post?.responses['201']).toBeDefined();

@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { GitHubActionsAdapter } from './github-actions.adapter.js';
 
 const fixtureDirectory = resolve(fileURLToPath(new URL('.', import.meta.url)), 'fixtures');
+/** Reads fixture. */
 const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(fixtureDirectory, name), 'utf8'));
 
-describe('GitHubActionsAdapter', () => {
+describe('GitHubActionsAdapter', /** Groups scenarios for GitHubActionsAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
 
-  it('retains GitHub rate-limit timing without exposing the response body', async () => {
+  it('retains GitHub rate-limit timing without exposing the response body', /** Verifies retains GitHub rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GitHubActionsAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),
     );
@@ -23,7 +24,7 @@ describe('GitHubActionsAdapter', () => {
     });
   });
 
-  it('maps repositories and normalizes workflow runs through read-only requests', async () => {
+  it('maps repositories and normalizes workflow runs through read-only requests', /** Verifies maps repositories and normalizes workflow runs through read-only requests. */ async () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(new Response(JSON.stringify(readFixture('repositories.json'))))
@@ -57,7 +58,8 @@ describe('GitHubActionsAdapter', () => {
     );
   });
 
-  it('paginates more than 100 incremental workflow runs', async () => {
+  it('paginates more than 100 incremental workflow runs', /** Verifies paginates more than 100 incremental workflow runs. */ async () => {
+    /** Builds a workflow-run fixture for synchronization assertions. */
     const workflowRun = (id: number) => ({
       conclusion: 'success',
       created_at: '2026-09-13T10:00:00Z',
@@ -73,7 +75,15 @@ describe('GitHubActionsAdapter', () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ workflow_runs: Array.from({ length: 100 }, (_, index) => workflowRun(index)) })),
+        new Response(
+          JSON.stringify({
+            workflow_runs: Array.from(
+              { length: 100 },
+              /** Evaluates `workflowRun(index)` when Array.from invokes this callback. */ (_, index) =>
+                workflowRun(index),
+            ),
+          }),
+        ),
       )
       .mockResolvedValueOnce(new Response(JSON.stringify({ workflow_runs: [workflowRun(100)] })));
 
@@ -87,7 +97,7 @@ describe('GitHubActionsAdapter', () => {
     expect(fetchFn).toHaveBeenNthCalledWith(2, expect.stringContaining('page=2&per_page=100'), expect.anything());
   });
 
-  it('resolves renamed repository metadata through the previous repository path', async () => {
+  it('resolves renamed repository metadata through the previous repository path', /** Verifies resolves renamed repository metadata through the previous repository path. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -114,14 +124,14 @@ describe('GitHubActionsAdapter', () => {
     expect(fetchFn).toHaveBeenCalledWith(expect.stringContaining('/repos/octo/repovio'), expect.anything());
   });
 
-  it('returns null when the tracked GitHub repository is unavailable', async () => {
+  it('returns null when the tracked GitHub repository is unavailable', /** Verifies returns null when the tracked GitHub repository is unavailable. */ async () => {
     const adapter = new GitHubActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(
       adapter.getRepository(context, { providerRepositoryId: '1', owner: 'octo', name: 'missing' }),
     ).resolves.toBeNull();
   });
 
-  it('accepts only correctly signed GitHub webhooks', async () => {
+  it('accepts only correctly signed GitHub webhooks', /** Verifies accepts only correctly signed GitHub webhooks. */ async () => {
     const adapter = new GitHubActionsAdapter();
     const payload = Buffer.from(JSON.stringify(readFixture('webhook.json')));
     const signature = `sha256=${createHmac('sha256', 'secret').update(payload).digest('hex')}`;
@@ -135,7 +145,7 @@ describe('GitHubActionsAdapter', () => {
     ).resolves.toEqual({ event: 'workflow_run', providerRepositoryId: '1', syncScopes: ['WORKFLOWS'] });
   });
 
-  it('maps waiting runs and their pull request without issuing a provider write', async () => {
+  it('maps waiting runs and their pull request without issuing a provider write', /** Verifies maps waiting runs and their pull request without issuing a provider write. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -178,7 +188,7 @@ describe('GitHubActionsAdapter', () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
-  it('resolves an approval-gated pull request from its head commit when GitHub omits it from a workflow run', async () => {
+  it('resolves an approval-gated pull request from its head commit when GitHub omits it from a workflow run', /** Verifies resolves an approval-gated pull request from its head commit when GitHub omits it from a workflow run. */ async () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(
@@ -225,7 +235,7 @@ describe('GitHubActionsAdapter', () => {
     );
   });
 
-  it('classifies dynamic Dependabot updates under one stable internal workflow', async () => {
+  it('classifies dynamic Dependabot updates under one stable internal workflow', /** Verifies classifies dynamic Dependabot updates under one stable internal workflow. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -276,17 +286,25 @@ describe('GitHubActionsAdapter', () => {
     });
 
     expect(runs).toHaveLength(2);
-    expect(runs.map((run) => run.providerWorkflowId)).toEqual(['204858725', '204858725']);
-    expect(runs.map((run) => run.workflowName)).toEqual(['Dependabot Updates', 'Dependabot Updates']);
-    expect(runs.map((run) => run.workflowKind)).toEqual(['DEPENDABOT_INTERNAL', 'DEPENDABOT_INTERNAL']);
-    expect(runs.map((run) => run.displayTitle)).toEqual([
+    expect(
+      runs.map(/** Projects each entry using `run.providerWorkflowId`. */ (run) => run.providerWorkflowId),
+    ).toEqual(['204858725', '204858725']);
+    expect(runs.map(/** Projects each entry using `run.workflowName`. */ (run) => run.workflowName)).toEqual([
+      'Dependabot Updates',
+      'Dependabot Updates',
+    ]);
+    expect(runs.map(/** Projects each entry using `run.workflowKind`. */ (run) => run.workflowKind)).toEqual([
+      'DEPENDABOT_INTERNAL',
+      'DEPENDABOT_INTERNAL',
+    ]);
+    expect(runs.map(/** Projects each entry using `run.displayTitle`. */ (run) => run.displayTitle)).toEqual([
       'npm_and_yarn in /. for brace-expansion - Update #1566127419',
       'npm_and_yarn in /. for brace-expansion - Update #1566075990',
     ]);
   });
 });
 
-describe('GitHubActionsAdapter change requests', () => {
+describe('GitHubActionsAdapter change requests', /** Groups scenarios for GitHubActionsAdapter change requests. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
@@ -294,19 +312,24 @@ describe('GitHubActionsAdapter change requests', () => {
     ['open', null, 'OPEN'],
     ['closed', null, 'CLOSED'],
     ['closed', '2026-09-12T10:00:00.000Z', 'MERGED'],
-  ] as const)('normalizes a %s pull request with merged-at %s as %s', async (state, mergedAt, expected) => {
-    const adapter = new GitHubActionsAdapter(
-      jest.fn().mockResolvedValue(new Response(JSON.stringify({ base: { ref: 'main' }, merged_at: mergedAt, state }))),
-    );
+  ] as const)(
+    'normalizes a %s pull request with merged-at %s as %s',
+    /** Verifies normalizes a %s pull request with merged-at %s as %s. */ async (state, mergedAt, expected) => {
+      const adapter = new GitHubActionsAdapter(
+        jest
+          .fn()
+          .mockResolvedValue(new Response(JSON.stringify({ base: { ref: 'main' }, merged_at: mergedAt, state }))),
+      );
 
-    await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toEqual({
-      mergedAt: mergedAt ? new Date(mergedAt) : null,
-      state: expected,
-      targetBranch: 'main',
-    });
-  });
+      await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toEqual({
+        mergedAt: mergedAt ? new Date(mergedAt) : null,
+        state: expected,
+        targetBranch: 'main',
+      });
+    },
+  );
 
-  it('normalizes issue and pull-request fixtures without mixing GitHub issue kinds', async () => {
+  it('normalizes issue and pull-request fixtures without mixing GitHub issue kinds', /** Verifies normalizes issue and pull-request fixtures without mixing GitHub issue kinds. */ async () => {
     const adapter = new GitHubActionsAdapter(
       jest
         .fn()
@@ -322,17 +345,17 @@ describe('GitHubActionsAdapter change requests', () => {
     ]);
   });
 
-  it('returns null when the pull request is unavailable', async () => {
+  it('returns null when the pull request is unavailable', /** Verifies returns null when the pull request is unavailable. */ async () => {
     const adapter = new GitHubActionsAdapter(jest.fn().mockResolvedValue(new Response(null, { status: 404 })));
     await expect(adapter.getChangeRequestState(context, repository, '42')).resolves.toBeNull();
   });
 });
 
-describe('GitHubActionsAdapter security alerts', () => {
+describe('GitHubActionsAdapter security alerts', /** Groups scenarios for GitHubActionsAdapter security alerts. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
-  it('normalizes all three alert APIs without retaining secret material', async () => {
+  it('normalizes all three alert APIs without retaining secret material', /** Verifies normalizes all three alert APIs without retaining secret material. */ async () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(
@@ -396,10 +419,15 @@ describe('GitHubActionsAdapter security alerts', () => {
     ]);
     expect(JSON.stringify(result)).not.toContain('must-not-survive');
     expect(JSON.stringify(result)).not.toContain('locations_url');
-    expect(fetchFn.mock.calls.every(([url]) => !String(url).includes('state=all'))).toBe(true);
+    expect(
+      fetchFn.mock.calls.every(
+        /** Checks whether every entry satisfies `!String(url).includes('state=all')`. */ ([url]) =>
+          !String(url).includes('state=all'),
+      ),
+    ).toBe(true);
   });
 
-  it('keeps unavailable alert kinds independent', async () => {
+  it('keeps unavailable alert kinds independent', /** Verifies keeps unavailable alert kinds independent. */ async () => {
     const fetchFn = jest
       .fn()
       .mockResolvedValueOnce(new Response(null, { status: 403 }))

@@ -67,7 +67,10 @@ export class NotificationChannelUrlService {
     const from = this.requiredEmail(input.from, 'From address');
     if (!Array.isArray(input.recipients) || input.recipients.length === 0)
       throw new BadRequestException('At least one email recipient is required.');
-    const recipients = input.recipients.map((recipient) => this.requiredEmail(recipient, 'Recipient'));
+    const recipients = input.recipients.map(
+      /** Projects each entry using `this.requiredEmail(recipient, 'Recipient')`. */ (recipient) =>
+        this.requiredEmail(recipient, 'Recipient'),
+    );
     if (!['NONE', 'STARTTLS', 'TLS'].includes(input.security))
       throw new BadRequestException('Select a valid email security mode.');
     if (input.port !== undefined && (!Number.isInteger(input.port) || input.port < 1 || input.port > 65_535))
@@ -132,6 +135,7 @@ export class NotificationChannelUrlService {
     const webhook = this.httpUrl(input.webhookUrl, 'Discord webhook URL');
     if (
       !['discord.com', 'discordapp.com'].some(
+        /** Checks whether any entry satisfies `webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`)`. */
         (domain) => webhook.hostname === domain || webhook.hostname.endsWith(`.${domain}`),
       )
     )

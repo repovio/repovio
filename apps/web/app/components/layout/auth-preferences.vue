@@ -32,23 +32,40 @@ const { t } = useI18n();
 const { handleSelectLocale, locale, selectItems } = useLocales();
 const { colorMode, setTheme, themes } = useThemes();
 const isChangingLocale = ref(false);
-const selectedLocale = computed(() => selectItems.value.find((item) => item.value === locale.value));
-const themeIndex = computed(() =>
-  Math.max(
-    0,
-    themes.value.findIndex((item) => item.value === colorMode.preference),
-  ),
+const selectedLocale = computed(
+  /** Derives selected locale from the current reactive dependencies. */ () =>
+    selectItems.value.find(
+      /** Finds the first entry matching `item.value === locale.value`. */ (item) => item.value === locale.value,
+    ),
 );
-const currentTheme = computed(() => themes.value[themeIndex.value]!);
-const nextTheme = computed(() => themes.value[(themeIndex.value + 1) % themes.value.length]!);
+const themeIndex = computed(
+  /** Derives theme index from the current reactive dependencies. */ () =>
+    Math.max(
+      0,
+      themes.value.findIndex(
+        /** Locates the first entry matching `item.value === colorMode.preference`. */ (item) =>
+          item.value === colorMode.preference,
+      ),
+    ),
+);
+const currentTheme = computed(
+  /** Derives current theme from the current reactive dependencies. */ () => themes.value[themeIndex.value]!,
+);
+const nextTheme = computed(
+  /** Derives next theme from the current reactive dependencies. */ () =>
+    themes.value[(themeIndex.value + 1) % themes.value.length]!,
+);
 const themeIcons: Record<Theme, string> = {
   system: 'i-tabler-device-desktop',
   light: 'i-tabler-sun',
   dark: 'i-tabler-moon',
 };
-const themeIcon = computed(() => themeIcons[currentTheme.value.value]);
-const themeLabel = computed(() =>
-  t('layout.themeToggle', { current: currentTheme.value.label, next: nextTheme.value.label }),
+const themeIcon = computed(
+  /** Derives theme icon from the current reactive dependencies. */ () => themeIcons[currentTheme.value.value],
+);
+const themeLabel = computed(
+  /** Derives theme label from the current reactive dependencies. */ () =>
+    t('layout.themeToggle', { current: currentTheme.value.label, next: nextTheme.value.label }),
 );
 
 /** Keep the language control busy until the selected locale has finished loading. */

@@ -35,73 +35,97 @@ const repository = {
 
 /** Mock the authenticated viewer shell and sidebar counters. */
 async function mockViewerShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'VIEWER'): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'viewer-1', role, username: 'viewer' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route(/\/api\/v1\/settings$/, (route) =>
-    route.fulfill({
-      json: {
-        dateTimeFormat: 'LOCALE_MEDIUM',
-        issueRetentionDays: 90,
-        pullRequestRetentionDays: 90,
-        workflowRunRetentionDays: 90,
-      },
-    }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'viewer-1', role, username: 'viewer' } }),
   );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) => route.fulfill({ json: [] }));
-  await page.route(/\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  await page.route(
+    /\/api\/v1\/settings$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          dateTimeFormat: 'LOCALE_MEDIUM',
+          issueRetentionDays: 90,
+          pullRequestRetentionDays: 90,
+          workflowRunRetentionDays: 90,
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    /\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
 }
 
-test('shows repository freshness, activity, provider links, and a partial section error', async ({
+test('shows repository freshness, activity, provider links, and a partial section error', /** Verifies shows repository freshness, activity, provider links, and a partial section error. */ async ({
   page,
 }, testInfo) => {
   await mockViewerShell(page);
   let releaseRepository: (() => void) | undefined;
-  const repositoryResponse = new Promise<void>((resolve) => {
-    releaseRepository = resolve;
-  });
-  await page.route('**/api/v1/repositories/repository-1', async (route) => {
-    await repositoryResponse;
-    await route.fulfill({ json: repository });
-  });
-  await page.route(/\/api\/v1\/workflow-runs\?.*$/, (route) =>
-    route.fulfill({
-      json: {
-        ...emptyPage,
-        items: [
-          {
-            completedAt: '2026-09-29T08:05:00.000Z',
-            displayTitle: 'Build main',
-            id: 'run-1',
-            providerCreatedAt: '2026-09-29T08:00:00.000Z',
-            status: 'SUCCESS',
-            url: 'https://github.com/repovio/repovio/actions/runs/1',
-            workflowName: 'Build',
-          },
-        ],
-      },
-    }),
+  const repositoryResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseRepository = resolve;
+    },
   );
-  await page.route(/\/api\/v1\/issues\?.*$/, (route) => route.fulfill({ status: 500 }));
-  await page.route(/\/api\/v1\/pull-requests\?.*$/, (route) =>
-    route.fulfill({
-      json: {
-        ...emptyPage,
-        items: [
-          {
-            id: 'pull-request-1',
-            number: '17',
-            providerUpdatedAt: '2026-09-29T08:04:00.000Z',
-            state: 'OPEN',
-            title: 'Improve repository details',
-            url: 'https://github.com/repovio/repovio/pull/17',
-          },
-        ],
-      },
-    }),
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ async (route) => {
+      await repositoryResponse;
+      await route.fulfill({ json: repository });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/workflow-runs\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          ...emptyPage,
+          items: [
+            {
+              completedAt: '2026-09-29T08:05:00.000Z',
+              displayTitle: 'Build main',
+              id: 'run-1',
+              providerCreatedAt: '2026-09-29T08:00:00.000Z',
+              status: 'SUCCESS',
+              url: 'https://github.com/repovio/repovio/actions/runs/1',
+              workflowName: 'Build',
+            },
+          ],
+        },
+      }),
+  );
+  await page.route(
+    /\/api\/v1\/issues\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ status: 500 }),
+  );
+  await page.route(
+    /\/api\/v1\/pull-requests\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          ...emptyPage,
+          items: [
+            {
+              id: 'pull-request-1',
+              number: '17',
+              providerUpdatedAt: '2026-09-29T08:04:00.000Z',
+              state: 'OPEN',
+              title: 'Improve repository details',
+              url: 'https://github.com/repovio/repovio/pull/17',
+            },
+          ],
+        },
+      }),
   );
 
   await page.goto('/repositories/repository-1');
@@ -122,24 +146,35 @@ test('shows repository freshness, activity, provider links, and a partial sectio
   await page.screenshot({ path: testInfo.outputPath('repository-detail-desktop.png'), fullPage: true });
   await page.setViewportSize({ height: 844, width: 390 });
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the repository detail scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
   await page.screenshot({ path: testInfo.outputPath('repository-detail-narrow.png'), fullPage: true });
 });
 
-test('shows never-synchronized and empty states', async ({ page }) => {
+test('shows never-synchronized and empty states', /** Verifies shows never-synchronized and empty states. */ async ({
+  page,
+}) => {
   await mockViewerShell(page);
-  await page.route('**/api/v1/repositories/repository-1', (route) =>
-    route.fulfill({
-      json: {
-        ...repository,
-        lastSyncAt: null,
-        syncState: { ...repository.syncState, lastError: null, status: 'IDLE' },
-      },
-    }),
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({
+        json: {
+          ...repository,
+          lastSyncAt: null,
+          syncState: { ...repository.syncState, lastError: null, status: 'IDLE' },
+        },
+      }),
   );
-  await page.route(/\/api\/v1\/(?:workflow-runs|issues|pull-requests|security-alerts)\?.*$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  await page.route(
+    /\/api\/v1\/(?:workflow-runs|issues|pull-requests|security-alerts)\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
 
   await page.goto('/repositories/repository-1');
@@ -148,26 +183,34 @@ test('shows never-synchronized and empty states', async ({ page }) => {
   await expect(page.getByText(/No .* found for this repository\./)).toHaveCount(3);
 });
 
-test('updates repository-specific retention overrides', async ({ page }, testInfo) => {
+test('updates repository-specific retention overrides', /** Verifies updates repository-specific retention overrides. */ async ({
+  page,
+}, testInfo) => {
   await mockViewerShell(page, 'SYSTEM_ADMIN');
   let releaseUpdate: (() => void) | undefined;
-  const updateGate = new Promise<void>((resolve) => {
-    releaseUpdate = resolve;
-  });
-  await page.route('**/api/v1/repositories/repository-1', async (route) => {
-    if (route.request().method() === 'PATCH') {
-      expect(route.request().postDataJSON()).toEqual({
-        enabled: true,
-        issueRetentionDays: 21,
-        pullRequestRetentionDays: 45,
-        workflowRunRetentionDays: null,
-      });
-      await updateGate;
-    }
-    await route.fulfill({ json: repository });
-  });
-  await page.route(/\/api\/v1\/(?:workflow-runs|issues|pull-requests|security-alerts)\?.*$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  const updateGate = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseUpdate = resolve;
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ async (route) => {
+      if (route.request().method() === 'PATCH') {
+        expect(route.request().postDataJSON()).toEqual({
+          enabled: true,
+          issueRetentionDays: 21,
+          pullRequestRetentionDays: 45,
+          workflowRunRetentionDays: null,
+        });
+        await updateGate;
+      }
+      await route.fulfill({ json: repository });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/(?:workflow-runs|issues|pull-requests|security-alerts)\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
 
   await page.goto('/repositories/repository-1');
@@ -187,14 +230,23 @@ test('updates repository-specific retention overrides', async ({ page }, testInf
   await expect(saveButton).toBeEnabled();
 });
 
-test('shows the permission error without loading repository activity', async ({ page }) => {
+test('shows the permission error without loading repository activity', /** Verifies shows the permission error without loading repository activity. */ async ({
+  page,
+}) => {
   await mockViewerShell(page);
   let activityRequests = 0;
-  await page.route('**/api/v1/repositories/repository-1', (route) => route.fulfill({ status: 404 }));
-  await page.route(/\/api\/v1\/(?:workflow-runs|issues|pull-requests)\?.*$/, (route) => {
-    activityRequests += 1;
-    return route.fulfill({ json: emptyPage });
-  });
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({ status: 404 }),
+  );
+  await page.route(
+    /\/api\/v1\/(?:workflow-runs|issues|pull-requests)\?.*$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      activityRequests += 1;
+      return route.fulfill({ json: emptyPage });
+    },
+  );
 
   await page.goto('/repositories/repository-1');
 

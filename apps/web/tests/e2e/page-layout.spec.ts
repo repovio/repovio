@@ -9,118 +9,188 @@ const emptyPage = {
 
 /** Mock authenticated application resources used across the page-shell scenarios. */
 async function mockApplication(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({
-      json: {
-        avatarUpdatedAt: null,
-        firstName: 'Vera',
-        id: 'administrator-id',
-        lastName: 'Admin',
-        role: 'SYSTEM_ADMIN',
-        username: 'vera',
-      },
-    }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route(/\/api\/v1\/settings$/, (route) =>
-    route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({
+        json: {
+          avatarUpdatedAt: null,
+          firstName: 'Vera',
+          id: 'administrator-id',
+          lastName: 'Admin',
+          role: 'SYSTEM_ADMIN',
+          username: 'vera',
+        },
+      }),
   );
-  await page.route('**/api/v1/health', (route) =>
-    route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
+  await page.route(
+    /\/api\/v1\/settings$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({ json: { dateTimeFormat: 'LOCALE_MEDIUM', workflowRunRetentionDays: 90 } }),
   );
-  await page.route('**/api/v1/version/latest', (route) => route.fulfill({ json: { latest: '999.0.0' } }));
-  await page.route('**/api/v1/dashboard/failures', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/latest-runs', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/repositories**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/trend**', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/dashboard/summary**', (route) =>
-    route.fulfill({
-      json: {
-        awaitingApprovalCount: 0,
-        completedCount: 0,
-        medianDurationMs: null,
-        queuedCount: 0,
-        runningCount: 0,
-        statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
-        successRate: 0,
-        totalRunDurationMs: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/health',
+    /** Supplies the mocked response for `/api/v1/health`. */ (route) =>
+      route.fulfill({ json: { api: 'ok', database: 'ok', providers: [], status: 'ok' } }),
   );
-  await page.route(/\/api\/v1\/(?:provider-accounts|repositories|users|workflow-runs)(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  await page.route(
+    '**/api/v1/version/latest',
+    /** Supplies the mocked response for `/api/v1/version/latest`. */ (route) =>
+      route.fulfill({ json: { latest: '999.0.0' } }),
   );
-  await page.route(/\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  await page.route(
+    '**/api/v1/dashboard/failures',
+    /** Supplies the mocked response for `/api/v1/dashboard/failures`. */ (route) => route.fulfill({ json: [] }),
   );
-  await page.route('**/api/v1/repositories/repository-1', (route) =>
-    route.fulfill({
-      json: {
-        enabled: true,
-        id: 'repository-1',
-        lastSyncAt: null,
-        name: 'repovio',
-        owner: 'tobiaswaelde',
-        providerAccountId: 'provider-1',
-        url: 'https://github.com/repovio/repovio',
-        workflowRunRetentionDays: 90,
-      },
-    }),
+  await page.route(
+    '**/api/v1/dashboard/latest-runs',
+    /** Supplies the mocked response for `/api/v1/dashboard/latest-runs`. */ (route) => route.fulfill({ json: [] }),
   );
-  await page.route('**/api/v1/repositories/repository-1/workflow-filters', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/repositories/repository-1/memberships', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/notification-channels', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/notification-channels/query**', (route) => route.fulfill({ json: emptyPage }));
-  await page.route('**/api/v1/notification-channels/manageable-repositories', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/notification-deliveries', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/notification-deliveries/query**', (route) => route.fulfill({ json: emptyPage }));
-  await page.route('**/api/v1/browser-push', (route) =>
-    route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/repositories**',
+    /** Supplies the mocked response for `/api/v1/dashboard/repositories**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/trend**',
+    /** Supplies the mocked response for `/api/v1/dashboard/trend**`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/summary**',
+    /** Supplies the mocked response for `/api/v1/dashboard/summary**`. */ (route) =>
+      route.fulfill({
+        json: {
+          awaitingApprovalCount: 0,
+          completedCount: 0,
+          medianDurationMs: null,
+          queuedCount: 0,
+          runningCount: 0,
+          statuses: { cancelled: 0, failed: 0, skipped: 0, success: 0, unknown: 0 },
+          successRate: 0,
+          totalRunDurationMs: 0,
+        },
+      }),
+  );
+  await page.route(
+    /\/api\/v1\/(?:provider-accounts|repositories|users|workflow-runs)(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
+  );
+  await page.route(
+    /\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({
+        json: {
+          enabled: true,
+          id: 'repository-1',
+          lastSyncAt: null,
+          name: 'repovio',
+          owner: 'tobiaswaelde',
+          providerAccountId: 'provider-1',
+          url: 'https://github.com/repovio/repovio',
+          workflowRunRetentionDays: 90,
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/workflow-filters',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/workflow-filters`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/notification-channels',
+    /** Supplies the mocked response for `/api/v1/notification-channels`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies the mocked response for `/api/v1/notification-channels/query**`. */ (route) =>
+      route.fulfill({ json: emptyPage }),
+  );
+  await page.route(
+    '**/api/v1/notification-channels/manageable-repositories',
+    /** Supplies the mocked response for `/api/v1/notification-channels/manageable-repositories`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/notification-deliveries',
+    /** Supplies the mocked response for `/api/v1/notification-deliveries`. */ (route) => route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/notification-deliveries/query**',
+    /** Supplies the mocked response for `/api/v1/notification-deliveries/query**`. */ (route) =>
+      route.fulfill({ json: emptyPage }),
+  );
+  await page.route(
+    '**/api/v1/browser-push',
+    /** Supplies the mocked response for `/api/v1/browser-push`. */ (route) =>
+      route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
   );
 }
 
 /** Measure foreground contrast against the first opaque ancestor background. */
 async function contrastRatio(locator: Locator): Promise<number> {
-  return locator.evaluate((element) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    if (!context) throw new Error('Canvas color parsing is unavailable.');
-    const rgba = (value: string): [number, number, number, number] => {
-      context.clearRect(0, 0, 1, 1);
-      context.fillStyle = value;
-      context.fillRect(0, 0, 1, 1);
-      const [red = 0, green = 0, blue = 0, alpha = 0] = context.getImageData(0, 0, 1, 1).data;
-      return [red, green, blue, alpha / 255];
-    };
-    const foreground = rgba(getComputedStyle(element).color);
-    let background: [number, number, number, number] = [255, 255, 255, 1];
-    for (let current: Element | null = element; current; current = current.parentElement) {
-      const candidate = rgba(getComputedStyle(current).backgroundColor);
-      if (candidate[3] === 1) {
-        background = candidate;
-        break;
-      }
-    }
-    const luminance = ([red, green, blue]: [number, number, number, number]): number => {
-      const channel = (value: number): number => {
-        const normalized = value / 255;
-        return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  return locator.evaluate(
+    /** Reads or updates browser state for the contrast ratio scenario. */ (element) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1;
+      canvas.height = 1;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) throw new Error('Canvas color parsing is unavailable.');
+      /** Converts a CSS color representation into numeric RGBA channels. */
+      const rgba = (value: string): [number, number, number, number] => {
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = value;
+        context.fillRect(0, 0, 1, 1);
+        const [red = 0, green = 0, blue = 0, alpha = 0] = context.getImageData(0, 0, 1, 1).data;
+        return [red, green, blue, alpha / 255];
       };
-      return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
-    };
-    const foregroundLuminance = luminance(foreground);
-    const backgroundLuminance = luminance(background);
-    return (
-      (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
-      (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
-    );
-  });
+      const foreground = rgba(getComputedStyle(element).color);
+      let background: [number, number, number, number] = [255, 255, 255, 1];
+      for (let current: Element | null = element; current; current = current.parentElement) {
+        const candidate = rgba(getComputedStyle(current).backgroundColor);
+        if (candidate[3] === 1) {
+          background = candidate;
+          break;
+        }
+      }
+      /** Computes relative luminance for the contrast assertion. */
+      const luminance = ([red, green, blue]: [number, number, number, number]): number => {
+        /** Creates a notification-channel fixture with the requested overrides. */
+        const channel = (value: number): number => {
+          const normalized = value / 255;
+          return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+        };
+        return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
+      };
+      const foregroundLuminance = luminance(foreground);
+      const backgroundLuminance = luminance(background);
+      return (
+        (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+        (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+      );
+    },
+  );
 }
 
-test('uses the shared page shell without introductory banners', async ({ page }) => {
+test('uses the shared page shell without introductory banners', /** Verifies uses the shared page shell without introductory banners. */ async ({
+  page,
+}) => {
   await mockApplication(page);
   await page.goto('/');
   await expect(page.locator('[data-page-shell]')).toBeVisible();
@@ -166,7 +236,9 @@ test('uses the shared page shell without introductory banners', async ({ page })
   }
 });
 
-test('keeps table navigation accessible at desktop and narrow widths', async ({ page }, testInfo) => {
+test('keeps table navigation accessible at desktop and narrow widths', /** Verifies keeps table navigation accessible at desktop and narrow widths. */ async ({
+  page,
+}, testInfo) => {
   await mockApplication(page);
   await page.goto('/workflow-runs');
   await expect(page.getByText('No workflow runs are available.')).toBeVisible();
@@ -177,18 +249,21 @@ test('keeps table navigation accessible at desktop and narrow widths', async ({ 
   await page.keyboard.press('Enter');
   await expect(page.locator('#main-content')).toBeFocused();
 
-  const unnamedButtons = await page.locator('[data-page-shell] button:visible').evaluateAll((buttons) =>
-    buttons
-      .filter((button) => {
-        const labelledBy = button.getAttribute('aria-labelledby');
-        return !(
-          button.textContent?.trim() ||
-          button.getAttribute('aria-label')?.trim() ||
-          button.getAttribute('title')?.trim() ||
-          (labelledBy && document.getElementById(labelledBy)?.textContent?.trim())
-        );
-      })
-      .map((button) => button.outerHTML),
+  const unnamedButtons = await page.locator('[data-page-shell] button:visible').evaluateAll(
+    /** Reads the rendered element state used by this browser assertion. */ (buttons) =>
+      buttons
+        .filter(
+          /** Keeps entries matching the unnamedButtons predicate. */ (button) => {
+            const labelledBy = button.getAttribute('aria-labelledby');
+            return !(
+              button.textContent?.trim() ||
+              button.getAttribute('aria-label')?.trim() ||
+              button.getAttribute('title')?.trim() ||
+              (labelledBy && document.getElementById(labelledBy)?.textContent?.trim())
+            );
+          },
+        )
+        .map(/** Projects each entry using `button.outerHTML`. */ (button) => button.outerHTML),
   );
   expect(unnamedButtons).toEqual([]);
   expect(await contrastRatio(page.getByText('No workflow runs are available.'))).toBeGreaterThanOrEqual(4.5);
@@ -196,7 +271,13 @@ test('keeps table navigation accessible at desktop and narrow widths', async ({ 
   const table = page.getByRole('table');
   const tableScroller = table.locator('..');
   await expect
-    .poll(() => table.evaluate((element) => element.clientWidth >= (element.parentElement?.clientWidth ?? 0)))
+    .poll(
+      /** Evaluates `table.evaluate((element) => element.clientWidth >= (element.parentElement?.clientWidth ?? 0))` when expect .poll invokes this callback. */ () =>
+        table.evaluate(
+          /** Reads or updates browser state for the page layout scenario. */ (element) =>
+            element.clientWidth >= (element.parentElement?.clientWidth ?? 0),
+        ),
+    )
     .toBe(true);
   await page.screenshot({
     animations: 'disabled',
@@ -206,9 +287,23 @@ test('keeps table navigation accessible at desktop and narrow widths', async ({ 
 
   await page.setViewportSize({ height: 844, width: 390 });
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the page layout scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
-  await expect.poll(() => tableScroller.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  await expect
+    .poll(
+      /** Evaluates `tableScroller.evaluate((element) => element.scrollWidth > element.clientWidth)` when expect.poll invokes this callback. */ () =>
+        tableScroller.evaluate(
+          /** Reads or updates browser state for the page layout scenario. */ (element) =>
+            element.scrollWidth > element.clientWidth,
+        ),
+    )
+    .toBe(true);
   const titleHeader = await page.getByRole('columnheader', { name: 'Title' }).boundingBox();
   const workflowHeader = await page.getByRole('columnheader', { name: 'Workflow' }).boundingBox();
   expect(titleHeader).not.toBeNull();
@@ -221,20 +316,33 @@ test('keeps table navigation accessible at desktop and narrow widths', async ({ 
   });
 });
 
-test('refreshes and hides attention badges after navigation', async ({ page }) => {
+test('refreshes and hides attention badges after navigation', /** Verifies refreshes and hides attention badges after navigation. */ async ({
+  page,
+}) => {
   await mockApplication(page);
   let awaitingApprovalCount = 2;
   let needsAttentionCount = 3;
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) =>
-    route.fulfill({ json: Array.from({ length: awaitingApprovalCount }, (_, index) => ({ id: `run-${index}` })) }),
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({
+        json: Array.from(
+          { length: awaitingApprovalCount },
+          /** Evaluates `({ id: `run-${index}` })` when Array.from invokes this callback. */ (_, index) => ({
+            id: `run-${index}`,
+          }),
+        ),
+      }),
   );
-  await page.route(/\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        ...emptyPage,
-        meta: { ...emptyPage.meta, itemCount: needsAttentionCount },
-      },
-    }),
+  await page.route(
+    /\/api\/v1\/workflow-runs\/needs-attention(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          ...emptyPage,
+          meta: { ...emptyPage.meta, itemCount: needsAttentionCount },
+        },
+      }),
   );
 
   await page.goto('/');
@@ -250,70 +358,86 @@ test('refreshes and hides attention badges after navigation', async ({ page }) =
   await expect(workflowRuns.locator('[data-slot="linkTrailingBadge"]')).toHaveCount(0);
 });
 
-test('queues workflow retrieval from the repository details dialog', async ({ page }) => {
+test('queues workflow retrieval from the repository details dialog', /** Verifies queues workflow retrieval from the repository details dialog. */ async ({
+  page,
+}) => {
   await mockApplication(page);
   let syncRequested = false;
-  await page.route('**/api/v1/repositories/repository-1/sync', async (route) => {
-    syncRequested = true;
-    await route.fulfill({ status: 202 });
-  });
+  await page.route(
+    '**/api/v1/repositories/repository-1/sync',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/sync`. */ async (route) => {
+      syncRequested = true;
+      await route.fulfill({ status: 202 });
+    },
+  );
 
   await page.goto('/repositories?repository=repository-1');
 
   const syncButton = page.getByRole('button', { name: 'Fetch workflow runs' });
   await expect(syncButton).toBeVisible();
   await syncButton.click();
-  await expect.poll(() => syncRequested).toBe(true);
+  await expect
+    .poll(/** Evaluates `syncRequested` when expect.poll invokes this callback. */ () => syncRequested)
+    .toBe(true);
   await expect(page.getByText('Workflow runs were queued for retrieval.')).toBeVisible();
 });
 
 /** Supply deterministic resources for the toolbar layout matrix. */
 async function mockToolbarPages(page: Page): Promise<void> {
   await mockApplication(page);
-  await page.route(/\/api\/v1\/(?:issues|pull-requests|security-alerts)(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: emptyPage }),
+  await page.route(
+    /\/api\/v1\/(?:issues|pull-requests|security-alerts)(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
-  await page.route(/\/api\/v1\/(?:issues|pull-requests)\/filter-options$/, (route) =>
-    route.fulfill({ json: { assignees: [], authors: [], labels: ['Bug'], milestones: [] } }),
+  await page.route(
+    /\/api\/v1\/(?:issues|pull-requests)\/filter-options$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({ json: { assignees: [], authors: [], labels: ['Bug'], milestones: [] } }),
   );
-  await page.route(/\/api\/v1\/(?:issues|pull-requests)\/summary$/, (route) =>
-    route.fulfill({
-      json: {
-        assigned: 0,
-        drafts: 0,
-        failedWorkflows: 0,
-        open: 0,
-        recentlyUpdated: 0,
-        stale: 0,
-        workflowApprovalRequired: 0,
-      },
-    }),
+  await page.route(
+    /\/api\/v1\/(?:issues|pull-requests)\/summary$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          assigned: 0,
+          drafts: 0,
+          failedWorkflows: 0,
+          open: 0,
+          recentlyUpdated: 0,
+          stale: 0,
+          workflowApprovalRequired: 0,
+        },
+      }),
   );
-  await page.route('**/api/v1/security-alerts/filter-options', (route) =>
-    route.fulfill({
-      json: {
-        availability: [],
-        ecosystems: [],
-        manifests: [],
-        packages: [],
-        paths: ['src/example.ts'],
-        repositories: [],
-        rules: [],
-        scanners: [],
-        secretProviders: [],
-        secretTypes: [],
-        tools: [],
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/filter-options',
+    /** Supplies the mocked response for `/api/v1/security-alerts/filter-options`. */ (route) =>
+      route.fulfill({
+        json: {
+          availability: [],
+          ecosystems: [],
+          manifests: [],
+          packages: [],
+          paths: ['src/example.ts'],
+          repositories: [],
+          rules: [],
+          scanners: [],
+          secretProviders: [],
+          secretTypes: [],
+          tools: [],
+        },
+      }),
   );
-  await page.route('**/api/v1/security-alerts/summary', (route) =>
-    route.fulfill({
-      json: {
-        open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 },
-        severity: { CRITICAL: 0, HIGH: 0, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
-        unavailableRepositories: 0,
-      },
-    }),
+  await page.route(
+    '**/api/v1/security-alerts/summary',
+    /** Supplies the mocked response for `/api/v1/security-alerts/summary`. */ (route) =>
+      route.fulfill({
+        json: {
+          open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 },
+          severity: { CRITICAL: 0, HIGH: 0, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
+          unavailableRepositories: 0,
+        },
+      }),
   );
 }
 
@@ -322,7 +446,15 @@ async function expectToolbarControls(page: Page, width: number): Promise<void> {
   const toolbars = page.locator('[data-page-toolbar], [data-table-toolbar], [data-page-navigation]');
   for (const toolbar of await toolbars.all()) {
     await expect(toolbar).toBeVisible();
-    await expect.poll(() => toolbar.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await expect
+      .poll(
+        /** Evaluates `toolbar.evaluate((element) => element.scrollWidth <= element.clientWidth)` when expect.poll invokes this callback. */ () =>
+          toolbar.evaluate(
+            /** Reads or updates browser state for the expect toolbar controls scenario. */ (element) =>
+              element.scrollWidth <= element.clientWidth,
+          ),
+      )
+      .toBe(true);
     const bounds = await toolbar.boundingBox();
     expect(bounds).not.toBeNull();
     for (const control of await toolbar.locator('button:visible, input:visible, a:visible').all()) {
@@ -338,13 +470,22 @@ async function expectToolbarControls(page: Page, width: number): Promise<void> {
     }
   }
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the expect toolbar controls scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
 }
 
 for (const locale of ['en', 'de']) {
   for (const width of [320, 390, 768, 1440]) {
-    test(`wraps toolbar controls at ${width}px in ${locale}`, async ({ page, context }, testInfo) => {
+    test(`wraps toolbar controls at ${width}px in ${locale}`, /** Verifies wraps toolbar controls at [width]px in [locale]. */ async ({
+      page,
+      context,
+    }, testInfo) => {
       test.setTimeout(120_000);
       await context.addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
       await page.setViewportSize({ height: 900, width });
@@ -376,7 +517,11 @@ for (const locale of ['en', 'de']) {
             );
           }
           for (const theme of ['light', 'dark']) {
-            await page.evaluate((theme) => window.localStorage.setItem('nuxt-color-mode', theme), theme);
+            await page.evaluate(
+              /** Reads or updates browser state for the page layout scenario. */ (theme) =>
+                window.localStorage.setItem('nuxt-color-mode', theme),
+              theme,
+            );
             await page.reload();
             await expect(page.locator('html')).toHaveClass(new RegExp(theme));
             await expect(
@@ -394,23 +539,33 @@ for (const locale of ['en', 'de']) {
   }
 }
 
-test('operates wrapped filters and preserves refresh loading until every request completes', async ({ page }) => {
+test('operates wrapped filters and preserves refresh loading until every request completes', /** Verifies operates wrapped filters and preserves refresh loading until every request completes. */ async ({
+  page,
+}) => {
   await page.setViewportSize({ height: 900, width: 320 });
   await mockToolbarPages(page);
   const requestedUrls: string[] = [];
   let releaseSummary: (() => void) | undefined;
   let holdSummary = false;
-  await page.route('**/api/v1/issues/summary', async (route) => {
-    if (holdSummary)
-      await new Promise<void>((resolve) => {
-        releaseSummary = resolve;
-      });
-    await route.fulfill({ json: { assigned: 0, open: 0, recentlyUpdated: 0, stale: 0 } });
-  });
-  await page.route(/\/api\/v1\/issues(?:\?.*)?$/, (route) => {
-    requestedUrls.push(route.request().url());
-    return route.fulfill({ json: emptyPage });
-  });
+  await page.route(
+    '**/api/v1/issues/summary',
+    /** Supplies the mocked response for `/api/v1/issues/summary`. */ async (route) => {
+      if (holdSummary)
+        await new Promise<void>(
+          /** Retains the request resolver until the layout scenario releases its response. */ (resolve) => {
+            releaseSummary = resolve;
+          },
+        );
+      await route.fulfill({ json: { assigned: 0, open: 0, recentlyUpdated: 0, stale: 0 } });
+    },
+  );
+  await page.route(
+    /\/api\/v1\/issues(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      requestedUrls.push(route.request().url());
+      return route.fulfill({ json: emptyPage });
+    },
+  );
   await page.goto('/issues');
   const toolbar = page.locator('[data-page-toolbar]');
   const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
@@ -421,8 +576,18 @@ test('operates wrapped filters and preserves refresh loading until every request
   await page.keyboard.press('Escape');
   await toolbar.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
   await toolbar.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
-  await expect.poll(() => requestedUrls.at(-1) ?? '').toContain('mobile');
-  await expect.poll(() => decodeURIComponent(requestedUrls.at(-1) ?? '')).toContain('2026-09-13T23:59:59.999Z');
+  await expect
+    .poll(
+      /** Evaluates `requestedUrls.at(-1) ?? ''` when expect.poll invokes this callback. */ () =>
+        requestedUrls.at(-1) ?? '',
+    )
+    .toContain('mobile');
+  await expect
+    .poll(
+      /** Evaluates `decodeURIComponent(requestedUrls.at(-1) ?? '')` when expect.poll invokes this callback. */ () =>
+        decodeURIComponent(requestedUrls.at(-1) ?? ''),
+    )
+    .toContain('2026-09-13T23:59:59.999Z');
   expect(decodeURIComponent(requestedUrls.at(-1)!)).toContain('bug');
 
   for (const name of ['Sort', 'Filter', 'Table options']) {
@@ -439,11 +604,14 @@ test('operates wrapped filters and preserves refresh loading until every request
       await expect(popover.getByRole('button', { name: 'Remove filter' })).toBeVisible();
     }
     await expect
-      .poll(() =>
-        popover.evaluate((element) => {
-          const box = element.getBoundingClientRect();
-          return box.left >= 0 && box.right <= window.innerWidth && element.scrollWidth <= element.clientWidth;
-        }),
+      .poll(
+        /** Reads the observable state until the browser assertion settles. */ () =>
+          popover.evaluate(
+            /** Reads or updates browser state for the page layout scenario. */ (element) => {
+              const box = element.getBoundingClientRect();
+              return box.left >= 0 && box.right <= window.innerWidth && element.scrollWidth <= element.clientWidth;
+            },
+          ),
       )
       .toBe(true);
     await page.keyboard.press('Escape');
@@ -452,14 +620,20 @@ test('operates wrapped filters and preserves refresh loading until every request
   }
   holdSummary = true;
   await refresh.click();
-  await expect.poll(() => Boolean(releaseSummary)).toBe(true);
+  await expect
+    .poll(
+      /** Evaluates `Boolean(releaseSummary)` when expect.poll invokes this callback. */ () => Boolean(releaseSummary),
+    )
+    .toBe(true);
   await expect(refresh).toBeDisabled();
   releaseSummary!();
   await expect(refresh).toBeEnabled();
 });
 
 for (const width of [320, 1440]) {
-  test(`restores Query Kit shortcut focus without stealing nested or outside focus at ${width}px`, async ({ page }) => {
+  test(`restores Query Kit shortcut focus without stealing nested or outside focus at ${width}px`, /** Verifies restores Query Kit shortcut focus without stealing nested or outside focus at [width]px. */ async ({
+    page,
+  }) => {
     await mockApplication(page);
     await page.setViewportSize({ height: 900, width });
     await page.goto('/workflow-runs/needs-attention');

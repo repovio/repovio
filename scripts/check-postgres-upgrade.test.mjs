@@ -81,21 +81,26 @@ function snapshot(container) {
     '\n',
   );
   return Object.fromEntries(
-    tables.map((table) => [
-      table,
-      JSON.parse(
-        sql(
-          container,
-          `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]') FROM "${table.replaceAll('"', '""')}" AS t`,
+    tables.map(
+      /** Projects each entry using `[ table, JSON.parse( sql( container, `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]') FROM "${table.replaceAll('"', '""')}" AS t`, ), ), ]`. */ (
+        table,
+      ) => [
+        table,
+        JSON.parse(
+          sql(
+            container,
+            `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]') FROM "${table.replaceAll('"', '""')}" AS t`,
+          ),
         ),
-      ),
-    ]),
+      ],
+    ),
   );
 }
 
 test(
   'fresh PostgreSQL 18 and a PostgreSQL 17 dump/restore preserve application data and credentials',
   { timeout: 300_000 },
+  /** Verifies fresh PostgreSQL 18 and a PostgreSQL 17 dump/restore preserve application data and credentials. */
   async () => {
     docker(['image', 'inspect', apiImage]);
     const compose = JSON.parse(
@@ -108,6 +113,7 @@ test(
     assert.equal(compose.services.postgres.image, 'postgres:18-alpine');
     assert.ok(
       compose.services.postgres.volumes.some(
+        /** Checks whether any entry satisfies `volume.type === 'volume' && volume.target === '/var/lib/postgresql'`. */
         (volume) => volume.type === 'volume' && volume.target === '/var/lib/postgresql',
       ),
     );
@@ -176,7 +182,9 @@ test(
       const cipher = createCipheriv('aes-256-gcm', key, iv);
       const encrypted = Buffer.concat([cipher.update('synthetic-provider-token', 'utf8'), cipher.final()]);
       const tag = cipher.getAuthTag();
-      const envelope = [iv, tag, encrypted].map((value) => value.toString('base64url')).join('.');
+      const envelope = [iv, tag, encrypted]
+        .map(/** Projects each entry using `value.toString('base64url')`. */ (value) => value.toString('base64url'))
+        .join('.');
       sql(
         source,
         `
@@ -257,7 +265,10 @@ test(
       assert.equal(restored, envelope);
       const [restoredIv, restoredTag, restoredCiphertext] = restored
         .split('.')
-        .map((value) => Buffer.from(value, 'base64url'));
+        .map(
+          /** Projects each entry using `Buffer.from(value, 'base64url')`. */ (value) =>
+            Buffer.from(value, 'base64url'),
+        );
       const decipher = createDecipheriv('aes-256-gcm', key, restoredIv);
       decipher.setAuthTag(restoredTag);
       assert.equal(

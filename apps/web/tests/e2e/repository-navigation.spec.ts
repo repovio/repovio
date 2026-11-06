@@ -28,40 +28,62 @@ const repository = {
 
 /** Configure the assigned repository list and detail for a non-administrative user. */
 async function mockViewerRepositories(page: Page): Promise<void> {
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'playwright-viewer', role: 'VIEWER', username: 'playwright' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) => {
-    expect(route.request().url()).not.toContain('webhook');
-    return route.fulfill({
-      json: {
-        items: [repository],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
-      },
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1', (route) => route.fulfill({ json: repository }));
-  await page.route(/\/api\/v1\/(?:issues|pull-requests|workflow-runs)(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 5 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'playwright-viewer', role: 'VIEWER', username: 'playwright' } }),
   );
-  await page.route('**/api/v1/dashboard/awaiting-approval', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/workflow-runs/needs-attention**', (route) =>
-    route.fulfill({
-      json: {
-        items: [],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1 },
-      },
-    }),
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      expect(route.request().url()).not.toContain('webhook');
+      return route.fulfill({
+        json: {
+          items: [repository],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
+        },
+      });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({ json: repository }),
+  );
+  await page.route(
+    /\/api\/v1\/(?:issues|pull-requests|workflow-runs)(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 5 },
+        },
+      }),
+  );
+  await page.route(
+    '**/api/v1/dashboard/awaiting-approval',
+    /** Supplies the mocked response for `/api/v1/dashboard/awaiting-approval`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/workflow-runs/needs-attention**',
+    /** Supplies the mocked response for `/api/v1/workflow-runs/needs-attention**`. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 0, page: 1, pageCount: 0, perPage: 1 },
+        },
+      }),
   );
 }
 
-test('viewer cannot access repository webhook controls', async ({ page }) => {
+test('viewer cannot access repository webhook controls', /** Verifies viewer cannot access repository webhook controls. */ async ({
+  page,
+}) => {
   await mockViewerRepositories(page);
   await page.goto('/repositories?repository=repository-1');
 
@@ -71,7 +93,9 @@ test('viewer cannot access repository webhook controls', async ({ page }) => {
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toHaveCount(0);
 });
 
-test('viewer browses assigned repositories without administration actions', async ({ page }, testInfo) => {
+test('viewer browses assigned repositories without administration actions', /** Verifies viewer browses assigned repositories without administration actions. */ async ({
+  page,
+}, testInfo) => {
   await mockViewerRepositories(page);
   await page.goto('/repositories');
 
@@ -136,82 +160,123 @@ test('viewer browses assigned repositories without administration actions', asyn
 
   await page.goto('/repositories/repository-1?source=detail#settings');
   await expect
-    .poll(() => {
-      const url = new URL(page.url());
-      return `${url.pathname}|${url.searchParams.get('source')}|${url.hash}`;
-    })
+    .poll(
+      /** Reads the observable state until the browser assertion settles. */ () => {
+        const url = new URL(page.url());
+        return `${url.pathname}|${url.searchParams.get('source')}|${url.hash}`;
+      },
+    )
     .toBe('/repositories/repository-1|detail|#settings');
   await expect(page.getByRole('heading', { name: 'Synchronization' })).toBeVisible();
 
   await page.goto('/admin/repositories/repository-1?source=legacy#details');
   await expect
-    .poll(() => {
-      const url = new URL(page.url());
-      return `${url.pathname}|${url.searchParams.get('source')}|${url.hash}`;
-    })
+    .poll(
+      /** Reads the observable state until the browser assertion settles. */ () => {
+        const url = new URL(page.url());
+        return `${url.pathname}|${url.searchParams.get('source')}|${url.hash}`;
+      },
+    )
     .toBe('/repositories/repository-1|legacy|#details');
   await page.setViewportSize({ height: 844, width: 390 });
   await expect(page.getByRole('heading', { name: 'Synchronization' })).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .poll(
+      /** Evaluates `page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)` when expect .poll invokes this callback. */ () =>
+        page.evaluate(
+          /** Reads or updates browser state for the repository navigation scenario. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+    )
     .toBe(true);
   await page.screenshot({ path: testInfo.outputPath('viewer-repository-mobile.png'), fullPage: true });
 });
 
-test('administrator refreshes renamed repository metadata from the provider', async ({ page }, testInfo) => {
+test('administrator refreshes renamed repository metadata from the provider', /** Verifies administrator refreshes renamed repository metadata from the provider. */ async ({
+  page,
+}, testInfo) => {
   let releaseRefresh: (() => void) | undefined;
   let refreshAttempts = 0;
-  const refreshResponse = new Promise<void>((resolve) => {
-    releaseRefresh = resolve;
-  });
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
+  const refreshResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseRefresh = resolve;
+    },
   );
-  await page.route('**/api/v1/repositories/repository-1/refresh', async (route) => {
-    refreshAttempts += 1;
-    if (refreshAttempts > 1) {
-      await route.fulfill({ json: { message: 'Provider repository not found.' }, status: 404 });
-      return;
-    }
-    await refreshResponse;
-    await route.fulfill({
-      json: {
-        ...repository,
-        name: 'repovio',
-        owner: 'new-owner',
-        url: 'https://github.com/new-owner/repovio',
-      },
-    });
-  });
-  await page.route('**/api/v1/repositories/repository-1/workflow-filters', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/repositories/repository-1/memberships', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/repositories/webhook-configurations', (route) =>
-    route.fulfill({
-      json: [
-        {
-          callbackUrl: 'https://repovio.example.test/api/webhooks/github/repository-1',
-          configured: false,
-          lastDeliveryAt: null,
-          providerType: 'GITHUB',
-          repositoryId: 'repository-1',
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
+  );
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/refresh',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/refresh`. */ async (route) => {
+      refreshAttempts += 1;
+      if (refreshAttempts > 1) {
+        await route.fulfill({ json: { message: 'Provider repository not found.' }, status: 404 });
+        return;
+      }
+      await refreshResponse;
+      await route.fulfill({
+        json: {
+          ...repository,
+          name: 'repovio',
+          owner: 'new-owner',
+          url: 'https://github.com/new-owner/repovio',
         },
-      ],
-    }),
+      });
+    },
   );
-  await page.route(/\/api\/v1\/users(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 0 } } }),
+  await page.route(
+    '**/api/v1/repositories/repository-1/workflow-filters',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/workflow-filters`. */ (route) =>
+      route.fulfill({ json: [] }),
   );
-  await page.route('**/api/v1/repositories/repository-1', (route) => route.fulfill({ json: repository }));
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) => {
-    expect(new URL(route.request().url()).searchParams.get('fields')).not.toContain('webhook');
-    return route.fulfill({
-      json: {
-        items: [repository],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
-      },
-    });
-  });
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/repositories/webhook-configurations',
+    /** Supplies the mocked response for `/api/v1/repositories/webhook-configurations`. */ (route) =>
+      route.fulfill({
+        json: [
+          {
+            callbackUrl: 'https://repovio.example.test/api/webhooks/github/repository-1',
+            configured: false,
+            lastDeliveryAt: null,
+            providerType: 'GITHUB',
+            repositoryId: 'repository-1',
+          },
+        ],
+      }),
+  );
+  await page.route(
+    /\/api\/v1\/users(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 0 } } }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({ json: repository }),
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) => {
+      expect(new URL(route.request().url()).searchParams.get('fields')).not.toContain('webhook');
+      return route.fulfill({
+        json: {
+          items: [repository],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
+        },
+      });
+    },
+  );
 
   await page.goto('/repositories?repository=repository-1');
 
@@ -235,14 +300,19 @@ test('administrator refreshes renamed repository metadata from the provider', as
   ).toBeVisible();
 });
 
-test('administrator configures a webhook for one repository', async ({ page }, testInfo) => {
+test('administrator configures a webhook for one repository', /** Verifies administrator configures a webhook for one repository. */ async ({
+  page,
+}, testInfo) => {
   let configured = false;
   let requestFails = false;
   let savedSecret = '';
   let releaseSave: (() => void) | undefined;
-  const saveResponse = new Promise<void>((resolve) => {
-    releaseSave = resolve;
-  });
+  const saveResponse = new Promise<void>(
+    /** Retains the response resolver so this test controls request completion. */ (resolve) => {
+      releaseSave = resolve;
+    },
+  );
+  /** Builds channel-specific credentials and options, omitting unchanged configuration. */
   const configuration = () => ({
     callbackUrl: 'https://repovio.example.test/api/webhooks/github/repository-1',
     configured,
@@ -252,41 +322,69 @@ test('administrator configures a webhook for one repository', async ({ page }, t
   });
 
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.addInitScript(() => window.localStorage.setItem('repovio.access-token', 'playwright-access-token'));
-  await page.route('**/api/v1/auth/me', (route) =>
-    route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
+  await page.addInitScript(
+    /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
+      window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
   );
-  await page.route('**/api/v1/repositories/webhook-configurations', (route) =>
-    route.fulfill({ json: [configuration()] }),
+  await page.route(
+    '**/api/v1/auth/me',
+    /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
+      route.fulfill({ json: { id: 'playwright-admin', role: 'SYSTEM_ADMIN', username: 'playwright' } }),
   );
-  await page.route('**/api/v1/repositories/repository-1/webhook-configuration', async (route) => {
-    if (route.request().method() === 'DELETE') {
-      configured = false;
-      await route.fulfill({ status: 204 });
-      return;
-    }
-    savedSecret = (route.request().postDataJSON() as { webhookSecret: string }).webhookSecret;
-    if (!configured) await saveResponse;
-    if (requestFails) {
-      await route.fulfill({ json: { message: 'failed' }, status: 500 });
-      return;
-    }
-    configured = true;
-    await route.fulfill({ json: configuration() });
-  });
-  await page.route('**/api/v1/repositories/repository-1/workflow-filters', (route) => route.fulfill({ json: [] }));
-  await page.route('**/api/v1/repositories/repository-1/memberships', (route) => route.fulfill({ json: [] }));
-  await page.route(/\/api\/v1\/users(?:\?.*)?$/, (route) =>
-    route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 0 } } }),
+  await page.route(
+    '**/api/v1/repositories/webhook-configurations',
+    /** Supplies the mocked response for `/api/v1/repositories/webhook-configurations`. */ (route) =>
+      route.fulfill({ json: [configuration()] }),
   );
-  await page.route('**/api/v1/repositories/repository-1', (route) => route.fulfill({ json: repository }));
-  await page.route(/\/api\/v1\/repositories(?:\?.*)?$/, (route) =>
-    route.fulfill({
-      json: {
-        items: [repository],
-        meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
-      },
-    }),
+  await page.route(
+    '**/api/v1/repositories/repository-1/webhook-configuration',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/webhook-configuration`. */ async (
+      route,
+    ) => {
+      if (route.request().method() === 'DELETE') {
+        configured = false;
+        await route.fulfill({ status: 204 });
+        return;
+      }
+      savedSecret = (route.request().postDataJSON() as { webhookSecret: string }).webhookSecret;
+      if (!configured) await saveResponse;
+      if (requestFails) {
+        await route.fulfill({ json: { message: 'failed' }, status: 500 });
+        return;
+      }
+      configured = true;
+      await route.fulfill({ json: configuration() });
+    },
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/workflow-filters',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/workflow-filters`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1/memberships',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1/memberships`. */ (route) =>
+      route.fulfill({ json: [] }),
+  );
+  await page.route(
+    /\/api\/v1\/users(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 0 } } }),
+  );
+  await page.route(
+    '**/api/v1/repositories/repository-1',
+    /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
+      route.fulfill({ json: repository }),
+  );
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Supplies the mocked response for the intercepted request. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [repository],
+          meta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 },
+        },
+      }),
   );
 
   await page.goto('/repositories');
@@ -322,12 +420,19 @@ test('administrator configures a webhook for one repository', async ({ page }, t
   await expect(dialog.getByText('The webhook secret could not be updated.')).toBeVisible();
   requestFails = false;
 
-  page.once('dialog', (confirmation) => confirmation.accept());
+  page.once(
+    'dialog',
+    /** Evaluates `confirmation.accept()` when page.once invokes this callback. */ (confirmation) =>
+      confirmation.accept(),
+  );
   await dialog.getByRole('button', { name: 'Remove configuration' }).click();
   await expect(dialog.getByText('Not configured', { exact: true })).toBeVisible();
   await expect(page.getByText('Not configured', { exact: true }).first()).toBeVisible();
 
-  await page.evaluate(() => window.localStorage.setItem('nuxt-color-mode', 'light'));
+  await page.evaluate(
+    /** Reads or updates browser state for the repository navigation scenario. */ () =>
+      window.localStorage.setItem('nuxt-color-mode', 'light'),
+  );
   await page.setViewportSize({ height: 844, width: 390 });
   await page.reload();
   await expect(page.locator('html')).toHaveClass(/light/);

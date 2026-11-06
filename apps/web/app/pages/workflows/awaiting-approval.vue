@@ -126,33 +126,40 @@ const loadError = ref(false);
 const loading = ref(true);
 const runs = ref<DashboardWorkflowRun[]>([]);
 const search = ref('');
-const columns = computed<TableColumn<DashboardWorkflowRun>[]>(() => [
-  { accessorKey: 'displayTitle', header: t('dashboard.workflow'), id: 'displayTitle' },
-  { header: t('repositories.columns.name'), id: 'repository' },
-  { header: t('repositories.addSteps.provider'), id: 'provider' },
-  { accessorKey: 'providerCreatedAt', header: t('awaitingApproval.waitingSince'), id: 'providerCreatedAt' },
-  { header: t('repositories.columns.actions'), id: 'actions' },
-]);
+const columns = computed<TableColumn<DashboardWorkflowRun>[]>(
+  /** Derives columns from the current reactive dependencies. */ () => [
+    { accessorKey: 'displayTitle', header: t('dashboard.workflow'), id: 'displayTitle' },
+    { header: t('repositories.columns.name'), id: 'repository' },
+    { header: t('repositories.addSteps.provider'), id: 'provider' },
+    { accessorKey: 'providerCreatedAt', header: t('awaitingApproval.waitingSince'), id: 'providerCreatedAt' },
+    { header: t('repositories.columns.actions'), id: 'actions' },
+  ],
+);
 
-useHead({ title: computed(() => t('awaitingApproval.title')) });
-
-const filteredRuns = computed(() => {
-  const value = search.value.trim().toLocaleLowerCase();
-  if (!value) return runs.value;
-  return runs.value.filter((run) =>
-    [
-      run.displayTitle,
-      run.workflowName,
-      run.repository.owner,
-      run.repository.name,
-      run.provider.displayName,
-      run.provider.providerType,
-    ]
-      .join(' ')
-      .toLocaleLowerCase()
-      .includes(value),
-  );
+useHead({
+  title: computed(/** Derives title from the current reactive dependencies. */ () => t('awaitingApproval.title')),
 });
+
+const filteredRuns = computed(
+  /** Derives filtered runs from the current reactive dependencies. */ () => {
+    const value = search.value.trim().toLocaleLowerCase();
+    if (!value) return runs.value;
+    return runs.value.filter(
+      /** Keeps entries matching the filteredRuns predicate. */ (run) =>
+        [
+          run.displayTitle,
+          run.workflowName,
+          run.repository.owner,
+          run.repository.name,
+          run.provider.displayName,
+          run.provider.providerType,
+        ]
+          .join(' ')
+          .toLocaleLowerCase()
+          .includes(value),
+    );
+  },
+);
 
 /** Load all approval-gated workflow runs visible to the current user. */
 async function loadRuns(): Promise<void> {
@@ -167,5 +174,5 @@ async function loadRuns(): Promise<void> {
   }
 }
 
-onMounted(() => void loadRuns());
+onMounted(/** Initializes component subscriptions and data after mounting. */ () => void loadRuns());
 </script>

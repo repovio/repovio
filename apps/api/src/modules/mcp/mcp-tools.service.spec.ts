@@ -4,8 +4,8 @@ import type { RepositoriesQueryService } from '../repositories/repositories-quer
 import type { WorkflowRunsQueryService } from '../workflow-runs/workflow-runs-query.service.js';
 import { McpToolsService } from './mcp-tools.service.js';
 
-describe('McpToolsService', () => {
-  it('uses the centralized actionable approval query for items and totals', async () => {
+describe('McpToolsService', /** Groups scenarios for McpToolsService. */ () => {
+  it('uses the centralized actionable approval query for items and totals', /** Verifies uses the centralized actionable approval query for items and totals. */ async () => {
     const ability = {};
     const workflowRuns = {
       findAwaitingApproval: jest

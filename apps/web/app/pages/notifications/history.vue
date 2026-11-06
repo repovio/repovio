@@ -1,15 +1,30 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div class="flex flex-wrap items-center justify-end gap-2 border-b border-default p-3 sm:px-4">
-      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts />
-      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts />
+    <div
+      class="flex min-w-0 flex-wrap items-center gap-2 border-b border-default p-3 sm:justify-end sm:px-4"
+      data-table-toolbar
+    >
+      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+        </template>
+      </QTableSorting>
+      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+        </template>
+      </QTableFiltering>
       <QTableOptions
         v-model:column-order="columnOrder"
         v-model:column-pinning="columnPinning"
         v-model:invisible-columns="columnVisibility"
         :columns="columnDefinition"
         shortcuts
-      />
+      >
+        <template #trigger="{ open, toggle }">
+          <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+        </template>
+      </QTableOptions>
     </div>
     <UAlert
       v-if="tableError"

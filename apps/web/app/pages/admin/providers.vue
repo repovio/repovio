@@ -9,15 +9,27 @@
     :title="$t('providers.title')"
   >
     <template #actions>
-      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts />
-      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts />
+      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+        </template>
+      </QTableSorting>
+      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+        </template>
+      </QTableFiltering>
       <QTableOptions
         v-model:column-order="columnOrder"
         v-model:column-pinning="columnPinning"
         v-model:invisible-columns="columnVisibility"
         :columns="columnDefinition"
         shortcuts
-      />
+      >
+        <template #trigger="{ open, toggle }">
+          <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+        </template>
+      </QTableOptions>
       <UButton icon="i-lucide-plus" :aria-label="$t('providers.add')" @click="openAddDialog">
         <span class="hidden sm:inline">{{ $t('providers.add') }}</span>
       </UButton>

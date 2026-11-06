@@ -22,3 +22,33 @@ h3,
 h4 {
   font-family: var(--font-display);
 }
+
+/* Query Kit popovers are portaled outside the page toolbar. */
+.qk-table-sorting-popover,
+.qk-table-filtering-popover,
+.qk-table-options-popover {
+  max-width: calc(100vw - 1rem);
+  max-height: var(--reka-popover-content-available-height);
+  overflow-y: auto;
+}
+
+@media (width < 640px) {
+  :is([data-page-toolbar], [data-table-toolbar], [data-page-navigation]) :is(button, input, a) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .qk-table-filtering-popover li {
+    flex-wrap: wrap;
+  }
+
+  .qk-table-filtering-popover li > span:first-child {
+    flex-basis: 100%;
+  }
+
+  .qk-table-filtering-popover .qk-table-filtering-value {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1;
+  }
+}

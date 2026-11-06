@@ -11,7 +11,7 @@
     <template #actions>
       <UInput
         v-model="search"
-        class="w-40 sm:w-56"
+        class="w-full sm:w-56"
         icon="i-lucide-search"
         :aria-label="$t('workItems.search')"
         :placeholder="$t('workItems.searchPlaceholder')"
@@ -19,30 +19,54 @@
       <USelectMenu
         v-model="selectedLabels"
         multiple
-        class="w-40"
+        class="min-w-0 flex-1 basis-40 sm:w-40 sm:flex-none"
         :items="filterOptions.labels"
         :placeholder="$t('workItems.labels')"
         :aria-label="$t('workItems.labels')"
       />
-      <UInput v-model="updatedFrom" class="w-36" type="date" :aria-label="$t('workItems.updatedFrom')" />
-      <UInput v-model="updatedTo" class="w-36" type="date" :aria-label="$t('workItems.updatedTo')" />
-      <UButton
-        color="neutral"
-        icon="i-lucide-refresh-cw"
-        variant="soft"
-        :aria-label="$t('dashboard.refresh')"
-        :loading="loading || summaryLoading"
-        @click="refreshAll"
+      <UInput
+        v-model="updatedFrom"
+        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
+        type="date"
+        :aria-label="$t('workItems.updatedFrom')"
       />
-      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts />
-      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts />
-      <QTableOptions
-        v-model:column-order="columnOrder"
-        v-model:column-pinning="columnPinning"
-        v-model:invisible-columns="columnVisibility"
-        :columns="columnDefinition"
-        shortcuts
+      <UInput
+        v-model="updatedTo"
+        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
+        type="date"
+        :aria-label="$t('workItems.updatedTo')"
       />
+      <div class="flex flex-wrap items-center gap-2">
+        <UButton
+          color="neutral"
+          icon="i-lucide-refresh-cw"
+          variant="soft"
+          :aria-label="$t('dashboard.refresh')"
+          :loading="loading || summaryLoading"
+          @click="refreshAll"
+        />
+        <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+          <template #trigger="{ active, open, toggle }">
+            <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+          </template>
+        </QTableSorting>
+        <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+          <template #trigger="{ active, open, toggle }">
+            <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+          </template>
+        </QTableFiltering>
+        <QTableOptions
+          v-model:column-order="columnOrder"
+          v-model:column-pinning="columnPinning"
+          v-model:invisible-columns="columnVisibility"
+          :columns="columnDefinition"
+          shortcuts
+        >
+          <template #trigger="{ open, toggle }">
+            <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+          </template>
+        </QTableOptions>
+      </div>
     </template>
 
     <div class="p-4 sm:p-6">

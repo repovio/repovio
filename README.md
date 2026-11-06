@@ -12,7 +12,7 @@ and sends notifications without modifying provider resources.
 
 The repository contains the API and web dashboard. Ongoing work is tracked in [GitHub Issues](https://github.com/repovio/repovio/issues).
 
-See [branding upgrade](docs/branding-upgrade.md) before upgrading an existing deployment.
+See [branding upgrade](https://github.com/repovio/docs/blob/75e5fd90af4384cb85259772d5bd0e92ab5aade7/en/docs/next/branding-upgrade.md) before upgrading an existing deployment.
 Customize colors, typography, logos, metadata, links, and PWA icons through
 [runtime theming and branding](docs/theming.md); environment variables and read-only mounts work without image rebuilds.
 

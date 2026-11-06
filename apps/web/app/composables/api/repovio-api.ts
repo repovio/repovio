@@ -33,12 +33,14 @@ import type {
   PullRequestSummary,
   Repository,
   RepositoryDetail,
+  RepositoryGroup,
   RepositoryHealth,
   RepositoryMembership,
   RepositorySyncJobSummary,
   RepositoryWebhookConfiguration,
   ResetUserPassword,
   SaveGitHubApp,
+  SaveUserGroup,
   SecurityAlert,
   SecurityAlertFilterOptions,
   SecurityAlertSummary,
@@ -47,6 +49,7 @@ import type {
   UpdateNotificationChannel,
   UpdateProviderAccount,
   User,
+  UserGroup,
   WorkflowFilter,
   WorkflowRun,
   WorkflowRunTrendBucket,
@@ -331,7 +334,58 @@ export function useRepovioApi() {
       update: (input: UpdateApplicationSettings): Promise<AxiosResponse<ApplicationSettings>> =>
         api.patch(apiEndpoints.settings.base, input),
     },
+    userGroups: {
+      /** Creates a local group. */
+      create: (input: SaveUserGroup): Promise<AxiosResponse<UserGroup>> => api.post(apiEndpoints.userGroups, input),
+      /** Renames a group without altering its grants. */
+      rename: (id: string, input: SaveUserGroup): Promise<AxiosResponse<UserGroup>> =>
+        api.put(`${apiEndpoints.userGroups}/${id}`, input),
+      /** Deletes a group and only its inherited grants. */
+      delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.userGroups}/${id}`),
+      /** Searches groups with server-side pagination. */
+      search: (name: string, page = 1): Promise<AxiosResponse<PaginatedResource<UserGroup>>> =>
+        api.get(apiEndpoints.userGroups, {
+          params: {
+            page,
+            perPage: 10,
+            where: JSON.stringify({ name: { contains: name, mode: 'insensitive' } }),
+            orderBy: JSON.stringify([{ name: 'asc' }, { id: 'asc' }]),
+          },
+        }),
+      /** Lists the selected group's members with server-side pagination. */
+      members: (id: string, page = 1): Promise<AxiosResponse<PaginatedResource<User>>> =>
+        api.get(`${apiEndpoints.userGroups}/${id}/members`, { params: { page, perPage: 10 } }),
+      /** Adds an existing user idempotently. */
+      addMember: (id: string, userId: string): Promise<AxiosResponse<void>> =>
+        api.put(`${apiEndpoints.userGroups}/${id}/members/${userId}`),
+      /** Removes membership while preserving other grants. */
+      removeMember: (id: string, userId: string): Promise<AxiosResponse<void>> =>
+        api.delete(`${apiEndpoints.userGroups}/${id}/members/${userId}`),
+      /** Lists repository group assignments. */
+      repositoryGrants: (repositoryId: string): Promise<AxiosResponse<RepositoryGroup[]>> =>
+        api.get(`${apiEndpoints.repositories}/${repositoryId}/group-memberships`),
+      /** Sets one group's inherited repository role. */
+      setRepositoryGrant: (
+        repositoryId: string,
+        groupId: string,
+        role: RepositoryGroup['role'],
+      ): Promise<AxiosResponse<RepositoryGroup>> =>
+        api.put(`${apiEndpoints.repositories}/${repositoryId}/group-memberships/${groupId}`, { role }),
+      /** Removes a group's repository grant. */
+      removeRepositoryGrant: (repositoryId: string, groupId: string): Promise<AxiosResponse<void>> =>
+        api.delete(`${apiEndpoints.repositories}/${repositoryId}/group-memberships/${groupId}`),
+    },
     users: {
+      /** Searches users without silently truncating installations with more than 100 accounts. */
+      search: (username: string, page = 1): Promise<AxiosResponse<PaginatedResource<User>>> =>
+        api.get(apiEndpoints.users, {
+          params: {
+            page,
+            perPage: 10,
+            where: JSON.stringify({ username: { contains: username, mode: 'insensitive' } }),
+            orderBy: JSON.stringify([{ username: 'asc' }, { id: 'asc' }]),
+          },
+        }),
       /** Creates a local account without linking an external identity. */
       create: (input: CreateUser): Promise<AxiosResponse<User>> => api.post(apiEndpoints.users, input),
       /** Replaces a local account password and invalidates its JWT sessions. */

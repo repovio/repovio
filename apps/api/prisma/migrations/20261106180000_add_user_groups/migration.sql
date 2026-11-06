@@ -53,4 +53,3 @@ ALTER TABLE "repository_group_grants" ADD CONSTRAINT "repository_group_grants_gr
 
 -- AddForeignKey
 ALTER TABLE "repository_group_grants" ADD CONSTRAINT "repository_group_grants_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "repositories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

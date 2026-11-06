@@ -8,6 +8,7 @@ import {
   HttpCode,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -15,6 +16,7 @@ import {
   Res,
   StreamableFile,
 } from '@nestjs/common';
+import { ApiNoContentResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
 import { ApiCreateUserSchema, ApiResetUserPasswordSchema, ApiUserSchema } from '@repovio/schemas';
 import bcrypt from 'bcrypt';
@@ -143,10 +145,12 @@ export class UsersController {
    */
   @Put(':id/password')
   @HttpCode(204)
+  @ApiNoContentResponse()
+  @ApiNotFoundResponse({ description: 'User not found.' })
   @ApiErrorResponses()
   async resetPassword(
     @Req() request: { user: AuthenticatedUser },
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: ResetUserPasswordDto,
   ): Promise<void> {
     this.assertAdmin(request.user);

@@ -91,6 +91,8 @@ On a new installation, open Repovio in a browser and complete the one-time
 
 ## Commands
 
+Read [coding guidelines](docs/coding-guidelines.md) before contributing code, tests, scripts, or configuration.
+
 ```bash
 pnpm lint
 pnpm typecheck

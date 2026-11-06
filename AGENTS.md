@@ -39,9 +39,9 @@
   quotes, semicolons, and trailing commas where applicable.
 - Keep imports organized and avoid default exports except where a framework
   convention requires them.
-- Add JSDoc to public classes, functions, methods, exported types whose intent
-  is non-obvious, and Nest providers/controllers. Describe parameters, return
-  values, and thrown exceptions when applicable.
+- Before source, test, script, or configuration changes, read
+  [coding guidelines](docs/coding-guidelines.md) for documentation coverage,
+  Vue layout, exclusions, and verification commands.
 - Prefer explicit DTOs, validation, and return types at public boundaries.
 
 ## API conventions

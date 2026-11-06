@@ -13,6 +13,16 @@ future visits.
 English is the deterministic default and fallback. When a browser preference or saved cookie does not identify a
 supported locale, Repovio renders English. Date, time, and number formatting use the selected locale.
 
+## Language flags
+
+The language menu displays decorative local SVG flags alongside native language names. The locale-to-country mapping is
+`en` → GB, `de` → DE, `es` → ES, `fr` → FR, `it` → IT, `nl` → NL, `pl` → PL, and `pt` → PT.
+Language names remain the accessible labels; flags do not replace them.
+
+Assets in `apps/web/public/flags` are from [flag-icons v7.5.0](https://github.com/lipis/flag-icons/tree/v7.5.0),
+under the included MIT license. They require no external image requests. When adding a locale, add its flag asset and
+mapping in `useLocales` as well.
+
 ## Adding or updating a locale
 
 1. Add or update `apps/web/i18n/locales/<locale>.json` using `en.json` as the complete key reference.

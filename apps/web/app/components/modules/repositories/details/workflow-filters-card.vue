@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-4' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositoryDetails.workflowFilters') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositoryDetails.workflowFiltersDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositoryDetails.workflowFilters') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositoryDetails.workflowFiltersDescription') }}
+        </p>
       </div>
     </template>
 

@@ -3,8 +3,12 @@
     <template #header>
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="font-semibold">{{ $t('settings.oidc.title') }}</h2>
-          <p class="text-sm text-muted">{{ $t('settings.oidc.description') }}</p>
+          <h2 class="font-semibold">
+            {{ $t('settings.oidc.title') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t('settings.oidc.description') }}
+          </p>
         </div>
         <UBadge variant="subtle" :color="config?.enabled ? 'success' : 'neutral'">
           {{ config?.enabled ? $t('settings.oidc.enabled') : $t('settings.oidc.disabled') }}
@@ -56,8 +60,12 @@
 
       <div class="flex items-center justify-between gap-4 rounded-md bg-elevated p-4">
         <div>
-          <p class="font-medium">{{ $t('settings.oidc.enable') }}</p>
-          <p class="text-sm text-muted">{{ $t('settings.oidc.enableHelp') }}</p>
+          <p class="font-medium">
+            {{ $t('settings.oidc.enable') }}
+          </p>
+          <p class="text-sm text-muted">
+            {{ $t('settings.oidc.enableHelp') }}
+          </p>
         </div>
         <USwitch v-model="form.enabled" :disabled="saving" />
       </div>
@@ -135,7 +143,9 @@
       </div>
 
       <div v-if="config?.observedGroups.length" class="space-y-2">
-        <p class="text-sm font-medium">{{ $t('settings.oidc.observedGroups') }}</p>
+        <p class="text-sm font-medium">
+          {{ $t('settings.oidc.observedGroups') }}
+        </p>
         <div class="flex flex-wrap gap-2">
           <UBadge v-for="group in config.observedGroups" :key="group" color="neutral" variant="subtle">
             {{ group }}

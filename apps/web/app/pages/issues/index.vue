@@ -1,4 +1,6 @@
-<template><ModulesWorkItemsTablePage kind="issue" /></template>
+<template>
+  <ModulesWorkItemsTablePage kind="issue" />
+</template>
 
 <script setup lang="ts">
 definePageMeta({ fullWidth: true });

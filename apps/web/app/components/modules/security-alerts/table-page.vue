@@ -121,7 +121,9 @@
         </UBadge>
       </template>
       <template #state-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ $t(`securityAlerts.states.${row.original.state}`) }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ $t(`securityAlerts.states.${row.original.state}`) }}
+        </UBadge>
       </template>
       <template #providerUpdatedAt-cell="{ row }">
         <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>

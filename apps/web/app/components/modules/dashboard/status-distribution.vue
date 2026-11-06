@@ -2,8 +2,12 @@
   <UCard class="h-full">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('dashboard.statusDistribution') }}</h2>
-        <p class="mt-1 text-xs text-muted">{{ $t('dashboard.statusDistributionDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('dashboard.statusDistribution') }}
+        </h2>
+        <p class="mt-1 text-xs text-muted">
+          {{ $t('dashboard.statusDistributionDescription') }}
+        </p>
       </div>
     </template>
 
@@ -29,11 +33,15 @@
             :stroke-dasharray="`${segment.percentage} ${100 - segment.percentage}`"
             :stroke-dashoffset="-segment.offset"
           >
-            <title>{{ segment.label }}: {{ segment.value }}</title>
+            <title>
+              {{ segment.label }}: {{ segment.value }}
+            </title>
           </circle>
         </svg>
         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <strong class="text-2xl tabular-nums">{{ formatNumber(summary.completedCount) }}</strong>
+          <strong class="text-2xl tabular-nums">
+            {{ formatNumber(summary.completedCount) }}
+          </strong>
           <span class="text-xs text-muted">{{ $t('dashboard.runsTotal') }}</span>
         </div>
       </div>
@@ -44,11 +52,15 @@
             <i class="size-2 shrink-0 rounded-full" :class="segment.dotClass" />
             <span class="truncate">{{ segment.label }}</span>
           </span>
-          <strong class="tabular-nums">{{ formatNumber(segment.value) }}</strong>
+          <strong class="tabular-nums">
+            {{ formatNumber(segment.value) }}
+          </strong>
         </li>
       </ul>
     </div>
-    <p v-else class="py-16 text-center text-sm text-muted">{{ $t('dashboard.noStatusData') }}</p>
+    <p v-else class="py-16 text-center text-sm text-muted">
+      {{ $t('dashboard.noStatusData') }}
+    </p>
   </UCard>
 </template>
 

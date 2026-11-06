@@ -40,7 +40,9 @@
             :x="point.x - barWidth / 2"
             :y="point.successY"
           >
-            <title>{{ bucketTooltip(point.bucket) }}</title>
+            <title>
+              {{ bucketTooltip(point.bucket) }}
+            </title>
           </rect>
           <rect
             v-for="point in chartPoints"
@@ -53,7 +55,9 @@
             :x="point.x - barWidth / 2"
             :y="point.errorY"
           >
-            <title>{{ bucketTooltip(point.bucket) }}</title>
+            <title>
+              {{ bucketTooltip(point.bucket) }}
+            </title>
           </rect>
           <text
             v-for="label in xLabels"
@@ -80,7 +84,9 @@
       </span>
     </div>
   </div>
-  <p v-else class="py-16 text-center text-sm text-muted">{{ $t('dashboard.noTrendData') }}</p>
+  <p v-else class="py-16 text-center text-sm text-muted">
+    {{ $t('dashboard.noTrendData') }}
+  </p>
 </template>
 
 <script setup lang="ts">

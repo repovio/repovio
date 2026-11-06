@@ -1,4 +1,6 @@
-<template><ModulesWorkItemsTablePage kind="pull-request" /></template>
+<template>
+  <ModulesWorkItemsTablePage kind="pull-request" />
+</template>
 
 <script setup lang="ts">
 definePageMeta({ fullWidth: true });

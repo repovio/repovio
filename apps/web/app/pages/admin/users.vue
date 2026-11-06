@@ -64,7 +64,9 @@
             :username="row.original.username"
           />
           <div class="min-w-0">
-            <p class="truncate font-medium">{{ getUserDisplayName(row.original) }}</p>
+            <p class="truncate font-medium">
+              {{ getUserDisplayName(row.original) }}
+            </p>
             <p v-if="getUserDisplayName(row.original) !== row.original.username" class="truncate text-xs text-muted">
               @{{ row.original.username }}
             </p>
@@ -72,7 +74,9 @@
         </div>
       </template>
       <template #role-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ $t(`roles.${row.original.role}`) }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ $t(`roles.${row.original.role}`) }}
+        </UBadge>
       </template>
       <template #authProvider-cell="{ row }">
         <UBadge variant="subtle" :color="row.original.authProvider === 'OIDC' ? 'info' : 'neutral'">

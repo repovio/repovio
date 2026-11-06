@@ -22,15 +22,23 @@
             <div class="flex items-start gap-3">
               <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-refresh-cw" aria-hidden="true" />
               <div class="min-w-0">
-                <h2 class="text-lg font-semibold">{{ $t('jobs.repositorySync') }}</h2>
-                <p class="mt-1 text-sm text-muted">{{ $t('jobs.description') }}</p>
+                <h2 class="text-lg font-semibold">
+                  {{ $t('jobs.repositorySync') }}
+                </h2>
+                <p class="mt-1 text-sm text-muted">
+                  {{ $t('jobs.description') }}
+                </p>
               </div>
             </div>
 
             <div class="grid grid-cols-2 overflow-hidden rounded-lg sm:grid-cols-5" :aria-label="$t('jobs.summary')">
               <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-elevated px-4 py-3">
-                <p class="text-xs uppercase tracking-wide text-muted">{{ metric.label }}</p>
-                <p class="mt-1 text-2xl font-semibold tabular-nums">{{ metric.value }}</p>
+                <p class="text-xs uppercase tracking-wide text-muted">
+                  {{ metric.label }}
+                </p>
+                <p class="mt-1 text-2xl font-semibold tabular-nums">
+                  {{ metric.value }}
+                </p>
               </div>
             </div>
           </div>
@@ -61,12 +69,18 @@
       :ui="{ th: 'first:pl-8 bg-neutral-100 dark:bg-neutral-950/20', td: 'first:pl-8' }"
     >
       <template #repository-cell="{ row }">
-        <p class="font-medium">{{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}</p>
+        <p class="font-medium">
+          {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
+        </p>
       </template>
       <template #provider-cell="{ row }">
         <div>
-          <p>{{ row.original.providerName }}</p>
-          <p class="text-xs text-muted">{{ row.original.providerType }}</p>
+          <p>
+            {{ row.original.providerName }}
+          </p>
+          <p class="text-xs text-muted">
+            {{ row.original.providerType }}
+          </p>
         </div>
       </template>
       <template #status-cell="{ row }">
@@ -83,7 +97,9 @@
       </template>
       <template #progress-cell="{ row }">
         <div v-if="row.original.status === 'RUNNING'" class="min-w-40 space-y-1.5">
-          <p class="text-xs text-muted">{{ progressLabel(row.original) }}</p>
+          <p class="text-xs text-muted">
+            {{ progressLabel(row.original) }}
+          </p>
           <UProgress
             v-if="row.original.progressTotal !== null && row.original.progressTotal > 0"
             size="xs"

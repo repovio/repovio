@@ -81,7 +81,9 @@
             )
           }}
         </UBadge>
-        <UBadge v-else color="neutral" variant="subtle">{{ $t('repositories.webhook.unavailable') }}</UBadge>
+        <UBadge v-else color="neutral" variant="subtle">
+          {{ $t('repositories.webhook.unavailable') }}
+        </UBadge>
       </template>
       <template #members-cell="{ row }">
         <UAvatarGroup size="sm" :max="5">

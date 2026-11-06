@@ -2,8 +2,12 @@
   <UCard>
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositoryDetails.syncStatus.title') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositoryDetails.syncStatus.description') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositoryDetails.syncStatus.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositoryDetails.syncStatus.description') }}
+        </p>
       </div>
     </template>
 
@@ -12,19 +16,25 @@
         <p class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositoryDetails.syncStatus.lastSuccess') }}
         </p>
-        <p class="mt-1 text-sm">{{ lastSync }}</p>
+        <p class="mt-1 text-sm">
+          {{ lastSync }}
+        </p>
       </div>
       <div>
         <p class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositoryDetails.syncStatus.dataAge') }}
         </p>
-        <p class="mt-1 text-sm">{{ dataAge }}</p>
+        <p class="mt-1 text-sm">
+          {{ dataAge }}
+        </p>
       </div>
       <div>
         <p class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositoryDetails.syncStatus.job') }}
         </p>
-        <UBadge class="mt-1" variant="subtle" :color="statusColor">{{ statusLabel }}</UBadge>
+        <UBadge class="mt-1" variant="subtle" :color="statusColor">
+          {{ statusLabel }}
+        </UBadge>
       </div>
     </div>
 

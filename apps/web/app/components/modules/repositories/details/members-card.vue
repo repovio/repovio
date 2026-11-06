@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-4' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositoryDetails.members') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositoryDetails.membersDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositoryDetails.members') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositoryDetails.membersDescription') }}
+        </p>
       </div>
     </template>
 
@@ -72,7 +76,9 @@
             :username="row.original.user.username"
           />
           <div class="min-w-0">
-            <p class="truncate">{{ getUserDisplayName(row.original.user) }}</p>
+            <p class="truncate">
+              {{ getUserDisplayName(row.original.user) }}
+            </p>
             <p
               v-if="getUserDisplayName(row.original.user) !== row.original.user.username"
               class="truncate text-xs text-muted"

@@ -48,7 +48,9 @@
         <span class="whitespace-nowrap text-sm">{{ formatDateTime(row.original.createdAt) }}</span>
       </template>
       <template #kind-cell="{ row }">
-        <UBadge color="neutral" variant="outline">{{ $t(`notifications.deliveryKinds.${row.original.kind}`) }}</UBadge>
+        <UBadge color="neutral" variant="outline">
+          {{ $t(`notifications.deliveryKinds.${row.original.kind}`) }}
+        </UBadge>
       </template>
       <template #eventType-cell="{ row }">
         <span>{{ row.original.eventType ? $t(`notifications.events.${row.original.eventType}`) : '—' }}</span>

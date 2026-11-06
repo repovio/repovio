@@ -30,42 +30,76 @@
     <div v-else-if="alert" class="space-y-6">
       <UCard>
         <div class="flex flex-wrap gap-2">
-          <UBadge color="neutral" variant="subtle">{{ $t(`securityAlerts.kindTitles.${alert.kind}`) }}</UBadge>
-          <UBadge color="neutral" variant="subtle">{{ $t(`securityAlerts.states.${alert.state}`) }}</UBadge>
-          <UBadge color="warning" variant="subtle">{{ $t(`securityAlerts.severities.${alert.severity}`) }}</UBadge>
+          <UBadge color="neutral" variant="subtle">
+            {{ $t(`securityAlerts.kindTitles.${alert.kind}`) }}
+          </UBadge>
+          <UBadge color="neutral" variant="subtle">
+            {{ $t(`securityAlerts.states.${alert.state}`) }}
+          </UBadge>
+          <UBadge color="warning" variant="subtle">
+            {{ $t(`securityAlerts.severities.${alert.severity}`) }}
+          </UBadge>
         </div>
         <dl class="mt-5 grid gap-4 text-sm sm:grid-cols-2">
           <div>
-            <dt class="text-muted">{{ $t('securityAlerts.columns.repository') }}</dt>
-            <dd>{{ alert.repositoryOwner }}/{{ alert.repositoryName }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.repository') }}
+            </dt>
+            <dd>
+              {{ alert.repositoryOwner }}/{{ alert.repositoryName }}
+            </dd>
           </div>
           <div>
-            <dt class="text-muted">{{ $t('securityAlerts.columns.updated') }}</dt>
-            <dd>{{ formatDateTime(alert.providerUpdatedAt) }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.updated') }}
+            </dt>
+            <dd>
+              {{ formatDateTime(alert.providerUpdatedAt) }}
+            </dd>
           </div>
           <div v-if="alert.packageName">
-            <dt class="text-muted">{{ $t('securityAlerts.columns.package') }}</dt>
-            <dd>{{ alert.packageName }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.package') }}
+            </dt>
+            <dd>
+              {{ alert.packageName }}
+            </dd>
           </div>
           <div v-if="alert.ruleId">
-            <dt class="text-muted">{{ $t('securityAlerts.columns.rule') }}</dt>
-            <dd>{{ alert.ruleId }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.rule') }}
+            </dt>
+            <dd>
+              {{ alert.ruleId }}
+            </dd>
           </div>
           <div v-if="alert.secretType">
-            <dt class="text-muted">{{ $t('securityAlerts.columns.secretType') }}</dt>
-            <dd>{{ alert.secretType }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.secretType') }}
+            </dt>
+            <dd>
+              {{ alert.secretType }}
+            </dd>
           </div>
           <div v-if="locationPath">
-            <dt class="text-muted">{{ $t('securityAlerts.columns.path') }}</dt>
-            <dd class="font-mono">{{ locationPath }}</dd>
+            <dt class="text-muted">
+              {{ $t('securityAlerts.columns.path') }}
+            </dt>
+            <dd class="font-mono">
+              {{ locationPath }}
+            </dd>
           </div>
         </dl>
       </UCard>
       <UCard>
         <template #header>
-          <h2 class="font-semibold">{{ $t('workItems.description') }}</h2>
+          <h2 class="font-semibold">
+            {{ $t('workItems.description') }}
+          </h2>
         </template>
-        <p class="whitespace-pre-wrap text-sm">{{ alert.description || $t('workItems.noDescription') }}</p>
+        <p class="whitespace-pre-wrap text-sm">
+          {{ alert.description || $t('workItems.noDescription') }}
+        </p>
       </UCard>
     </div>
   </LayoutPage>

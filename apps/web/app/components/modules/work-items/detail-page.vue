@@ -36,8 +36,11 @@
     <template v-else-if="item">
       <UCard>
         <div class="flex flex-wrap items-center gap-2">
+          <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -- Preserve inline text spacing. -->
           <UBadge color="neutral" variant="subtle">#{{ item.number }}</UBadge>
-          <UBadge color="neutral" variant="subtle">{{ $t(`workItems.states.${item.state}`) }}</UBadge>
+          <UBadge color="neutral" variant="subtle">
+            {{ $t(`workItems.states.${item.state}`) }}
+          </UBadge>
           <EnumsProviderTypeBadge variant="subtle" :value="item.providerType" />
           <UBadge
             v-if="'workflowApprovalRequired' in item && item.workflowApprovalRequired"
@@ -49,29 +52,53 @@
         </div>
         <dl class="mt-5 grid gap-4 text-sm sm:grid-cols-2">
           <div>
-            <dt class="text-muted">{{ $t('workItems.repository') }}</dt>
-            <dd>{{ item.repositoryOwner }}/{{ item.repositoryName }}</dd>
+            <dt class="text-muted">
+              {{ $t('workItems.repository') }}
+            </dt>
+            <dd>
+              {{ item.repositoryOwner }}/{{ item.repositoryName }}
+            </dd>
           </div>
           <div>
-            <dt class="text-muted">{{ $t('workItems.columns.author') }}</dt>
-            <dd>{{ item.author?.username ?? '—' }}</dd>
+            <dt class="text-muted">
+              {{ $t('workItems.columns.author') }}
+            </dt>
+            <dd>
+              {{ item.author?.username ?? '—' }}
+            </dd>
           </div>
           <div>
-            <dt class="text-muted">{{ $t('workItems.columns.created') }}</dt>
-            <dd>{{ formatDateTime(item.providerCreatedAt) }}</dd>
+            <dt class="text-muted">
+              {{ $t('workItems.columns.created') }}
+            </dt>
+            <dd>
+              {{ formatDateTime(item.providerCreatedAt) }}
+            </dd>
           </div>
           <div>
-            <dt class="text-muted">{{ $t('workItems.columns.updated') }}</dt>
-            <dd>{{ formatDateTime(item.providerUpdatedAt) }}</dd>
+            <dt class="text-muted">
+              {{ $t('workItems.columns.updated') }}
+            </dt>
+            <dd>
+              {{ formatDateTime(item.providerUpdatedAt) }}
+            </dd>
           </div>
           <template v-if="'sourceBranch' in item">
             <div>
-              <dt class="text-muted">{{ $t('pullRequests.sourceBranch') }}</dt>
-              <dd class="font-mono">{{ item.sourceBranch }}</dd>
+              <dt class="text-muted">
+                {{ $t('pullRequests.sourceBranch') }}
+              </dt>
+              <dd class="font-mono">
+                {{ item.sourceBranch }}
+              </dd>
             </div>
             <div>
-              <dt class="text-muted">{{ $t('pullRequests.targetBranch') }}</dt>
-              <dd class="font-mono">{{ item.targetBranch }}</dd>
+              <dt class="text-muted">
+                {{ $t('pullRequests.targetBranch') }}
+              </dt>
+              <dd class="font-mono">
+                {{ item.targetBranch }}
+              </dd>
             </div>
           </template>
         </dl>
@@ -79,10 +106,14 @@
       </UCard>
       <UCard>
         <template #header>
-          <h2 class="font-semibold">{{ $t('workItems.description') }}</h2>
+          <h2 class="font-semibold">
+            {{ $t('workItems.description') }}
+          </h2>
         </template>
         <CommonSafeMarkdown v-if="item.body" :source="item.body" />
-        <p v-else class="text-sm text-muted">{{ $t('workItems.noDescription') }}</p>
+        <p v-else class="text-sm text-muted">
+          {{ $t('workItems.noDescription') }}
+        </p>
       </UCard>
     </template>
   </LayoutPage>

@@ -30,7 +30,9 @@
         <UStepper ref="stepper" class="mt-4" color="neutral" size="sm" :items="stepperItems">
           <template #provider>
             <div class="space-y-4">
-              <p class="text-sm text-muted">{{ $t('repositories.providerDescription') }}</p>
+              <p class="text-sm text-muted">
+                {{ $t('repositories.providerDescription') }}
+              </p>
               <UFormField name="providerAccountId" :label="$t('repositories.provider')" required>
                 <USelectMenu
                   v-model="selectedProviderAccountId"
@@ -52,7 +54,9 @@
 
           <template #repository>
             <div class="space-y-4">
-              <p class="text-sm text-muted">{{ $t('repositories.repositoryDescription') }}</p>
+              <p class="text-sm text-muted">
+                {{ $t('repositories.repositoryDescription') }}
+              </p>
               <UAlert
                 v-if="repositoriesError"
                 color="error"
@@ -71,9 +75,9 @@
               <UAlert
                 v-if="
                   !repositoriesLoading &&
-                  !repositoriesError &&
-                  selectedProviderAccountId &&
-                  selectableRepositories.length === 0
+                    !repositoriesError &&
+                    selectedProviderAccountId &&
+                    selectableRepositories.length === 0
                 "
                 color="info"
                 :title="$t('repositories.noAvailableRepositories')"

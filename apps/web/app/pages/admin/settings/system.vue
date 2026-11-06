@@ -22,8 +22,12 @@
     <UCard :ui="{ body: 'space-y-6' }">
       <template #header>
         <div>
-          <h2 class="font-semibold">{{ $t('settings.general') }}</h2>
-          <p class="text-sm text-muted">{{ $t('settings.generalDescription') }}</p>
+          <h2 class="font-semibold">
+            {{ $t('settings.general') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t('settings.generalDescription') }}
+          </p>
         </div>
       </template>
 
@@ -131,8 +135,12 @@
         </UFormField>
 
         <div class="rounded-md bg-elevated p-4">
-          <p class="text-xs font-medium tracking-wide text-muted uppercase">{{ $t('settings.preview') }}</p>
-          <p class="mt-1 font-mono text-sm">{{ dateTimePreview }}</p>
+          <p class="text-xs font-medium tracking-wide text-muted uppercase">
+            {{ $t('settings.preview') }}
+          </p>
+          <p class="mt-1 font-mono text-sm">
+            {{ dateTimePreview }}
+          </p>
         </div>
 
         <div class="flex justify-end border-t border-default pt-6">

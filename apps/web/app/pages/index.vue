@@ -41,7 +41,9 @@
     <UCard v-if="summary?.securityAlerts">
       <template #header>
         <div class="flex items-center justify-between gap-4">
-          <h2 class="font-semibold">{{ $t('securityAlerts.openSummary') }}</h2>
+          <h2 class="font-semibold">
+            {{ $t('securityAlerts.openSummary') }}
+          </h2>
           <UButton
             color="neutral"
             trailing-icon="i-lucide-arrow-right"
@@ -53,8 +55,12 @@
       </template>
       <div class="grid gap-3 sm:grid-cols-3">
         <div v-for="metric in securityAlertMetrics" :key="metric.kind" class="rounded-lg bg-elevated p-4">
-          <p class="text-xs uppercase tracking-wide text-muted">{{ metric.label }}</p>
-          <p class="mt-1 text-2xl font-semibold tabular-nums">{{ metric.value }}</p>
+          <p class="text-xs uppercase tracking-wide text-muted">
+            {{ metric.label }}
+          </p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums">
+            {{ metric.value }}
+          </p>
         </div>
       </div>
     </UCard>
@@ -63,8 +69,12 @@
       <UCard class="xl:col-span-3">
         <template #header>
           <div>
-            <h2 class="font-semibold">{{ $t('dashboard.trend') }}</h2>
-            <p class="mt-1 text-xs text-muted">{{ $t('dashboard.trendDescription') }}</p>
+            <h2 class="font-semibold">
+              {{ $t('dashboard.trend') }}
+            </h2>
+            <p class="mt-1 text-xs text-muted">
+              {{ $t('dashboard.trendDescription') }}
+            </p>
           </div>
         </template>
         <TrendChart :buckets="trend" :loading="isHistoricalLoading" />

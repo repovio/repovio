@@ -13,7 +13,9 @@
         <div class="flex min-w-0 items-start gap-3">
           <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-monitor-smartphone" />
           <div>
-            <p class="font-semibold">{{ $t('notifications.push.title') }}</p>
+            <p class="font-semibold">
+              {{ $t('notifications.push.title') }}
+            </p>
             <p class="text-sm text-muted">
               {{
                 $t('notifications.push.description', {
@@ -95,7 +97,9 @@
       }"
     >
       <template #type-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ typeLabel(row.original.type) }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ typeLabel(row.original.type) }}
+        </UBadge>
       </template>
       <template #urlScheme-cell="{ row }">
         <span class="text-sm text-muted">

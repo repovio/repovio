@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('settings.passwordChange') }}</h2>
-        <p class="text-sm text-muted">{{ $t('settings.passwordChangeDescription') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('settings.passwordChange') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('settings.passwordChangeDescription') }}
+        </p>
       </div>
     </template>
 

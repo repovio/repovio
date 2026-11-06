@@ -28,8 +28,12 @@
 
         <template #footer>
           <div v-if="failedGroups.length" class="border-t border-default px-4 py-3" role="status">
-            <p class="text-xs text-warning">{{ t('layout.searchPartialError') }}</p>
-            <p class="mt-0.5 text-xs text-muted">{{ failedGroups.join(', ') }}</p>
+            <p class="text-xs text-warning">
+              {{ t('layout.searchPartialError') }}
+            </p>
+            <p class="mt-0.5 text-xs text-muted">
+              {{ failedGroups.join(', ') }}
+            </p>
           </div>
         </template>
       </UCommandPalette>

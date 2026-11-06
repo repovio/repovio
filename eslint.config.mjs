@@ -4,6 +4,8 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginVue from 'eslint-plugin-vue';
 import tseslint from 'typescript-eslint';
 
+import { vueFormatRules, vueLayoutPlugin } from './scripts/vue-format-rules.mjs';
+
 export default tseslint.config(
   {
     ignores: [
@@ -70,5 +72,10 @@ export default tseslint.config(
     rules: {
       'prettier/prettier': 'error',
     },
+  },
+  {
+    files: ['**/*.vue'],
+    plugins: { repovio: vueLayoutPlugin },
+    rules: { ...vueFormatRules, 'prettier/prettier': 'off' },
   },
 );

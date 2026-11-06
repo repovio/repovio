@@ -4,7 +4,9 @@
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-2">
           <UIcon class="size-5 text-muted" :name="icon" />
-          <h2 class="font-semibold">{{ title }}</h2>
+          <h2 class="font-semibold">
+            {{ title }}
+          </h2>
         </div>
         <UButton
           color="neutral"
@@ -39,9 +41,13 @@
           <a v-else class="font-medium hover:underline" rel="noreferrer" target="_blank" :href="item.providerUrl">
             {{ item.title }}
           </a>
-          <p class="mt-1 truncate text-xs text-muted">{{ item.subtitle }} · {{ item.timestamp }}</p>
+          <p class="mt-1 truncate text-xs text-muted">
+            {{ item.subtitle }} · {{ item.timestamp }}
+          </p>
         </div>
-        <UBadge color="neutral" variant="subtle">{{ item.status }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ item.status }}
+        </UBadge>
         <UTooltip :text="$t('dashboard.openProvider')">
           <UButton
             color="neutral"

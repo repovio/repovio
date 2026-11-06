@@ -157,8 +157,12 @@
         <UFormField name="eventStates">
           <div class="space-y-3 rounded-lg border border-default p-4">
             <div>
-              <h3 class="font-semibold">{{ $t('notifications.fields.events') }}</h3>
-              <p class="text-sm text-muted">{{ $t('notifications.channels.eventsDescription') }}</p>
+              <h3 class="font-semibold">
+                {{ $t('notifications.fields.events') }}
+              </h3>
+              <p class="text-sm text-muted">
+                {{ $t('notifications.channels.eventsDescription') }}
+              </p>
             </div>
             <div v-for="eventType in eventTypes" :key="eventType" class="space-y-3 rounded-md bg-elevated p-3">
               <UCheckbox

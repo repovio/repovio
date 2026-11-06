@@ -2,8 +2,12 @@
   <UCard :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ $t('repositories.webhook.title') }}</h2>
-        <p class="text-sm text-muted">{{ $t('repositories.webhook.description') }}</p>
+        <h2 class="font-semibold">
+          {{ $t('repositories.webhook.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ $t('repositories.webhook.description') }}
+        </p>
       </div>
     </template>
 
@@ -42,7 +46,9 @@
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <p class="text-sm font-medium">{{ $t('repositories.webhook.status') }}</p>
+          <p class="text-sm font-medium">
+            {{ $t('repositories.webhook.status') }}
+          </p>
           <UBadge class="mt-1" variant="subtle" :color="configuration.configured ? 'success' : 'warning'">
             {{
               $t(configuration.configured ? 'repositories.webhook.configured' : 'repositories.webhook.notConfigured')
@@ -50,8 +56,12 @@
           </UBadge>
         </div>
         <div>
-          <p class="text-sm font-medium">{{ $t('repositories.webhook.lastDelivery') }}</p>
-          <p class="mt-1 text-sm text-muted">{{ lastDelivery }}</p>
+          <p class="text-sm font-medium">
+            {{ $t('repositories.webhook.lastDelivery') }}
+          </p>
+          <p class="mt-1 text-sm text-muted">
+            {{ lastDelivery }}
+          </p>
         </div>
       </div>
 

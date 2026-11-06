@@ -3,8 +3,12 @@
     <template #header>
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="font-semibold">{{ $t('mcp.title') }}</h2>
-          <p class="text-sm text-muted">{{ $t('mcp.description') }}</p>
+          <h2 class="font-semibold">
+            {{ $t('mcp.title') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t('mcp.description') }}
+          </p>
         </div>
         <UButton icon="i-lucide-plus" :label="$t('mcp.create')" @click="createDialogOpen = true" />
       </div>
@@ -18,14 +22,19 @@
     <div v-else-if="loading" class="space-y-3">
       <USkeleton v-for="index in 2" :key="index" class="h-16 w-full" />
     </div>
-    <p v-else-if="tokens.length === 0" class="text-sm text-muted">{{ $t('mcp.empty') }}</p>
+    <p v-else-if="tokens.length === 0" class="text-sm text-muted">
+      {{ $t('mcp.empty') }}
+    </p>
     <ul v-else class="divide-y divide-default" :aria-label="$t('mcp.title')">
       <li v-for="token in tokens" :key="token.id" class="flex flex-wrap items-center justify-between gap-4 py-3">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-medium">{{ token.name }}</span>
-            <UBadge variant="subtle" :color="statusColor(token.status)">{{ $t(`mcp.status.${token.status}`) }}</UBadge>
+            <UBadge variant="subtle" :color="statusColor(token.status)">
+              {{ $t(`mcp.status.${token.status}`) }}
+            </UBadge>
           </div>
+          <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -- Preserve inline text spacing. -->
           <p class="mt-1 font-mono text-xs text-muted">{{ token.tokenPrefix }}…</p>
           <p class="mt-1 text-xs text-muted">
             {{ $t('mcp.createdAt', { date: formatTimestamp(token.createdAt) }) }} ·

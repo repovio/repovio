@@ -17,12 +17,18 @@
         :ui="{ body: 'space-y-3' }"
       >
         <div class="flex items-center justify-between gap-3">
-          <p class="text-xs font-medium uppercase tracking-wide text-muted">{{ metric.label }}</p>
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">
+            {{ metric.label }}
+          </p>
           <UIcon class="size-4 text-muted" :name="metric.icon" />
         </div>
         <USkeleton v-if="loading && !summary" class="h-8 w-24" />
-        <p v-else class="text-2xl font-semibold tabular-nums">{{ metric.value }}</p>
-        <p class="text-xs text-muted">{{ metric.context }}</p>
+        <p v-else class="text-2xl font-semibold tabular-nums">
+          {{ metric.value }}
+        </p>
+        <p class="text-xs text-muted">
+          {{ metric.context }}
+        </p>
       </UCard>
     </component>
   </section>

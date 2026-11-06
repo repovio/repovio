@@ -22,7 +22,9 @@
     </UDashboardToolbar>
 
     <div data-page-content :class="contentClasses">
-      <h1 class="sr-only">{{ title }}</h1>
+      <h1 class="sr-only">
+        {{ title }}
+      </h1>
 
       <slot />
     </div>

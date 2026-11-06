@@ -2,7 +2,9 @@
   <UCard class="lg:col-span-2" :ui="{ body: 'space-y-4' }">
     <template #header>
       <div>
-        <h2 class="font-semibold">{{ repository.owner }}/{{ repository.name }}</h2>
+        <h2 class="font-semibold">
+          {{ repository.owner }}/{{ repository.name }}
+        </h2>
         <p class="text-sm text-muted">
           {{ editable ? $t('repositoryDetails.generalDescription') : $t('repositories.description') }}
         </p>
@@ -11,7 +13,9 @@
 
     <dl v-if="!editable" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <div>
-        <dt class="text-xs font-medium uppercase tracking-wide text-muted">{{ $t('repositories.columns.status') }}</dt>
+        <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+          {{ $t('repositories.columns.status') }}
+        </dt>
         <dd class="mt-1">
           <UBadge variant="subtle" :color="repository.enabled ? 'success' : 'neutral'">
             {{ repository.enabled ? $t('repositories.enabled') : $t('repositories.disabled') }}
@@ -30,19 +34,25 @@
         <dt class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositoryDetails.issueRetention') }}
         </dt>
-        <dd class="mt-1 text-sm">{{ repository.issueRetentionDays ?? $t('repositories.default') }}</dd>
+        <dd class="mt-1 text-sm">
+          {{ repository.issueRetentionDays ?? $t('repositories.default') }}
+        </dd>
       </div>
       <div>
         <dt class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositoryDetails.pullRequestRetention') }}
         </dt>
-        <dd class="mt-1 text-sm">{{ repository.pullRequestRetentionDays ?? $t('repositories.default') }}</dd>
+        <dd class="mt-1 text-sm">
+          {{ repository.pullRequestRetentionDays ?? $t('repositories.default') }}
+        </dd>
       </div>
       <div>
         <dt class="text-xs font-medium uppercase tracking-wide text-muted">
           {{ $t('repositories.columns.lastSync') }}
         </dt>
-        <dd class="mt-1 text-sm">{{ formatLastSync(repository.lastSyncAt) }}</dd>
+        <dd class="mt-1 text-sm">
+          {{ formatLastSync(repository.lastSyncAt) }}
+        </dd>
       </div>
     </dl>
 

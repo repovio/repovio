@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-6">
     <div class="space-y-1">
-      <h1 class="text-xl font-semibold">{{ $t('auth.setup') }}</h1>
-      <p class="text-sm text-muted">{{ $t('auth.setupDescription') }}</p>
+      <h1 class="text-xl font-semibold">
+        {{ $t('auth.setup') }}
+      </h1>
+      <p class="text-sm text-muted">
+        {{ $t('auth.setupDescription') }}
+      </p>
     </div>
 
     <UForm

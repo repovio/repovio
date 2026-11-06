@@ -120,10 +120,16 @@
         <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
       </template>
       <template #state-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">{{ $t(`workItems.states.${row.original.state}`) }}</UBadge>
+        <UBadge color="neutral" variant="subtle">
+          {{ $t(`workItems.states.${row.original.state}`) }}
+        </UBadge>
       </template>
-      <template #author-cell="{ row }">{{ row.original.author?.username ?? '—' }}</template>
-      <template #labels-cell="{ row }"><ModulesWorkItemsLabels :labels="row.original.labels" /></template>
+      <template #author-cell="{ row }">
+        {{ row.original.author?.username ?? '—' }}
+      </template>
+      <template #labels-cell="{ row }">
+        <ModulesWorkItemsLabels :labels="row.original.labels" />
+      </template>
       <template #providerUpdatedAt-cell="{ row }">
         <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
       </template>

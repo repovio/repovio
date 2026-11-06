@@ -71,8 +71,12 @@
 
       <section v-if="isAdmin" id="settings" class="space-y-4">
         <div>
-          <h2 class="text-lg font-semibold">{{ $t('repositoryDetails.settings') }}</h2>
-          <p class="text-sm text-muted">{{ $t('repositoryDetails.generalDescription') }}</p>
+          <h2 class="text-lg font-semibold">
+            {{ $t('repositoryDetails.settings') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t('repositoryDetails.generalDescription') }}
+          </p>
         </div>
         <ModulesRepositoriesDetailsWebhookCard
           :configuration="webhookConfiguration"

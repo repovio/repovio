@@ -38,7 +38,8 @@
         "default",
         "^default",
         "{workspaceRoot}/scripts/check-api-tsdoc.mjs",
-        "{workspaceRoot}/scripts/check-api-tsdoc.test.mjs"
+        "{workspaceRoot}/scripts/check-api-tsdoc.test.mjs",
+        "lintConfiguration"
       ],
       "options": {
         "command": "pnpm lint",

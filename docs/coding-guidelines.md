@@ -65,7 +65,7 @@ Run from the repository root, using `corepack pnpm` if the active pnpm is not th
 | `pnpm format`              | Explicitly write canonical formatting                  |
 | `pnpm documentation:check` | Check all handwritten declarations                     |
 | `pnpm test:guidelines`     | Documentation and formatting regression fixtures       |
-| `pnpm lint`                | Repository documentation and package lint checks       |
+| `pnpm lint`                | Documentation, shared scripts, and package lint checks |
 | `pnpm typecheck`           | API, web, and schema type checks                       |
 | `pnpm test`                | API, web, and schema unit tests                        |
 | `pnpm --dir apps/web e2e`  | Browser regression scenarios against a running web app |

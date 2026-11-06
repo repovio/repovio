@@ -7,7 +7,18 @@
   "namedInputs": {
     "sharedGlobals": ["{workspaceRoot}/pnpm-lock.yaml"],
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/**/*.test.ts", "!{projectRoot}/test/**/*"]
+    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/**/*.test.ts", "!{projectRoot}/test/**/*"],
+    "lintConfiguration": [
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/prettier.config.mjs",
+      "{workspaceRoot}/.prettierignore",
+      "{workspaceRoot}/.editorconfig",
+      "{workspaceRoot}/scripts/vue-format-rules.mjs",
+      "{workspaceRoot}/scripts/format.mjs",
+      "{workspaceRoot}/scripts/check-documentation.mjs",
+      "{workspaceRoot}/scripts/check-documentation.test.mjs",
+      "{workspaceRoot}/scripts/format.test.mjs"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -22,7 +33,7 @@
     },
     "lint": {
       "cache": true,
-      "inputs": ["default", "^default"],
+      "inputs": ["default", "^default", "lintConfiguration"],
       "dependsOn": ["^build"]
     },
     "test": {

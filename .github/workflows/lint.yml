@@ -48,6 +48,12 @@ jobs:
       - name: Test shared schema contracts
         run: pnpm --filter @repovio/schemas test
 
+      - name: Test coding guideline checks
+        run: pnpm test:guidelines
+
+      - name: Check documentation coverage
+        run: pnpm documentation:check
+
       - name: Check formatting
         run: pnpm format:check
 

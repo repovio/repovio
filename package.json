@@ -17,7 +17,7 @@
     "docker:build": "nx run-many -t docker:build --all --exclude=repovio --parallel=2",
     "format": "node scripts/format.mjs --write",
     "format:check": "node scripts/format.mjs",
-    "lint": "nx run-many -t lint --all --exclude=repovio --parallel=2",
+    "lint": "pnpm test:guidelines && pnpm documentation:check && eslint . && nx run-many -t lint --all --exclude=repovio --parallel=2",
     "nx": "nx",
     "release": "changeset tag",
     "test:postgres-upgrade": "node --test scripts/check-postgres-upgrade.test.mjs",

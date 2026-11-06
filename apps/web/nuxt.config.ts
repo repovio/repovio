@@ -1,4 +1,5 @@
 import { version as appVersion } from '../../package.json';
+import { brandingDefaults, brandingFileDefaults } from './shared/branding';
 
 /** Nuxt configuration for the Repovio single-page dashboard. */
 export default defineNuxtConfig({
@@ -7,7 +8,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxtjs/i18n', '@nuxtjs/color-mode', '@pinia/nuxt', '@querry-kit/nuxt-ui', '@vite-pwa/nuxt'],
   runtimeConfig: {
+    ...brandingFileDefaults,
     public: {
+      ...brandingDefaults,
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api/v1',
       appVersion,
     },

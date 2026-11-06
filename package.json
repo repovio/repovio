@@ -13,7 +13,7 @@
     "build": "nx run-many -t build --all --exclude=repovio --parallel=2",
     "changeset": "changeset",
     "db:generate": "nx run api:db:generate",
-    "dev": "nx run-many -t dev --all --exclude=repovio --parallel=2",
+    "dev": "nx run-many -t dev --all --exclude=repovio --parallel=3",
     "docker:build": "nx run-many -t docker:build --all --exclude=repovio --parallel=2",
     "format": "node scripts/format.mjs --write",
     "format:check": "node scripts/format.mjs",

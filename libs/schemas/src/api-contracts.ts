@@ -6,6 +6,7 @@ export {
   ApiOidcExchangeSchema,
   ApiOidcStatusSchema,
   ApiRemoteAvatarSchema,
+  ApiResetUserPasswordSchema,
   ApiSetupSchema,
   ApiSignInSchema,
   ApiUpdateOidcConfigSchema,

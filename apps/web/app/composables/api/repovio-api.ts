@@ -10,6 +10,7 @@ import type {
   CreateMcpAccessToken,
   CreateNotificationChannel,
   CreateProviderAccount,
+  CreateUser,
   DashboardPeriodQuery,
   DashboardSummary,
   DashboardWorkflowRun,
@@ -36,6 +37,7 @@ import type {
   RepositoryMembership,
   RepositorySyncJobSummary,
   RepositoryWebhookConfiguration,
+  ResetUserPassword,
   SaveGitHubApp,
   SecurityAlert,
   SecurityAlertFilterOptions,
@@ -330,6 +332,11 @@ export function useRepovioApi() {
         api.patch(apiEndpoints.settings.base, input),
     },
     users: {
+      /** Creates a local account without linking an external identity. */
+      create: (input: CreateUser): Promise<AxiosResponse<User>> => api.post(apiEndpoints.users, input),
+      /** Replaces a local account password and invalidates its JWT sessions. */
+      resetPassword: (id: string, input: ResetUserPassword): Promise<AxiosResponse<void>> =>
+        api.put(`${apiEndpoints.users}/${id}/password`, input),
       /** Deletes the selected user. */
       delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.users}/${id}`),
       /** Lists visible user resources. */

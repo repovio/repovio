@@ -9,27 +9,34 @@
     :title="$t('users.title')"
   >
     <template #actions>
-      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
-        <template #trigger="{ active, open, toggle }">
-          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+      <QTableToolbar>
+        <template #new>
+          <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
         </template>
-      </QTableSorting>
-      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
-        <template #trigger="{ active, open, toggle }">
-          <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+        <template #options>
+          <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+            <template #trigger="{ active, open, toggle }">
+              <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+            </template>
+          </QTableSorting>
+          <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+            <template #trigger="{ active, open, toggle }">
+              <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+            </template>
+          </QTableFiltering>
+          <QTableOptions
+            v-model:column-order="columnOrder"
+            v-model:column-pinning="columnPinning"
+            v-model:invisible-columns="columnVisibility"
+            :columns="columnDefinition"
+            shortcuts
+          >
+            <template #trigger="{ open, toggle }">
+              <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+            </template>
+          </QTableOptions>
         </template>
-      </QTableFiltering>
-      <QTableOptions
-        v-model:column-order="columnOrder"
-        v-model:column-pinning="columnPinning"
-        v-model:invisible-columns="columnVisibility"
-        :columns="columnDefinition"
-        shortcuts
-      >
-        <template #trigger="{ open, toggle }">
-          <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
-        </template>
-      </QTableOptions>
+      </QTableToolbar>
     </template>
 
     <UAlert
@@ -94,6 +101,15 @@
       </template>
       <template #actions-cell="{ row }">
         <div class="flex justify-end">
+          <UTooltip v-if="row.original.authProvider === 'LOCAL'" :text="$t('users.resetPassword')">
+            <UButton
+              color="neutral"
+              icon="i-lucide-lock-keyhole"
+              variant="ghost"
+              :aria-label="$t('users.resetPassword')"
+              @click="openAccount(row.original)"
+            />
+          </UTooltip>
           <UTooltip :text="$t('mcp.manageUserTokens')">
             <UButton
               color="neutral"
@@ -128,6 +144,7 @@
     />
   </LayoutPage>
 
+  <ModulesUsersAccountDialog v-model:open="accountDialogOpen" :user="accountUser" :refresh="userTable.refresh" />
   <ModulesMcpUserTokenDialog v-model:open="tokenDialogOpen" :user="selectedUser" />
 </template>
 
@@ -148,7 +165,7 @@ type UserRole = User['role'];
 type UserRow = User & Record<string, unknown>;
 type UserTableColumn = ColumnDefinition<UserRow> & { header: string; id: string };
 
-definePageMeta({ fullWidth: true });
+definePageMeta({ fullWidth: true, middleware: 'admin' });
 
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
@@ -156,6 +173,8 @@ const api = useRepovioApi();
 const auth = useAuthStore();
 const selectedUser = ref<User | null>(null);
 const tokenDialogOpen = ref(false);
+const accountDialogOpen = ref(false);
+const accountUser = ref<User | null>(null);
 const { isPending, run: runPendingAction } = usePendingActions();
 const userRoleOptions = computed<Array<{ label: string; value: UserRole }>>(
   /** Derives user role options from the current reactive dependencies. */ () =>
@@ -225,6 +244,12 @@ const columnPinning = computed({
 });
 
 useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('users.title')) });
+
+/** Opens creation or administrative password reset for a local account. */
+function openAccount(user: User | null): void {
+  accountUser.value = user;
+  accountDialogOpen.value = true;
+}
 
 /** Opens token management for the selected user. */
 function manageTokens(user: User): void {

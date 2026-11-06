@@ -574,6 +574,12 @@
     "runningWorkflows": "Laufend: {count}"
   },
   "users": {
+    "cancel": "Abbrechen",
+    "create": "Neuer Benutzer",
+    "resetPassword": "Passwort zurücksetzen",
+    "resetHint": "Neues Passwort für {username} festlegen. Bestehende Anmeldesitzungen werden ungültig.",
+    "usernameExists": "Dieser Benutzername wird bereits verwendet.",
+    "saveError": "Das Konto konnte nicht gespeichert werden.",
     "authProviders": {
       "LOCAL": "Lokal",
       "OIDC": "OpenID Connect"

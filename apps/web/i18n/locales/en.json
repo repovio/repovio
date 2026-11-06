@@ -568,6 +568,12 @@
     "runningWorkflows": "Running: {count}"
   },
   "users": {
+    "cancel": "Cancel",
+    "create": "New user",
+    "resetPassword": "Reset password",
+    "resetHint": "Set a new password for {username}. Existing sign-in sessions will be invalidated.",
+    "usernameExists": "This username is already in use.",
+    "saveError": "The account could not be saved.",
     "authProviders": {
       "LOCAL": "Local",
       "OIDC": "OpenID Connect"

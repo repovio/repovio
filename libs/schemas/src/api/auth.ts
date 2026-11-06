@@ -117,7 +117,12 @@ export const ApiUserSchema = z.strictObject({
 
 /** Shared CreateUser boundary schema. */
 export const ApiCreateUserSchema = z.strictObject({
-  username: z.string().max(255),
-  password: z.string().min(12),
+  username: z.string().trim().min(1).max(255),
+  firstName: optionalNameSchema,
+  lastName: optionalNameSchema,
+  password: z.string().min(12).max(256),
   role: z.union([z.literal('SYSTEM_ADMIN'), z.literal('VIEWER'), z.literal('MANAGER')]),
 });
+
+/** Administrative reset of a local account's password. */
+export const ApiResetUserPasswordSchema = z.strictObject({ newPassword: z.string().min(12).max(256) });

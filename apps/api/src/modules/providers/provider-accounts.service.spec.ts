@@ -18,6 +18,9 @@ describe('ProviderAccountsService', () => {
   };
   const credentials = {
     decrypt: jest.fn((value: string) => `decrypted:${value}`),
+    accessToken: jest.fn(
+      async (account: { encryptedAccessToken: string }) => `decrypted:${account.encryptedAccessToken}`,
+    ),
     encrypt: jest.fn((value: string) => `encrypted:${value}`),
   };
   const adapters = {
@@ -139,6 +142,7 @@ describe('ProviderAccountsService', () => {
     ]);
     expect(listRepositories).toHaveBeenCalledWith({
       accessToken: 'decrypted:encrypted-token',
+      authenticationMethod: 'TOKEN',
       baseUrl: null,
       providerAccountId: 'provider-id',
     });

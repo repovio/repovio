@@ -22,6 +22,8 @@ describe('resource DTO mappings', () => {
     } as ProviderAccount);
 
     expect(dto).toEqual({
+      authenticationMethod: 'TOKEN',
+      githubInstallationState: null,
       id: 'account',
       providerType: 'GITHUB',
       displayName: 'GitHub',
@@ -36,6 +38,8 @@ describe('resource DTO mappings', () => {
     const schema = resourceFields(ProviderAccountDto);
 
     expect(schema).toEqual({
+      authenticationMethod: true,
+      githubInstallationState: true,
       baseUrl: true,
       displayName: true,
       enabled: true,
@@ -43,7 +47,12 @@ describe('resource DTO mappings', () => {
       lastSyncAt: true,
       providerType: true,
     });
-    expect(Fields.parseAndValidate('id,displayName,providerType,baseUrl,enabled,lastSyncAt', schema)).toEqual(schema);
+    expect(
+      Fields.parseAndValidate(
+        'id,displayName,providerType,baseUrl,enabled,lastSyncAt,authenticationMethod,githubInstallationState',
+        schema,
+      ),
+    ).toEqual(schema);
   });
 
   it('allows Query Kit to project every repository-table field', () => {

@@ -96,3 +96,5 @@ export {
   ApiWorkItemLabelSchema,
 } from './api/work-items.js';
 export { ApiWorkflowRunQuerySchema, ApiWorkflowRunSchema } from './api/workflow-runs.js';
+
+export * from './api/github-app.js';

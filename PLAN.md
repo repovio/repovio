@@ -53,6 +53,7 @@ Persist at least:
 
 - provider account and encrypted read-only access token;
 - optional self-hosted GitLab or Forgejo base URL;
+- optional deployment-owned GitHub App with encrypted private key/webhook secret and installation-backed accounts;
 - tracked repository and repository membership;
 - workflow whitelist and blacklist glob patterns, with blacklist precedence;
 - provider run ID, repository, workflow name, URL, start time, completion time, duration, and normalized status;
@@ -70,6 +71,9 @@ Provider integration must be read-only:
 - Poll tracked repositories on a configurable schedule.
 - Accept manually configured, signature-validated provider webhooks to trigger targeted syncs.
 - Do not create or modify provider webhooks through Repovio credentials.
+- Support optional GitHub App installations with automatically renewed, read-only installation tokens and a central
+  signed webhook. Token issuance is an authentication-only exception to outbound read requests; it must never mutate
+  repositories, workflows, or webhook registrations. Preserve PAT/OAuth connections and polling reconciliation.
 
 Encrypt provider tokens and Gotify/ntfy credentials at rest. Never return secrets from API responses.
 

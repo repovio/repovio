@@ -33,7 +33,10 @@ describe('ProviderSyncService', () => {
         getWorkflowRun: jest.fn().mockResolvedValue(createWorkflowRun()),
         listWorkflowRuns: jest.fn().mockResolvedValue([createWorkflowRun()]),
       },
-      credentials: { decrypt: jest.fn().mockReturnValue('access-token') },
+      credentials: {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      },
       filters: { shouldTrack: jest.fn().mockReturnValue(true) },
       notifications: { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) },
       status: {
@@ -152,7 +155,10 @@ describe('ProviderSyncService', () => {
           listWorkflowRuns: jest.fn().mockResolvedValue([run]),
         }),
       } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
@@ -211,7 +217,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
@@ -295,7 +304,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn().mockReturnValue(false) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
@@ -358,7 +370,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -425,7 +440,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn().mockResolvedValue(undefined) } as unknown as NotificationsService,
@@ -489,7 +507,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -548,7 +569,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -596,7 +620,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       metadata as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -642,7 +669,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -691,7 +721,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,
@@ -723,7 +756,10 @@ describe('ProviderSyncService', () => {
     const service = new ProviderSyncService(
       prisma as unknown as PrismaService,
       { get: jest.fn().mockReturnValue({}) } as unknown as ProviderAdapterRegistry,
-      { decrypt: jest.fn().mockReturnValue('access-token') } as unknown as ProviderCredentialService,
+      {
+        decrypt: jest.fn().mockReturnValue('access-token'),
+        accessToken: jest.fn().mockResolvedValue('access-token'),
+      } as unknown as ProviderCredentialService,
       { refresh: jest.fn((value) => Promise.resolve(value)) } as never,
       { shouldTrack: jest.fn() } as unknown as WorkflowFilterService,
       { evaluateWorkflowRun: jest.fn() } as unknown as NotificationsService,

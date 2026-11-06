@@ -2,6 +2,7 @@ import { BadRequestException, type INestApplication, VERSION_NEUTRAL, Versioning
 import { VERSION_METADATA } from '@nestjs/common/constants.js';
 import { Test } from '@nestjs/testing';
 
+import { GitHubAppWebhookService } from './github-app-webhook.service.js';
 import { WebhookController } from './webhook.controller.js';
 import { WebhookService } from './webhook.service.js';
 
@@ -10,7 +11,7 @@ describe('WebhookController', () => {
     const service = {
       receive: jest.fn().mockResolvedValue({ accepted: true, duplicate: false }),
     } as unknown as WebhookService;
-    const controller = new WebhookController(service);
+    const controller = new WebhookController(service, {} as never);
     const request = {
       headers: { 'x-github-delivery': 'delivery-id' },
       rawBody: Buffer.from('{"repository":{"id":42}}'),
@@ -27,7 +28,7 @@ describe('WebhookController', () => {
   });
 
   it('rejects a request when the raw signed body is unavailable', () => {
-    const controller = new WebhookController({} as WebhookService);
+    const controller = new WebhookController({} as WebhookService, {} as never);
 
     expect(() => controller.gitlab('account-id', { headers: {} } as never)).toThrow(BadRequestException);
   });
@@ -36,7 +37,7 @@ describe('WebhookController', () => {
     const service = {
       receive: jest.fn().mockResolvedValue({ accepted: true, duplicate: false }),
     } as unknown as WebhookService;
-    const controller = new WebhookController(service);
+    const controller = new WebhookController(service, {} as never);
     const request = {
       headers: { 'x-gitea-delivery': 'delivery-id' },
       rawBody: Buffer.from('{"repository":{"id":42}}'),
@@ -66,7 +67,10 @@ describe('WebhookController', () => {
     };
     const moduleRef = await Test.createTestingModule({
       controllers: [WebhookController],
-      providers: [{ provide: WebhookService, useValue: service }],
+      providers: [
+        { provide: GitHubAppWebhookService, useValue: {} },
+        { provide: WebhookService, useValue: service },
+      ],
     }).compile();
     const app: INestApplication = moduleRef.createNestApplication({ rawBody: true });
     app.enableVersioning({ defaultVersion: '1', type: VersioningType.URI });

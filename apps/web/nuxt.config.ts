@@ -21,20 +21,12 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { class: 'h-full' },
       bodyAttrs: { class: 'h-full bg-default' },
-      link: [
-        { rel: 'icon', sizes: '48x48', type: 'image/x-icon', href: '/favicon.ico' },
-        { rel: 'icon', sizes: 'any', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon-180x180.png' },
-      ],
       meta: [
-        { name: 'theme-color', content: '#4f46ff' },
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       ],
       script: [{ src: '/oidc-handoff.js' }],
-      title: 'Repovio',
-      titleTemplate: '%s · Repovio',
     },
   },
   colorMode: {

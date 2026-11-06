@@ -5,11 +5,14 @@ import {
   ApiCreateMcpAccessTokenSchema,
   ApiCreateNotificationChannelSchema,
   ApiCreateProviderAccountSchema,
+  ApiCreateUserSchema,
   ApiDashboardPeriodQuerySchema,
   ApiListMcpAccessTokensQuerySchema,
   ApiNotificationEventSubscriptionInputSchema,
   ApiNotificationRulePreviewInputSchema,
   ApiRemoteAvatarSchema,
+  ApiResetUserPasswordSchema,
+  ApiSaveUserGroupSchema,
   ApiSetupSchema,
   ApiUpdateNotificationChannelSchema,
   ApiUpdateOidcConfigSchema,
@@ -182,5 +185,27 @@ describe('shared API input compatibility', /** Groups scenarios for shared API i
       }).success,
       false,
     );
+  });
+});
+
+describe('local account and access group boundaries', /** Covers new administrative request validation. */ () => {
+  it('normalizes creation names and rejects empty logins, external identities, and invalid passwords', /** Prevents malformed or externally managed account creation. */ () => {
+    const valid = { username: ' ada ', password: 'initial-password', role: 'VIEWER' };
+    assert.equal(ApiCreateUserSchema.parse(valid).username, 'ada');
+    assert.equal(ApiCreateUserSchema.safeParse({ ...valid, username: '   ' }).success, false);
+    assert.equal(ApiCreateUserSchema.safeParse({ ...valid, authProvider: 'OIDC' }).success, false);
+    for (const password of ['short', 'x'.repeat(257)]) {
+      assert.equal(ApiCreateUserSchema.safeParse({ ...valid, password }).success, false);
+      assert.equal(ApiResetUserPasswordSchema.safeParse({ newPassword: password }).success, false);
+    }
+    assert.equal(
+      ApiResetUserPasswordSchema.safeParse({ newPassword: 'replacement-password', userId: 'injected' }).success,
+      false,
+    );
+  });
+  it('requires nonempty bounded group names', /** Rejects invalid identifiers before persistence. */ () => {
+    assert.deepEqual(ApiSaveUserGroupSchema.parse({ name: ' Readers ' }), { name: 'Readers' });
+    for (const name of ['', '  ', 'x'.repeat(256)])
+      assert.equal(ApiSaveUserGroupSchema.safeParse({ name }).success, false);
   });
 });

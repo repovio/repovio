@@ -69,6 +69,7 @@
         <div v-if="isAdmin" class="grid gap-4 lg:grid-cols-2">
           <ModulesRepositoriesDetailsWorkflowFiltersCard :repository-id="repository.id" />
           <ModulesRepositoriesDetailsMembersCard :repository-id="repository.id" />
+          <ModulesRepositoriesDetailsGroupsCard :repository-id="repository.id" />
         </div>
       </div>
     </template>

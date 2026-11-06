@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { UserGroupsModule } from './modules/user-groups/user-groups.module.js';
 
 import { CaslModule } from './casl/casl.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
@@ -35,6 +36,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PullRequestsModule,
     JobsModule,
     AuthModule,
+    UserGroupsModule,
     DashboardModule,
     HealthModule,
     WebhooksModule,

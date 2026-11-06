@@ -54,6 +54,7 @@ import {
   ApiWorkItemFilterOptionsSchema,
   ApiWorkItemLabelSchema,
 } from './api-contracts.js';
+import { ApiCreateUserSchema, ApiResetUserPasswordSchema } from './api/auth.js';
 
 /** Roles that can be returned for an authenticated Repovio user. */
 export const userRoles = ['SYSTEM_ADMIN', 'VIEWER', 'MANAGER'] as const;
@@ -811,3 +812,8 @@ export const HttpErrorSchema = z.strictObject({
 /** Defines the http error contract shared by its consumers. */ export type HttpError = z.output<
   typeof HttpErrorSchema
 >;
+
+/** Values accepted when creating a local account. */
+export type CreateUser = z.infer<typeof ApiCreateUserSchema>;
+/** Values accepted for an administrative password reset. */
+export type ResetUserPassword = z.infer<typeof ApiResetUserPasswordSchema>;

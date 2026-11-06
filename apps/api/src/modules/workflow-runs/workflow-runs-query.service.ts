@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createCaslAccessibleWhere } from '@querry-kit/nest/casl';
 import { QueryService, type BaseDelegateTypeMap, type QueryOptionsMap } from '@querry-kit/nest/core';
+import { resolveRepositoryAccess } from '../../casl/repository-access.js';
 
 import { CaslAbilityFactory } from '../../casl/casl-ability.factory.js';
 import { CaslAction } from '../../casl/casl-action.js';
@@ -86,10 +87,7 @@ export class WorkflowRunsQueryService extends QueryService<
    * @returns Ability used to constrain database queries.
    */
   async getReadAbility(user: AuthenticatedUser): Promise<AppAbility> {
-    const memberships = await this.prisma.repositoryMembership.findMany({
-      where: { userId: user.id },
-      select: { repositoryId: true, role: true },
-    });
+    const memberships = await resolveRepositoryAccess(this.prisma, user.id);
     return this.abilityFactory.createForUser(user, memberships);
   }
 

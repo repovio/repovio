@@ -8,6 +8,7 @@ import { PoliciesGuard } from './policies.guard.js';
 describe('PoliciesGuard', /** Groups scenarios for PoliciesGuard. */ () => {
   const reflector = { getAllAndOverride: jest.fn() } as unknown as Reflector;
   const prisma = {
+    repositoryGroupGrant: { findMany: jest.fn().mockResolvedValue([]) },
     repositoryMembership: { findMany: jest.fn() },
   };
   const abilityFactory = { createForUser: jest.fn() } as unknown as CaslAbilityFactory;

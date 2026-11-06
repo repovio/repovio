@@ -88,6 +88,7 @@
         <div class="grid gap-6 lg:grid-cols-2">
           <ModulesRepositoriesDetailsWorkflowFiltersCard :repository-id="repository.id" />
           <ModulesRepositoriesDetailsMembersCard :repository-id="repository.id" />
+          <ModulesRepositoriesDetailsGroupsCard :repository-id="repository.id" />
         </div>
       </section>
     </div>

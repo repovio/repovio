@@ -108,7 +108,9 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
     ),
   ).toBeVisible();
   await expect(page.getByText('Vite path traversal')).toBeVisible();
-  await expect(page.getByText('repovio/repovio')).toBeVisible();
+  await expect(
+    page.getByRole('table').getByText(`${alert.repositoryOwner}/${alert.repositoryName}`, { exact: true }),
+  ).toBeVisible();
   await page.getByRole('textbox', { name: 'Search alerts' }).fill('vite');
   await page.getByLabel('Updated from').fill('2026-09-01');
   await expect

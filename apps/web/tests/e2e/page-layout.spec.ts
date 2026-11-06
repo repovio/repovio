@@ -128,7 +128,10 @@ test('uses the shared page shell without introductory banners', async ({ page })
   await expect(page.locator('[data-page-introduction]')).toHaveCount(0);
   await expect(page.locator('[data-intro-banner-id]')).toHaveCount(0);
   await expect(page.locator('[data-sidebar-footer]')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Repovio' }).locator('img')).toHaveAttribute('src', '/logo.svg');
+  const sidebarLogo = page.getByRole('link', { name: 'Repovio', exact: true });
+  await expect(sidebarLogo.locator('img[src="/logo-wordmark-light.svg"]')).toHaveCount(1);
+  await expect(sidebarLogo.locator('img[src="/logo-wordmark-dark.svg"]')).toHaveCount(1);
+  await expect(sidebarLogo.locator('img:visible')).toHaveAttribute('src', /\/logo-wordmark-(light|dark)\.svg/);
   await expect(page.locator('link[rel="icon"][href="/favicon.svg"]')).toHaveAttribute('href', '/favicon.svg');
   await expect(page.getByRole('link', { name: 'GitHub' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Documentation' })).toBeVisible();
@@ -263,3 +266,241 @@ test('queues workflow retrieval from the repository details dialog', async ({ pa
   await expect.poll(() => syncRequested).toBe(true);
   await expect(page.getByText('Workflow runs were queued for retrieval.')).toBeVisible();
 });
+
+/** Supply deterministic resources for the toolbar layout matrix. */
+async function mockToolbarPages(page: Page): Promise<void> {
+  await mockApplication(page);
+  await page.route(/\/api\/v1\/(?:issues|pull-requests|security-alerts)(?:\?.*)?$/, (route) =>
+    route.fulfill({ json: emptyPage }),
+  );
+  await page.route(/\/api\/v1\/(?:issues|pull-requests)\/filter-options$/, (route) =>
+    route.fulfill({ json: { assignees: [], authors: [], labels: ['Bug'], milestones: [] } }),
+  );
+  await page.route(/\/api\/v1\/(?:issues|pull-requests)\/summary$/, (route) =>
+    route.fulfill({
+      json: {
+        assigned: 0,
+        drafts: 0,
+        failedWorkflows: 0,
+        open: 0,
+        recentlyUpdated: 0,
+        stale: 0,
+        workflowApprovalRequired: 0,
+      },
+    }),
+  );
+  await page.route('**/api/v1/security-alerts/filter-options', (route) =>
+    route.fulfill({
+      json: {
+        availability: [],
+        ecosystems: [],
+        manifests: [],
+        packages: [],
+        paths: ['src/example.ts'],
+        repositories: [],
+        rules: [],
+        scanners: [],
+        secretProviders: [],
+        secretTypes: [],
+        tools: [],
+      },
+    }),
+  );
+  await page.route('**/api/v1/security-alerts/summary', (route) =>
+    route.fulfill({
+      json: {
+        open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 },
+        severity: { CRITICAL: 0, HIGH: 0, INFO: 0, LOW: 0, MEDIUM: 0, UNKNOWN: 0 },
+        unavailableRepositories: 0,
+      },
+    }),
+  );
+}
+
+/** Assert each control fits its toolbar, rather than only checking the container. */
+async function expectToolbarControls(page: Page, width: number): Promise<void> {
+  const toolbars = page.locator('[data-page-toolbar], [data-table-toolbar], [data-page-navigation]');
+  for (const toolbar of await toolbars.all()) {
+    await expect(toolbar).toBeVisible();
+    await expect.poll(() => toolbar.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    const bounds = await toolbar.boundingBox();
+    expect(bounds).not.toBeNull();
+    for (const control of await toolbar.locator('button:visible, input:visible, a:visible').all()) {
+      const box = await control.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(bounds!.x - 1);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width + 1);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(bounds!.y + bounds!.height + 1);
+      if (width < 640) {
+        expect(box!.width).toBeGreaterThanOrEqual(44);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+      }
+    }
+  }
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth))
+    .toBe(true);
+}
+
+for (const locale of ['en', 'de']) {
+  for (const width of [320, 390, 768, 1440]) {
+    test(`wraps toolbar controls at ${width}px in ${locale}`, async ({ page, context }, testInfo) => {
+      test.setTimeout(120_000);
+      await context.addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
+      await page.setViewportSize({ height: 900, width });
+      await mockToolbarPages(page);
+      for (const path of [
+        '/',
+        '/issues',
+        '/pull-requests',
+        '/alerts/code',
+        '/alerts/dependencies',
+        '/alerts/secrets',
+        '/workflow-runs/needs-attention',
+        '/repositories',
+        '/admin/users',
+        '/admin/providers',
+        '/notifications',
+        '/notifications/history',
+        '/admin/settings',
+      ]) {
+        await page.goto(path);
+        await expect(page.locator('[data-page-toolbar]')).toBeVisible({ timeout: 15_000 });
+        await expectToolbarControls(page, width);
+        if (path === '/issues') {
+          const actions = page.locator('[data-page-toolbar] [data-slot="right"]');
+          const search = actions.locator('input').first();
+          if (width < 640) {
+            expect((await search.boundingBox())!.width).toBeGreaterThanOrEqual(
+              (await actions.boundingBox())!.width - 2,
+            );
+          }
+          for (const theme of ['light', 'dark']) {
+            await page.evaluate((theme) => window.localStorage.setItem('nuxt-color-mode', theme), theme);
+            await page.reload();
+            await expect(page.locator('html')).toHaveClass(new RegExp(theme));
+            await expect(
+              actions
+                .locator('button[aria-label]')
+                .filter({ has: page.locator('[data-slot="leadingIcon"]') })
+                .first(),
+            ).toBeVisible();
+            await expect(actions.locator('input').first()).toBeVisible();
+            await page.screenshot({ path: testInfo.outputPath(`issues-${theme}.png`), fullPage: true });
+          }
+        }
+      }
+    });
+  }
+}
+
+test('operates wrapped filters and preserves refresh loading until every request completes', async ({ page }) => {
+  await page.setViewportSize({ height: 900, width: 320 });
+  await mockToolbarPages(page);
+  const requestedUrls: string[] = [];
+  let releaseSummary: (() => void) | undefined;
+  let holdSummary = false;
+  await page.route('**/api/v1/issues/summary', async (route) => {
+    if (holdSummary)
+      await new Promise<void>((resolve) => {
+        releaseSummary = resolve;
+      });
+    await route.fulfill({ json: { assigned: 0, open: 0, recentlyUpdated: 0, stale: 0 } });
+  });
+  await page.route(/\/api\/v1\/issues(?:\?.*)?$/, (route) => {
+    requestedUrls.push(route.request().url());
+    return route.fulfill({ json: emptyPage });
+  });
+  await page.goto('/issues');
+  const toolbar = page.locator('[data-page-toolbar]');
+  const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
+  await expect(refresh).toBeEnabled();
+  await toolbar.getByRole('textbox', { name: 'Search work items' }).fill('mobile');
+  await toolbar.getByRole('button', { name: 'Labels', exact: true }).click();
+  await page.getByRole('option', { name: 'Bug', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await toolbar.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
+  await toolbar.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
+  await expect.poll(() => requestedUrls.at(-1) ?? '').toContain('mobile');
+  await expect.poll(() => decodeURIComponent(requestedUrls.at(-1) ?? '')).toContain('2026-09-13T23:59:59.999Z');
+  expect(decodeURIComponent(requestedUrls.at(-1)!)).toContain('bug');
+
+  for (const name of ['Sort', 'Filter', 'Table options']) {
+    const trigger = toolbar.getByRole('button', { name, exact: true });
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press('Enter');
+    const popover = page.getByRole('dialog', { name, exact: true });
+    await expect(popover).toBeVisible();
+    if (name === 'Filter') {
+      await popover.getByRole('combobox', { name: 'Select field' }).click();
+      await page.getByRole('option', { name: 'State', exact: true }).click();
+      await popover.getByRole('button', { name: 'Add filter', exact: true }).click();
+      await expect(popover.getByRole('button', { name: 'Remove filter' })).toBeVisible();
+    }
+    await expect
+      .poll(() =>
+        popover.evaluate((element) => {
+          const box = element.getBoundingClientRect();
+          return box.left >= 0 && box.right <= window.innerWidth && element.scrollWidth <= element.clientWidth;
+        }),
+      )
+      .toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(popover).toBeHidden();
+    await expect(trigger).toBeFocused();
+  }
+  holdSummary = true;
+  await refresh.click();
+  await expect.poll(() => Boolean(releaseSummary)).toBe(true);
+  await expect(refresh).toBeDisabled();
+  releaseSummary!();
+  await expect(refresh).toBeEnabled();
+});
+
+for (const width of [320, 1440]) {
+  test(`restores Query Kit shortcut focus without stealing nested or outside focus at ${width}px`, async ({ page }) => {
+    await mockApplication(page);
+    await page.setViewportSize({ height: 900, width });
+    await page.goto('/workflow-runs/needs-attention');
+    const toolbar = page.locator('[data-page-toolbar]');
+    const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
+    await expect(refresh).toBeEnabled();
+    const outside = toolbar.getByRole('textbox', { name: 'Search workflow runs', exact: true });
+    for (const [name, shortcut] of [
+      ['Sort', 'Shift+S'],
+      ['Filter', 'Shift+F'],
+      ['Table options', 'Shift+O'],
+    ]) {
+      const trigger = toolbar.getByRole('button', { name, exact: true });
+      await trigger.focus();
+      await page.keyboard.press(shortcut!);
+      const popover = page.getByRole('dialog', { name, exact: true });
+      await expect(popover).toBeVisible();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      await page.keyboard.press('Escape');
+      await expect(popover).toBeHidden();
+      await expect(trigger).toBeFocused();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await trigger.click();
+      await expect(popover).toBeVisible();
+      await outside.click();
+      await expect(popover).toBeHidden();
+      await expect(outside).toBeFocused();
+    }
+
+    const filter = toolbar.getByRole('button', { name: 'Filter', exact: true });
+    await filter.click();
+    const popover = page.getByRole('dialog', { name: 'Filter', exact: true });
+    const field = popover.getByRole('combobox', { name: 'Select field', exact: true });
+    await field.click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox')).toBeHidden();
+    await expect(popover).toBeVisible();
+    await expect(field).toBeFocused();
+    await outside.click();
+    await expect(popover).toBeHidden();
+    await expect(outside).toBeFocused();
+  });
+}

@@ -6,7 +6,7 @@
     :title="$t('dashboard.title')"
   >
     <template #actions>
-      <div class="flex items-center gap-2">
+      <div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">
         <USelect
           v-model="range"
           class="w-40"

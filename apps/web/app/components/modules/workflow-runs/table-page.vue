@@ -4,28 +4,42 @@
       <UInput
         v-if="searchable"
         v-model="search"
-        class="w-36 sm:w-56"
+        class="w-full sm:w-56"
         icon="i-lucide-search"
         :aria-label="$t('workflowRuns.search')"
         :placeholder="$t('workflowRuns.searchPlaceholder')"
       />
-      <UButton
-        color="neutral"
-        icon="i-lucide-refresh-cw"
-        variant="soft"
-        :aria-label="$t('dashboard.refresh')"
-        :loading="loading"
-        @click="refresh"
-      />
-      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts />
-      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts />
-      <QTableOptions
-        v-model:column-order="columnOrder"
-        v-model:column-pinning="columnPinning"
-        v-model:invisible-columns="columnVisibility"
-        :columns="columnDefinition"
-        shortcuts
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <UButton
+          color="neutral"
+          icon="i-lucide-refresh-cw"
+          variant="soft"
+          :aria-label="$t('dashboard.refresh')"
+          :loading="loading"
+          @click="refresh"
+        />
+        <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+          <template #trigger="{ active, open, toggle }">
+            <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+          </template>
+        </QTableSorting>
+        <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+          <template #trigger="{ active, open, toggle }">
+            <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
+          </template>
+        </QTableFiltering>
+        <QTableOptions
+          v-model:column-order="columnOrder"
+          v-model:column-pinning="columnPinning"
+          v-model:invisible-columns="columnVisibility"
+          :columns="columnDefinition"
+          shortcuts
+        >
+          <template #trigger="{ open, toggle }">
+            <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+          </template>
+        </QTableOptions>
+      </div>
     </template>
 
     <UAlert

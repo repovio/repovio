@@ -9,7 +9,12 @@
     :title="$t('settings.title')"
   >
     <template #navigation>
-      <UNavigationMenu highlight class="-mx-1 flex-1" :items="navigation" />
+      <UNavigationMenu
+        highlight
+        class="-mx-1 min-w-0 flex-1"
+        :items="navigation"
+        :ui="{ list: 'flex-wrap', link: 'whitespace-normal', linkLabel: 'whitespace-normal' }"
+      />
     </template>
 
     <div class="mx-auto w-full max-w-3xl" data-settings-page>

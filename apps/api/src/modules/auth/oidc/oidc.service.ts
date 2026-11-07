@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { AvatarService } from '../avatar.service.js';
 
 import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { OidcConfig, User } from '../../../generated/prisma/client.js';
@@ -50,11 +51,13 @@ export class OidcService {
    * @param prisma - Database access and transaction service.
    * @param credentials - At-rest credential encryption service.
    * @param auth - Existing bearer-session service.
+   * @param avatars - Protected normalization and storage for provider profile pictures.
    */
   constructor(
     private readonly prisma: PrismaService,
     private readonly credentials: CredentialEncryptionService,
     private readonly auth: AuthService,
+    private readonly avatars: AvatarService,
   ) {}
 
   /**
@@ -417,7 +420,7 @@ export class OidcService {
     const existing = await this.prisma.user.findUnique({
       where: { oidcIssuer_oidcSubject: { oidcIssuer: issuer, oidcSubject: subject } },
     });
-    return this.prisma.user.upsert({
+    const user = await this.prisma.user.upsert({
       create: { authProvider: 'OIDC', firstName, lastName, oidcIssuer: issuer, oidcSubject: subject, role, username },
       update: {
         authVersion: existing && existing.role !== role ? { increment: 1 } : undefined,
@@ -427,6 +430,8 @@ export class OidcService {
       },
       where: { oidcIssuer_oidcSubject: { oidcIssuer: issuer, oidcSubject: subject } },
     });
+    await this.avatars.synchronizeOidc(user.id, claims.picture);
+    return user;
   }
 
   /**

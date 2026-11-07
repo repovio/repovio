@@ -330,6 +330,8 @@
     "avatarCropPreview": "Vorschau des Avatar-Zuschnitts",
     "avatarCropReset": "Zurücksetzen",
     "avatarCropTitle": "Profilbild zuschneiden",
+    "avatarSourceLocal": "Dein eigenes Profilbild wird verwendet.",
+    "avatarSourceOidc": "Das Profilbild deines Identitätsanbieters wird verwendet.",
     "avatarDescription": "Lade ein Bild hoch oder importiere es über eine sichere URL. Repovio speichert eine WebP-Version mit 256 × 256 Pixeln.",
     "avatarImport": "Bild importieren",
     "avatarImportError": "Das Bild konnte nicht von dieser URL importiert werden.",

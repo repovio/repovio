@@ -121,7 +121,7 @@ export class UserGroupsController {
     await this.groups.requireGroup(request.user, id);
     return ResourceQuery.query({
       ability: this.users.getReadAbility(request.user),
-      include: { avatar: { select: { updatedAt: true } } },
+      include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } },
       query: {
         ...this.users.toQueryOptions(query),
         where: { AND: [query.where ?? {}, { groupMemberships: { some: { groupId: id } } }] },

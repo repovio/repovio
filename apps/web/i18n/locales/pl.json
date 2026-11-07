@@ -326,6 +326,8 @@
     "avatarCropPreview": "Podgląd kadrowania awatara",
     "avatarCropReset": "Resetuj",
     "avatarCropTitle": "Przytnij zdjęcie profilowe",
+    "avatarSourceLocal": "Używane jest Twoje własne zdjęcie profilowe.",
+    "avatarSourceOidc": "Używane jest zdjęcie profilowe od dostawcy tożsamości.",
     "avatarDescription": "Prześlij obraz lub zaimportuj go z bezpiecznego adresu URL. Repovio zapisuje wersję WebP 256 × 256.",
     "avatarImport": "Importuj obraz",
     "avatarImportError": "Nie udało się zaimportować obrazu z tego adresu URL.",
@@ -1098,5 +1100,12 @@
       "SUSPENDED": "Zawieszona",
       "REMOVED": "Usunięta"
     }
+  },
+  "destructiveAction": {
+    "title": "Potwierdź usunięcie",
+    "description": "Usunąć {target}? Tej operacji może nie dać się cofnąć.",
+    "confirm": "Usuń",
+    "error": "Usuwanie nie powiodło się. Spróbuj ponownie.",
+    "cancel": "Anuluj"
   }
 }

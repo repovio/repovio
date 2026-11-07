@@ -58,6 +58,7 @@
         <div class="flex items-center gap-2">
           <CommonUserAvatar
             size="xs"
+            :avatar-source="row.original.avatarSource"
             :avatar-updated-at="row.original.avatarUpdatedAt"
             :first-name="row.original.firstName"
             :last-name="row.original.lastName"
@@ -215,7 +216,7 @@ const userTable = useTable({
   defaultItemsPerPage: 10,
   endpoint: 'users',
   name: 'users',
-  staticFields: ['authProvider', 'avatarUpdatedAt', 'firstName', 'id', 'lastName'],
+  staticFields: ['avatarSource', 'authProvider', 'avatarUpdatedAt', 'firstName', 'id', 'lastName'],
 });
 const {
   columnOrder,

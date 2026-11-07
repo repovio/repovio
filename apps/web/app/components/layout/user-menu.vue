@@ -16,6 +16,7 @@
     >
       <CommonUserAvatar
         size="2xs"
+        :avatar-source="auth.user.avatarSource"
         :avatar-updated-at="auth.user.avatarUpdatedAt"
         :first-name="auth.user.firstName"
         :last-name="auth.user.lastName"

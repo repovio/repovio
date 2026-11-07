@@ -132,6 +132,7 @@ describe('RepositoriesController', /** Groups scenarios for RepositoriesControll
         id: 'repository-1',
         members: [
           {
+            avatarSource: 'LOCAL',
             avatarUpdatedAt: '2026-09-12T10:00:00.000Z',
             firstName: 'Marie',
             lastName: 'Member',

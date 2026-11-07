@@ -79,7 +79,7 @@ export class UsersController {
     const ability = this.users.getReadAbility(request.user);
     return ResourceQuery.query({
       ability,
-      include: { avatar: { select: { updatedAt: true } } },
+      include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } },
       /** Maps map. */
       map: (user: UserWithAvatar, currentAbility) => UserDto.fromModel(user, currentAbility),
       query: this.users.toQueryOptions(query),

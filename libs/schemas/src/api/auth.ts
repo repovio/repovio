@@ -105,6 +105,7 @@ export const ApiUserQuerySchema = resourceQuerySchemas.User.extend({});
 /** Shared User boundary schema. */
 export const ApiUserSchema = z.strictObject({
   authProvider: z.union([z.literal('LOCAL'), z.literal('OIDC')]),
+  avatarSource: z.enum(['LOCAL', 'OIDC']).nullable().optional(),
   avatarUpdatedAt: z.union([z.null(), z.iso.datetime({ offset: true })]),
   firstName: z.union([z.null(), z.string()]),
   id: z.string(),

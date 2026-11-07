@@ -11,7 +11,11 @@ for (const locale of ['en', 'de']) {
         localStorage.setItem('repovio.access-token', 'synthetic-token');
       },
     );
-    await page.context().addCookies([{ name: 'repovio-locale', value: locale, domain: 'localhost', path: '/' }]);
+    await page
+      .context()
+      .addCookies([
+        { name: 'repovio-locale', value: locale, url: test.info().project.use.baseURL ?? 'http://localhost:3000' },
+      ]);
     await page.route(
       '**/api/v1/auth/me',
       /** Supply an administrator identity. */ (route) =>

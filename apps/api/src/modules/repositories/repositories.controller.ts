@@ -111,7 +111,13 @@ export class RepositoriesController {
           select: {
             userId: true,
             user: {
-              select: { avatar: { select: { updatedAt: true } }, firstName: true, lastName: true, username: true },
+              select: {
+                avatar: { select: { updatedAt: true } },
+                oidcAvatar: { select: { updatedAt: true } },
+                firstName: true,
+                lastName: true,
+                username: true,
+              },
             },
           },
         },
@@ -164,7 +170,13 @@ export class RepositoriesController {
               select: {
                 userId: true,
                 user: {
-                  select: { avatar: { select: { updatedAt: true } }, firstName: true, lastName: true, username: true },
+                  select: {
+                    avatar: { select: { updatedAt: true } },
+                    oidcAvatar: { select: { updatedAt: true } },
+                    firstName: true,
+                    lastName: true,
+                    username: true,
+                  },
                 },
               },
             },

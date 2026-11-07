@@ -37,7 +37,8 @@ describe('OidcService', /** Groups scenarios for OidcService. */ () => {
   };
   const credentials = { decrypt: jest.fn(), encrypt: jest.fn() };
   const auth = { createSession: jest.fn() };
-  const service = new OidcService(prisma as never, credentials as never, auth as never);
+  const avatars = { synchronizeOidc: jest.fn() };
+  const service = new OidcService(prisma as never, credentials as never, auth as never, avatars as never);
 
   beforeEach(
     /** Prepares shared test state for beforeEach. */ () => {
@@ -150,6 +151,7 @@ describe('OidcService', /** Groups scenarios for OidcService. */ () => {
       provisioning.provisionUser('https://id.example', 'stable-subject', 'VIEWER', {
         email: 'local-user@example.com',
         preferred_username: 'local-user',
+        picture: 'https://images.example/avatar.png',
       }),
     ).resolves.toEqual({ id: 'oidc-user-id' });
     expect(prisma.user.upsert).toHaveBeenCalledWith({
@@ -166,6 +168,7 @@ describe('OidcService', /** Groups scenarios for OidcService. */ () => {
       },
     });
     expect(prisma.user.upsert.mock.calls[0]?.[0].create).not.toHaveProperty('email');
+    expect(avatars.synchronizeOidc).toHaveBeenCalledWith('oidc-user-id', 'https://images.example/avatar.png');
   });
 
   it('increments the authentication version when group mappings change an existing OIDC role', /** Verifies increments the authentication version when group mappings change an existing OIDC role. */ async () => {

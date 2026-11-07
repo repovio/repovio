@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { resolveAvatarMetadata } from './avatar-metadata.js';
 
 import { ENV } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -32,12 +33,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { authVersion?: number; sub: string }): Promise<AuthenticatedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      include: { avatar: { select: { updatedAt: true } } },
+      include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } },
     });
     if (!user || (payload.authVersion ?? 0) !== user.authVersion) throw new UnauthorizedException();
     return {
       authProvider: user.authProvider,
-      avatarUpdatedAt: user.avatar?.updatedAt ?? null,
+      ...resolveAvatarMetadata(user),
       firstName: user.firstName,
       id: user.id,
       lastName: user.lastName,

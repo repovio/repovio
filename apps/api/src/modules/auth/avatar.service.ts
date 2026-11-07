@@ -3,6 +3,7 @@ import { lookup } from 'node:dns/promises';
 import type { IncomingMessage } from 'node:http';
 import { request } from 'node:https';
 import { BlockList, isIP } from 'node:net';
+import { avatarMetadataInclude, resolveAvatarMetadata } from './avatar-metadata.js';
 
 import {
   BadGatewayException,
@@ -112,9 +113,47 @@ export class AvatarService {
    * @throws NotFoundException - Avatar not found.
    */
   async get(userId: string): Promise<{ data: Uint8Array; etag: string }> {
-    const avatar = await this.prisma.userAvatar.findUnique({ where: { userId }, select: { data: true, etag: true } });
+    const selection = { where: { userId }, select: { data: true, etag: true } } as const;
+    const avatar =
+      (await this.prisma.userAvatar.findUnique(selection)) ?? (await this.prisma.oidcUserAvatar.findUnique(selection));
     if (!avatar) throw new NotFoundException('Avatar not found.');
     return avatar;
+  }
+
+  /**
+   * Load the effective avatar revision after a manual image has been removed.
+   * @param userId - Authenticated local user identifier.
+   * @returns Source and timestamp of the preferred remaining avatar.
+   */
+  async metadata(userId: string): Promise<ReturnType<typeof resolveAvatarMetadata>> {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: avatarMetadataInclude });
+    return resolveAvatarMetadata(user);
+  }
+
+  /**
+   * Refresh a provider fallback without modifying manual images or rejecting sign-in.
+   * @param userId - User provisioned from a verified issuer and subject.
+   * @param picture - Verified OIDC picture claim; URLs are still subject to remote-import restrictions.
+   * @returns Nothing after synchronization; invalid or unavailable pictures preserve the previous fallback.
+   */
+  async synchronizeOidc(userId: string, picture: unknown): Promise<void> {
+    try {
+      if (picture == null || (typeof picture === 'string' && !picture.trim())) {
+        await this.prisma.oidcUserAvatar.deleteMany({ where: { userId } });
+        return;
+      }
+      if (typeof picture !== 'string' || picture.length > 4096) return;
+      const normalized = await this.normalize(await this.download(picture.trim()));
+      const etag = createHash('sha256').update(normalized).digest('hex');
+      const data = new Uint8Array(normalized);
+      await this.prisma.oidcUserAvatar.upsert({
+        where: { userId },
+        create: { userId, data, etag },
+        update: { data, etag },
+      });
+    } catch {
+      // Profile image availability must never prevent an otherwise valid sign-in.
+    }
   }
 
   /**

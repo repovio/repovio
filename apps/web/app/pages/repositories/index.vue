@@ -90,6 +90,7 @@
           <UTooltip v-for="member in row.original.members" :key="member.userId" :text="getUserIdentityLabel(member)">
             <CommonUserAvatar
               size="sm"
+              :avatar-source="member.avatarSource"
               :avatar-updated-at="member.avatarUpdatedAt"
               :first-name="member.firstName"
               :last-name="member.lastName"

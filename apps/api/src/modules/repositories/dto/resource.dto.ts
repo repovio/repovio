@@ -9,6 +9,7 @@ import {
   ApiWorkflowRunSchema,
 } from '@repovio/schemas';
 import { createZodDto } from '../../../util/schema-dto.js';
+import { resolveAvatarMetadata } from '../../auth/avatar-metadata.js';
 
 import { toWire } from '../../../util/to-wire.js';
 
@@ -89,7 +90,7 @@ export class RepositoryDto extends createZodDto(ApiRepositorySchema) {
             providerAccountId: model.providerAccountId,
             members: (model.memberships ?? []).map(
               /** Projects each entry using the members mapping. */ (membership) => ({
-                avatarUpdatedAt: membership.user.avatar?.updatedAt ?? null,
+                ...resolveAvatarMetadata(membership.user),
                 firstName: membership.user.firstName,
                 lastName: membership.user.lastName,
                 userId: membership.userId,
@@ -161,7 +162,13 @@ export class RepositoryDetailDto extends createZodDto(ApiRepositoryDetailSchema)
 export type RepositoryResourceModel = Repository & {
   _count?: { workflowRuns: number };
   memberships?: Array<{
-    user: { avatar: { updatedAt: Date } | null; firstName: string | null; lastName: string | null; username: string };
+    user: {
+      avatar: { updatedAt: Date } | null;
+      oidcAvatar?: { updatedAt: Date } | null;
+      firstName: string | null;
+      lastName: string | null;
+      username: string;
+    };
     userId: string;
   }>;
   syncRequest?: RepositorySyncRequest | null;
@@ -255,6 +262,7 @@ export class RepositoryMembershipDto extends createZodDto(ApiRepositoryMembershi
     model: RepositoryMembership & {
       user: Pick<User, 'firstName' | 'id' | 'lastName' | 'role' | 'username'> & {
         avatar: { updatedAt: Date } | null;
+        oidcAvatar?: { updatedAt: Date } | null;
       };
     },
   ): RepositoryMembershipDto {
@@ -264,7 +272,7 @@ export class RepositoryMembershipDto extends createZodDto(ApiRepositoryMembershi
         repositoryId: model.repositoryId,
         role: model.role,
         user: {
-          avatarUpdatedAt: model.user.avatar?.updatedAt ?? null,
+          ...resolveAvatarMetadata(model.user),
           firstName: model.user.firstName,
           id: model.user.id,
           lastName: model.user.lastName,

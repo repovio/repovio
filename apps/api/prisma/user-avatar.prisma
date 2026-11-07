@@ -9,3 +9,15 @@ model UserAvatar {
 
   @@map("user_avatars")
 }
+
+model OidcUserAvatar {
+  userId    String   @id @db.Uuid
+  data      Bytes    @db.ByteA
+  etag      String   @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("oidc_user_avatars")
+}

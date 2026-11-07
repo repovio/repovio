@@ -330,6 +330,8 @@
     "avatarCropPreview": "Avatar crop preview",
     "avatarCropReset": "Reset",
     "avatarCropTitle": "Crop profile picture",
+    "avatarSourceLocal": "Using your custom profile picture.",
+    "avatarSourceOidc": "Using the profile picture from your identity provider.",
     "avatarDescription": "Upload an image or import one from a secure URL. Repovio stores a 256 × 256 WebP version.",
     "avatarImport": "Import image",
     "avatarImportError": "The image could not be imported from this URL.",

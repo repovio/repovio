@@ -12,6 +12,7 @@ import { getUserIdentityLabel, getUserInitials } from '~/utils/user-identity';
 
 const props = withDefaults(
   defineProps<{
+    avatarSource?: 'LOCAL' | 'OIDC' | null;
     avatarUpdatedAt?: string | null;
     firstName?: string | null;
     lastName?: string | null;
@@ -32,11 +33,11 @@ let loadSequence = 0;
 
 watch(
   /** Reads the reactive dependencies observed by this watcher. */
-  () => [props.userId, props.avatarUpdatedAt] as const,
+  () => [props.userId, props.avatarUpdatedAt, props.avatarSource] as const,
   /** Synchronizes user avatar when the observed state changes. */
-  async ([userId, avatarUpdatedAt]) => {
+  async ([userId, avatarUpdatedAt, avatarSource]) => {
     const sequence = ++loadSequence;
-    const loadedSource = await load(userId, avatarUpdatedAt);
+    const loadedSource = await load(userId, avatarUpdatedAt, avatarSource);
     if (sequence === loadSequence) source.value = loadedSource;
   },
   { immediate: true },

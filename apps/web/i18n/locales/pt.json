@@ -326,6 +326,8 @@
     "avatarCropPreview": "Pré-visualização do recorte do avatar",
     "avatarCropReset": "Repor",
     "avatarCropTitle": "Recortar imagem de perfil",
+    "avatarSourceLocal": "A sua imagem de perfil personalizada está a ser utilizada.",
+    "avatarSourceOidc": "A imagem de perfil do seu fornecedor de identidade está a ser utilizada.",
     "avatarDescription": "Carregue uma imagem ou importe-a de um URL seguro. O Repovio guarda uma versão WebP de 256 × 256.",
     "avatarImport": "Importar imagem",
     "avatarImportError": "Não foi possível importar a imagem deste URL.",
@@ -1098,5 +1100,12 @@
       "SUSPENDED": "Suspensa",
       "REMOVED": "Removida"
     }
+  },
+  "destructiveAction": {
+    "title": "Confirmar remoção",
+    "description": "Remover {target}? Esta ação pode não ser reversível.",
+    "confirm": "Remover",
+    "error": "A remoção falhou. Tente novamente.",
+    "cancel": "Cancelar"
   }
 }

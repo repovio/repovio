@@ -36,6 +36,7 @@
           <template #item-leading="{ item }">
             <CommonUserAvatar
               size="2xs"
+              :avatar-source="item.avatarSource"
               :avatar-updated-at="item.avatarUpdatedAt"
               :first-name="item.firstName"
               :last-name="item.lastName"
@@ -69,6 +70,7 @@
         <div class="flex items-center gap-2">
           <CommonUserAvatar
             size="xs"
+            :avatar-source="row.original.user.avatarSource"
             :avatar-updated-at="row.original.user.avatarUpdatedAt"
             :first-name="row.original.user.firstName"
             :last-name="row.original.user.lastName"
@@ -182,6 +184,7 @@ const availableUserOptions = computed(
       )
       .map(
         /** Projects each entry using the availableUserOptions mapping. */ (user) => ({
+          avatarSource: user.avatarSource,
           avatarUpdatedAt: user.avatarUpdatedAt,
           firstName: user.firstName,
           label: getUserIdentityLabel(user),

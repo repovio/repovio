@@ -23,6 +23,7 @@
     <div v-if="auth.user" class="flex flex-wrap items-center gap-4">
       <CommonUserAvatar
         size="xl"
+        :avatar-source="auth.user.avatarSource"
         :avatar-updated-at="auth.user.avatarUpdatedAt"
         :first-name="auth.user.firstName"
         :last-name="auth.user.lastName"
@@ -30,7 +31,7 @@
         :username="auth.user.username"
       />
       <UButton
-        v-if="auth.user.avatarUpdatedAt"
+        v-if="auth.user.avatarUpdatedAt && auth.user.avatarSource !== 'OIDC'"
         color="error"
         icon="i-lucide-trash-2"
         variant="soft"
@@ -39,6 +40,10 @@
         @click="remove"
       />
     </div>
+
+    <p v-if="auth.user?.avatarSource" class="text-sm text-muted">
+      {{ $t(auth.user.avatarSource === 'OIDC' ? 'settings.avatarSourceOidc' : 'settings.avatarSourceLocal') }}
+    </p>
 
     <UForm :schema="localizeFormSchema(avatarUploadSchema, $t('forms.invalidValue'))" :state="{ file: selectedFile }">
       <UFormField name="file" :error="fileValidationError || undefined">
@@ -251,7 +256,7 @@ async function save(file: File): Promise<void> {
   }
 }
 
-/** Delete the persisted avatar and switch every surface back to initials. */
+/** Delete the manual avatar and restore the provider image or initials on every surface. */
 async function remove(): Promise<void> {
   await confirmDestructiveAction(
     t('settings.avatar'),

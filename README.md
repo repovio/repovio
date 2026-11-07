@@ -84,6 +84,14 @@ by the Nest API's `envalid` configuration:
 OIDC provider settings are managed under **Settings → Authentication**. The client secret is encrypted with
 `TOKEN_ENCRYPTION_KEY`; see [authentication](https://repovio.de/docs/authentication) for provider setup and recovery behavior.
 
+OIDC profile pictures are refreshed from the verified `picture` claim at sign-in and stored as normalized WebP images.
+Custom uploads take precedence; removing a custom picture restores the OIDC image. Remote images must satisfy the
+existing HTTPS, public-address, size, and image-format restrictions. Download failures do not prevent sign-in.
+
+The OIDC-avatar migration only adds a separate table and foreign key; existing users and manual images are preserved.
+Operators must apply migrations before starting the updated API. Application rollback can retain the added table;
+dropping it would discard cached OIDC images. No production migration is performed by this change.
+
 Provider access tokens, repository webhook secrets, and notification credentials
 are not environment variables. Repovio stores them encrypted in PostgreSQL
 through its application configuration. See [notification configuration](https://repovio.de/docs/notifications) for Apprise URL handling and migration guidance.

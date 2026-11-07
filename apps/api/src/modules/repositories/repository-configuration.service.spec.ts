@@ -147,7 +147,9 @@ describe('RepositoryConfigurationService', /** Groups scenarios for RepositoryCo
       where: { userId_repositoryId: { repositoryId: repository.id, userId: 'user-id' } },
       create: { repositoryId: repository.id, role: 'MANAGER', userId: 'user-id' },
       update: { role: 'MANAGER' },
-      include: { user: { include: { avatar: { select: { updatedAt: true } } } } },
+      include: {
+        user: { include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } } },
+      },
     });
   });
 

@@ -120,6 +120,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
       issueRetentionDays: 14,
       members: [
         {
+          avatarSource: 'LOCAL',
           avatarUpdatedAt: '2026-09-12T10:00:00.000Z',
           firstName: 'Vera',
           lastName: 'Viewer',

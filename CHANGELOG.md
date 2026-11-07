@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- a385804: Import verified OIDC profile pictures as a separately stored fallback while preserving custom avatars and exposing the displayed image source.
+
+### Patch Changes
+
+- a385804: Align settings navigation, user actions, account labels, and the provider approval notice with the shared page layout.
+- a385804: Confirm destructive actions with accessible Nuxt UI dialogs, pending protection, and retryable errors.
+
 ## 2.0.0
 
 ### Major Changes

@@ -28,16 +28,15 @@
       />
     </template>
 
-    <div class="mx-4 mt-4">
-      <UAlert
-        color="warning"
-        data-provider-approval-notice
-        icon="i-lucide-info"
-        variant="subtle"
-        :description="$t('awaitingApproval.providerApprovalDescription')"
-        :title="$t('awaitingApproval.providerApprovalTitle')"
-      />
-    </div>
+    <UAlert
+      color="warning"
+      class="rounded-none ring-0 border-0 [box-shadow:none]"
+      data-provider-approval-notice
+      icon="i-lucide-info"
+      variant="subtle"
+      :description="$t('awaitingApproval.providerApprovalDescription')"
+      :title="$t('awaitingApproval.providerApprovalTitle')"
+    />
 
     <UAlert
       v-if="loadError"

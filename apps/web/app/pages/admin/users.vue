@@ -9,34 +9,28 @@
     :title="$t('users.title')"
   >
     <template #actions>
-      <QTableToolbar>
-        <template #new>
-          <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
+      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
         </template>
-        <template #options>
-          <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
-            <template #trigger="{ active, open, toggle }">
-              <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
-            </template>
-          </QTableSorting>
-          <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
-            <template #trigger="{ active, open, toggle }">
-              <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
-            </template>
-          </QTableFiltering>
-          <QTableOptions
-            v-model:column-order="columnOrder"
-            v-model:column-pinning="columnPinning"
-            v-model:invisible-columns="columnVisibility"
-            :columns="columnDefinition"
-            shortcuts
-          >
-            <template #trigger="{ open, toggle }">
-              <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
-            </template>
-          </QTableOptions>
+      </QTableSorting>
+      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
         </template>
-      </QTableToolbar>
+      </QTableFiltering>
+      <QTableOptions
+        v-model:column-order="columnOrder"
+        v-model:column-pinning="columnPinning"
+        v-model:invisible-columns="columnVisibility"
+        :columns="columnDefinition"
+        shortcuts
+      >
+        <template #trigger="{ open, toggle }">
+          <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+        </template>
+      </QTableOptions>
+      <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
     </template>
 
     <UAlert

@@ -17,7 +17,7 @@
       </template>
     </UDashboardToolbar>
 
-    <UDashboardToolbar v-if="$slots.navigation" class="h-auto min-w-0 overflow-visible py-2" data-page-navigation>
+    <UDashboardToolbar v-if="$slots.navigation" class="h-auto min-w-0 overflow-visible" data-page-navigation>
       <slot name="navigation" />
     </UDashboardToolbar>
 

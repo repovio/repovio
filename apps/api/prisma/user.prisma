@@ -12,6 +12,7 @@ model User {
   oidcIssuer                      String?                        @db.VarChar(2048)
   oidcSubject                     String?                        @db.VarChar(512)
   role                            UserRole                       @default(VIEWER)
+  oidcAvatar                      OidcUserAvatar?
   avatar                          UserAvatar?
   mcpAccessTokens                 McpAccessToken[]
   groupMemberships                UserGroupMember[]

@@ -1,6 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { resolveAvatarMetadata } from './avatar-metadata.js';
 
 import { ENV } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -44,7 +45,10 @@ export class AuthService {
    * @throws UnauthorizedException - Invalid credentials.
    */
   async signIn(username: string, password: string): Promise<AuthResult> {
-    const user = await this.prisma.user.findUnique({ where: { username }, include: { avatar: avatarMetadata } });
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include: { avatar: avatarMetadata, oidcAvatar: avatarMetadata },
+    });
     if (!user?.passwordHash || user.authProvider === 'OIDC' || !(await bcrypt.compare(password, user.passwordHash)))
       throw new UnauthorizedException('Invalid credentials.');
     const authenticatedUser = this.toAuthenticatedUser(user);
@@ -106,7 +110,7 @@ export class AuthService {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: { authVersion: { increment: 1 }, passwordHash: await bcrypt.hash(newPassword, 12) },
-      include: { avatar: avatarMetadata },
+      include: { avatar: avatarMetadata, oidcAvatar: avatarMetadata },
     });
     const authenticatedUser = this.toAuthenticatedUser(updatedUser);
     return {
@@ -145,7 +149,7 @@ export class AuthService {
         lastName: input.lastName?.trim() || null,
         username,
       },
-      include: { avatar: avatarMetadata },
+      include: { avatar: avatarMetadata, oidcAvatar: avatarMetadata },
     });
     return this.toAuthenticatedUser(updatedUser);
   }
@@ -165,7 +169,7 @@ export class AuthService {
       });
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        include: { avatar: avatarMetadata },
+        include: { avatar: avatarMetadata, oidcAvatar: avatarMetadata },
       });
       if (!user || (payload.authVersion ?? 0) !== user.authVersion) throw new UnauthorizedException();
       return this.toAuthenticatedUser(user);
@@ -184,7 +188,7 @@ export class AuthService {
   async createSession(userId: string): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { avatar: avatarMetadata },
+      include: { avatar: avatarMetadata, oidcAvatar: avatarMetadata },
     });
     if (!user) throw new UnauthorizedException();
     const authenticatedUser = this.toAuthenticatedUser(user);
@@ -211,6 +215,7 @@ export class AuthService {
   private toAuthenticatedUser(user: {
     authProvider: AuthenticatedUser['authProvider'];
     avatar: { updatedAt: Date } | null;
+    oidcAvatar?: { updatedAt: Date } | null;
     firstName: string | null;
     id: string;
     lastName: string | null;
@@ -219,7 +224,7 @@ export class AuthService {
   }): AuthenticatedUser {
     return {
       authProvider: user.authProvider,
-      avatarUpdatedAt: user.avatar?.updatedAt ?? null,
+      ...resolveAvatarMetadata(user),
       firstName: user.firstName,
       id: user.id,
       lastName: user.lastName,

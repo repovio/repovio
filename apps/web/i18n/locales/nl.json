@@ -326,6 +326,8 @@
     "avatarCropPreview": "Voorbeeld van avataruitsnede",
     "avatarCropReset": "Herstellen",
     "avatarCropTitle": "Profielfoto bijsnijden",
+    "avatarSourceLocal": "Je eigen profielfoto wordt gebruikt.",
+    "avatarSourceOidc": "De profielfoto van je identiteitsprovider wordt gebruikt.",
     "avatarDescription": "Upload een afbeelding of importeer deze via een beveiligde URL. Repovio bewaart een WebP-versie van 256 × 256.",
     "avatarImport": "Afbeelding importeren",
     "avatarImportError": "De afbeelding kon niet via deze URL worden geïmporteerd.",
@@ -1098,5 +1100,12 @@
       "SUSPENDED": "Opgeschort",
       "REMOVED": "Verwijderd"
     }
+  },
+  "destructiveAction": {
+    "title": "Verwijdering bevestigen",
+    "description": "{target} verwijderen? Deze actie kan mogelijk niet ongedaan worden gemaakt.",
+    "confirm": "Verwijderen",
+    "error": "Verwijderen mislukt. Probeer het opnieuw.",
+    "cancel": "Annuleren"
   }
 }

@@ -62,15 +62,16 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { defineModel, defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { McpAccessToken, McpAccessTokenStatus, User } from '~/types/api/resources';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{ user: User | null }>();
-const { t } = useI18n();
 const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const tokens = ref<McpAccessToken[]>([]);
@@ -113,13 +114,17 @@ async function load(): Promise<void> {
 
 /** Revokes the selected MCP access token and updates the displayed list. */
 async function revoke(token: McpAccessToken): Promise<void> {
-  if (!window.confirm(t('mcp.revokeConfirm', { name: token.name }))) return;
-  revokingId.value = token.id;
-  try {
-    await api.mcpTokens.revoke(token.id);
-    await load();
-  } finally {
-    revokingId.value = undefined;
-  }
+  await confirmDestructiveAction(
+    token.name,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      revokingId.value = token.id;
+      try {
+        await api.mcpTokens.revoke(token.id);
+        await load();
+      } finally {
+        revokingId.value = undefined;
+      }
+    },
+  );
 }
 </script>

@@ -2,6 +2,7 @@ import type { AuthProvider, UserRole } from '../../generated/prisma/client.js';
 
 /** Defines the authenticated user contract shared by its consumers. */ export interface AuthenticatedUser {
   authProvider: AuthProvider;
+  avatarSource?: 'LOCAL' | 'OIDC' | null;
   avatarUpdatedAt?: Date | null;
   firstName?: string | null;
   id: string;

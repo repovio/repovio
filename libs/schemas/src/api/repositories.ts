@@ -6,6 +6,7 @@ import { optionalInput } from './validation.js';
 
 /** Shared RepositoryMemberSummary boundary schema. */
 export const ApiRepositoryMemberSummarySchema = z.strictObject({
+  avatarSource: z.enum(['LOCAL', 'OIDC']).nullable().optional(),
   avatarUpdatedAt: z.union([z.null(), z.iso.datetime({ offset: true })]),
   firstName: z.union([z.null(), z.string()]),
   lastName: z.union([z.null(), z.string()]),
@@ -29,6 +30,7 @@ export const ApiRepositorySchema = z.strictObject({
   workflowRunCount: z.number().optional(),
   members: z.array(
     z.strictObject({
+      avatarSource: z.enum(['LOCAL', 'OIDC']).nullable().optional(),
       avatarUpdatedAt: z.union([z.null(), z.iso.datetime({ offset: true })]),
       firstName: z.union([z.null(), z.string()]),
       lastName: z.union([z.null(), z.string()]),
@@ -89,6 +91,7 @@ export const ApiRepositoryMembershipSchema = z.strictObject({
     firstName: z.union([z.null(), z.string()]),
     lastName: z.union([z.null(), z.string()]),
     role: z.union([z.literal('SYSTEM_ADMIN'), z.literal('VIEWER'), z.literal('MANAGER')]),
+    avatarSource: z.enum(['LOCAL', 'OIDC']).nullable().optional(),
     avatarUpdatedAt: z.union([z.null(), z.iso.datetime({ offset: true })]),
   }),
 });

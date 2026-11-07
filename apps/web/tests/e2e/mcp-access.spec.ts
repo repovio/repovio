@@ -113,11 +113,11 @@ test('creates, reveals once, lists, and revokes a personal MCP token', /** Verif
   await expect(page.getByText('VS Code laptop')).toBeVisible();
   await expect(page.getByText(/Expires /)).toBeVisible();
 
-  page.once(
-    'dialog',
-    /** Evaluates `dialog.accept()` when page.once invokes this callback. */ (dialog) => dialog.accept(),
-  );
   await page.getByRole('button', { name: 'Revoke' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm removal' })
+    .getByRole('button', { name: 'Remove', exact: true })
+    .click();
   await expect(page.getByText('Revoked', { exact: true })).toBeVisible();
 });
 
@@ -169,11 +169,11 @@ test('allows an administrator to inspect and revoke user token metadata', /** Ve
   await expect(page.getByText('Active', { exact: true })).toBeVisible();
   await expect(page.getByText('Never used', { exact: false })).toBeVisible();
   await expect(page.getByText('Never expires', { exact: false })).toBeVisible();
-  page.once(
-    'dialog',
-    /** Evaluates `dialog.accept()` when page.once invokes this callback. */ (dialog) => dialog.accept(),
-  );
   await page.getByRole('dialog').getByRole('button', { name: 'Revoke' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm removal' })
+    .getByRole('button', { name: 'Remove', exact: true })
+    .click();
   await expect
     .poll(
       /** Evaluates `page.getByRole('dialog').getByRole('button', { name: 'Revoke' }).isDisabled()` when expect.poll invokes this callback. */ () =>

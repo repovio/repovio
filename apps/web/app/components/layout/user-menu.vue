@@ -10,19 +10,20 @@
       class="gap-2"
       color="neutral"
       variant="ghost"
-      :aria-label="getUserIdentityLabel(auth.user)"
+      :aria-label="getUserDisplayName(auth.user)"
       :disabled="signingOut"
       :loading="signingOut"
     >
       <CommonUserAvatar
         size="2xs"
+        :avatar-source="auth.user.avatarSource"
         :avatar-updated-at="auth.user.avatarUpdatedAt"
         :first-name="auth.user.firstName"
         :last-name="auth.user.lastName"
         :user-id="auth.user.id"
         :username="auth.user.username"
       />
-      <span class="hidden max-w-64 truncate text-sm sm:inline">{{ getUserIdentityLabel(auth.user) }}</span>
+      <span class="hidden max-w-64 truncate text-sm sm:inline">{{ getUserDisplayName(auth.user) }}</span>
     </UButton>
   </UDropdownMenu>
 </template>
@@ -35,7 +36,7 @@ import { useShortcuts } from '~/composables/app/shortcuts';
 import { useThemes } from '~/composables/app/themes';
 import { useAuthStore } from '~/store/auth';
 import { globalShortcuts } from '~/util/shortcuts';
-import { getUserIdentityLabel } from '~/utils/user-identity';
+import { getUserDisplayName } from '~/utils/user-identity';
 
 const auth = useAuthStore();
 const signingOut = ref(false);

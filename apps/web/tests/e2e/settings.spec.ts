@@ -222,6 +222,7 @@ test('manages a cropped personal avatar from upload and HTTPS import', /** Verif
   page,
 }, testInfo) => {
   const currentUser = {
+    avatarSource: null as 'LOCAL' | 'OIDC' | null,
     avatarUpdatedAt: null as string | null,
     firstName: null,
     id: 'playwright-viewer',
@@ -251,15 +252,19 @@ test('manages a cropped personal avatar from upload and HTTPS import', /** Verif
     /** Supplies the mocked response for `/api/v1/auth/me/avatar`. */ async (route) => {
       if (route.request().method() === 'PUT') {
         uploadCount += 1;
+        currentUser.avatarSource = 'LOCAL';
         currentUser.avatarUpdatedAt = `2026-09-29T04:00:0${uploadCount}.000Z`;
-      } else if (route.request().method() === 'DELETE') currentUser.avatarUpdatedAt = null;
+      } else if (route.request().method() === 'DELETE') currentUser.avatarSource = 'OIDC';
       await route.fulfill({ contentType: 'application/json', json: currentUser });
     },
   );
+  const imageVersions: string[] = [];
   await page.route(
     '**/api/v1/users/playwright-viewer/avatar**',
-    /** Supplies the mocked response for `/api/v1/users/playwright-viewer/avatar**`. */ (route) =>
-      route.fulfill({ body: nonSquarePng, contentType: 'image/webp' }),
+    /** Record cache versions while serving synthetic avatar bytes. */ (route) => {
+      imageVersions.push(new URL(route.request().url()).searchParams.get('version') ?? '');
+      return route.fulfill({ body: nonSquarePng, contentType: 'image/webp' });
+    },
   );
 
   await page.goto('/admin/settings');
@@ -281,5 +286,16 @@ test('manages a cropped personal avatar from upload and HTTPS import', /** Verif
   await expect.poll(/** Evaluates `uploadCount` when expect.poll invokes this callback. */ () => uploadCount).toBe(2);
 
   await page.getByRole('button', { name: 'Remove profile picture' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm removal' })
+    .getByRole('button', { name: 'Remove', exact: true })
+    .click();
   await expect(page.getByRole('button', { name: 'Remove profile picture' })).toHaveCount(0);
+  await expect(page.getByText('Using the profile picture from your identity provider.')).toBeVisible();
+  await expect
+    .poll(/** Wait for the provider fallback to bypass the manual image cache. */ () => imageVersions)
+    .toContain('OIDC:2026-09-29T04:00:02.000Z');
+  expect(imageVersions).toContain('LOCAL:2026-09-29T04:00:02.000Z');
+  await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('oidc-avatar-fallback.png'), fullPage: true });
 });

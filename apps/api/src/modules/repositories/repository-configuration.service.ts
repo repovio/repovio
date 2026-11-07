@@ -202,6 +202,7 @@ export class RepositoryConfigurationService {
       RepositoryMembership & {
         user: {
           avatar: { updatedAt: Date } | null;
+          oidcAvatar?: { updatedAt: Date } | null;
           firstName: string | null;
           id: string;
           lastName: string | null;
@@ -215,7 +216,9 @@ export class RepositoryConfigurationService {
     await this.requireRepository(repositoryId);
     return this.prisma.repositoryMembership.findMany({
       where: { repositoryId },
-      include: { user: { include: { avatar: { select: { updatedAt: true } } } } },
+      include: {
+        user: { include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } } },
+      },
       orderBy: { user: { username: 'asc' } },
     });
   }
@@ -238,6 +241,7 @@ export class RepositoryConfigurationService {
     RepositoryMembership & {
       user: {
         avatar: { updatedAt: Date } | null;
+        oidcAvatar?: { updatedAt: Date } | null;
         firstName: string | null;
         id: string;
         lastName: string | null;
@@ -254,7 +258,9 @@ export class RepositoryConfigurationService {
       where: { userId_repositoryId: { repositoryId, userId: input.userId } },
       create: { repositoryId, role: input.role, userId: input.userId },
       update: { role: input.role },
-      include: { user: { include: { avatar: { select: { updatedAt: true } } } } },
+      include: {
+        user: { include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } } },
+      },
     });
   }
 

@@ -5,7 +5,9 @@ for (const locale of ['en', 'de'] as const) {
     page,
     context,
   }, testInfo) => {
-    await context.addCookies([{ name: 'repovio-locale', value: locale, domain: '127.0.0.1', path: '/' }]);
+    await context.addCookies([
+      { name: 'repovio-locale', value: locale, url: test.info().project.use.baseURL ?? 'http://localhost:3000' },
+    ]);
     if (locale === 'de') await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(
       /** Initializes browser-side authentication and preferences before page scripts run. */ () =>

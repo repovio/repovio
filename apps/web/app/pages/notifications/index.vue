@@ -37,7 +37,7 @@
                 : $t('notifications.push.enable')
           "
           :loading="push.loading.value"
-          @click="push.currentDeviceEnabled.value ? push.disable() : push.enable()"
+          @click="push.currentDeviceEnabled.value ? disablePush() : push.enable()"
         />
       </UCard>
     </div>
@@ -194,6 +194,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -208,6 +209,7 @@ import type { ColumnDefinition } from '~/types/table';
 type ChannelRow = NotificationChannel & Record<string, unknown>;
 type ChannelColumn = ColumnDefinition<ChannelRow> & { header: string; id: string };
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const toast = useToast();
 const api = useRepovioApi();
@@ -318,6 +320,17 @@ async function handleSaved(): Promise<void> {
   await channelTable.refresh();
 }
 
+/** Confirm removal of this browser's push subscription. */
+async function disablePush(): Promise<void> {
+  await confirmDestructiveAction(
+    t('notifications.push.disable'),
+    /** Unsubscribe this device and surface errors inside the confirmation. */ async () => {
+      await push.disable();
+      if (push.error.value) throw new Error('Push subscription removal failed.');
+    },
+  );
+}
+
 /** Toggles index. */
 async function toggle(channel: NotificationChannel): Promise<void> {
   await runPendingAction(
@@ -331,11 +344,16 @@ async function toggle(channel: NotificationChannel): Promise<void> {
 
 /** Removes index. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(
-    `delete:${id}`,
-    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
-      await api.notificationChannels.delete(id);
-      await channelTable.refresh();
+  await confirmDestructiveAction(
+    items.value.find(/** Find the affected channel. */ (channel) => channel.id === id)?.name ?? id,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        `delete:${id}`,
+        /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+          await api.notificationChannels.delete(id);
+          await channelTable.refresh();
+        },
+      );
     },
   );
 }

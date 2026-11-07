@@ -43,6 +43,7 @@ describe('AuthService', /** Groups scenarios for AuthService. */ () => {
     await expect(service.signIn('viewer', 'password')).resolves.toEqual({
       accessToken: 'jwt',
       user: {
+        avatarSource: null,
         avatarUpdatedAt: null,
         firstName: null,
         id: 'user-id',
@@ -69,6 +70,7 @@ describe('AuthService', /** Groups scenarios for AuthService. */ () => {
     });
 
     await expect(service.authenticateAccessToken('jwt')).resolves.toEqual({
+      avatarSource: null,
       avatarUpdatedAt: null,
       firstName: 'Mara',
       id: 'user-id',
@@ -170,7 +172,7 @@ describe('AuthService', /** Groups scenarios for AuthService. */ () => {
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-id' },
       data: { authVersion: { increment: 1 }, passwordHash: expect.any(String) },
-      include: { avatar: { select: { updatedAt: true } } },
+      include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } },
     });
     expect(jwt.signAsync).toHaveBeenCalledWith(expect.objectContaining({ authVersion: 5 }));
   });
@@ -220,6 +222,7 @@ describe('AuthService', /** Groups scenarios for AuthService. */ () => {
         username: 'viewer',
       }),
     ).resolves.toEqual({
+      avatarSource: null,
       avatarUpdatedAt: null,
       firstName: 'Vera',
       id: 'user-id',
@@ -230,7 +233,7 @@ describe('AuthService', /** Groups scenarios for AuthService. */ () => {
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-id' },
       data: { firstName: 'Vera', lastName: null, username: 'viewer' },
-      include: { avatar: { select: { updatedAt: true } } },
+      include: { avatar: { select: { updatedAt: true } }, oidcAvatar: { select: { updatedAt: true } } },
     });
   });
 

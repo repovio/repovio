@@ -73,6 +73,11 @@ test('lists approval-gated workflows with provider and pull-request actions', /*
   await expect(page.getByRole('heading', { name: 'Awaiting approval' })).toBeVisible();
   const table = page.locator('[data-awaiting-approval-table]');
   await expect(table).toBeVisible();
+  const notice = page.locator('[data-provider-approval-notice]');
+  await expect(notice).toHaveCSS('border-radius', '0px');
+  await expect(notice).toHaveCSS('border-top-width', '0px');
+  await expect(notice).toHaveCSS('box-shadow', 'none');
+  await expect(notice).toHaveCSS('margin-top', '0px');
   await expect
     .poll(
       /** Evaluates `table.evaluate((element) => element.parentElement?.hasAttribute('data-page-content'))` when expect .poll invokes this callback. */ () =>

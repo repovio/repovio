@@ -7,24 +7,28 @@ export function useAvatarImages() {
   const api = useApi();
 
   /** Resolve an avatar blob URL or return undefined for the initials fallback. */
-  function load(userId: string, avatarUpdatedAt?: string | null): Promise<string | undefined> {
+  function load(
+    userId: string,
+    avatarUpdatedAt?: string | null,
+    avatarSource?: 'LOCAL' | 'OIDC' | null,
+  ): Promise<string | undefined> {
     if (!avatarUpdatedAt || !import.meta.client) return Promise.resolve(undefined);
-    const cacheKey = `${userId}:${avatarUpdatedAt}`;
+    const cacheKey = `${userId}:${avatarSource ?? 'LOCAL'}:${avatarUpdatedAt}`;
     const cached = avatarImagePromises.get(cacheKey);
     if (cached) return cached;
 
     const request = api
       .get<Blob>(`/users/${userId}/avatar`, {
-        params: { version: avatarUpdatedAt },
+        params: { version: `${avatarSource ?? 'LOCAL'}:${avatarUpdatedAt}` },
         responseType: 'blob',
       })
       .then(
-        /** Evaluates `URL.createObjectURL(data)` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: avatarUpdatedAt }, responseType: 'blob', }) .then invokes this callback. */ ({
+        /** Evaluates `URL.createObjectURL(data)` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: `${avatarSource ?? 'LOCAL'}:${avatarUpdatedAt}` }, responseType: 'blob', }) .then invokes this callback. */ ({
           data,
         }) => URL.createObjectURL(data),
       )
       .catch(
-        /** Evaluates `undefined` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: avatarUpdatedAt }, responseType: 'blob', }) .then(({ data }) => URL.createObjectURL(data)) .catch invokes this callback. */ () =>
+        /** Evaluates `undefined` when api .get<Blob>(`/users/${userId}/avatar`, { params: { version: `${avatarSource ?? 'LOCAL'}:${avatarUpdatedAt}` }, responseType: 'blob', }) .then(({ data }) => URL.createObjectURL(data)) .catch invokes this callback. */ () =>
           undefined,
       );
     avatarImagePromises.set(cacheKey, request);

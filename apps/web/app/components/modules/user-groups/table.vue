@@ -66,9 +66,11 @@ import { type SortingField } from '@querry-kit/nuxt-ui/types';
 import { computed, onMounted, ref } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 import { useDateTime } from '~/composables/use-date-time';
 import type { UserGroup } from '~/types/api/resources';
 import type { ColumnDefinition } from '~/types/table';
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
@@ -117,16 +119,22 @@ function showMembers(group: UserGroup): void {
 }
 /** Deletes one confirmed group and awaits the dependent table refresh. */
 async function remove(group: UserGroup): Promise<void> {
-  if (pending.value || !window.confirm(t('userGroups.deleteConfirm', { name: group.name }))) return;
-  pending.value = group.id;
-  actionError.value = false;
-  try {
-    await api.userGroups.delete(group.id);
-    await table.refresh();
-  } catch {
-    actionError.value = true;
-  } finally {
-    pending.value = '';
-  }
+  await confirmDestructiveAction(
+    group.name,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      if (pending.value) return;
+      pending.value = group.id;
+      actionError.value = false;
+      try {
+        await api.userGroups.delete(group.id);
+        await table.refresh();
+      } catch (cause) {
+        actionError.value = true;
+        throw cause;
+      } finally {
+        pending.value = '';
+      }
+    },
+  );
 }
 </script>

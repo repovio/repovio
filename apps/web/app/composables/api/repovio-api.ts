@@ -397,7 +397,7 @@ export function useRepovioApi() {
       list: (): Promise<AxiosResponse<PaginatedResource<User>>> =>
         api.get(apiEndpoints.users, {
           params: {
-            fields: 'id,username,firstName,lastName,role,authProvider,avatarUpdatedAt,createdAt,updatedAt',
+            fields: 'id,username,firstName,lastName,role,authProvider,avatarSource,avatarUpdatedAt,createdAt,updatedAt',
             page: 1,
             perPage: 100,
           },

@@ -185,12 +185,14 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiSetRepositoryWebhookSecretSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, reactive, ref, watch } from 'vue';
 import { z } from 'zod';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { defineEmits, defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { RepositoryWebhookConfiguration } from '~/types/api/resources';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const props = defineProps<{
   configuration?: RepositoryWebhookConfiguration;
   loadError: boolean;
@@ -297,19 +299,25 @@ async function save(event: FormSubmitEvent<z.output<typeof ApiSetRepositoryWebho
 
 /** Remove the repository secret after explicit browser confirmation. */
 async function remove(): Promise<void> {
-  if (!props.configuration?.configured || !window.confirm(t('repositories.webhook.removeConfirm'))) return;
-  removing.value = true;
-  saveError.value = false;
-  saved.value = false;
-  try {
-    await api.repositories.clearWebhookConfiguration(props.repositoryId);
-    resetSensitiveState();
-    emit('updated', { ...props.configuration, configured: false });
-  } catch {
-    saveError.value = true;
-  } finally {
-    removing.value = false;
-  }
+  await confirmDestructiveAction(
+    `${t('repositories.webhook.remove')} (${props.repositoryId})`,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      if (!props.configuration?.configured) return;
+      removing.value = true;
+      saveError.value = false;
+      saved.value = false;
+      try {
+        await api.repositories.clearWebhookConfiguration(props.repositoryId);
+        resetSensitiveState();
+        emit('updated', { ...props.configuration, configured: false });
+      } catch (cause) {
+        saveError.value = true;
+        throw cause;
+      } finally {
+        removing.value = false;
+      }
+    },
+  );
 }
 
 /** Remove plaintext secret material and transient UI state. */

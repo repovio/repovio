@@ -157,6 +157,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -172,6 +173,7 @@ type ProviderTableColumn = ColumnDefinition<ProviderAccountRow> & { header: stri
 
 definePageMeta({ fullWidth: true });
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
@@ -288,11 +290,16 @@ async function handleProviderCreated(): Promise<void> {
 
 /** Remove a provider account and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(
-    providerActionKey('delete', id),
-    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
-      await api.providerAccounts.delete(id);
-      await providerTable.refresh();
+  await confirmDestructiveAction(
+    items.value.find(/** Find the affected provider. */ (provider) => provider.id === id)?.displayName ?? id,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        providerActionKey('delete', id),
+        /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+          await api.providerAccounts.delete(id);
+          await providerTable.refresh();
+        },
+      );
     },
   );
 }

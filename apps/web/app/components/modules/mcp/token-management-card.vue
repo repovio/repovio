@@ -130,11 +130,13 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiCreateMcpAccessTokenSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { z } from 'zod';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
 import type { McpAccessToken, McpAccessTokenStatus } from '~/types/api/resources';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
@@ -233,14 +235,18 @@ function closeCreateDialog(): void {
 
 /** Revokes the selected MCP access token and updates the displayed list. */
 async function revoke(token: McpAccessToken): Promise<void> {
-  if (!window.confirm(t('mcp.revokeConfirm', { name: token.name }))) return;
-  revokingId.value = token.id;
-  try {
-    await api.mcpTokens.revoke(token.id);
-    await load();
-  } finally {
-    revokingId.value = undefined;
-  }
+  await confirmDestructiveAction(
+    token.name,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      revokingId.value = token.id;
+      try {
+        await api.mcpTokens.revoke(token.id);
+        await load();
+      } finally {
+        revokingId.value = undefined;
+      }
+    },
+  );
 }
 
 onMounted(/** Initializes component subscriptions and data after mounting. */ () => void load());

@@ -9,6 +9,8 @@ import { AvatarService } from './avatar.service.js';
 describe('AvatarService', /** Groups scenarios for AvatarService. */ () => {
   const updatedAt = new Date('2026-09-12T10:00:00.000Z');
   const prisma = {
+    user: { findUniqueOrThrow: jest.fn() },
+    oidcUserAvatar: { deleteMany: jest.fn(), findUnique: jest.fn(), upsert: jest.fn() },
     userAvatar: {
       deleteMany: jest.fn(),
       findUnique: jest.fn(),
@@ -126,5 +128,54 @@ describe('AvatarService', /** Groups scenarios for AvatarService. */ () => {
     await expect(service.get('user-id')).resolves.toEqual({ data: new Uint8Array([1, 2, 3]), etag: 'etag' });
     await service.remove('user-id');
     expect(prisma.userAvatar.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-id' } });
+  });
+  it('imports and refreshes provider images without touching a manual avatar', /** Normalize provider images through the same protected image path. */ async () => {
+    const source = await sharp({ create: { background: 'red', channels: 3, height: 20, width: 40 } })
+      .png()
+      .toBuffer();
+    const download = jest.spyOn(service, 'download').mockResolvedValue({ data: source, mimeType: 'image/png' });
+    try {
+      await service.synchronizeOidc('user-id', 'https://images.example/avatar.png');
+      await service.synchronizeOidc('user-id', 'https://images.example/avatar.png');
+      expect(download).toHaveBeenCalledWith('https://images.example/avatar.png');
+      expect(prisma.oidcUserAvatar.upsert).toHaveBeenCalledTimes(2);
+      const create = prisma.oidcUserAvatar.upsert.mock.calls[0]?.[0].create;
+      expect(await sharp(create.data).metadata()).toMatchObject({ format: 'webp', width: 256, height: 256 });
+      expect(create.etag).toMatch(/^[a-f0-9]{64}$/);
+      expect(prisma.userAvatar.upsert).not.toHaveBeenCalled();
+    } finally {
+      download.mockRestore();
+    }
+  });
+
+  it('clears missing pictures and ignores malformed claims', /** A removed claim must clear only provider-owned data. */ async () => {
+    await service.synchronizeOidc('user-id', undefined);
+    expect(prisma.oidcUserAvatar.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-id' } });
+    prisma.oidcUserAvatar.deleteMany.mockClear();
+    await service.synchronizeOidc('user-id', { url: 'https://images.example/avatar.png' });
+    expect(prisma.oidcUserAvatar.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.userAvatar.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('retains existing provider images when URLs are blocked or downloads fail', /** Never turn image availability into a login requirement. */ async () => {
+    await expect(service.synchronizeOidc('user-id', 'https://127.0.0.1/avatar.png')).resolves.toBeUndefined();
+    const download = jest.spyOn(service, 'download').mockRejectedValue(new Error('unavailable'));
+    try {
+      await expect(service.synchronizeOidc('user-id', 'https://images.example/avatar.png')).resolves.toBeUndefined();
+      expect(prisma.oidcUserAvatar.upsert).not.toHaveBeenCalled();
+      expect(prisma.oidcUserAvatar.deleteMany).not.toHaveBeenCalled();
+    } finally {
+      download.mockRestore();
+    }
+  });
+
+  it('serves the provider fallback and reports its revision after manual removal', /** Resolve image bytes and metadata with identical precedence. */ async () => {
+    prisma.userAvatar.findUnique.mockResolvedValue(null);
+    prisma.oidcUserAvatar.findUnique.mockResolvedValue({ data: new Uint8Array([4]), etag: 'provider' });
+    prisma.user.findUniqueOrThrow.mockResolvedValue({ avatar: null, oidcAvatar: { updatedAt } });
+    await service.remove('user-id');
+    await expect(service.get('user-id')).resolves.toEqual({ data: new Uint8Array([4]), etag: 'provider' });
+    await expect(service.metadata('user-id')).resolves.toEqual({ avatarSource: 'OIDC', avatarUpdatedAt: updatedAt });
+    expect(prisma.oidcUserAvatar.deleteMany).not.toHaveBeenCalled();
   });
 });

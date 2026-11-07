@@ -135,7 +135,7 @@ export class AuthController {
   ): Promise<AuthenticatedUser> {
     if (!file) throw new BadRequestException('An avatar image is required.');
     const avatarUpdatedAt = await this.avatars.save(request.user.id, { data: file.buffer, mimeType: file.mimetype });
-    return { ...request.user, avatarUpdatedAt };
+    return { ...request.user, avatarSource: 'LOCAL' as const, avatarUpdatedAt };
   }
 
   /**
@@ -149,7 +149,7 @@ export class AuthController {
   @Authenticated()
   async deleteAvatar(@Req() request: { user: AuthenticatedUser }): Promise<AuthenticatedUser> {
     await this.avatars.remove(request.user.id);
-    return { ...request.user, avatarUpdatedAt: null };
+    return { ...request.user, ...(await this.avatars.metadata(request.user.id)) };
   }
 
   /**

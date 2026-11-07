@@ -194,6 +194,8 @@ test('uses the shared page shell without introductory banners', /** Verifies use
   await mockApplication(page);
   await page.goto('/');
   await expect(page.locator('[data-page-shell]')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vera Admin', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Vera Admin (@vera)', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-page-introduction]')).toHaveCount(0);
   await expect(page.locator('[data-intro-banner-id]')).toHaveCount(0);

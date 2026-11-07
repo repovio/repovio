@@ -178,6 +178,7 @@ export const UpdateProfileRequestSchema = ApiUpdateProfileSchema;
 /** Shared AuthenticatedUser transport contract. */
 export const AuthenticatedUserSchema = z.strictObject({
   authProvider: z.union([z.literal('LOCAL'), z.literal('OIDC')]),
+  avatarSource: z.enum(['LOCAL', 'OIDC']).nullable().optional(),
   avatarUpdatedAt: z.union([z.string(), z.null()]),
   firstName: z.union([z.string(), z.null()]),
   id: z.string(),

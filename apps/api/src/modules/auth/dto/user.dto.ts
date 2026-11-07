@@ -1,5 +1,6 @@
 import { ApiUserSchema } from '@repovio/schemas';
 import { createZodDto } from '../../../util/schema-dto.js';
+import { resolveAvatarMetadata } from '../avatar-metadata.js';
 
 import { toWire } from '../../../util/to-wire.js';
 
@@ -12,6 +13,7 @@ import type { User } from '../../../generated/prisma/client.js';
 
 /** Defines the user with avatar contract shared by its consumers. */ export type UserWithAvatar = User & {
   avatar?: { updatedAt: Date } | null;
+  oidcAvatar?: { updatedAt: Date } | null;
 };
 
 /** Public user representation without credential material. */
@@ -29,7 +31,7 @@ export class UserDto extends createZodDto(ApiUserSchema) {
         UserDto.schema.parse(
           toWire({
             authProvider: model.authProvider,
-            avatarUpdatedAt: model.avatar?.updatedAt ?? null,
+            ...resolveAvatarMetadata(model),
             firstName: model.firstName,
             id: model.id,
             lastName: model.lastName,

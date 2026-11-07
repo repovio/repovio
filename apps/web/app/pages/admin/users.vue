@@ -9,34 +9,28 @@
     :title="$t('users.title')"
   >
     <template #actions>
-      <QTableToolbar>
-        <template #new>
-          <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
+      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
         </template>
-        <template #options>
-          <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
-            <template #trigger="{ active, open, toggle }">
-              <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
-            </template>
-          </QTableSorting>
-          <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
-            <template #trigger="{ active, open, toggle }">
-              <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
-            </template>
-          </QTableFiltering>
-          <QTableOptions
-            v-model:column-order="columnOrder"
-            v-model:column-pinning="columnPinning"
-            v-model:invisible-columns="columnVisibility"
-            :columns="columnDefinition"
-            shortcuts
-          >
-            <template #trigger="{ open, toggle }">
-              <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
-            </template>
-          </QTableOptions>
+      </QTableSorting>
+      <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
         </template>
-      </QTableToolbar>
+      </QTableFiltering>
+      <QTableOptions
+        v-model:column-order="columnOrder"
+        v-model:column-pinning="columnPinning"
+        v-model:invisible-columns="columnVisibility"
+        :columns="columnDefinition"
+        shortcuts
+      >
+        <template #trigger="{ open, toggle }">
+          <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
+        </template>
+      </QTableOptions>
+      <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
     </template>
 
     <UAlert
@@ -64,6 +58,7 @@
         <div class="flex items-center gap-2">
           <CommonUserAvatar
             size="xs"
+            :avatar-source="row.original.avatarSource"
             :avatar-updated-at="row.original.avatarUpdatedAt"
             :first-name="row.original.firstName"
             :last-name="row.original.lastName"
@@ -150,6 +145,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -167,6 +163,7 @@ type UserTableColumn = ColumnDefinition<UserRow> & { header: string; id: string 
 
 definePageMeta({ fullWidth: true, middleware: 'admin' });
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
@@ -219,7 +216,7 @@ const userTable = useTable({
   defaultItemsPerPage: 10,
   endpoint: 'users',
   name: 'users',
-  staticFields: ['authProvider', 'avatarUpdatedAt', 'firstName', 'id', 'lastName'],
+  staticFields: ['avatarSource', 'authProvider', 'avatarUpdatedAt', 'firstName', 'id', 'lastName'],
 });
 const {
   columnOrder,
@@ -264,11 +261,16 @@ function formatTimestamp(timestamp: string): string {
 
 /** Delete a system user and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(
-    id,
-    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
-      await api.users.delete(id);
-      await userTable.refresh();
+  await confirmDestructiveAction(
+    items.value.find(/** Find the affected account. */ (user) => user.id === id)?.username ?? id,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        id,
+        /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+          await api.users.delete(id);
+          await userTable.refresh();
+        },
+      );
     },
   );
 }

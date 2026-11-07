@@ -63,7 +63,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 import type { User, UserGroup } from '~/types/api/resources';
+const { confirmDestructiveAction } = useDestructiveAction();
 const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{ group: UserGroup | null }>();
 const api = useRepovioApi();
@@ -129,16 +131,22 @@ async function add(): Promise<void> {
 
 /** Removes a member while preserving their direct and other-group assignments. */
 async function remove(id: string): Promise<void> {
-  if (!props.group || pending.value) return;
-  pending.value = id;
-  error.value = false;
-  try {
-    await api.userGroups.removeMember(props.group.id, id);
-    await load();
-  } catch {
-    error.value = true;
-  } finally {
-    pending.value = '';
-  }
+  await confirmDestructiveAction(
+    members.value.find(/** Find the affected member. */ (member) => member.id === id)?.username ?? id,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      if (!props.group || pending.value) return;
+      pending.value = id;
+      error.value = false;
+      try {
+        await api.userGroups.removeMember(props.group.id, id);
+        await load();
+      } catch (cause) {
+        error.value = true;
+        throw cause;
+      } finally {
+        pending.value = '';
+      }
+    },
+  );
 }
 </script>

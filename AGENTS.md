@@ -29,6 +29,8 @@
 
 ## Repository conventions
 
+- Before changing domain terminology, product text, or domain models, read the canonical
+  [glossary](GLOSSARY.md). Use its terms consistently and update definitions when their meaning changes.
 - Use American English in source code, tests, comments, documentation, and
   Changesets.
 - Preserve the TypeScript compiler aliases and version ranges in the workspace manifests.

@@ -8,6 +8,8 @@ and sends notifications without modifying provider resources.
 
 [Read the Repovio documentation](https://repovio.de/docs/).
 
+Use the [Repovio glossary](GLOSSARY.md) for canonical product and domain terminology.
+
 ## Status
 
 The repository contains the API and web dashboard. Ongoing work is tracked in [GitHub Issues](https://github.com/repovio/repovio/issues).

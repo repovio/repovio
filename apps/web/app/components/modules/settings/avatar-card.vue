@@ -92,11 +92,13 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiRemoteAvatarSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onBeforeUnmount, reactive, ref } from 'vue';
 import { z } from 'zod';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { useApi } from '~/composables/api/api';
 import { useAuthStore } from '~/store/auth';
 import type { AuthenticatedUser } from '~/types/api/auth';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const maximumBytes = 2 * 1024 * 1024;
 const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 const { t } = useI18n();
@@ -251,18 +253,24 @@ async function save(file: File): Promise<void> {
 
 /** Delete the persisted avatar and switch every surface back to initials. */
 async function remove(): Promise<void> {
-  removing.value = true;
-  error.value = '';
-  saved.value = false;
-  try {
-    const { data } = await api.delete<AuthenticatedUser>('/auth/me/avatar');
-    auth.updateUser(data);
-    saved.value = true;
-  } catch {
-    error.value = t('settings.avatarRemoveError');
-  } finally {
-    removing.value = false;
-  }
+  await confirmDestructiveAction(
+    t('settings.avatar'),
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      removing.value = true;
+      error.value = '';
+      saved.value = false;
+      try {
+        const { data } = await api.delete<AuthenticatedUser>('/auth/me/avatar');
+        auth.updateUser(data);
+        saved.value = true;
+      } catch (cause) {
+        error.value = t('settings.avatarRemoveError');
+        throw cause;
+      } finally {
+        removing.value = false;
+      }
+    },
+  );
 }
 
 /** Releases the previous preview URL before assigning the replacement. */

@@ -132,6 +132,7 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiUpsertRepositoryMembershipSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { z } from 'zod';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -139,6 +140,7 @@ import { usePendingActions } from '~/composables/use-pending-actions';
 import type { RepositoryMembership, RepositoryRole, User } from '~/types/api/resources';
 import { getUserDisplayName, getUserIdentityLabel } from '~/utils/user-identity';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const props = defineProps<{
   repositoryId: string;
 }>();
@@ -275,18 +277,26 @@ async function updateMemberRole(membership: RepositoryMembership, role: Reposito
 
 /** Revoke explicit repository access from one user. */
 async function removeMember(userId: string): Promise<void> {
-  await runPendingAction(
-    memberActionKey('remove', userId),
-    /** Performs remove member while retaining the initiating action’s pending state. */ async () => {
-      error.value = false;
-      try {
-        await api.repositories.deleteMembership(props.repositoryId, userId);
-        memberships.value = memberships.value.filter(
-          /** Keeps entries matching `membership.userId !== userId`. */ (membership) => membership.userId !== userId,
-        );
-      } catch {
-        error.value = true;
-      }
+  await confirmDestructiveAction(
+    memberships.value.find(/** Find the affected member. */ (member) => member.userId === userId)?.user.username ??
+      userId,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        memberActionKey('remove', userId),
+        /** Performs remove member while retaining the initiating action’s pending state. */ async () => {
+          error.value = false;
+          try {
+            await api.repositories.deleteMembership(props.repositoryId, userId);
+            memberships.value = memberships.value.filter(
+              /** Keeps entries matching `membership.userId !== userId`. */ (membership) =>
+                membership.userId !== userId,
+            );
+          } catch (cause) {
+            error.value = true;
+            throw cause;
+          }
+        },
+      );
     },
   );
 }

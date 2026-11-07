@@ -149,7 +149,10 @@ import { SaveGitHubAppSchema, localizeFormSchema, type GitHubAppInstallation } f
 import { reactive, ref, watch } from 'vue';
 import { z } from 'zod';
 import { useGitHubApp } from '~/composables/api/github-app';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
+const { t } = useI18n();
+const { confirmDestructiveAction } = useDestructiveAction();
 const open = defineModel<boolean>('open', { default: false });
 const props = defineProps<{ refreshAccounts: () => Promise<void> }>();
 const { configuration, installations, pending, error, load, save, refresh, remove, connect } = useGitHubApp();
@@ -220,8 +223,14 @@ async function refreshInstallations(): Promise<void> {
 
 /** Disconnect unused local App configuration; the server rejects connected installations. */
 async function removeConfiguration(): Promise<void> {
-  action.value = 'remove';
-  await remove();
+  await confirmDestructiveAction(
+    configuration.value?.slug ?? t('githubApp.title'),
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      action.value = 'remove';
+      await remove();
+      if (error.value) throw new Error('GitHub App removal failed.');
+    },
+  );
 }
 
 /** Connect a verified choice and refresh the parent provider table. */

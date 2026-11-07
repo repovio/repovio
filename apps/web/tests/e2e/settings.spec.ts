@@ -281,5 +281,9 @@ test('manages a cropped personal avatar from upload and HTTPS import', /** Verif
   await expect.poll(/** Evaluates `uploadCount` when expect.poll invokes this callback. */ () => uploadCount).toBe(2);
 
   await page.getByRole('button', { name: 'Remove profile picture' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm removal' })
+    .getByRole('button', { name: 'Remove', exact: true })
+    .click();
   await expect(page.getByRole('button', { name: 'Remove profile picture' })).toHaveCount(0);
 });

@@ -81,12 +81,14 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import { ApiCreateWorkflowFilterSchema, localizeFormSchema } from '@repovio/schemas';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { z } from 'zod';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { usePendingActions } from '~/composables/use-pending-actions';
 import type { WorkflowFilter } from '~/types/api/resources';
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const props = defineProps<{
   repositoryId: string;
 }>();
@@ -174,18 +176,24 @@ async function addWorkflowFilter(event: FormSubmitEvent<WorkflowFilterValues>): 
 
 /** Delete a workflow filter without reloading the unchanged table rows. */
 async function removeWorkflowFilter(filterId: string): Promise<void> {
-  await runPendingAction(
-    filterId,
-    /** Performs remove workflow filter while retaining the initiating action’s pending state. */ async () => {
-      error.value = false;
-      try {
-        await api.repositories.deleteWorkflowFilter(props.repositoryId, filterId);
-        filters.value = filters.value.filter(
-          /** Keeps entries matching `filter.id !== filterId`. */ (filter) => filter.id !== filterId,
-        );
-      } catch {
-        error.value = true;
-      }
+  await confirmDestructiveAction(
+    filters.value.find(/** Find the affected filter. */ (filter) => filter.id === filterId)?.pattern ?? filterId,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        filterId,
+        /** Performs remove workflow filter while retaining the initiating action’s pending state. */ async () => {
+          error.value = false;
+          try {
+            await api.repositories.deleteWorkflowFilter(props.repositoryId, filterId);
+            filters.value = filters.value.filter(
+              /** Keeps entries matching `filter.id !== filterId`. */ (filter) => filter.id !== filterId,
+            );
+          } catch (cause) {
+            error.value = true;
+            throw cause;
+          }
+        },
+      );
     },
   );
 }

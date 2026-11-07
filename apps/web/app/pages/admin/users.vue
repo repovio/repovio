@@ -144,6 +144,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -161,6 +162,7 @@ type UserTableColumn = ColumnDefinition<UserRow> & { header: string; id: string 
 
 definePageMeta({ fullWidth: true, middleware: 'admin' });
 
+const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
@@ -258,11 +260,16 @@ function formatTimestamp(timestamp: string): string {
 
 /** Delete a system user and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await runPendingAction(
-    id,
-    /** Performs remove while retaining the initiating action’s pending state. */ async () => {
-      await api.users.delete(id);
-      await userTable.refresh();
+  await confirmDestructiveAction(
+    items.value.find(/** Find the affected account. */ (user) => user.id === id)?.username ?? id,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      await runPendingAction(
+        id,
+        /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+          await api.users.delete(id);
+          await userTable.refresh();
+        },
+      );
     },
   );
 }

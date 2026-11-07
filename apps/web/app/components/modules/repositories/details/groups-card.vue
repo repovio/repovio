@@ -57,7 +57,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
+import { useDestructiveAction } from '~/composables/app/destructive-action';
 import type { RepositoryGroup } from '~/types/api/resources';
+const { confirmDestructiveAction } = useDestructiveAction();
 const props = defineProps<{ repositoryId: string }>();
 const api = useRepovioApi();
 const { t } = useI18n();
@@ -118,16 +120,22 @@ async function update(groupId: string, nextRole: RepositoryGroup['role'], key = 
 }
 /** Removes only the selected group's repository grant. */
 async function remove(groupId: string): Promise<void> {
-  if (pending.value) return;
-  pending.value = `remove:${groupId}`;
-  error.value = false;
-  try {
-    await api.userGroups.removeRepositoryGrant(props.repositoryId, groupId);
-    await load();
-  } catch {
-    error.value = true;
-  } finally {
-    pending.value = '';
-  }
+  await confirmDestructiveAction(
+    grants.value.find(/** Find the affected grant. */ (grant) => grant.groupId === groupId)?.group.name ?? groupId,
+    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
+      if (pending.value) return;
+      pending.value = `remove:${groupId}`;
+      error.value = false;
+      try {
+        await api.userGroups.removeRepositoryGrant(props.repositoryId, groupId);
+        await load();
+      } catch (cause) {
+        error.value = true;
+        throw cause;
+      } finally {
+        pending.value = '';
+      }
+    },
+  );
 }
 </script>

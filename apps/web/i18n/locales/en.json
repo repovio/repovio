@@ -169,7 +169,11 @@
     "repository": "Repository",
     "search": "Search work items",
     "searchPlaceholder": "Search number or title",
-    "states": { "CLOSED": "Closed", "MERGED": "Merged", "OPEN": "Open" },
+    "states": {
+      "CLOSED": "Closed",
+      "MERGED": "Merged",
+      "OPEN": "Open"
+    },
     "summary": "Work overview",
     "updatedFrom": "Updated from",
     "updatedTo": "Updated to",
@@ -220,8 +224,19 @@
     "retry": "Retry",
     "run": "Run",
     "runAll": "Run all",
-    "scopes": { "ALERTS": "Alerts", "ISSUES": "Issues", "PULL_REQUESTS": "Pull requests", "WORKFLOWS": "Workflows" },
-    "status": { "FAILED": "Failed", "IDLE": "Idle", "PENDING": "Pending", "RUNNING": "Running", "WARNING": "Warning" },
+    "scopes": {
+      "ALERTS": "Alerts",
+      "ISSUES": "Issues",
+      "PULL_REQUESTS": "Pull requests",
+      "WORKFLOWS": "Workflows"
+    },
+    "status": {
+      "FAILED": "Failed",
+      "IDLE": "Idle",
+      "PENDING": "Pending",
+      "RUNNING": "Running",
+      "WARNING": "Warning"
+    },
     "summary": "Repository synchronization status",
     "title": "Jobs",
     "waiting": "Waiting",
@@ -774,7 +789,10 @@
     "loadError": "Notification data could not be loaded.",
     "preview": {
       "action": "Preview matching runs",
-      "ERROR": { "description": "The preview could not be loaded.", "title": "Preview failed" },
+      "ERROR": {
+        "description": "The preview could not be loaded.",
+        "title": "Preview failed"
+      },
       "INSUFFICIENT_PERMISSION": {
         "description": "System administrator permission is required to preview notification rules.",
         "title": "Insufficient permission"
@@ -787,7 +805,10 @@
         "description": "The selected repositories have not been synchronized yet.",
         "title": "No synchronized data"
       },
-      "NO_RESULTS": { "description": "No recent workflow runs match this rule.", "title": "No results" },
+      "NO_RESULTS": {
+        "description": "No recent workflow runs match this rule.",
+        "title": "No results"
+      },
       "PARTIAL": {
         "description": "{count} matches are shown, but some repository data is unavailable or stale.",
         "title": "Partial data"
@@ -949,7 +970,12 @@
       "neverSynced": "This repository has never been synchronized.",
       "stale": "Repository data is stale",
       "staleDescription": "The last successful synchronization is older than the configured {interval}-minute polling interval.",
-      "status": { "FAILED": "Failed", "IDLE": "Idle", "PENDING": "Pending", "RUNNING": "Running" },
+      "status": {
+        "FAILED": "Failed",
+        "IDLE": "Idle",
+        "PENDING": "Pending",
+        "RUNNING": "Running"
+      },
       "title": "Synchronization"
     },
     "unauthorized": "This repository was not found or is not available to you.",
@@ -1029,7 +1055,11 @@
       "MEDIUM": "Medium",
       "UNKNOWN": "Unknown"
     },
-    "states": { "DISMISSED": "Dismissed", "OPEN": "Open", "RESOLVED": "Resolved" },
+    "states": {
+      "DISMISSED": "Dismissed",
+      "OPEN": "Open",
+      "RESOLVED": "Resolved"
+    },
     "title": "Alerts",
     "unavailable": "Unavailable data",
     "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
@@ -1093,5 +1123,12 @@
       "SUSPENDED": "Suspended",
       "REMOVED": "Removed"
     }
+  },
+  "destructiveAction": {
+    "title": "Confirm removal",
+    "description": "Remove {target}? This action may not be reversible.",
+    "confirm": "Remove",
+    "error": "Removal failed. Try again.",
+    "cancel": "Cancel"
   }
 }

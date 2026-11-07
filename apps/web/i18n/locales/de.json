@@ -169,7 +169,11 @@
     "repository": "Repository",
     "search": "Arbeitselemente durchsuchen",
     "searchPlaceholder": "Nummer oder Titel suchen",
-    "states": { "CLOSED": "Geschlossen", "MERGED": "Zusammengeführt", "OPEN": "Offen" },
+    "states": {
+      "CLOSED": "Geschlossen",
+      "MERGED": "Zusammengeführt",
+      "OPEN": "Offen"
+    },
     "summary": "Arbeitsübersicht",
     "updatedFrom": "Aktualisiert ab",
     "updatedTo": "Aktualisiert bis",
@@ -220,7 +224,12 @@
     "retry": "Erneut versuchen",
     "run": "Starten",
     "runAll": "Alle starten",
-    "scopes": { "ALERTS": "Warnungen", "ISSUES": "Issues", "PULL_REQUESTS": "Pull Requests", "WORKFLOWS": "Workflows" },
+    "scopes": {
+      "ALERTS": "Warnungen",
+      "ISSUES": "Issues",
+      "PULL_REQUESTS": "Pull Requests",
+      "WORKFLOWS": "Workflows"
+    },
     "status": {
       "FAILED": "Fehlgeschlagen",
       "IDLE": "Inaktiv",
@@ -780,7 +789,10 @@
     "loadError": "Die Benachrichtigungsdaten konnten nicht geladen werden.",
     "preview": {
       "action": "Passende Läufe anzeigen",
-      "ERROR": { "description": "Die Vorschau konnte nicht geladen werden.", "title": "Vorschau fehlgeschlagen" },
+      "ERROR": {
+        "description": "Die Vorschau konnte nicht geladen werden.",
+        "title": "Vorschau fehlgeschlagen"
+      },
       "INSUFFICIENT_PERMISSION": {
         "description": "Zum Anzeigen der Regelvorschau ist die Systemadministration erforderlich.",
         "title": "Fehlende Berechtigung"
@@ -958,7 +970,12 @@
       "neverSynced": "Dieses Repository wurde noch nie synchronisiert.",
       "stale": "Repository-Daten sind veraltet",
       "staleDescription": "Die letzte erfolgreiche Synchronisierung liegt außerhalb des konfigurierten Abfrageintervalls von {interval} Minuten.",
-      "status": { "FAILED": "Fehlgeschlagen", "IDLE": "Inaktiv", "PENDING": "Ausstehend", "RUNNING": "Läuft" },
+      "status": {
+        "FAILED": "Fehlgeschlagen",
+        "IDLE": "Inaktiv",
+        "PENDING": "Ausstehend",
+        "RUNNING": "Läuft"
+      },
       "title": "Synchronisierung"
     },
     "unauthorized": "Dieses Repository wurde nicht gefunden oder ist für dich nicht verfügbar.",
@@ -1038,7 +1055,11 @@
       "MEDIUM": "Mittel",
       "UNKNOWN": "Unbekannt"
     },
-    "states": { "DISMISSED": "Verworfen", "OPEN": "Offen", "RESOLVED": "Behoben" },
+    "states": {
+      "DISMISSED": "Verworfen",
+      "OPEN": "Offen",
+      "RESOLVED": "Behoben"
+    },
     "title": "Warnungen",
     "unavailable": "Nicht verfügbare Daten",
     "unavailableDescription": "{count} Repositories stellen diesen Warnungstyp derzeit nicht bereit. Andere synchronisierte Daten bleiben verfügbar."
@@ -1102,5 +1123,12 @@
       "SUSPENDED": "Gesperrt",
       "REMOVED": "Entfernt"
     }
+  },
+  "destructiveAction": {
+    "title": "Entfernen bestätigen",
+    "description": "{target} entfernen? Diese Aktion lässt sich möglicherweise nicht rückgängig machen.",
+    "confirm": "Entfernen",
+    "error": "Entfernen fehlgeschlagen. Bitte erneut versuchen.",
+    "cancel": "Abbrechen"
   }
 }

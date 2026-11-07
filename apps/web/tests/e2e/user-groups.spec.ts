@@ -160,6 +160,10 @@ for (const locale of ['en', 'de']) {
     await dialog.getByRole('button', { name: de ? 'Mitglied hinzufügen' : 'Add member', exact: true }).click();
     await expect(dialog.getByText('ada', { exact: true })).toBeVisible();
     await dialog.getByRole('button', { name: de ? 'ada aus Gruppe entfernen' : 'Remove ada from group' }).click();
+    await page
+      .getByRole('dialog', { name: de ? 'Entfernen bestätigen' : 'Confirm removal' })
+      .getByRole('button', { name: de ? 'Entfernen' : 'Remove', exact: true })
+      .click();
     await expect(
       dialog.getByText(de ? 'Diese Gruppe hat keine Mitglieder.' : 'This group has no members.'),
     ).toBeVisible();
@@ -183,6 +187,10 @@ for (const locale of ['en', 'de']) {
     await card
       .getByRole('button', { name: de ? 'Zugriff für Maintainers entfernen' : 'Remove access for Maintainers' })
       .click();
+    await page
+      .getByRole('dialog', { name: de ? 'Entfernen bestätigen' : 'Confirm removal' })
+      .getByRole('button', { name: de ? 'Entfernen' : 'Remove', exact: true })
+      .click();
     await expect(
       card.getByText(
         de ? 'Keine Gruppen haben Zugriff auf dieses Repository.' : 'No groups have access to this repository.',
@@ -192,8 +200,11 @@ for (const locale of ['en', 'de']) {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole('button', { name: de ? 'Neue Gruppe' : 'New group', exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath(`groups-${locale}-mobile.png`), fullPage: true });
-    page.once('dialog', /** Confirms deletion of the synthetic fixture group. */ (prompt) => prompt.accept());
     await page.getByRole('button', { name: de ? 'Löschen' : 'Delete', exact: true }).click();
+    await page
+      .getByRole('dialog', { name: de ? 'Entfernen bestätigen' : 'Confirm removal' })
+      .getByRole('button', { name: de ? 'Entfernen' : 'Remove', exact: true })
+      .click();
     await expect.poll(/** Waits for the confirmed group deletion. */ () => created).toBe(false);
   });
 }

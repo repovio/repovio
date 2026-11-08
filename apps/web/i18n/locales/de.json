@@ -1022,7 +1022,11 @@
     "title": "Repository-Einstellungen",
     "user": "Benutzer",
     "workflowFilters": "Workflow-Filter",
-    "workflowFiltersDescription": "Ausschlussfilter haben Vorrang vor Erlaubnisfiltern."
+    "workflowFiltersDescription": "Ausschlussfilter haben Vorrang vor Erlaubnisfiltern.",
+    "deleteRepository": "Repository löschen",
+    "deleteDescription": "{name} und alle lokalen Workflows, Runs, Issues, Pull Requests, Sicherheitswarnungen, Einstellungen und Benachrichtigungsverläufe endgültig aus Repovio löschen? Dies kann nicht rückgängig gemacht werden. Das Repository und seine Daten beim Anbieter bleiben unverändert.",
+    "deleteSyncConflict": "Eine Synchronisierung läuft. Warten Sie, bis sie abgeschlossen ist, und versuchen Sie es erneut.",
+    "deleteError": "Der Vorgang konnte nicht abgeschlossen werden. Versuchen Sie es erneut."
   },
   "securityAlerts": {
     "code": "Code-Scanning",

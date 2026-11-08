@@ -2,7 +2,8 @@
   <UModal
     v-model:open="open"
     :description="$t('repositoryDetails.generalDescription')"
-    :dismissible="!refreshing && !syncing"
+    :dismissible="!refreshing && !syncing && !deleting"
+    :close="!deleting"
     :title="dialogTitle"
     :ui="{ body: 'max-h-[min(75vh,48rem)] overflow-y-auto', content: 'sm:max-w-5xl' }"
   >
@@ -25,6 +26,14 @@
 
       <div v-else-if="repository" class="space-y-4">
         <div class="flex flex-wrap justify-end gap-2">
+          <ModulesRepositoriesDeleteButton
+            v-if="isAdmin"
+            :key="repository.id"
+            :repository="repository"
+            :disabled="refreshing || syncing"
+            :after-delete="afterDelete"
+            @pending="deleting = $event"
+          />
           <UButton
             v-if="isAdmin"
             color="neutral"
@@ -86,6 +95,8 @@ import type { Repository, RepositoryWebhookConfiguration } from '~/types/api/res
 
 const props = defineProps<{
   repositoryId?: string;
+  /** Refresh the list and clear the selected repository after deletion. */
+  afterDelete: () => Promise<void>;
   webhookConfiguration?: RepositoryWebhookConfiguration;
   webhookConfigurationError: boolean;
   webhookConfigurationLoading: boolean;
@@ -104,6 +115,7 @@ const loading = ref(false);
 const loadError = ref(false);
 const refreshing = ref(false);
 const syncing = ref(false);
+const deleting = ref(false);
 const toast = useToast();
 const isAdmin = computed(
   /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',

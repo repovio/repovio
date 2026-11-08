@@ -939,6 +939,10 @@
     }
   },
   "repositoryDetails": {
+    "deleteRepository": "Repository verwijderen",
+    "deleteDescription": "{name} en alle lokale workflows, uitvoeringen, issues, pull requests, beveiligingsmeldingen, instellingen en meldingsgeschiedenis definitief uit Repovio verwijderen? Dit kan niet ongedaan worden gemaakt. De repository en de gegevens bij de provider blijven ongewijzigd.",
+    "deleteSyncConflict": "Er wordt gesynchroniseerd. Wacht tot dit is voltooid en probeer het opnieuw.",
+    "deleteError": "De bewerking kon niet worden voltooid. Probeer het opnieuw.",
     "activity": {
       "issues": "Issues",
       "pullRequests": "Pull requests",

@@ -16,6 +16,13 @@ apps/web/tests/e2e/.auth/
 # Prisma generated client
 apps/api/src/generated/
 
+# Graphify generated output and local runtime metadata
+/graphify-out/*
+!/graphify-out/graph.json
+/.graphify_*.json
+/.graphify_python
+/.graphify_root
+
 # Environment and local configuration
 .env
 .env.*

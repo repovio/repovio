@@ -5,5 +5,6 @@ coverage/
 .nuxt/
 .output/
 apps/api/src/generated/
+graphify-out/
 apps/api/bruno/**/*.bru
 pnpm-lock.yaml

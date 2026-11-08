@@ -1,0 +1,36 @@
+#!/bin/sh
+# Rebuild and stage only graph.json from the staged source snapshot.
+set -eu
+
+if [ "${GRAPHIFY_SKIP_HOOK:-0}" = 1 ] || [ ! -f graphify-out/graph.json ] ||
+  git diff --cached --quiet -- . ':!graphify-out/graph.json'; then
+  exit 0
+fi
+
+graphify_python=$(git config --get graphify.python || true)
+if [ ! -x "$graphify_python" ]; then
+  echo 'Graphify Python is unavailable; configure graphify.python in local Git config.' >&2
+  exit 1
+fi
+
+snapshot=$(mktemp -d "${TMPDIR:-/tmp}/graphify-pre-commit.XXXXXX")
+trap 'rm -rf "$snapshot"' 0
+trap 'exit 1' HUP INT TERM
+
+# An index snapshot prevents unstaged and untracked sources from entering the committed graph.
+git checkout-index --all --prefix="$snapshot/"
+mkdir -p "$snapshot/graphify-out"
+cp graphify-out/graph.json "$snapshot/graphify-out/graph.json"
+if [ -d graphify-out/cache ]; then
+  cp -R graphify-out/cache "$snapshot/graphify-out/cache"
+fi
+
+(
+  unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_PREFIX
+  cd "$snapshot"
+  PYTHONHASHSEED=0 "$graphify_python" -m graphify update .
+)
+
+cp "$snapshot/graphify-out/graph.json" graphify-out/.graphify-pre-commit.json
+mv graphify-out/.graphify-pre-commit.json graphify-out/graph.json
+git add -- graphify-out/graph.json

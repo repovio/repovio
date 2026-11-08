@@ -123,8 +123,17 @@ When the user types `/graphify`, use the installed graphify skill or instruction
 
 Rules:
 
-- If `graphify-out/graph.json` is missing, use the project-local Graphify skill to generate it in the current worktree.
-  Do not depend on another worktree's graph or absolute runtime paths.
+- If `graphify-out/graph.json` is missing, first look for an existing graph and cache in another worktree of this
+  repository. Prefer a snapshot built at the current commit; check `built_at_commit` before relying on its coverage.
+  Copy `graph.json`, `cache/`, and `manifest.json` into the current worktree's `graphify-out/`; the report and community
+  labels may also be copied. Copy only a stable snapshot, never symlink or concurrently modify another worktree's data.
+- Keep runtime paths local: do not copy `.graphify_root`, `.graphify_python`, or other absolute-path runtime metadata.
+  Set the scan root to the current worktree and resolve the Python interpreter locally. Use Graphify's portable
+  manifest and cache-loading support to resolve cached source paths against the current worktree.
+- Reuse unchanged semantic results. Run `graphify update .` for code differences from the copied snapshot (AST-only,
+  no LLM tokens); use the project-local skill to analyze only new or changed documents/images and invalid cache entries.
+  A different worktree path alone MUST NOT trigger semantic re-extraction. Generate a fresh graph only when no usable
+  snapshot exists; a full semantic rebuild requires a demonstrated cache incompatibility or explicit user request.
 - When `graphify-out/graph.json` exists, run `graphify query "<question>"` before your first grep, search, or source-file
   read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for
   lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and

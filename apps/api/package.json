@@ -51,7 +51,7 @@
     "@nestjs/schedule": "^12.0.2",
     "@nestjs/swagger": "^12.1.0",
     "@nestjs/throttler": "^6.7.1",
-    "@nestjs/websockets": "^12.3.2",
+    "@nestjs/websockets": "^12.3.3",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@querry-kit/nest": "^1.1.2",

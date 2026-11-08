@@ -111,6 +111,12 @@ for (const code of ['en', 'de']) {
           .click();
         await expect(page).toHaveURL(new RegExp(`/docs/${manifest.stable}/installation$`));
         const switchedPrefix = code === 'en' ? '/de' : '';
+        // Nuxt commits its route after page rendering; wait before the route watcher can close a newly opened menu.
+        await expect(
+          page
+            .getByTestId('product-navigation')
+            .locator(`a[href="${switchedPrefix}/docs/${manifest.stable}/overview"]`),
+        ).toHaveAttribute('aria-current', 'true');
         if (width === 390) await page.getByTestId('mobile-navigation-open').click();
         const navigation = page.getByTestId(width === 390 ? 'mobile-product-navigation' : 'product-navigation');
         await expect(

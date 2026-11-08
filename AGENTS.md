@@ -113,33 +113,48 @@
 
 ## graphify
 
-Each worktree owns its local knowledge graph in `graphify-out/`. Generated output, caches, and runtime metadata are
-ignored by Git. Do not commit them or share runtime metadata between worktrees.
+Version only `graphify-out/graph.json`. Reports, HTML, caches, manifests, costs, and runtime metadata stay local.
+Each worktree has its own writable graph and cache; use the graph checked out from Git as the initial shared snapshot.
+Keep shared scan rules and these instructions in Git. Never commit absolute interpreter or worktree paths.
 
-Keep `.graphifyignore`, these instructions, and the project-local skill at `.codex/skills/graphify/` in the repository.
-Use `.graphifyignore` as the shared scan policy. Do not create a second skill copy under `.agents/skills/`.
+### Local setup
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+Run once per clone after installing Graphify. Inspect and preserve existing hooks before changing `core.hooksPath`.
+Git configuration is shared by linked worktrees; interpreter paths belong in local Git config, not tracked files.
 
-Rules:
+```sh
+graphify_python="$(sed -n '1s/^#!//p' "$(command -v graphify)")"
+git config --local graphify.python "$graphify_python"
+git config --local merge.graphify.name 'Graphify graph.json union merge'
+git config --local merge.graphify.driver "\"$graphify_python\" -m graphify merge-driver %O %A %B"
+git config --local core.hooksPath .githooks
+```
 
-- If `graphify-out/graph.json` is missing, first look for an existing graph and cache in another worktree of this
-  repository. Prefer a snapshot built at the current commit; check `built_at_commit` before relying on its coverage.
-  Copy `graph.json`, `cache/`, and `manifest.json` into the current worktree's `graphify-out/`; the report and community
-  labels may also be copied. Copy only a stable snapshot, never symlink or concurrently modify another worktree's data.
-- Keep runtime paths local: do not copy `.graphify_root`, `.graphify_python`, or other absolute-path runtime metadata.
-  Set the scan root to the current worktree and resolve the Python interpreter locally. Use Graphify's portable
-  manifest and cache-loading support to resolve cached source paths against the current worktree.
-- Reuse unchanged semantic results. Run `graphify update .` for code differences from the copied snapshot (AST-only,
-  no LLM tokens); use the project-local skill to analyze only new or changed documents/images and invalid cache entries.
-  A different worktree path alone MUST NOT trigger semantic re-extraction. Generate a fresh graph only when no usable
-  snapshot exists; a full semantic rebuild requires a demonstrated cache incompatibility or explicit user request.
-- When `graphify-out/graph.json` exists, run `graphify query "<question>"` before your first grep, search, or source-file
-  read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for
-  lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and
-  `graphify explain "<concept>"` for focused concepts.
-- Ignored or locally updated graph files are not a reason to skip Graphify. Only skip it if the task is about stale or
-  incorrect graph output, or the user explicitly says not to use it.
-- If `graphify-out/wiki/index.md` exists, use it for broad navigation instead of raw source browsing.
-- Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review or when query/path/explain lack context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+The tracked `.githooks/pre-commit` rebuilds the AST graph from an isolated copy of the Git index with
+`PYTHONHASHSEED=0` and stages only `graphify-out/graph.json`. Unstaged and untracked sources stay out of that rebuild.
+It reuses the local graph and cache, invokes no LLM, and aborts the commit if rebuilding fails. It does not refresh
+semantic document/image nodes. Run `sh .githooks/test-pre-commit.sh` to check its isolation and failure behavior.
+Do not install Graphify's post-commit rebuild hooks alongside this hook. `GRAPHIFY_SKIP_HOOK=1` is an explicit opt-out
+for environments without Graphify, such as CI-generated commits.
+
+### Navigation and updates
+
+- When the user invokes Graphify, use the installed project-local skill before doing anything else.
+- If the graph is missing, first recover the tracked snapshot from Git. Generate a fresh graph only when no usable
+  snapshot exists. A new clone or worktree alone MUST NOT trigger a full semantic rebuild.
+- Reuse unchanged semantic results. A cache copied from a stable snapshot of this repository may be reused, but keep
+  `.graphify_root`, `.graphify_python`, and other absolute-path runtime metadata local. Resolve cached source paths
+  against the current worktree; never share a writable cache or graph through a symlink.
+- When `graphify-out/graph.json` exists, run `graphify query "<question>"` before the first grep, search, or source-file
+  read for a codebase question. Include this rule in every subagent prompt that explores code. Read raw files only for
+  context located by the graph or an earlier read. Use `graphify path` for relationships and `graphify explain` for
+  focused concepts.
+- Locally updated graphs are not a reason to skip Graphify. Stale/incorrect graph tasks or explicit user instructions
+  may bypass it. Use `graphify-out/wiki/index.md` for broad navigation when available; read `GRAPH_REPORT.md` only for
+  broad architecture review or when query/path/explain do not provide enough context.
+- After code changes or a branch switch, run `graphify update .` (AST-only, no LLM tokens). The pre-commit hook repeats
+  the update against staged sources. For changed documents, papers, or images, use the skill's incremental update and
+  semantic cache; do not rerun semantic extraction for unchanged files.
+- Keep the graph in the same commit as its source changes. `.gitattributes` marks it generated and selects the union
+  merge driver. Review node/edge summaries and queries instead of relying on the suppressed textual diff. A merge
+  conflict from invalid graph data MUST be investigated; do not bypass the driver's validation.

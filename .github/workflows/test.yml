@@ -1,11 +1,13 @@
 name: Test
-
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-
+  workflow_call:
+    inputs:
+      api:
+        type: boolean
+        required: true
+      web:
+        type: boolean
+        required: true
 permissions:
   contents: read
 
@@ -15,7 +17,8 @@ concurrency:
 
 jobs:
   test:
-    name: Test applications
+    if: inputs.api
+    name: Test API
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -62,22 +65,11 @@ jobs:
           docker exec ${{ job.services.postgres.id }} psql -U repovio -d postgres
           -c 'CREATE DATABASE repovio_shadow;'
 
-      - name: Fetch Changesets base branch
-        if: github.event_name == 'pull_request'
-        run: git fetch origin refs/heads/main:refs/heads/main
-
-      - name: Validate Changesets configuration
-        if: github.event_name != 'pull_request' || github.head_ref != 'changeset-release/main'
-        run: pnpm changeset status
-
       - name: Build shared schema contracts
         run: pnpm --filter @repovio/schemas build
 
       - name: Verify dependency security regressions
         run: pnpm test:dependencies
-
-      - name: Test shared schema contracts
-        run: pnpm --filter @repovio/schemas test
 
       - name: Generate Prisma client
         if: hashFiles('apps/api/prisma/schema.prisma') != ''
@@ -94,11 +86,8 @@ jobs:
       - name: Verify offline OpenAPI export
         run: pnpm --filter @repovio/api test:openapi
 
-      - name: Test web app
-        if: hashFiles('apps/web/vitest.config.mts') != ''
-        run: pnpm nx run web:test
-
   postgres-upgrade:
+    if: inputs.api
     name: Test PostgreSQL major upgrade
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -118,3 +107,30 @@ jobs:
         env:
           REPOVIO_TEST_API_IMAGE: repovio-api:upgrade-test
         run: node --test scripts/check-postgres-upgrade.test.mjs
+
+  web:
+    if: inputs.web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          version: 11.28.9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test dashboard
+        run: pnpm --filter @repovio/web test

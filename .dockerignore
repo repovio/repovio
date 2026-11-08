@@ -7,3 +7,11 @@ apps/*/dist
 **/*.tsbuildinfo
 .env
 *.log
+
+**/node_modules
+apps/website/.data
+apps/website/.cache
+apps/website/.publication
+apps/website/captures
+**/test-results
+**/playwright-report

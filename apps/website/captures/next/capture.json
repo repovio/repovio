@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "workingTreeDirty": false,
+  "revision": "d160f71be62e8efff261b06df430f0a43c022305",
+  "sourceTreeDigest": "3f3930df05e1c2f69c6154e2c0bae35a7954541f191246dd4d4445795662c90e",
+  "syntheticData": true,
+  "locales": ["en", "de"],
+  "themes": ["light", "dark"],
+  "files": [
+    { "name": "dashboard-en-light.png", "sha256": "6929267c5523562bdcd91deb6aa0b63649510ba564e9b0f6140753734e0dabbe" },
+    { "name": "dashboard-en-dark.png", "sha256": "a8781772b1054f4f2384015e9caf6281ebbd6e301cc6bb3fcf04db7dba10c2d5" },
+    { "name": "dashboard-de-light.png", "sha256": "65b14f36fe16061bcfc0e333deee9476b21167555c840f62aa83fab5569708f7" },
+    { "name": "dashboard-de-dark.png", "sha256": "a3f6bc9a0cb6f4e54463603cf2bb57a77b2548c7912f9c5b7c1a2db2a5b6c20b" }
+  ]
+}

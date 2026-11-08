@@ -6,6 +6,7 @@ Build Repovio as a pnpm/Nx monorepo with:
 
 - `apps/api`: NestJS REST API with Fastify, shared Zod contracts, Prisma, PostgreSQL, CASL, and `@querry-kit/nest`.
 - `libs/schemas`: Framework-independent Zod request, query, response, and derived form contracts.
+- `apps/website`: Independently versioned Nuxt product website and multilingual documentation in `content/`.
 - `apps/web`: Nuxt 4 single-page dashboard with Pinia, Nuxt UI, and `@querry-kit/nuxt`.
 - A Docker Compose production stack containing API, web, and PostgreSQL.
 - GitHub Actions for linting, testing, and Changesets-driven Docker releases.
@@ -159,3 +160,19 @@ Use one shared `REPOVIO_VERSION` in Docker Compose so API and web always deploy 
 - API integration tests proving viewers and managers cannot access or mutate data outside their repository assignments.
 - Frontend tests for login redirects, permission-gated navigation, empty/error dashboard states, and table filtering.
 - CI must verify TypeScript 7, Prisma migrations, linting, tests, typechecks, and release Docker image builds.
+
+## Website and documentation consolidation
+
+The website is the independent private workspace package `@repovio/website`; repository visibility does not affect
+its package privacy. The root `repovio` version continues to identify only the API/dashboard deployment. Changesets
+versions both packages independently; neither fixed nor linked version groups couple their releases.
+
+`ci.yml` selects API, dashboard, and website checks from changed paths, including shared schema and root configuration
+consumers. `lint.yml`, `test.yml`, and `website.yml` are reusable checks. A stable `Test applications` job aggregates their
+results. Documentation-only changes validate the renderer without the application database. The existing `Test applications` and `Lint and typecheck` required contexts remain compatible with branch rules.
+
+`deploy.yml` selects images from Changesets' published package identities. The website publishes
+`ghcr.io/<owner>/repovio-website:<website-version>` independently, with its own Compose deployment. An application release
+may open a reviewed documentation archive PR carrying a website-only Changeset after its smoke test succeeds. The
+archive workflow consumes exact sources from a single application tag, preserves checksums and provenance, and uses no
+cross-repository dispatch, Git submodule, or documentation GitHub App.

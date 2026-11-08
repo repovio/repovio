@@ -90,3 +90,10 @@ test('rejects multiline span content attached to a standalone delimiter', /** Co
     ),
   );
 });
+
+test('formats long translated spans using the documented Vue whitespace policy', /** Preserve translated labels while enforcing standalone multiline delimiters. */ async () => {
+  const input = `<template><span class="${'translated-label '.repeat(10)}">{{ label }}</span></template>`;
+  const once = await formatSource(input, 'fixture.vue');
+  assert.match(once, /\n {2}>\n {4}{{ label }}/);
+  assert.equal(await formatSource(once, 'fixture.vue'), once);
+});

@@ -31,3 +31,8 @@ apps/api/src/generated/
 # Logs and operating system files
 *.log
 .DS_Store
+
+# Website content database and publication staging
+apps/website/.data/
+apps/website/.cache/
+apps/website/.publication/

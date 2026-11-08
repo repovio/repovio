@@ -1,0 +1,421 @@
+{
+  "entries": [
+    {
+      "slug": "overview",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 0
+    },
+    {
+      "slug": "installation",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 1
+    },
+    {
+      "slug": "setup",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 2
+    },
+    {
+      "slug": "sign-in",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 3
+    },
+    {
+      "slug": "navigation",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 4
+    },
+    {
+      "slug": "search",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 5
+    },
+    {
+      "slug": "deployment",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 6
+    },
+    {
+      "slug": "branding-upgrade",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 7
+    },
+    {
+      "slug": "postgresql-18-upgrade",
+      "tab": "get-started",
+      "section": "getting-started",
+      "group": null,
+      "order": 40
+    },
+    {
+      "slug": "guide-dashboard",
+      "tab": "guides",
+      "section": "overview",
+      "group": "dashboard",
+      "order": 8
+    },
+    {
+      "slug": "workflow-runs",
+      "tab": "guides",
+      "section": "overview",
+      "group": "workflowRuns",
+      "order": 9
+    },
+    {
+      "slug": "awaiting-approval",
+      "tab": "guides",
+      "section": "overview",
+      "group": "workflowRuns",
+      "order": 10
+    },
+    {
+      "slug": "needs-attention",
+      "tab": "guides",
+      "section": "overview",
+      "group": "workflowRuns",
+      "order": 11
+    },
+    {
+      "slug": "guide-issues",
+      "tab": "guides",
+      "section": "overview",
+      "group": "issues",
+      "order": 12
+    },
+    {
+      "slug": "guide-pull-requests",
+      "tab": "guides",
+      "section": "overview",
+      "group": "pullRequests",
+      "order": 13
+    },
+    {
+      "slug": "alerts-dependencies",
+      "tab": "guides",
+      "section": "overview",
+      "group": "securityAlerts",
+      "order": 14
+    },
+    {
+      "slug": "alerts-code",
+      "tab": "guides",
+      "section": "overview",
+      "group": "securityAlerts",
+      "order": 15
+    },
+    {
+      "slug": "alerts-secrets",
+      "tab": "guides",
+      "section": "overview",
+      "group": "securityAlerts",
+      "order": 16
+    },
+    {
+      "slug": "repositories",
+      "tab": "guides",
+      "section": "operations",
+      "group": "repositories",
+      "order": 17
+    },
+    {
+      "slug": "provider-webhooks",
+      "tab": "guides",
+      "section": "operations",
+      "group": "repositories",
+      "order": 18
+    },
+    {
+      "slug": "guide-jobs",
+      "tab": "guides",
+      "section": "operations",
+      "group": "jobs",
+      "order": 19
+    },
+    {
+      "slug": "notifications",
+      "tab": "guides",
+      "section": "operations",
+      "group": "notifications",
+      "order": 20
+    },
+    {
+      "slug": "notification-rules",
+      "tab": "guides",
+      "section": "operations",
+      "group": "notifications",
+      "order": 21
+    },
+    {
+      "slug": "notification-history",
+      "tab": "guides",
+      "section": "operations",
+      "group": "notifications",
+      "order": 22
+    },
+    {
+      "slug": "browser-push",
+      "tab": "guides",
+      "section": "operations",
+      "group": "notifications",
+      "order": 23
+    },
+    {
+      "slug": "provider-accounts",
+      "tab": "guides",
+      "section": "administration",
+      "group": "providerAccounts",
+      "order": 24
+    },
+    {
+      "slug": "provider-oauth",
+      "tab": "guides",
+      "section": "administration",
+      "group": "providerAccounts",
+      "order": 25
+    },
+    {
+      "slug": "users",
+      "tab": "guides",
+      "section": "administration",
+      "group": "users",
+      "order": 26
+    },
+    {
+      "slug": "settings",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 27
+    },
+    {
+      "slug": "profile",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 28
+    },
+    {
+      "slug": "avatar",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 29
+    },
+    {
+      "slug": "password",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 30
+    },
+    {
+      "slug": "language",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 31
+    },
+    {
+      "slug": "appearance",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 32
+    },
+    {
+      "slug": "mcp",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 33
+    },
+    {
+      "slug": "authentication",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 34
+    },
+    {
+      "slug": "settings-system",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 35
+    },
+    {
+      "slug": "localization",
+      "tab": "guides",
+      "section": "administration",
+      "group": "settings",
+      "order": 36
+    },
+    {
+      "slug": "api-access",
+      "tab": "api",
+      "section": "api",
+      "group": null,
+      "order": 37
+    },
+    {
+      "slug": "api-reference",
+      "tab": "api",
+      "section": "api",
+      "group": null,
+      "order": 38
+    },
+    {
+      "slug": "github-app",
+      "tab": "guides",
+      "section": "administration",
+      "group": "providerAccounts",
+      "order": 39
+    }
+  ],
+  "redirects": {
+    "guide-sign-in-navigation": {
+      "to": "sign-in",
+      "anchors": {
+        "sign-in": "sign-in",
+        "navigate-the-application": "navigation",
+        "personal-settings-and-version-information": "settings"
+      }
+    },
+    "guide-workflow-queues": {
+      "to": "workflow-runs",
+      "anchors": {
+        "all-runs": "workflow-runs",
+        "needs-attention": "needs-attention",
+        "awaiting-approval": "awaiting-approval",
+        "alle-läufe": "workflow-runs",
+        "handlungsbedarf": "needs-attention",
+        "ausstehende-freigaben": "awaiting-approval"
+      }
+    },
+    "guide-issues-pull-requests": {
+      "to": "guide-issues",
+      "anchors": {
+        "issues": "guide-issues",
+        "pull-requests-and-merge-requests": "guide-pull-requests",
+        "synchronization": "guide-issues"
+      }
+    },
+    "guide-repositories-notifications": {
+      "to": "repositories",
+      "anchors": {
+        "browse-tracked-repositories": "repositories",
+        "configure-repositories": "repositories",
+        "review-notifications": "notifications"
+      }
+    },
+    "guide-security-alerts": {
+      "to": "alerts-dependencies",
+      "anchors": {}
+    },
+    "guide-administration": {
+      "to": "provider-accounts",
+      "anchors": {
+        "provider-accounts": "provider-accounts",
+        "users-roles-and-repository-access": "users",
+        "personal-and-system-settings": "settings",
+        "mcp-access": "mcp",
+        "benutzer-und-rechte": "users"
+      }
+    }
+  },
+  "groups": [
+    {
+      "id": "dashboard",
+      "section": "overview",
+      "title": "guide-dashboard",
+      "icon": "i-lucide-layout-dashboard",
+      "slug": "guide-dashboard"
+    },
+    {
+      "id": "workflowRuns",
+      "section": "overview",
+      "title": "workflowRuns",
+      "icon": "i-lucide-list-tree",
+      "slug": null
+    },
+    {
+      "id": "issues",
+      "section": "overview",
+      "title": "guide-issues",
+      "icon": "i-lucide-circle-dot",
+      "slug": "guide-issues"
+    },
+    {
+      "id": "pullRequests",
+      "section": "overview",
+      "title": "guide-pull-requests",
+      "icon": "i-lucide-git-pull-request",
+      "slug": "guide-pull-requests"
+    },
+    {
+      "id": "securityAlerts",
+      "section": "overview",
+      "title": "securityAlerts",
+      "icon": "i-lucide-shield-alert",
+      "slug": null
+    },
+    {
+      "id": "repositories",
+      "section": "operations",
+      "title": "repositories",
+      "icon": "i-lucide-git-fork",
+      "slug": "repositories"
+    },
+    {
+      "id": "jobs",
+      "section": "operations",
+      "title": "guide-jobs",
+      "icon": "i-lucide-list-checks",
+      "slug": "guide-jobs"
+    },
+    {
+      "id": "notifications",
+      "section": "operations",
+      "title": "notifications",
+      "icon": "i-lucide-bell",
+      "slug": null
+    },
+    {
+      "id": "providerAccounts",
+      "section": "administration",
+      "title": "providerAccounts",
+      "icon": "i-lucide-plug-zap",
+      "slug": "provider-accounts"
+    },
+    {
+      "id": "users",
+      "section": "administration",
+      "title": "users",
+      "icon": "i-lucide-users",
+      "slug": "users"
+    },
+    {
+      "id": "settings",
+      "section": "administration",
+      "title": "settings",
+      "icon": "i-lucide-settings",
+      "slug": "settings"
+    }
+  ]
+}

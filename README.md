@@ -200,3 +200,9 @@ Application scripts build the schema package before starting, testing, typecheck
 ## Development toolchain
 
 Use Node.js 26.13.0 LTS and the package manager pinned in `package.json`. Node-based application runtimes require Node.js 26. Builds use TypeScript 7; ESLint and compiler-API consumers use the TypeScript 6 compatibility package. Dependency overrides, where present, pin security fixes for transitive packages; validate tests and documentation builds when changing them.
+
+## Website and public documentation
+
+The product website and handbook are maintained in [`apps/website`](apps/website/README.md). The website has its own
+Changesets package version, container image, and Compose deployment. Documentation sources are ordinary tracked files
+under `apps/website/content`. See the package README for validation, archive promotion, and deployment instructions.

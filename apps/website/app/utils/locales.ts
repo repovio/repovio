@@ -1,0 +1,12 @@
+import { getLocale, supportedLocales } from '#shared/locales';
+import { ar, bn, de, en, es, fr, hi, id, ja, pt_br, ru, ur, zh_cn } from '@nuxt/ui/locale';
+
+const uiLocales = { en, de, zh_cn, hi, es, ar, fr, bn, pt_br, id, ur, ru, ja };
+export const languageOptions = supportedLocales.map(
+  /** Map each entry to `({ value: code, label: name })`. */ ({ code, name }) => ({ value: code, label: name }),
+);
+
+/** Resolve Nuxt UI messages for the canonical supported locale. */
+export function getUiLocale(code: string) {
+  return uiLocales[getLocale(code).ui as keyof typeof uiLocales];
+}

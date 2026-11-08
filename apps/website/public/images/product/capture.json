@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "workingTreeDirty": false,
+  "revision": "dd939a1aee7428e517e74e5bc12c65302a521816",
+  "sourceTreeDigest": "070222e770a1311643b91c17edd40f3a502e1d9e613aa47c888482eb789ce637",
+  "syntheticData": true,
+  "locales": ["en", "de"],
+  "themes": ["light", "dark"],
+  "files": [
+    { "name": "dashboard-en-light.png", "sha256": "287b5ee2c0f2d3e3653c04382647ff644eb1346379408c0ea2da258bc066af21" },
+    {
+      "name": "workflow-monitoring-en-light.png",
+      "sha256": "4bb3d72009b66eb2176392b86c292e201621dc72faed076829f0c82469ed22cc"
+    },
+    {
+      "name": "issues-pull-requests-en-light.png",
+      "sha256": "a2f79d66392e4589fcdbb02e013329579cb220ae63d8304dce78c4a0a42d8702"
+    },
+    {
+      "name": "security-alerts-en-light.png",
+      "sha256": "444b8bb692eca54df2a4974926f22fb3dc71fd8e60368bd27c0db0b547ef4437"
+    },
+    {
+      "name": "notifications-en-light.png",
+      "sha256": "80b771bbe56e67840796be587a3b1ba17ff347a5e871eb27f31938b7bc030b75"
+    },
+    {
+      "name": "access-control-en-light.png",
+      "sha256": "8b9b5ac6f09e77091440a520e3b44c28b5f4783462eb7b45d54331add09d29a0"
+    },
+    { "name": "dashboard-en-dark.png", "sha256": "fcbc579581f903ae7b9755fd222430a093265878ce53d4460a8ac7e040712bf6" },
+    {
+      "name": "workflow-monitoring-en-dark.png",
+      "sha256": "d6a0d08fe7fe3fb6cac26fb9ce6f669e64fcb768fb37d8568f966790910ff1bc"
+    },
+    {
+      "name": "issues-pull-requests-en-dark.png",
+      "sha256": "081bfced9f03953aca6f460aca385910187a21ff08b2834c48be658bdb7fdaad"
+    },
+    {
+      "name": "security-alerts-en-dark.png",
+      "sha256": "19ff801d8f2b8e11f8deab8cda9f5747cf6c7088a4ef26d77e00e2004cee71a6"
+    },
+    {
+      "name": "notifications-en-dark.png",
+      "sha256": "c1fd6ca1636cb944e0ab8e634f3de0ebbf8c4168591b2e2822a59d0fd4bd3d25"
+    },
+    {
+      "name": "access-control-en-dark.png",
+      "sha256": "f754f252369a92085381d2caede7e7e34afab525b615259d27b5aae29d46c183"
+    },
+    { "name": "dashboard-de-light.png", "sha256": "71f889a7162eb8be263920f73a99e8ec18404bbffe58213adaabc4ecb47c791a" },
+    {
+      "name": "workflow-monitoring-de-light.png",
+      "sha256": "2d7b7011d82222cd2b27d4b54c4530900c454e654c603d54d45d4813b9bbc0df"
+    },
+    {
+      "name": "issues-pull-requests-de-light.png",
+      "sha256": "e836e7bfd4a543625dc886f528fd65afbfde187a3b7967dd5611b503e85228df"
+    },
+    {
+      "name": "security-alerts-de-light.png",
+      "sha256": "2bb9c305d96247fe67b9efd3e42250e88c7d4c0bf6278c7a325ee1dee74ad599"
+    },
+    {
+      "name": "notifications-de-light.png",
+      "sha256": "995694de86218c93118992358796ae2ebfc97b25129857911f781789b233cc97"
+    },
+    {
+      "name": "access-control-de-light.png",
+      "sha256": "255b7d2355d855c5b1f1fee609ff5ebf716ea41ed12eccaeee39fc4b54636075"
+    },
+    { "name": "dashboard-de-dark.png", "sha256": "6e883c89c2d3eddafa64f1843aeec55f7c54b9407cac88132d736b2fef48fc59" },
+    {
+      "name": "workflow-monitoring-de-dark.png",
+      "sha256": "1fdcb933b40ce6b8f2072baecbe982d8b287cdcabc10457905f5b6c6a8ecec4c"
+    },
+    {
+      "name": "issues-pull-requests-de-dark.png",
+      "sha256": "c2462d581f8082e224d631bceab0b34769614fafc2dbcfe362a53b720b15305a"
+    },
+    {
+      "name": "security-alerts-de-dark.png",
+      "sha256": "c90c193a5b1c0de077776cccbb73e950001812ed5299b7181c8a40b72051c457"
+    },
+    {
+      "name": "notifications-de-dark.png",
+      "sha256": "3a7f0045534ae1e9785d0e7723297d6c3dc38aded2c6b58f250666dc50099e82"
+    },
+    {
+      "name": "access-control-de-dark.png",
+      "sha256": "9658faea64f2947669db902d0b555561c1502003ba64572d8027e69cf4eab61e"
+    }
+  ]
+}

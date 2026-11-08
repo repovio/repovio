@@ -6,6 +6,7 @@ updates:
       - /
       - /apps/api
       - /apps/web
+      - /apps/website
     schedule:
       interval: weekly
       day: monday
@@ -44,7 +45,7 @@ updates:
           - version-update:semver-major
 
   - package-ecosystem: docker
-    directories: [/apps/api, /apps/web]
+    directories: [/apps/api, /apps/web, /apps/website]
     schedule:
       interval: weekly
       day: monday

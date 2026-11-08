@@ -1,0 +1,47 @@
+name: Website
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          version: 11.28.9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website and documentation
+        run: |
+          pnpm --filter @repovio/website docs:test
+          pnpm --filter @repovio/website docs:check
+          pnpm --filter @repovio/website lint
+          pnpm --filter @repovio/website typecheck
+          pnpm --filter @repovio/website test
+          pnpm --filter @repovio/website build
+      - name: Install Chromium
+        run: pnpm --filter @repovio/website exec playwright install --with-deps chromium
+      - name: Verify production website and API reference
+        run: |
+          pnpm --filter @repovio/website test:e2e
+          pnpm --filter @repovio/website test:api-reference
+      - name: Build website container
+        run: docker build -f apps/website/Dockerfile -t repovio-website:ci .
+      - name: Verify read-only website container
+        run: pnpm --filter @repovio/website test:container

@@ -18,7 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
-      published: ${{ steps.changesets.outputs.published }}
+      app: ${{ steps.packages.outputs.app }}
+      app-tag: ${{ steps.version.outputs.tag }}
+      website: ${{ steps.packages.outputs.website }}
 
     permissions:
       contents: write
@@ -53,10 +55,20 @@ jobs:
           publish-script: pnpm release
           create-github-releases: true
 
+      - name: Read exact application release tag
+        id: version
+        run: echo "tag=repovio@$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Select independently published packages
+        id: packages
+        env:
+          PACKAGES: ${{ steps.changesets.outputs.published-packages || '[]' }}
+        run: node scripts/released-packages.mjs
+
   publish-images:
     name: Publish container images
     needs: release
-    if: needs.release.outputs.published == 'true'
+    if: needs.release.outputs.app == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -127,7 +139,7 @@ jobs:
       - release
       - publish-images
     if: >-
-      needs.release.outputs.published == 'true' && needs.publish-images.outputs.images-ready == 'true'
+      needs.release.outputs.app == 'true' && needs.publish-images.outputs.images-ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -199,37 +211,45 @@ jobs:
         if: always() && steps.compose-inputs.outputs.ready == 'true'
         run: docker compose -f compose.yml down --volumes --remove-orphans
 
-  notify-documentation:
-    name: Notify versioned documentation publisher
-    needs: [release, smoke-release]
-    if: needs.release.outputs.published == 'true' && vars.DOCS_PUBLICATION_ENABLED == 'true'
+  publish-website:
+    name: Publish independently versioned website
+    needs: release
+    if: needs.release.outputs.website == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     permissions:
       contents: read
+      packages: write
     steps:
-      - name: Check out released application
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
-          fetch-depth: 0
-      - name: Create restricted publication dispatcher token
-        id: dispatcher
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Read website version
+        id: version
+        run: echo "value=$(node -p 'require("./apps/website/package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Build and publish website image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
-          app-id: ${{ vars.DOCS_APP_ID }}
-          private-key: ${{ secrets.DOCS_APP_PRIVATE_KEY }}
-          owner: repovio
-          repositories: docs,website
-          permission-contents: write
-      - name: Dispatch exact release and reviewed documentation source
-        env:
-          GH_TOKEN: ${{ steps.dispatcher.outputs.token }}
-        run: |
-          version="$(node -p 'JSON.parse(require("node:fs").readFileSync("package.json")).version')"
-          tag="repovio@$version"
-          revision="$(git rev-parse "$tag^{commit}")"
-          test "$revision" = "$(git rev-parse HEAD)"
-          docs_revision="$(gh api repos/repovio/docs/commits/main --jq .sha)"
-          jq -n --arg tag "$tag" --arg revision "$revision" --arg docsRevision "$docs_revision" \
-            '{event_type: "application-released", client_payload: {tag: $tag, revision: $revision, docsRevision: $docsRevision}}' \
-            | gh api --method POST repos/repovio/website/dispatches --input -
+          context: .
+          file: apps/website/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/repovio-website:${{ steps.version.outputs.value }}
+            ghcr.io/${{ github.repository_owner }}/repovio-website:latest
+          cache-from: type=gha,scope=website
+          cache-to: type=gha,mode=max,scope=website
+
+  archive-documentation:
+    needs: [release, smoke-release]
+    if: needs.release.outputs.app == 'true' && vars.DOCS_PUBLICATION_ENABLED == 'true'
+    uses: ./.github/workflows/promote-docs.yml
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      tag: ${{ needs.release.outputs.app-tag }}
+    secrets: inherit

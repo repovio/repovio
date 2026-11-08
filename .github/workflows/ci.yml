@@ -1,0 +1,72 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.areas.outputs.api }}
+      web: ${{ steps.areas.outputs.web }}
+      website: ${{ steps.areas.outputs.website }}
+      docs: ${{ steps.areas.outputs.docs }}
+      root: ${{ steps.areas.outputs.root }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+      - id: areas
+        env:
+          CI_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          CI_HEAD: ${{ github.sha }}
+        run: node scripts/ci-areas.mjs
+  lint:
+    needs: changes
+    uses: ./.github/workflows/lint.yml
+    with:
+      api: ${{ needs.changes.outputs.api == 'true' }}
+      web: ${{ needs.changes.outputs.web == 'true' }}
+      root: ${{ needs.changes.outputs.root == 'true' }}
+  test:
+    needs: changes
+    uses: ./.github/workflows/test.yml
+    with:
+      api: ${{ needs.changes.outputs.api == 'true' }}
+      web: ${{ needs.changes.outputs.web == 'true' }}
+  website:
+    needs: changes
+    if: needs.changes.outputs.website == 'true'
+    uses: ./.github/workflows/website.yml
+  required:
+    name: Test applications
+    needs: [changes, lint, test, website]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify affected checks
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const results = JSON.parse(process.env.RESULTS); if (results.changes.result !== "success" || Object.values(results).some(job => !["success", "skipped"].includes(job.result))) process.exit(1)'
+
+  lint-required:
+    name: Lint and typecheck
+    needs: [changes, lint]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify affected lint checks
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const results = JSON.parse(process.env.RESULTS); if (results.changes.result !== "success" || Object.values(results).some(job => !["success", "skipped"].includes(job.result))) process.exit(1)'

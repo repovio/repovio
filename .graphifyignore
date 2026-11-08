@@ -22,3 +22,8 @@ apps/web/tests/e2e/.auth/
 .env
 .env.*
 !.env.example
+
+# Website runtime data and isolated release source checkouts
+apps/website/.data/
+apps/website/.cache/
+apps/website/.publication/

@@ -76,3 +76,20 @@ restriction. Le retrait agit à la requête suivante sauf autre droit conservé.
 locaux et OIDC, sans synchronisation des claims OIDC.
 
 [Groupes d’accès locaux](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Supprimer le suivi local
+
+Les administrateurs système peuvent sélectionner **Supprimer le dépôt** sur la page de détails ou dans la fenêtre des
+paramètres. La confirmation nomme le dépôt et explique la suppression définitive des workflows, exécutions, issues,
+pull requests, alertes de sécurité, paramètres, attributions d’accès, historiques de webhooks, états de synchronisation
+et historiques de notifications associés localement. Le compte fournisseur et les données du dépôt chez le fournisseur
+restent inchangés.
+
+La suppression est bloquée pendant une synchronisation ; attendez sa fin et réessayez. Les demandes en attente sont
+supprimées avec le dépôt. Les abonnements perdent le filtre de ce dépôt ; un abonnement limité uniquement à ce dépôt
+est supprimé au lieu de devenir global. Les canaux partagés sont conservés.
+
+Le dépôt peut être ajouté à nouveau via la sélection du fournisseur existante. Le suivi repart de zéro, sans restaurer
+l’historique ni les paramètres locaux précédents.

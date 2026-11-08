@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { ENV } from '../../config/env.js';
 import type {
@@ -30,6 +30,57 @@ export class RepositoryConfigurationService {
     private readonly credentials: CredentialEncryptionService,
     private readonly workflowFilters: WorkflowFilterService,
   ) {}
+
+  /**
+   * Permanently remove local tracking and owned history without modifying the provider.
+   *
+   * @param user - System administrator requesting irreversible local deletion.
+   * @param repositoryId - Local identifier of the tracked repository.
+   * @returns Resolves after all repository-owned records are removed atomically.
+   * @throws ForbiddenException - System administrator access is required.
+   * @throws NotFoundException - The repository no longer exists.
+   * @throws ConflictException - A synchronization is running for this repository.
+   */
+  async deleteRepository(user: AuthenticatedUser, repositoryId: string): Promise<void> {
+    this.assertAdministrator(user);
+    await this.prisma.transaction(
+      /** Serialize deletion with queue claims and preserve restricted notification subscriptions. */ async (
+        transaction,
+      ) => {
+        const repository = await transaction.repository.findUnique({
+          where: { id: repositoryId },
+          select: { providerAccountId: true },
+        });
+        if (!repository) throw new NotFoundException('Repository not found.');
+
+        // Queue claims acquire this account row before updating the request. Keep the same lock order.
+        await transaction.$queryRaw`
+          SELECT id FROM provider_accounts WHERE id = ${repository.providerAccountId}::uuid FOR UPDATE
+        `;
+        // A concurrent deletion may have completed while this transaction waited for the account lock.
+        if (!(await transaction.repository.findUnique({ where: { id: repositoryId }, select: { id: true } }))) {
+          throw new NotFoundException('Repository not found.');
+        }
+        const request = await transaction.repositorySyncRequest.findUnique({ where: { repositoryId } });
+        if (request?.status === 'RUNNING') {
+          throw new ConflictException('Repository synchronization is running. Try again after it finishes.');
+        }
+
+        // Different accounts may be deleted concurrently. Lock shared subscriptions before checking the last filter.
+        await transaction.$queryRaw`
+          SELECT subscription.id FROM notification_event_subscriptions AS subscription
+          JOIN notification_event_subscription_repositories AS filter
+            ON filter."notificationEventSubscriptionId" = subscription.id
+          WHERE filter."repositoryId" = ${repositoryId}::uuid
+          ORDER BY subscription.id FOR UPDATE OF subscription
+        `;
+        await transaction.notificationEventSubscription.deleteMany({
+          where: { repositories: { some: { repositoryId }, every: { repositoryId } } },
+        });
+        await transaction.repository.delete({ where: { id: repositoryId } });
+      },
+    );
+  }
 
   /**
    * Return safe webhook setup metadata for every tracked repository.

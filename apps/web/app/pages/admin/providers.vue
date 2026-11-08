@@ -45,7 +45,7 @@
     </template>
 
     <UAlert
-      v-if="oauthStatus === 'connected'"
+      v-if="oauthStatus === 'connected' && !oauthActionError"
       class="mx-4 mt-4"
       color="success"
       :title="$t('providers.oauthConnected')"
@@ -61,7 +61,7 @@
     />
 
     <UAlert
-      v-if="oauthStatus === 'cancelled'"
+      v-if="oauthStatus === 'cancelled' && !oauthActionError"
       class="mx-4 mt-4"
       color="neutral"
       :title="$t('providers.oauthCancelled')"

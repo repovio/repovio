@@ -90,6 +90,11 @@ for (const locale of ['en', 'de'] as const) {
         exact: true,
       });
       await expect(reauthorize).toBeEnabled();
+      failure = true;
+      await reauthorize.click();
+      await expect(page.getByRole('alert')).toBeVisible();
+      await expect(reauthorize).toBeEnabled();
+      failure = false;
       oauthStatus = 'REAUTHORIZATION_REQUIRED';
       await page.goto('/admin/providers');
       await expect(

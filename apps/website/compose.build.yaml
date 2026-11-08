@@ -1,0 +1,6 @@
+services:
+  website:
+    image: repovio-website:local
+    build:
+      context: ../..
+      dockerfile: apps/website/Dockerfile

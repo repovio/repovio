@@ -1,0 +1,28 @@
+/* Repovio Branch R palette. Keep application and website copies synchronized. */
+@theme static {
+  --color-brand-primary: #4f46ff;
+  --color-brand-secondary: #2ee6a6;
+  --color-brand-navy: #0b1238;
+  --color-indigo-50: #f0efff;
+  --color-indigo-100: #e3e0ff;
+  --color-indigo-200: #c9c5ff;
+  --color-indigo-300: #aaa3ff;
+  --color-indigo-400: #817aff;
+  --color-indigo-500: #4f46ff;
+  --color-indigo-600: #4035df;
+  --color-indigo-700: #3429b6;
+  --color-indigo-800: #2b258f;
+  --color-indigo-900: #26246f;
+  --color-indigo-950: #171540;
+  --color-emerald-50: #ecfff7;
+  --color-emerald-100: #cffce9;
+  --color-emerald-200: #a2f8d5;
+  --color-emerald-300: #6bf0be;
+  --color-emerald-400: #47ebb2;
+  --color-emerald-500: #2ee6a6;
+  --color-emerald-600: #0b9668;
+  --color-emerald-700: #087653;
+  --color-emerald-800: #095d43;
+  --color-emerald-900: #094c38;
+  --color-emerald-950: #032b20;
+}

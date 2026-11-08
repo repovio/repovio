@@ -1,0 +1,90 @@
+name: Archive application documentation
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact application tag (repovio@x.y.z)
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: documentation-publication
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out monorepo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.CHANGESETS_PR_TOKEN }}
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          version: 11.28.9
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+          cache: pnpm
+      - name: Resolve exact application release
+        id: source
+        env:
+          REQUEST_TAG: ${{ inputs.tag }}
+        run: |
+          tag="$REQUEST_TAG"
+          [[ "$tag" =~ ^repovio@[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          revision="$(git rev-parse "$tag^{commit}")"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+      - name: Check out exact application and documentation sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.source.outputs.revision }}
+          fetch-depth: 0
+          path: apps/website/.publication/application
+      - name: Install source and capture dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --dir apps/website/.publication/application install --frozen-lockfile
+          pnpm --filter @repovio/website exec playwright install --with-deps chromium
+      - name: Generate the release-source Prisma client without connecting to a database
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          SHADOW_DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder_shadow
+        run: pnpm --dir apps/website/.publication/application --filter @repovio/api db:generate
+      - name: Stage versioned archive and website Changeset
+        env:
+          RELEASE_TAG: ${{ steps.source.outputs.tag }}
+        run: pnpm --filter @repovio/website docs:promote "$RELEASE_TAG" "$GITHUB_WORKSPACE/apps/website/.publication/application"
+      - name: Validate archive and website
+        run: |
+          pnpm --filter @repovio/website docs:check
+          pnpm --filter @repovio/website test
+          pnpm --filter @repovio/website build
+          pnpm --filter @repovio/website test:e2e
+      - name: Open or update documentation publication PR
+        env:
+          GH_TOKEN: ${{ secrets.CHANGESETS_PR_TOKEN }}
+          GRAPHIFY_SKIP_HOOK: '1'
+          RELEASE_TAG: ${{ steps.source.outputs.tag }}
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then exit 0; fi
+          branch="docs/archive-${RELEASE_TAG#repovio@}"
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/website/content apps/website/public/images apps/website/docs-publications.json .changeset
+          git commit -m "docs: archive $RELEASE_TAG"
+          git push --force-with-lease origin "HEAD:$branch"
+          if ! gh pr view "$branch" >/dev/null 2>&1; then
+            gh pr create --base main --head "$branch" --title "docs: archive $RELEASE_TAG" --body 'Publish the reviewed application documentation and source captures. The website-only Changeset releases these changes independently after review.'
+          fi

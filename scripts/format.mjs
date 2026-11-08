@@ -85,7 +85,11 @@ export async function formatSource(text, file) {
         /** Projects each entry using `text.slice(start, end)`. */ ({ start, end }) => text.slice(start, end),
       )
     : [];
-  const formatted = await prettier.format(text, { ...prettierConfig, filepath: file });
+  const formatted = await prettier.format(text, {
+    ...prettierConfig,
+    ...(file.endsWith('.vue') ? { htmlWhitespaceSensitivity: 'ignore' } : {}),
+    filepath: file,
+  });
   if (!file.endsWith('.vue')) return formatted;
   const [result] = await vueFormatter.lintText(formatted, { filePath: resolve(root, file) });
   if (result.errorCount)

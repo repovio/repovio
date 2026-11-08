@@ -8,3 +8,7 @@ apps/api/src/generated/
 graphify-out/
 apps/api/bruno/**/*.bru
 pnpm-lock.yaml
+
+# Published archives are immutable provenance inputs.
+apps/website/content/*/docs/v*/
+apps/website/content/openapi/

@@ -72,6 +72,8 @@ Run from the repository root, using `corepack pnpm` if the active pnpm is not th
 
 `apps/api` retains `pnpm lint` and the API documentation entrypoint. CI runs the canonical formatting, documentation,
 checker regression tests, ESLint, and type checks in the existing lint workflow. Fix commands are explicit and uncached.
+The website uses its Nuxt-aware ESLint configuration with the shared Vue layout and attribute-order rules. Released
+handbook archives and OpenAPI snapshots retain their exact published bytes and are excluded from reformatting.
 Root rule/configuration and checker changes participate in Nx lint cache inputs. No new hooks are required.
 
 Style changes must preserve behavior, permission filtering, API contracts, pending/error states, localization,

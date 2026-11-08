@@ -39,15 +39,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+        with:
+          fetch-depth: 0
+
+      - name: Set up change detection
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.0
+      - name: Select affected language
+        id: selection
+        env:
+          CI_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          CI_HEAD: ${{ github.sha }}
+          CI_LANGUAGE: ${{ matrix.language }}
+        run: node scripts/ci-areas.mjs
+
       # JavaScript, TypeScript, and workflow files are analyzed directly from
       # source.
       - name: Initialize CodeQL
+        if: steps.selection.outputs.scan == 'true'
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
       - name: Analyze code
+        if: steps.selection.outputs.scan == 'true'
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           category: /language:${{ matrix.language }}

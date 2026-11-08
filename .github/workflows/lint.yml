@@ -1,11 +1,16 @@
 name: Lint
-
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-
+  workflow_call:
+    inputs:
+      api:
+        type: boolean
+        required: true
+      web:
+        type: boolean
+        required: true
+      root:
+        type: boolean
+        required: true
 permissions:
   contents: read
 
@@ -15,6 +20,7 @@ concurrency:
 
 jobs:
   lint:
+    if: inputs.api || inputs.web || inputs.root
     name: Lint and typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -42,11 +48,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Fetch Changesets base branch
+        if: github.event_name == 'pull_request'
+        run: git fetch origin refs/heads/main:refs/heads/main
+
+      - name: Validate Changesets configuration
+        if: github.event_name != 'pull_request' || github.head_ref != 'changeset-release/main'
+        run: pnpm changeset status
+
       - name: Build shared schema contracts
+        if: inputs.api || inputs.web
         run: pnpm --filter @repovio/schemas build
 
       - name: Test shared schema contracts
+        if: inputs.api || inputs.web
         run: pnpm --filter @repovio/schemas test
+
+      - name: Test CI selection and release isolation
+        run: pnpm test:ci
 
       - name: Test coding guideline checks
         run: pnpm test:guidelines
@@ -61,20 +80,20 @@ jobs:
         run: pnpm branding:check
 
       - name: Lint shared configuration
-        run: pnpm exec eslint .
+        run: pnpm exec eslint scripts libs ./*.mjs
 
       - name: Lint API
-        if: hashFiles('apps/api/tsconfig.json') != ''
+        if: inputs.api
         run: pnpm --dir apps/api lint
 
       - name: Typecheck API
-        if: hashFiles('apps/api/tsconfig.json') != ''
+        if: inputs.api
         run: pnpm nx run api:db:generate && pnpm --dir apps/api typecheck
 
       - name: Lint web app
-        if: hashFiles('apps/web/nuxt.config.ts') != ''
-        run: pnpm --dir apps/web lint
+        if: inputs.web
+        run: pnpm exec eslint apps/web
 
       - name: Typecheck web app
-        if: hashFiles('apps/web/nuxt.config.ts') != ''
+        if: inputs.web
         run: pnpm --dir apps/web typecheck

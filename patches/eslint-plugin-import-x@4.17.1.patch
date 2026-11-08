@@ -1,0 +1,35 @@
+diff --git a/lib/index.cjs b/lib/index.cjs
+--- a/lib/index.cjs
++++ b/lib/index.cjs
+@@ -4697,2 +4697,2 @@
+-		const allowRegexps = (options.allow || []).map((p) => (0, minimatch.makeRe)(p)).filter(Boolean);
+-		const forbidRegexps = (options.forbid || []).map((p) => (0, minimatch.makeRe)(p)).filter(Boolean);
++		const allowPatterns = options.allow || [];
++		const forbidPatterns = options.forbid || [];
+@@ -4700 +4700 @@
+-			return allowRegexps.some((re) => re.test(importPath));
++			return allowPatterns.some((pattern) => (0, minimatch.minimatch)(importPath, pattern));
+@@ -4703 +4703 @@
+-			return forbidRegexps.some((re) => re.test(importPath));
++			return forbidPatterns.some((pattern) => (0, minimatch.minimatch)(importPath, pattern));
+diff --git a/lib/rules/no-internal-modules.js b/lib/rules/no-internal-modules.js
+--- a/lib/rules/no-internal-modules.js
++++ b/lib/rules/no-internal-modules.js
+@@ -1 +1 @@
+-import { makeRe } from 'minimatch';
++import { minimatch } from 'minimatch';
+@@ -69,6 +69,2 @@
+-        const allowRegexps = (options.allow || [])
+-            .map(p => makeRe(p))
+-            .filter(Boolean);
+-        const forbidRegexps = (options.forbid || [])
+-            .map(p => makeRe(p))
+-            .filter(Boolean);
++        const allowPatterns = options.allow || [];
++        const forbidPatterns = options.forbid || [];
+@@ -76 +72 @@
+-            return allowRegexps.some(re => re.test(importPath));
++            return allowPatterns.some(pattern => minimatch(importPath, pattern));
+@@ -79 +75 @@
+-            return forbidRegexps.some(re => re.test(importPath));
++            return forbidPatterns.some(pattern => minimatch(importPath, pattern));

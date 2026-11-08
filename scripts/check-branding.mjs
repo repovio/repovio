@@ -11,6 +11,8 @@ const formerName = /e[z]repo/i;
 const failures = [];
 for (const file of new Set(files)) {
   if (!existsSync(file)) continue;
+  // Historical v1.0 setup keys must match the original tagged application.
+  if (/^apps\/website\/content\/[^/]+\/docs\/v1\.0\/(?:language|localization|mcp)\.md$/.test(file)) continue;
   const buffer = readFileSync(file);
   if (buffer.includes(0)) continue;
   if (formerName.test(file) || formerName.test(buffer.toString('utf8'))) failures.push(file);

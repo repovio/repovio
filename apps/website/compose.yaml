@@ -1,0 +1,15 @@
+services:
+  website:
+    image: ghcr.io/repovio/repovio-website:${REPOVIO_WEBSITE_VERSION:?Set an exact website release version}
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${REPOVIO_WEBSITE_PORT:-3002}:3000'
+    environment:
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://repovio.de}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

@@ -12,6 +12,7 @@ publicHoistPattern:
   - vue-i18n
 
 overrides:
+  '@nuxt/content>zod': 4.6.7
   'glob@>=9.0.0 <14.0.2': 14.0.2
   'minimatch@>=7.0.0 <11.0.1': 11.0.1
   'nestjs-zod>deepmerge': '-'
@@ -92,6 +93,7 @@ minimumReleaseAgeExclude:
   - '@hono/node-server@2.1.6'
 
 patchedDependencies:
+  eslint-plugin-import-x@4.17.1: patches/eslint-plugin-import-x@4.17.1.patch
   '@rollup/plugin-node-resolve@16.0.3': patches/@rollup__plugin-node-resolve@16.0.3.patch
   braces@3.0.3: patches/braces@3.0.3.patch
   jest-config@30.5.2: patches/jest-config@30.5.2.patch

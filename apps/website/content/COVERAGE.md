@@ -145,3 +145,12 @@ The `next` handbook is reviewed against application release `repovio@2.0.0` at
 setup, PostgreSQL 18 Compose examples, and upgrade procedures match that release. The API snapshot is exported from this
 exact application revision during promotion. The working-tree publication guard is removed following this review; `next`
 remains unpublished until the normal archive, screenshot, and website validation steps complete.
+
+## Additional OIDC provider guides
+
+The `next` Authentication and Installation pages cover Authentik, Keycloak, Microsoft Entra ID, and Auth0 in all 13
+languages. The Keycloak example includes a pinned production container, a separate PostgreSQL database, an internal
+readiness check, TLS proxy configuration, bootstrap administration, and backup/recovery instructions. Provider guides
+distinguish Keycloak group names, Entra group object IDs and denied overage markers, and Auth0 administratively managed
+namespaced ID-token claims. Existing-provider deployments reuse the local-account stack with the public callback URL.
+These editorial updates leave every published archive and the single-provider OIDC runtime unchanged.

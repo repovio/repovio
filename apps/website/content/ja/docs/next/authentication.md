@@ -44,10 +44,10 @@ OIDC_CALLBACK_URL=https://repovio.example.com/api/v1/auth/oidc/callback
 
 ### グループ、役割、およびアイデンティティ
 
-グループ クレームには、正確な 1 つのクレーム名、または `realm_access.groups`
-などのドット区切りのパスを指定できます。 3 つの Repovio ロールに対して、大文字と小文字を区別した正確なグループ値を構成します。複数のグループが一致する場合、Repovio は
-`SYSTEM_ADMIN`、次に `MANAGER`、次に `VIEWER` を適用します。 **一致しないユーザーを閲覧者として許可する**
-が明示的に有効になっていない限り、一致しない、形式が間違っている、欠落している、または大きすぎるグループの申し立ては拒否されます。
+グループ claim は正確な名前または `realm_access.groups`
+のようなドット区切りパスです。大文字と小文字を区別する正確な値を指定します。複数一致時は
+`SYSTEM_ADMIN`、`MANAGER`、`VIEWER`
+の順です。グループ欠落や未一致は、未一致ユーザーへの Viewer 許可を明示的に有効にしない限り拒否されます。不正形式の claim とグループ数超過は常に拒否されます。
 
 OIDC アカウントは、検証された発行者とサブジェクトのペアによってのみリンクされます。 Repovio は、電子メール アドレスやユーザー名によって OIDC ログインをローカル アカウントにリンクすることはありません。ログインが成功するたびに、検証済みのクレームから姓名が同期されます。ログイン名、プロファイル名、パスワードはローカルで変更できません。リポジトリ メンバーシップは Repovio で管理されたままとなり、アイデンティティ プロバイダー グループから派生することはありません。
 
@@ -59,12 +59,118 @@ token は無効になりません。ID プロバイダーのグループを無�
 
 ### プロバイダーの例
 
+プロバイダー別ガイド: [Keycloak](#oidc-keycloak) · [Microsoft Entra ID](#oidc-entra-id) · [Auth0](#oidc-auth0)
+
 Authentik の場合、認可コード フロー、上記の正確なコールバック URL、および `openid`、`profile`、および `email`
 スコープを使用して OAuth2/OpenID プロバイダーを作成します。選択したグループ クレームをグループ名の配列として返すスコープ マッピングを追加し、プロバイダーをアプリケーションにアタッチして、アプリケーションの発行者、クライアント ID、およびクライアント シークレットを Repovio にコピーします。
 
 別の標準準拠プロバイダーの場合は、認証コード フローを有効にし、S256
 PKCE を要求し、正確なコールバック URL を登録し、安定した `sub`
 と構成されたグループ クレームを ID トークンまたは UserInfo 応答に含めます。 Repovio は、非対称 ID トークン署名のみを受け入れ、未署名トークンと HMAC 署名付きトークンを拒否します。
+
+<a id="oidc-keycloak"></a>
+
+#### Keycloak
+
+Keycloak 管理コンソールで repovio realm と repovio という OpenID Connect クライアントを作成します。Client
+authentication と Standard flow を有効にし、Implicit flow と Direct access
+grants を無効にします。下記と完全一致するコールバックを Valid redirect
+URIs に登録し、S256 を必須にして RS256 を維持します。Credentials からシークレットをコピーします。
+
+クライアント専用 scope に Group Membership mapper を追加し、Token Claim Name を groups、Full group path を無効、Add to
+ID
+token を有効にします。profile と email をデフォルト scope に設定します。repovio-admins、repovio-managers、repovio-viewers を作成してユーザーを割り当て、完全なグループ名を Repovio の対応するロールにマッピングします。Realm ロールはグループ所属ではありません。
+
+```text
+Issuer: https://auth.example.com/realms/repovio
+Discovery: https://auth.example.com/realms/repovio/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Client ID: repovio
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+参考資料: [Keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc_clients)
+
+<a id="oidc-entra-id"></a>
+
+#### Microsoft Entra ID
+
+Entra ID → App
+registrations でシングルテナントのアプリを登録します。Web プラットフォームに下記の正確なコールバックを追加し、暗黙的なトークン発行は有効にしません。Application
+(client) ID と Directory (tenant)
+ID をコピーします。クライアントシークレットを作成し、ID ではなく Value をコピーします。v2
+issuer にはテナント ID を使用し、common や organizations は使いません。
+
+Token configuration でセキュリティグループの groups claim を ID token に追加し、Group
+ID を選択します。3 グループを作成してユーザーを割り当て、オブジェクト ID を SYSTEM_ADMIN、MANAGER、VIEWER に対応させます。表示名は GUID と一致しません。割り当て済みグループへの絞り込みには適切な Entra ライセンスが必要な場合があります。S256
+PKCE と非対称署名を使用し、期限前にシークレットを更新します。
+
+グループ数超過のマーカーは、未一致ユーザーの Viewer 許可を有効にしても Repovio が拒否します。外部 claim ソースや Microsoft
+Graph は参照しません。出力する所属を減らすかグループをフィルターしてください。Graph 権限の付与では解決しません。
+
+```text
+Issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+Discovery: https://login.microsoftonline.com/TENANT_ID/v2.0/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: ADMIN_GROUP_OBJECT_ID
+MANAGER: MANAGER_GROUP_OBJECT_ID
+VIEWER: VIEWER_GROUP_OBJECT_ID
+```
+
+参考資料:
+[Microsoft Entra ID](https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles)
+
+<a id="oidc-auth0"></a>
+
+#### Auth0
+
+Regular Web Application を作成し、Allowed Callback URLs に正確なコールバックを登録します。Authorization Code と S256
+PKCE を使用し、署名を RS256、Token Endpoint Authentication
+Method を Basic にします。クライアント ID とシークレットをコピーします。使用するテナントまたは独自ドメインの discovery から issuer を取得し、末尾のスラッシュを維持します。ドメインを混在させないでください。
+
+下記の Login / Post Login Action を作成し、REPLACE_WITH_REPOVIO_CLIENT_ID を置き換えてデプロイし、Login
+flow に追加します。管理者が各ユーザーの app_metadata.repovio_groups を repovio-admins、repovio-managers、repovio-viewers を含む配列として設定します。ユーザーが変更できる user_metadata を認可に使用しないでください。グループは自動出力されず、access
+token だけへの claim 追加では不十分です。Repovio には namespaced
+claim の完全な名前を入力し、3 値を対応ロールにマッピングします。
+
+```text
+Issuer: https://YOUR_TENANT.REGION.auth0.com/
+Discovery: https://YOUR_TENANT.REGION.auth0.com/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: https://repovio.example.com/groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+```javascript
+/** Add administratively managed Repovio groups to this application's ID token. */
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.client.client_id !== 'REPLACE_WITH_REPOVIO_CLIENT_ID') return;
+  const groups = event.user.app_metadata?.repovio_groups;
+  api.idToken.setCustomClaim('https://repovio.example.com/groups', Array.isArray(groups) ? groups : []);
+};
+```
+
+参考資料: [Auth0](https://auth0.com/docs/secure/tokens/json-web-tokens/create-custom-claims)
+
+<a id="verify-oidc-providers"></a>
+
+#### 検証とトラブルシューティング
+
+どのプロバイダーでも OIDC_CALLBACK_URL を正確に登録し、openid profile email を要求して Authorization Code、S256
+PKCE、非対称署名を使用します。設定 → 認証で issuer、クライアント ID、シークレット、scopes、グループ claim を保存して接続確認します。Discovery 成功だけではユーザーのグループは検証されません。
+
+SYSTEM_ADMIN、MANAGER、VIEWER、および未割り当てユーザーを別々にテストします。未一致 Viewer 許可が無効なら未割り当てユーザーは拒否される必要があります。失敗時は正確なグループ名、Keycloak パス設定、Entra オブジェクト ID、Auth0 の namespaced
+ID-token
+claim を確認します。復旧用のローカル管理者を保持します。OIDC グループはグローバルロールのみを付与し、リポジトリ権限は別途必要です。設定できるプロバイダーは一つです。
 
 <a id="oidc-api-contract"></a>
 

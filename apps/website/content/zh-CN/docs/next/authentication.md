@@ -41,10 +41,8 @@ OIDC_CALLBACK_URL=https://repovio.example.com/api/v1/auth/oidc/callback
 
 ### 组、角色和身份
 
-组声明可以是一个精确的声明名称或点分隔的路径，例如
-`realm_access.groups`。为三个 Repovio 角色配置准确、区分大小写的组值。如果多个组匹配，则 Repovio 应用
-`SYSTEM_ADMIN`，然后是 `MANAGER`，然后是
-`VIEWER`。除非明确启用**允许不匹配的用户作为查看者**，否则不匹配、格式错误、缺失或过大的组声明将被拒绝。
+组声明可以是精确名称或点分路径，如 `realm_access.groups`。使用区分大小写的精确组值映射角色。多个组匹配时，优先级为
+`SYSTEM_ADMIN`、`MANAGER`、`VIEWER`。缺失或未匹配的组会被拒绝，除非明确启用未匹配用户的 Viewer 权限。格式错误的声明和组超限标记始终被拒绝。
 
 OIDC 帐户仅由经过验证的发行人和主体对链接。 Repovio 绝不会通过电子邮件地址或用户名将 OIDC 登录链接到本地​​帐户。每次成功登录时，名字和姓氏都会根据经过验证的声明进行同步；无法在本地更改登录名、配置文件名称和密码。存储库成员身份仍然在 Repovio 中进行管理，并且永远不会从身份提供者组派生。
 
@@ -55,11 +53,112 @@ token 失效。停用或移除身份提供商中的组会阻止受影响的账�
 
 ### 提供者示例
 
+提供程序指南: [Keycloak](#oidc-keycloak) · [Microsoft Entra ID](#oidc-entra-id) · [Auth0](#oidc-auth0)
+
 对于 Authentik，使用授权代码流、上面的确切回调 URL 以及 `openid`、`profile` 和 `email`
 范围创建 OAuth2/OpenID 提供程序。添加范围映射，以组名称数组的形式返回所选组声明，将提供程序附加到应用程序，然后将应用程序的颁发者、客户端 ID 和客户端密钥复制到 Repovio 中。
 
 对于另一个符合标准的提供商，启用授权代码流，需要 S256 PKCE，注册准确的回调 URL，并在 ID 令牌或 UserInfo 响应中包含稳定的
 `sub` 以及配置的组声明。 Repovio 仅接受非对称 ID 令牌签名，拒绝未签名和 HMAC 签名的令牌。
+
+<a id="oidc-keycloak"></a>
+
+#### Keycloak
+
+在 Keycloak 管理控制台创建 repovio realm 和名为 repovio 的 OpenID Connect 客户端。启用 Client authentication 和 Standard
+flow，禁用 Implicit flow 和 Direct access grants。在 Valid redirect
+URIs 中填写下方完全一致的回调地址，强制 S256，保留 RS256 签名。从 Credentials 复制客户端密钥。
+
+在客户端专用 scope 中添加 Group Membership mapper：Token Claim Name 为 groups，关闭 Full group path，启用 Add to ID
+token。将 profile 和 email 设为默认客户端 scope。创建 repovio-admins、repovio-managers 和 repovio-viewers 并分配用户。在 Repovio 中保存下方配置，将完整组名映射到相应角色。Realm 角色不等于组成员关系。
+
+```text
+Issuer: https://auth.example.com/realms/repovio
+Discovery: https://auth.example.com/realms/repovio/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Client ID: repovio
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+参考资料: [Keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc_clients)
+
+<a id="oidc-entra-id"></a>
+
+#### Microsoft Entra ID
+
+在 Entra ID → App
+registrations 注册单租户应用，添加 Web 平台和下方完全一致的回调地址，不启用隐式令牌签发。复制 Application (client)
+ID 和 Directory (tenant) ID。创建客户端密钥并复制 Value，而非密钥 ID。在 v2
+issuer 中使用租户 ID，不要使用 common 或 organizations。
+
+在 Token configuration 中为 ID token 添加安全组的 groups 声明，选择 Group
+ID。创建三个安全组并分配用户，将组对象 ID 映射到 SYSTEM_ADMIN、MANAGER 和 VIEWER；显示名称不能匹配 GUID。仅输出已分配组的筛选功能可能需要相应 Entra 许可证。使用 S256
+PKCE 和非对称签名，并在密钥到期前更新。
+
+组数量超限时，即使允许未匹配用户作为 Viewer，Repovio 也会拒绝超限标记。它不会跟随外部声明来源或查询 Microsoft
+Graph。应减少输出的组成员关系或配置支持的组筛选；授予 Graph 权限不能解决此问题。
+
+```text
+Issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+Discovery: https://login.microsoftonline.com/TENANT_ID/v2.0/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: ADMIN_GROUP_OBJECT_ID
+MANAGER: MANAGER_GROUP_OBJECT_ID
+VIEWER: VIEWER_GROUP_OBJECT_ID
+```
+
+参考资料:
+[Microsoft Entra ID](https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles)
+
+<a id="oidc-auth0"></a>
+
+#### Auth0
+
+创建 Regular Web Application，将下方回调地址原样填入 Allowed Callback URLs，启用 Authorization Code 和 S256
+PKCE，选择 RS256 签名，将 Token Endpoint Authentication
+Method 设为 Basic。复制客户端 ID 和密钥。从所选租户或自定义域名的 discovery 获取 issuer，保留末尾斜杠，不要混用域名。
+
+按下方示例创建 Login / Post Login Action，替换 REPLACE_WITH_REPOVIO_CLIENT_ID，部署并加入 Login
+flow。由管理员将用户的 app_metadata.repovio_groups 设置为包含 repovio-admins、repovio-managers 或 repovio-viewers 的数组；不要用用户可编辑的 user_metadata 授权。Auth0 不会自动输出这些组，只在 access
+token 中添加声明不够。在 Repovio 中将完整 namespaced 声明作为精确的组声明名称，并将三个值映射到对应角色。
+
+```text
+Issuer: https://YOUR_TENANT.REGION.auth0.com/
+Discovery: https://YOUR_TENANT.REGION.auth0.com/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: https://repovio.example.com/groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+```javascript
+/** Add administratively managed Repovio groups to this application's ID token. */
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.client.client_id !== 'REPLACE_WITH_REPOVIO_CLIENT_ID') return;
+  const groups = event.user.app_metadata?.repovio_groups;
+  api.idToken.setCustomClaim('https://repovio.example.com/groups', Array.isArray(groups) ? groups : []);
+};
+```
+
+参考资料: [Auth0](https://auth0.com/docs/secure/tokens/json-web-tokens/create-custom-claims)
+
+<a id="verify-oidc-providers"></a>
+
+#### 验证与故障排查
+
+所有提供程序均须原样注册 OIDC_CALLBACK_URL，请求 openid profile email，并使用 Authorization Code、S256
+PKCE 和非对称签名。在设置 → 身份验证中保存 issuer、客户端 ID、密钥、scopes 和组声明，再检查连接。Discovery 成功不代表用户组声明正确。
+
+分别测试 SYSTEM_ADMIN、MANAGER、VIEWER 及未分配用户；关闭未匹配用户的 Viewer 权限时，最后一种必须被拒绝。失败时检查组名大小写、Keycloak 路径选项、Entra 对象 ID 和 Auth0 的 namespaced
+ID-token 声明。保留本地管理员用于恢复。OIDC 组仅授予全局角色；仓库权限仍需在 Repovio 中单独分配。一次只能配置一个身份提供程序。
 
 <a id="oidc-api-contract"></a>
 

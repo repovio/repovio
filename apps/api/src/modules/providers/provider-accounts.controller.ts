@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ResourceQuery } from '@querry-kit/nest/core';
 import {
   ApiCreateProviderAccountSchema,
@@ -6,6 +6,7 @@ import {
   ApiProviderAccountSchema,
   ApiProviderRepositorySchema,
   ApiRepositorySchema,
+  ApiStartExistingProviderOAuthSchema,
   ApiUpdateProviderAccountSchema,
   ProviderAuthenticationOptionsSchema,
   ProviderOAuthAuthorizationSchema,
@@ -34,6 +35,8 @@ import { ProviderAccountsService } from './provider-accounts.service.js';
 import { ProviderOAuthService } from './provider-oauth.service.js';
 
 class CreateProviderAccountDto extends createZodDto(ApiCreateProviderAccountSchema) {}
+
+class StartExistingProviderOAuthDto extends createZodDto(ApiStartExistingProviderOAuthSchema) {}
 
 class UpdateProviderAccountDto extends createZodDto(ApiUpdateProviderAccountSchema) {}
 
@@ -182,6 +185,27 @@ export class ProviderAccountsController {
   ): Promise<ProviderOAuthAuthorizationDto> {
     return this.oauth.start(req.user, body);
   }
+  /**
+   * Start GitLab OAuth conversion or reauthorization for an existing Provider Account.
+   * @param req - Authenticated administrator request.
+   * @param id - Existing Provider Account identifier.
+   * @param body - Empty validated body; target metadata is derived server-side.
+   * @returns The authorization URL with encrypted target context.
+   * @throws ForbiddenException - System administrator access is required.
+   * @throws NotFoundException - The target account does not exist.
+   * @throws BadRequestException - The target is not a matching configured GitLab instance.
+   */
+  @SchemaResponse(ProviderOAuthAuthorizationSchema)
+  @Post(':id/oauth')
+  async authorizeExisting(
+    @Req() req: { user: AuthenticatedUser },
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: StartExistingProviderOAuthDto,
+  ): Promise<ProviderOAuthAuthorizationDto> {
+    void body;
+    return this.oauth.startExisting(req.user, id);
+  }
+
   /**
    * Update the selected local resource after authorization and validation.
    *

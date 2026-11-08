@@ -278,6 +278,7 @@ export const queryFields = {
     },
   },
   ProviderAccount: {
+    oauthStatus: { type: 'String', list: false, nullable: false },
     authenticationMethod: { type: 'String', list: false, nullable: false },
     githubInstallationState: { type: 'String', list: false, nullable: true },
     id: {

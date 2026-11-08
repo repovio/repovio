@@ -8,6 +8,7 @@ import { optionalInput, providerBaseUrlSchema } from './validation.js';
 export const ApiProviderAccountSchema = z.strictObject({
   id: z.string(),
   providerType: z.union([z.literal('GITHUB'), z.literal('GITLAB'), z.literal('FORGEJO'), z.literal('GITEA')]),
+  oauthStatus: z.enum(['NONE', 'CONNECTED', 'REAUTHORIZATION_REQUIRED']).optional(),
   authenticationMethod: z.enum(['TOKEN', 'GITHUB_APP']).optional(),
   githubInstallationState: z.enum(['ACTIVE', 'SUSPENDED', 'REMOVED']).nullable().optional(),
   displayName: z.string(),
@@ -20,6 +21,9 @@ export const ApiProviderAccountSchema = z.strictObject({
 export const ApiProviderAccountQuerySchema = resourceQuerySchemas.ProviderAccount.extend({
   search: z.string().trim().max(1024).optional(),
 });
+
+/** Existing-account OAuth authorization accepts no caller-owned account metadata. */
+export const ApiStartExistingProviderOAuthSchema = z.strictObject({});
 
 /** Shared StartProviderOAuth boundary schema. */
 export const ApiStartProviderOAuthSchema = z.strictObject({

@@ -23,6 +23,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
 
     expect(dto).toEqual({
       authenticationMethod: 'TOKEN',
+      oauthStatus: 'NONE',
       githubInstallationState: null,
       id: 'account',
       providerType: 'GITHUB',
@@ -39,6 +40,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
 
     expect(schema).toEqual({
       authenticationMethod: true,
+      oauthStatus: true,
       githubInstallationState: true,
       baseUrl: true,
       displayName: true,
@@ -49,7 +51,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
     });
     expect(
       Fields.parseAndValidate(
-        'id,displayName,providerType,baseUrl,enabled,lastSyncAt,authenticationMethod,githubInstallationState',
+        'id,displayName,providerType,baseUrl,enabled,lastSyncAt,authenticationMethod,githubInstallationState,oauthStatus',
         schema,
       ),
     ).toEqual(schema);

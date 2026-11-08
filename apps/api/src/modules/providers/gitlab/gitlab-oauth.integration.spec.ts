@@ -281,6 +281,19 @@ describe('GitLab OAuth credential persistence and locking', /** Exercise real Po
     await expect(service.exchangeCode('code')).rejects.toThrow('invalid OAuth response');
   });
 
+  it('sanitizes transaction failures that could contain encrypted write arguments', /** Verify persistence errors cannot leak Prisma invocation data through errors or logs. */ async () => {
+    const database = {
+      $transaction: jest.fn().mockRejectedValue(new Error('synthetic-encrypted-write-argument') as never),
+    };
+    const broken = new GitLabOAuthService(database as never, encryption, fetch);
+    const error = await broken
+      .accessToken('synthetic-id')
+      .catch(/** Inspect only the sanitized public failure. */ (failure: unknown) => failure);
+    expect(error).toBeInstanceOf(BadGatewayException);
+    expect(String(error)).not.toContain('synthetic-encrypted-write-argument');
+    expect((error as Error).cause).toBeUndefined();
+  });
+
   it('normalizes only safe instance URLs and rejects tokenless payloads', /** Verify URL canonicalization and direct parser rejection. */ () => {
     expect(normalizeGitLabUrl('https://GITLAB.example.test/prefix/')).toBe('https://gitlab.example.test/prefix');
     expect(/** Reject embedded URL credentials. */ () => normalizeGitLabUrl('https://secret@example.test')).toThrow(

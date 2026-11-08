@@ -188,6 +188,9 @@ export function useRepovioApi() {
         api.put(apiEndpoints.auth.oidc.config, input),
     },
     providerAccounts: {
+      /** Starts in-place GitLab OAuth authorization using server-owned account metadata. */
+      authorizeExisting: (id: string): Promise<AxiosResponse<ProviderOAuthAuthorization>> =>
+        api.post(`${apiEndpoints.providerAccounts.base}/${id}/oauth`, {}),
       /** Starts the configured provider OAuth authorization flow. */
       authorize: (input: StartProviderOAuth): Promise<AxiosResponse<ProviderOAuthAuthorization>> =>
         api.post(apiEndpoints.providerAccounts.authorize, input),

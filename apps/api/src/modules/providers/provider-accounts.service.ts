@@ -65,14 +65,20 @@ export class ProviderAccountsService {
   ) {
     this.assertAdmin(user);
     if (input.providerType === 'GITLAB' && input.oauthCredentials) {
-      return this.prisma.providerAccount.create({
-        data: {
-          providerType: 'GITLAB',
-          displayName: input.displayName,
-          baseUrl: input.baseUrl,
-          ...input.oauthCredentials,
-        },
-      });
+      try {
+        return await this.prisma.providerAccount.create({
+          data: {
+            providerType: 'GITLAB',
+            displayName: input.displayName,
+            baseUrl: input.baseUrl,
+            ...input.oauthCredentials,
+          },
+        });
+      } catch {
+        throw new BadRequestException(
+          'The GitLab OAuth connection could not be saved. Check its display name and authorize again.',
+        );
+      }
     }
     return this.create(user, {
       providerType: input.providerType,

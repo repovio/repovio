@@ -1,0 +1,25 @@
+meta {
+  name: Start GitLab OAuth for an existing Provider Account
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/api/v1/provider-accounts/{{providerAccountId}}/oauth
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {}
+}
+
+docs {
+  Requires a System Administrator and an existing GitLab Provider Account matching GITLAB_OAUTH_BASE_URL.
+  Set providerAccountId to its UUID. Open the returned authorizationUrl in the same browser session.
+  Reauthorization preserves the connection and tracked history. Never paste tokens or callback codes into this file.
+}

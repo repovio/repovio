@@ -51,12 +51,20 @@
       :title="$t('providers.oauthConnected')"
     />
     <UAlert
-      v-else-if="oauthStatus === 'failed'"
+      v-else-if="oauthStatus === 'failed' || oauthActionError"
+      role="alert"
       class="mx-4 mt-4"
       color="error"
       icon="i-lucide-circle-alert"
       variant="subtle"
       :title="$t('providers.oauthError')"
+    />
+
+    <UAlert
+      v-if="oauthStatus === 'cancelled'"
+      class="mx-4 mt-4"
+      color="neutral"
+      :title="$t('providers.oauthCancelled')"
     />
 
     <UAlert
@@ -84,18 +92,7 @@
         <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
       </template>
       <template #authenticationMethod-cell="{ row }">
-        <div class="flex flex-col items-start gap-1">
-          <UBadge variant="subtle">
-            {{ row.original.authenticationMethod === 'GITHUB_APP' ? $t('githubApp.title') : $t('githubApp.token') }}
-          </UBadge>
-          <UBadge
-            v-if="row.original.githubInstallationState && row.original.githubInstallationState !== 'ACTIVE'"
-            color="warning"
-            variant="subtle"
-          >
-            {{ $t(`githubApp.states.${row.original.githubInstallationState}`) }}
-          </UBadge>
-        </div>
+        <ModulesProvidersAuthenticationStatus :provider="row.original" />
       </template>
       <template #baseUrl-cell="{ row }">
         <span class="break-all text-sm text-muted">{{ row.original.baseUrl ?? $t('providers.defaultUrl') }}</span>
@@ -112,34 +109,17 @@
         <span class="flex justify-end">{{ column.columnDef.header }}</span>
       </template>
       <template #actions-cell="{ row }">
-        <div class="flex justify-end gap-1">
-          <UTooltip :text="row.original.enabled ? $t('providers.disable') : $t('providers.enable')">
-            <span class="inline-flex">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                :aria-label="row.original.enabled ? $t('providers.disable') : $t('providers.enable')"
-                :disabled="isProviderPending(row.original.id)"
-                :icon="row.original.enabled ? 'i-lucide-pause' : 'i-lucide-play'"
-                :loading="isPending(providerActionKey('toggle', row.original.id))"
-                @click="toggle(row.original)"
-              />
-            </span>
-          </UTooltip>
-          <UTooltip :text="$t('providers.delete')">
-            <span class="inline-flex">
-              <UButton
-                color="error"
-                icon="i-lucide-trash-2"
-                variant="ghost"
-                :aria-label="$t('providers.delete')"
-                :disabled="isProviderPending(row.original.id)"
-                :loading="isPending(providerActionKey('delete', row.original.id))"
-                @click="remove(row.original.id)"
-              />
-            </span>
-          </UTooltip>
-        </div>
+        <ModulesProvidersAccountActions
+          :provider="row.original"
+          :pending="isProviderPending(row.original.id)"
+          :oauth-available="gitlabOAuthAvailable"
+          :oauth-pending="isPending(providerActionKey('oauth', row.original.id))"
+          :toggle-pending="isPending(providerActionKey('toggle', row.original.id))"
+          :delete-pending="isPending(providerActionKey('delete', row.original.id))"
+          @oauth="startOAuth(row.original)"
+          @toggle="toggle(row.original)"
+          @delete="remove(row.original.id)"
+        />
       </template>
     </UTable>
     <QTablePagination
@@ -180,6 +160,8 @@ const api = useRepovioApi();
 const route = useRoute();
 const dialogOpen = ref(false);
 const githubAppOpen = ref(false);
+const gitlabOAuthAvailable = ref(false);
+const oauthActionError = ref(false);
 const { isPending, run: runPendingAction } = usePendingActions();
 const oauthStatus = computed(
   /** Derives oauth status from the current reactive dependencies. */ () => route.query.oauth,
@@ -201,7 +183,12 @@ const columnDefinition = computed<ProviderTableColumn[]>(
     { accessorKey: 'baseUrl', header: t('providers.columns.baseUrl'), id: 'baseUrl' },
     { accessorKey: 'enabled', header: t('providers.columns.status'), id: 'enabled' },
     { accessorKey: 'lastSyncAt', header: t('providers.columns.lastSync'), id: 'lastSyncAt' },
-    { enableHiding: false, header: t('providers.columns.actions'), id: 'actions' },
+    {
+      enableHiding: false,
+      header: t('providers.columns.actions'),
+      id: 'actions',
+      meta: { class: { th: 'bg-default dark:bg-default', td: 'bg-default' } },
+    },
   ],
 );
 const sortableFields = computed<SortingField[]>(
@@ -230,7 +217,7 @@ const providerTable = useTable({
   defaultItemsPerPage: 10,
   endpoint: 'provider-accounts',
   name: 'provider-accounts',
-  staticFields: ['id', 'enabled', 'githubInstallationState'],
+  staticFields: ['id', 'enabled', 'providerType', 'oauthStatus', 'githubInstallationState'],
 });
 const {
   columnOrder,
@@ -268,13 +255,17 @@ function openAddDialog(): void {
 }
 
 /** Build a unique pending-state key for one provider action. */
-function providerActionKey(action: 'delete' | 'toggle', providerId: string): string {
+function providerActionKey(action: 'delete' | 'toggle' | 'oauth', providerId: string): string {
   return `${action}:${providerId}`;
 }
 
 /** Return whether any mutation is active for a provider row. */
 function isProviderPending(providerId: string): boolean {
-  return isPending(providerActionKey('delete', providerId)) || isPending(providerActionKey('toggle', providerId));
+  return (
+    isPending(providerActionKey('delete', providerId)) ||
+    isPending(providerActionKey('toggle', providerId)) ||
+    isPending(providerActionKey('oauth', providerId))
+  );
 }
 
 defineShortcuts({
@@ -290,12 +281,13 @@ async function handleProviderCreated(): Promise<void> {
 
 /** Remove a provider account and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
-  await confirmDestructiveAction(
-    items.value.find(/** Find the affected provider. */ (provider) => provider.id === id)?.displayName ?? id,
-    /** Perform the confirmed action and await its dependent UI updates. */ async () => {
-      await runPendingAction(
-        providerActionKey('delete', id),
-        /** Performs remove while retaining the initiating action’s pending state. */ async () => {
+  if (isProviderPending(id)) return;
+  await runPendingAction(
+    providerActionKey('delete', id),
+    /** Protect the row throughout confirmation, deletion, and dependent refresh. */ async () => {
+      await confirmDestructiveAction(
+        items.value.find(/** Find the affected provider. */ (provider) => provider.id === id)?.displayName ?? id,
+        /** Delete only after confirmation and keep dependent table updates pending. */ async () => {
           await api.providerAccounts.delete(id);
           await providerTable.refresh();
         },
@@ -306,6 +298,7 @@ async function remove(id: string): Promise<void> {
 
 /** Enable or disable a provider account without changing its stored credentials. */
 async function toggle(provider: ProviderAccount): Promise<void> {
+  if (isProviderPending(provider.id)) return;
   await runPendingAction(
     providerActionKey('toggle', provider.id),
     /** Performs toggle while retaining the initiating action’s pending state. */ async () => {
@@ -315,5 +308,36 @@ async function toggle(provider: ProviderAccount): Promise<void> {
   );
 }
 
-onMounted(/** Initializes component subscriptions and data after mounting. */ () => void providerTable.initialize());
+/** Start an existing account's authorization while protecting its row against conflicting actions. */
+async function startOAuth(provider: ProviderAccount): Promise<void> {
+  if (isProviderPending(provider.id)) return;
+  oauthActionError.value = false;
+  try {
+    await runPendingAction(
+      providerActionKey('oauth', provider.id),
+      /** Keep the initiating control pending until the start request and navigation assignment finish. */ async () => {
+        const { data } = await api.providerAccounts.authorizeExisting(provider.id);
+        window.location.assign(data.authorizationUrl);
+      },
+    );
+  } catch {
+    oauthActionError.value = true;
+  }
+}
+
+onMounted(
+  /** Initialize table state and OAuth availability without making either depend on the other. */ async () => {
+    await Promise.all([
+      providerTable.initialize(),
+      api.providerAccounts.authenticationOptions().then(
+        /** Enable configured GitLab authorization actions. */ ({ data }) => {
+          gitlabOAuthAvailable.value = data.oauthProviderTypes.includes('GITLAB');
+        },
+        /** Leave unavailable OAuth controls disabled when configuration cannot be loaded. */ () => {
+          gitlabOAuthAvailable.value = false;
+        },
+      ),
+    ]);
+  },
+);
 </script>

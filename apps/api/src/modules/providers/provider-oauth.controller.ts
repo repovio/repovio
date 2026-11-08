@@ -25,7 +25,12 @@ export class ProviderOAuthController {
   async callback(@Query() query: ProviderOAuthCallbackDto): Promise<{ url: string }> {
     const redirectUrl = new URL('/admin/providers', ENV.PUBLIC_URL);
 
+    if (query.error === 'access_denied') {
+      redirectUrl.searchParams.set('oauth', 'cancelled');
+      return { url: redirectUrl.toString() };
+    }
     try {
+      if (query.error) throw new Error('Provider authorization failed.');
       if (!query.code) throw new Error('The provider did not return an authorization code.');
       await this.oauth.complete(query.state, query.code);
       redirectUrl.searchParams.set('oauth', 'connected');

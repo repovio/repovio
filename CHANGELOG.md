@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- a385804: Import verified OIDC profile pictures as a separately stored fallback while preserving custom avatars and exposing the displayed image source.
+- 992f2dc: Convert and reauthorize GitLab connections in place with protected identity binding and actionable OAuth status.
+- 992f2dc: Persist encrypted GitLab OAuth refresh tokens and renew expiring credentials with database-serialized rotation.
+
+### Patch Changes
+
+- 1131ce4: Remove the obsolete legacy authentication key from current application screenshot captures.
+- 4cb0998: Fix CI formatting for agent tooling and exclude generated Graphify output from formatting checks.
+- 992f2dc: Keep interrupted GitLab OAuth response bodies retryable without exposing credentials or provider payloads.
+- 992f2dc: Show reauthorization failures even when the provider page retains an earlier OAuth success notice.
+- 1131ce4: Consolidate the website and documentation into the monorepo with affected-area CI and independently versioned website images.
+- 93bdb29: Update NestJS core from 12.3.2 to 12.3.3 and retain the compatible common package update.
+- 93bdb29: Update the NestJS Socket.IO platform adapter from 12.3.2 to 12.3.3 with compatible core and common packages.
+- 93bdb29: Update NestJS WebSockets to 12.3.3 alongside the matching core, common, and Socket.IO adapter packages.
+- a385804: Align settings navigation, user actions, account labels, and the provider approval notice with the shared page layout.
+- 4cb0998: Share the Graphify graph through Git and rebuild it from staged sources before commits, with a union merge driver and
+  local runtime data.
+- a385804: Confirm destructive actions with accessible Nuxt UI dialogs, pending protection, and retryable errors.
+- 93bdb29: Wait for committed documentation navigation before opening the mobile menu in website regression checks.
+
 ## 2.0.0
 
 ### Major Changes

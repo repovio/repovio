@@ -12,6 +12,12 @@ d'approbation, résumés et tendances que l'utilisateur authentifié peut voir d
 Le serveur MCP lit la base de données locale Repovio. Il n'appelle pas les API de mutation de fournisseur, ne démarre
 pas la synchronisation, n'approuve pas les flux de travail et ne modifie pas la configuration Repovio.
 
+Le même endpoint `/mcp` prend en charge le protocole `2025-06-18` des anciens clients comme Codex et le protocole
+moderne `2026-07-28`. Les anciens clients utilisent `initialize` puis `notifications/initialized` ; les clients modernes
+envoient les métadonnées du protocole avec chaque requête. Les deux exposent les sept mêmes outils en lecture seule et
+authentifient chaque requête avec le jeton Bearer de l’utilisateur actuel. Chaque requête utilise une nouvelle instance
+du serveur sans session MCP persistante.
+
 <a id="create-an-access-token"></a>
 
 ## Créer un jeton d'accès

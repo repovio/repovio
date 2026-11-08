@@ -1,0 +1,24 @@
+# Generated graphs and local runtime metadata
+graphify-out/
+/.graphify_*.json
+/.graphify_python
+/.graphify_root
+
+# Dependencies, generated sources, and build output
+node_modules/
+dist/
+coverage/
+.nx/
+.nuxt/
+.output/
+playwright-report/
+test-results/
+docs/.vitepress/cache/
+apps/api/src/generated/
+apps/web/tests/e2e/.auth/
+*.tsbuildinfo
+
+# Local environment files; retain the shared configuration example
+.env
+.env.*
+!.env.example

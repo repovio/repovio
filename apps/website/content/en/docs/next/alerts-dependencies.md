@@ -47,6 +47,6 @@ In **Jobs**, choose **Details** beside an unavailable alert warning. Other synch
 unavailable alerts do not mean the repository has no findings. GitHub can return the same unavailable response for
 missing permissions and disabled or unavailable security features, so the warning does not establish an exact cause.
 Check the affected repository security features and the connection's read access. GitHub App installations need the
-optional Dependabot alerts permission (`vulnerability_alerts`); approve updated installation permissions in GitHub when
+optional Dependabot alerts permission; approve updated installation permissions in GitHub when
 needed. Check PAT permissions or reauthorize an OAuth connection as appropriate. Then retry the job. Repovio does not
 change provider permissions or enable security features.

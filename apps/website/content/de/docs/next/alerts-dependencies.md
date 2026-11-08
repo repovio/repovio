@@ -52,7 +52,7 @@ Wähle unter **Jobs** neben einer Warnung **Details**. Andere Synchronisierungsb
 verfügbare Warnungen bedeuten nicht, dass das Repository keine Sicherheitsbefunde hat. Fehlende Berechtigungen und
 nicht verfügbare oder deaktivierte Sicherheitsfunktionen können bei GitHub dieselbe Antwort verursachen. Die Warnung
 belegt daher keine eindeutige Ursache. Prüfe die Sicherheitsfunktionen des Repositorys und die Leseberechtigungen der
-Verbindung. GitHub-App-Installationen benötigen die optionale Berechtigung Dependabot alerts (`vulnerability_alerts`);
+Verbindung. GitHub-App-Installationen benötigen die optionale Berechtigung Dependabot alerts;
 bestätige bei Bedarf aktualisierte Installationsberechtigungen in GitHub. Prüfe entsprechend die PAT-Berechtigungen
 oder autorisiere die OAuth-Verbindung erneut. Versuche den Job anschließend erneut. Repovio ändert keine
 Provider-Berechtigungen und aktiviert keine Sicherheitsfunktionen.

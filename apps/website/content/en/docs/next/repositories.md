@@ -66,3 +66,19 @@ on the next request, unless another grant preserves access. Groups are local, wo
 not synchronized from OIDC claims.
 
 [Local access groups](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Delete local tracking
+
+System administrators can select **Delete repository** on the detail page or in the settings dialog. Confirmation names
+the repository and explains that deletion permanently removes local workflows, runs, issues, pull requests, security
+alerts, configuration, access assignments, webhook history, synchronization state, and associated notification history.
+The provider account and repository data at the provider remain unchanged.
+
+Deletion is blocked while synchronization is running; wait for completion and retry. Pending synchronization requests
+are removed with the repository. Notification subscriptions lose this repository filter; a subscription restricted only
+to the deleted repository is removed rather than becoming global. Shared channels remain available.
+
+After deletion, the repository can be added again through the existing provider selection. Tracking starts fresh, with
+no restored local history or configuration.

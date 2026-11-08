@@ -74,3 +74,19 @@ wirkt beim nächsten Request, sofern kein anderer Zugriff verbleibt. Gruppen sin
 OIDC-Konten und werden nicht aus OIDC-Claims synchronisiert.
 
 [Lokale Zugriffsgruppen](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Lokale Erfassung löschen
+
+Systemadministratoren können auf der Detailseite oder im Einstellungsdialog **Repository löschen** wählen. Die
+Bestätigung nennt das Repository und erläutert den endgültigen Verlust lokaler Workflows, Runs, Issues, Pull Requests,
+Sicherheitswarnungen, Einstellungen, Zugriffszuweisungen, Webhook-Verläufe, Synchronisierungsdaten und zugehöriger
+Benachrichtigungsverläufe. Der Provider Account und Repository-Daten beim Anbieter bleiben unverändert.
+
+Während einer laufenden Synchronisierung ist das Löschen gesperrt. Nach Abschluss erneut versuchen. Wartende
+Synchronisierungsaufträge werden mitgelöscht. Benachrichtigungsregeln verlieren den Repository-Filter; war dieses
+Repository der einzige Filter, wird die Regel entfernt und dadurch niemals global. Gemeinsame Kanäle bleiben erhalten.
+
+Das Repository kann anschließend über die bestehende Anbieterauswahl erneut hinzugefügt werden. Die Erfassung beginnt
+neu, ohne Wiederherstellung bisheriger lokaler Historie oder Einstellungen.

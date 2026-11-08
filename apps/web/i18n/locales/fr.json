@@ -939,6 +939,10 @@
     }
   },
   "repositoryDetails": {
+    "deleteRepository": "Supprimer le dépôt",
+    "deleteDescription": "Supprimer définitivement {name} et tous ses workflows, exécutions, issues, pull requests, alertes de sécurité, paramètres et historiques de notifications locaux de Repovio ? Cette action est irréversible. Le dépôt et ses données chez le fournisseur restent inchangés.",
+    "deleteSyncConflict": "Une synchronisation est en cours. Attendez sa fin, puis réessayez.",
+    "deleteError": "Impossible de terminer cette opération. Réessayez.",
     "activity": {
       "issues": "Issues",
       "pullRequests": "Pull requests",

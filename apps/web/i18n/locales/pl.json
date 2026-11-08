@@ -939,6 +939,10 @@
     }
   },
   "repositoryDetails": {
+    "deleteRepository": "Usuń repozytorium",
+    "deleteDescription": "Trwale usunąć {name} oraz wszystkie lokalne workflow, uruchomienia, issues, pull requests, alerty bezpieczeństwa, ustawienia i historię powiadomień z Repovio? Tej operacji nie można cofnąć. Repozytorium i jego dane u dostawcy pozostaną bez zmian.",
+    "deleteSyncConflict": "Trwa synchronizacja. Poczekaj na jej zakończenie i spróbuj ponownie.",
+    "deleteError": "Nie udało się ukończyć operacji. Spróbuj ponownie.",
     "activity": {
       "issues": "Issues",
       "pullRequests": "Pull requests",

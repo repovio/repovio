@@ -1,13 +1,13 @@
 <template>
   <UModal
     :title="$t('destructiveAction.title')"
-    :description="$t('destructiveAction.description', { target })"
+    :description="description ?? $t('destructiveAction.description', { target })"
     :dismissible="!pending"
     :close="!pending"
     @update:open="handleOpen"
   >
     <template #body>
-      <UAlert v-if="failed" color="error" role="alert" :title="$t('destructiveAction.error')" />
+      <UAlert v-if="failed" color="error" role="alert" :title="failed" />
     </template>
     <template #footer>
       <div class="flex w-full justify-end gap-2">
@@ -23,10 +23,16 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ target: string; action: () => Promise<unknown> }>();
+const props = defineProps<{
+  target: string;
+  action: () => Promise<unknown>;
+  description?: string;
+  errorMessage?: (error: unknown) => string;
+}>();
+const { t } = useI18n();
 const emit = defineEmits<{ close: [result: boolean] }>();
 const pending = ref(false);
-const failed = ref(false);
+const failed = ref<string>();
 
 /** Resolve cancellation without invoking the destructive action. */
 function cancel(): void {
@@ -42,12 +48,12 @@ function handleOpen(open: boolean): void {
 async function execute(): Promise<void> {
   if (pending.value) return;
   pending.value = true;
-  failed.value = false;
+  failed.value = undefined;
   try {
     await props.action();
     emit('close', true);
-  } catch {
-    failed.value = true;
+  } catch (error) {
+    failed.value = props.errorMessage?.(error) ?? t('destructiveAction.error');
   } finally {
     pending.value = false;
   }

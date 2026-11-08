@@ -281,6 +281,34 @@ describe('GitLab OAuth credential persistence and locking', /** Exercise real Po
     await expect(service.exchangeCode('code')).rejects.toThrow('invalid OAuth response');
   });
 
+  it.each([200, 400])(
+    'keeps response-body transport failures retryable for HTTP %i',
+    /** Verify interrupted token/error bodies preserve stored credentials and sanitized retry classification. */ async (
+      status,
+    ) => {
+      const row = await account();
+      fetch.mockResolvedValueOnce(
+        new Response(
+          new ReadableStream({
+            /** Simulate a response whose connection fails after headers have arrived. */
+            start(controller) {
+              controller.error(new TypeError('synthetic-response-body-secret'));
+            },
+          }),
+          { status },
+        ),
+      );
+      await expect(service.accessToken(row.id)).rejects.toMatchObject({
+        status: 503,
+        message: expect.not.stringContaining('synthetic-response-body-secret'),
+      });
+      expect((await prisma.providerAccount.findUniqueOrThrow({ where: { id: row.id } })).encryptedRefreshToken).toBe(
+        row.encryptedRefreshToken,
+      );
+      expect(await service.accessToken(row.id)).toBe('new-access');
+    },
+  );
+
   it('sanitizes transaction failures that could contain encrypted write arguments', /** Verify persistence errors cannot leak Prisma invocation data through errors or logs. */ async () => {
     const database = {
       $transaction: jest.fn().mockRejectedValue(new Error('synthetic-encrypted-write-argument') as never),

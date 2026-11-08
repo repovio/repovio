@@ -185,15 +185,22 @@ export class GitLabOAuthService {
           refresh_token: this.encryption.decrypt(account.encryptedRefreshToken!),
         });
         if (!response.ok) {
-          const error = (await this.json(response).catch(
-            /** Ignore unparseable error bodies without logging them. */ () => null,
-          )) as { error?: unknown } | null;
-          if (response.status === 400 && error?.error === 'invalid_grant') {
-            await transaction.providerAccount.update({
-              where: { id },
-              data: { oauthStatus: 'REAUTHORIZATION_REQUIRED' },
-            });
-            return { reauthorize: true };
+          if (response.status === 400) {
+            const error = (await this.json(response).catch(
+              /** Ignore malformed OAuth error JSON while preserving retryable body-transport failures. */ (
+                failure: unknown,
+              ) => {
+                if (failure instanceof ProviderRequestError) throw failure;
+                return null;
+              },
+            )) as { error?: unknown } | null;
+            if (error?.error === 'invalid_grant') {
+              await transaction.providerAccount.update({
+                where: { id },
+                data: { oauthStatus: 'REAUTHORIZATION_REQUIRED' },
+              });
+              return { reauthorize: true };
+            }
           }
           throw providerRequestError('GitLab OAuth', response);
         }
@@ -271,11 +278,18 @@ export class GitLabOAuthService {
    * @param response - Untrusted provider response.
    * @returns Parsed provider data for immediate validation.
    * @throws BadGatewayException - The response is not valid JSON.
+   * @throws ProviderRequestError - Response streaming failed or timed out; the failure remains retryable.
    */
   private async json(response: Response): Promise<unknown> {
     try {
       return await response.json();
-    } catch {
+    } catch (error) {
+      if (
+        error instanceof TypeError ||
+        (error instanceof DOMException && ['AbortError', 'TimeoutError'].includes(error.name))
+      ) {
+        throw new ProviderRequestError('GitLab OAuth', 503, null);
+      }
       throw new BadGatewayException('GitLab returned an invalid OAuth response.');
     }
   }

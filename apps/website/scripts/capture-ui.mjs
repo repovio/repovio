@@ -69,7 +69,6 @@ export async function captureUi({ sourceRoot, baseUrl, outputRoot }) {
           /** Handle each context.addInitScript callback invocation. */ ({ mode }) => {
             if (window.top !== window || !['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
             localStorage.setItem('repovio.access-token', 'synthetic-capture-token');
-            localStorage.setItem('ezrepo.access-token', 'synthetic-capture-token');
             localStorage.setItem('nuxt-color-mode', mode);
           },
           { mode },

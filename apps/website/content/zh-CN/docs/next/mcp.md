@@ -8,6 +8,10 @@ Repovio 在 `/mcp`
 
 MCP服务器读取本地Repovio数据库。它不会调用提供者突变 API、启动同步、批准工作流程或更改 Repovio 配置。
 
+同一个 `/mcp` 端点支持 Codex 等旧版客户端使用的 `2025-06-18` 协议和现代 `2026-07-28` 协议。
+旧版客户端先调用 `initialize`，再发送 `notifications/initialized`；现代客户端在每次请求中发送协议元数据。
+两者提供相同的七个只读工具，并使用当前用户的 Bearer 令牌验证每次请求。每次请求使用新的服务器实例，不保留 MCP 会话。
+
 <a id="create-an-access-token"></a>
 
 ## 创建访问令牌

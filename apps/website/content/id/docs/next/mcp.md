@@ -10,6 +10,11 @@ mungkin dilihat oleh pengguna yang diautentikasi di Repovio.
 Server MCP membaca database Repovio lokal. Itu tidak memanggil API mutasi penyedia, memulai sinkronisasi, menyetujui
 alur kerja, atau mengubah konfigurasi Repovio.
 
+Endpoint `/mcp` yang sama mendukung protokol `2025-06-18` dari klien lama seperti Codex dan protokol modern
+`2026-07-28`. Klien lama menggunakan `initialize` lalu `notifications/initialized`; klien modern mengirim metadata
+protokol pada setiap permintaan. Keduanya menyediakan tujuh alat hanya baca yang sama dan mengautentikasi setiap
+permintaan dengan token Bearer pengguna saat ini. Setiap permintaan memakai instans server baru tanpa sesi MCP persisten.
+
 <a id="create-an-access-token"></a>
 
 ## Buat token akses

@@ -33,7 +33,7 @@ const readPermissions = [
   'metadata',
   'issues',
   'pull_requests',
-  'dependabot_alerts',
+  'vulnerability_alerts',
   'security_events',
   'secret_scanning_alerts',
 ];

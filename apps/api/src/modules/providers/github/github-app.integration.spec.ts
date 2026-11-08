@@ -28,6 +28,7 @@ const installation = {
     pull_requests: 'read',
     metadata: 'read',
     security_events: 'read',
+    vulnerability_alerts: 'write',
     administration: 'write',
   },
 };
@@ -196,6 +197,7 @@ describe('GitHub App persistence, authentication and webhook integration', /** G
         pull_requests: 'read',
         metadata: 'read',
         security_events: 'read',
+        vulnerability_alerts: 'read',
       },
     });
     await credentials.accessToken(account);
@@ -215,6 +217,24 @@ describe('GitHub App persistence, authentication and webhook integration', /** G
         /** Keeps entries matching `init?.method === 'POST'`. */ ([, init]) => init?.method === 'POST',
       ),
     ).toHaveLength(2);
+  });
+
+  it('omits optional security permissions when the installation has not granted them', /** Verifies core synchronization still receives a token without optional security access. */ async () => {
+    await connect();
+    fetchFn.mockResolvedValueOnce(
+      Response.json({
+        ...installation,
+        permissions: { actions: 'read', issues: 'read', pull_requests: 'read', metadata: 'read' },
+      }),
+    );
+    await expect(app.accessToken('42')).resolves.toBe('installation-token');
+    const post = fetchFn.mock.calls.find(
+      /** Locates the installation token request rather than the read-only installation lookup. */ ([, init]) =>
+        init?.method === 'POST',
+    );
+    expect(JSON.parse(post![1]!.body as string)).toEqual({
+      permissions: { actions: 'read', issues: 'read', pull_requests: 'read', metadata: 'read' },
+    });
   });
 
   it('invalidates tokens across workers after credential rotation and excludes unused permissions', /** Verifies invalidates tokens across workers after credential rotation and excludes unused permissions. */ async () => {

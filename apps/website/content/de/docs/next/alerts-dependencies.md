@@ -45,3 +45,14 @@ OAuth-Konten müssen möglicherweise erneut mit `security_events` autorisiert we
 [Anbieter OAuth](/docs/next/provider-oauth). Versuchen Sie fehlgeschlagene Ladevorgänge nach der Wiederherstellung
 erneut. Das Fehlen sichtbarer Ergebnisse ist kein Beweis dafür, dass der Anbieter das Repository gescannt hat oder dass
 jeder Alarmtyp unterstützt wird.
+
+## Nicht verfügbare Warnungen untersuchen
+
+Wähle unter **Jobs** neben einer Warnung **Details**. Andere Synchronisierungsbereiche wurden abgeschlossen; nicht
+verfügbare Warnungen bedeuten nicht, dass das Repository keine Sicherheitsbefunde hat. Fehlende Berechtigungen und
+nicht verfügbare oder deaktivierte Sicherheitsfunktionen können bei GitHub dieselbe Antwort verursachen. Die Warnung
+belegt daher keine eindeutige Ursache. Prüfe die Sicherheitsfunktionen des Repositorys und die Leseberechtigungen der
+Verbindung. GitHub-App-Installationen benötigen die optionale Berechtigung Dependabot alerts (`vulnerability_alerts`);
+bestätige bei Bedarf aktualisierte Installationsberechtigungen in GitHub. Prüfe entsprechend die PAT-Berechtigungen
+oder autorisiere die OAuth-Verbindung erneut. Versuche den Job anschließend erneut. Repovio ändert keine
+Provider-Berechtigungen und aktiviert keine Sicherheitsfunktionen.

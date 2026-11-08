@@ -190,7 +190,7 @@
     "columns": {
       "actions": "Actions",
       "attempt": "Attempt",
-      "error": "Error",
+      "error": "Notes",
       "progress": "Progress",
       "provider": "Provider",
       "requestedAt": "Requested",
@@ -240,7 +240,24 @@
     "summary": "Repository synchronization status",
     "title": "Jobs",
     "waiting": "Waiting",
-    "warningKinds": "Unavailable alert types: {kinds}"
+    "warningKinds": "Unavailable alert types: {kinds}",
+    "diagnostics": {
+      "title": "Security alerts unavailable",
+      "description": "The provider did not make these alert types available. Missing access or unavailable features may be responsible; Repovio cannot determine the exact cause.",
+      "details": "Details",
+      "detailsFor": "Show synchronization warning details for {repository}",
+      "otherScopes": "Other synchronization scopes completed. Unavailable alerts do not mean that the repository has no findings.",
+      "nextSteps": "Next steps",
+      "githubPermissions": "Check that the GitHub connection has read access to the affected security alert types: {kinds}.",
+      "githubApp": "For a GitHub App, check its repository permissions and approve any updated installation permissions in GitHub.",
+      "githubToken": "For a personal access token, check its repository access and security alert permissions. For OAuth, reauthorize the provider account with the required scopes.",
+      "githubFeature": "Check in GitHub that the affected security features are enabled and available for this repository.",
+      "gitlabAccess": "Check that the GitLab token has read_api access and its owner has the required project role.",
+      "gitlabFeature": "Check the GitLab instance license and the availability of security scanning and vulnerability results for this project.",
+      "providerAccess": "Check the provider connection’s read permissions and whether the repository exposes these security alert types.",
+      "retry": "After correcting access or feature availability, close this dialog and retry the job. Retrying alone does not grant access.",
+      "providerAccounts": "Manage provider accounts"
+    }
   },
   "layout": {
     "administration": "Administration",

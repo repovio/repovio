@@ -191,7 +191,7 @@
       "actions": "Aktionen",
       "attempt": "Versuch",
       "progress": "Fortschritt",
-      "error": "Fehler",
+      "error": "Hinweise",
       "provider": "Provider",
       "requestedAt": "Angefordert",
       "runAfter": "Geplant",
@@ -240,7 +240,24 @@
     "summary": "Status der Repository-Synchronisierung",
     "title": "Jobs",
     "waiting": "Wartend",
-    "warningKinds": "Nicht verfügbare Warnungstypen: {kinds}"
+    "warningKinds": "Nicht verfügbare Warnungstypen: {kinds}",
+    "diagnostics": {
+      "title": "Sicherheitswarnungen nicht verfügbar",
+      "description": "Der Anbieter hat diese Warnungstypen nicht bereitgestellt. Fehlender Zugriff oder nicht verfügbare Funktionen können die Ursache sein; Repovio kann den genauen Grund nicht bestimmen.",
+      "details": "Details",
+      "detailsFor": "Details zur Synchronisierungswarnung für {repository} anzeigen",
+      "otherScopes": "Andere Synchronisierungsbereiche wurden abgeschlossen. Nicht verfügbare Warnungen bedeuten nicht, dass das Repository keine Sicherheitsbefunde hat.",
+      "nextSteps": "Nächste Schritte",
+      "githubPermissions": "Prüfe, ob die GitHub-Verbindung Lesezugriff auf die betroffenen Sicherheitswarnungstypen hat: {kinds}.",
+      "githubApp": "Prüfe bei einer GitHub App die Repository-Berechtigungen und bestätige gegebenenfalls aktualisierte Installationsberechtigungen in GitHub.",
+      "githubToken": "Prüfe bei einem persönlichen Zugriffstoken den Repository-Zugriff und die Berechtigungen für Sicherheitswarnungen. Autorisiere bei OAuth das Provider-Konto erneut mit den erforderlichen Scopes.",
+      "githubFeature": "Prüfe in GitHub, ob die betroffenen Sicherheitsfunktionen für dieses Repository aktiviert und verfügbar sind.",
+      "gitlabAccess": "Prüfe, ob das GitLab-Token read_api-Zugriff hat und sein Besitzer die erforderliche Projektrolle besitzt.",
+      "gitlabFeature": "Prüfe die Lizenz der GitLab-Instanz sowie die Verfügbarkeit von Security-Scanning und Sicherheitsbefunden für dieses Projekt.",
+      "providerAccess": "Prüfe die Leseberechtigungen der Provider-Verbindung und ob das Repository diese Sicherheitswarnungstypen bereitstellt.",
+      "retry": "Schließe nach der Korrektur von Zugriff oder Funktionsverfügbarkeit diesen Dialog und versuche den Job erneut. Ein erneuter Versuch allein erteilt keinen Zugriff.",
+      "providerAccounts": "Provider-Konten verwalten"
+    }
   },
   "layout": {
     "administration": "Verwaltung",

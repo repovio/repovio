@@ -3,6 +3,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import type { ProviderAccount } from '../../generated/prisma/client.js';
 import { CredentialEncryptionService } from '../../security/credential-encryption.service.js';
 import { GitHubAppService } from './github/github-app.service.js';
+import { GitLabOAuthService } from './gitlab/gitlab-oauth.service.js';
 
 /** Encrypts provider credentials at rest using Repovio's shared credential service. */
 @Injectable()
@@ -11,11 +12,13 @@ export class ProviderCredentialService {
    * Initialize ProviderCredentialService with its required dependencies.
    *
    * @param credentials - Service encrypting and decrypting persisted credentials.
+   * @param gitlabOAuth - Optional GitLab resolver for managed OAuth credential generations.
    * @param githubApp - Optional installation-token issuer; required for App accounts.
    */
   constructor(
     private readonly credentials: CredentialEncryptionService,
     @Optional() private readonly githubApp?: GitHubAppService,
+    @Optional() private readonly gitlabOAuth?: GitLabOAuthService,
   ) {}
 
   /**
@@ -26,8 +29,15 @@ export class ProviderCredentialService {
    */
   async accessToken(
     account: Pick<ProviderAccount, 'encryptedAccessToken'> &
-      Partial<Pick<ProviderAccount, 'authenticationMethod' | 'githubInstallationId'>>,
+      Partial<
+        Pick<ProviderAccount, 'id' | 'providerType' | 'oauthStatus' | 'authenticationMethod' | 'githubInstallationId'>
+      >,
   ): Promise<string> {
+    if (account.providerType === 'GITLAB' && account.id && this.gitlabOAuth) {
+      return this.gitlabOAuth.accessToken(account.id);
+    }
+    if (account.oauthStatus && account.oauthStatus !== 'NONE')
+      throw new Error('GitLab OAuth credentials are unavailable.');
     if (account.authenticationMethod === 'GITHUB_APP') {
       if (!this.githubApp || !account.githubInstallationId) throw new Error('GitHub App credentials are unavailable.');
       return this.githubApp.accessToken(account.githubInstallationId);

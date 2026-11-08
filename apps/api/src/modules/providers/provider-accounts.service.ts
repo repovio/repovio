@@ -3,6 +3,8 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import type { ProviderAccount, Repository } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
+import type { GitLabOAuthCredentials } from './gitlab/gitlab-oauth.service.js';
+import { withProviderAccountLock } from './provider-account-lock.js';
 import type { ProviderRepository } from './provider-adapter.js';
 import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import { ProviderCredentialService } from './provider-credential.service.js';
@@ -58,9 +60,27 @@ export class ProviderAccountsService {
       displayName: string;
       baseUrl?: string;
       accessToken: string;
+      oauthCredentials?: GitLabOAuthCredentials;
     },
   ) {
-    return this.create(user, { ...input, enabled: true });
+    this.assertAdmin(user);
+    if (input.providerType === 'GITLAB' && input.oauthCredentials) {
+      return this.prisma.providerAccount.create({
+        data: {
+          providerType: 'GITLAB',
+          displayName: input.displayName,
+          baseUrl: input.baseUrl,
+          ...input.oauthCredentials,
+        },
+      });
+    }
+    return this.create(user, {
+      providerType: input.providerType,
+      displayName: input.displayName,
+      baseUrl: input.baseUrl,
+      accessToken: input.accessToken,
+      enabled: true,
+    });
   }
 
   /**
@@ -124,24 +144,38 @@ export class ProviderAccountsService {
     },
   ) {
     this.assertAdmin(user);
-    const account = await this.require(id);
-    if (account.providerType === 'GITEA' && input.baseUrl === null) {
-      throw new BadRequestException('A Gitea base URL is required.');
-    }
-    if (
-      account.authenticationMethod === 'GITHUB_APP' &&
-      (input.accessToken !== undefined || input.baseUrl !== undefined)
-    )
-      throw new BadRequestException('GitHub App accounts cannot use personal tokens or custom base URLs.');
-    return this.prisma.providerAccount.update({
-      where: { id },
-      data: {
-        displayName: input.displayName,
-        baseUrl: input.baseUrl,
-        enabled: input.enabled,
-        encryptedAccessToken: input.accessToken ? this.credentials.encrypt(input.accessToken) : undefined,
+    return withProviderAccountLock(
+      this.prisma,
+      id,
+      /** Apply only submitted fields to the current locked account generation. */ async (transaction, account) => {
+        if (
+          account.providerType === 'GITLAB' &&
+          account.oauthStatus !== 'NONE' &&
+          (input.accessToken !== undefined || input.baseUrl !== undefined)
+        ) {
+          throw new BadRequestException('Managed GitLab OAuth credentials must be changed through reauthorization.');
+        }
+        if (account.providerType === 'GITEA' && input.baseUrl === null) {
+          throw new BadRequestException('A Gitea base URL is required.');
+        }
+        if (
+          account.authenticationMethod === 'GITHUB_APP' &&
+          (input.accessToken !== undefined || input.baseUrl !== undefined)
+        )
+          throw new BadRequestException('GitHub App accounts cannot use personal tokens or custom base URLs.');
+        return transaction.providerAccount.update({
+          where: { id },
+          data: {
+            displayName: input.displayName,
+            baseUrl: input.baseUrl,
+            enabled: input.enabled,
+            oauthAuthorizationRevision:
+              input.accessToken !== undefined || input.baseUrl !== undefined ? { increment: 1 } : undefined,
+            encryptedAccessToken: input.accessToken ? this.credentials.encrypt(input.accessToken) : undefined,
+          },
+        });
       },
-    });
+    );
   }
   /**
    * Delete the selected local provider account and its dependent tracked data.
@@ -154,8 +188,13 @@ export class ProviderAccountsService {
    */
   async remove(user: AuthenticatedUser, id: string): Promise<void> {
     this.assertAdmin(user);
-    await this.require(id);
-    await this.prisma.providerAccount.delete({ where: { id } });
+    await withProviderAccountLock(
+      this.prisma,
+      id,
+      /** Delete only after any in-flight rotation has committed or rolled back. */ async (transaction) => {
+        await transaction.providerAccount.delete({ where: { id } });
+      },
+    );
   }
 
   /**

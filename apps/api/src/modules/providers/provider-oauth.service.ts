@@ -4,6 +4,7 @@ import { ENV } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { ProviderOAuthAuthorizationDto, StartProviderOAuthDto } from './dto/provider-oauth.dto.js';
+import { GitLabOAuthService, normalizeGitLabUrl } from './gitlab/gitlab-oauth.service.js';
 import { ProviderAccountsService } from './provider-accounts.service.js';
 import { PROVIDER_FETCH } from './provider-adapter.js';
 import { ProviderOAuthStateService } from './provider-oauth-state.service.js';
@@ -34,6 +35,7 @@ export class ProviderOAuthService {
    * @param accounts - Service managing local provider accounts and repository discovery.
    * @param fetch - Fetch implementation used for provider OAuth requests.
    * @param prisma - Database client used for persisted application state.
+   * @param gitlab - GitLab code exchange and verified credential service.
    * @param states - Service encrypting and validating short-lived OAuth authorization context.
    */
   constructor(
@@ -41,6 +43,7 @@ export class ProviderOAuthService {
     @Inject(PROVIDER_FETCH) private readonly fetch: ProviderFetch,
     private readonly prisma: PrismaService,
     private readonly states: ProviderOAuthStateService,
+    private readonly gitlab: GitLabOAuthService,
   ) {}
 
   /**
@@ -56,6 +59,13 @@ export class ProviderOAuthService {
     this.accounts.assertAdmin(user);
 
     const configuration = this.getConfiguration(input.providerType);
+    if (
+      input.providerType === 'GITLAB' &&
+      input.baseUrl &&
+      normalizeGitLabUrl(input.baseUrl) !== configuration.accountBaseUrl
+    ) {
+      throw new BadRequestException('The account must use the configured GitLab OAuth instance.');
+    }
     const state = this.states.create({
       baseUrl: input.baseUrl,
       displayName: input.displayName,
@@ -115,6 +125,20 @@ export class ProviderOAuthService {
     }
 
     const configuration = this.getConfiguration(state.providerType);
+    if (state.providerType === 'GITLAB') {
+      if (state.baseUrl && normalizeGitLabUrl(state.baseUrl) !== configuration.accountBaseUrl) {
+        throw new BadRequestException('The GitLab OAuth instance changed. Start authorization again.');
+      }
+      const oauthCredentials = await this.gitlab.exchangeCode(code);
+      await this.accounts.createFromOAuth(user, {
+        providerType: 'GITLAB',
+        displayName: state.displayName,
+        baseUrl: configuration.accountBaseUrl,
+        accessToken: '',
+        oauthCredentials,
+      });
+      return;
+    }
     const response = await this.fetch(configuration.tokenUrl, {
       body: new URLSearchParams({
         client_id: configuration.clientId,
@@ -181,7 +205,7 @@ function getProviderOAuthConfiguration(providerType: ProviderType): ProviderOAut
         tokenUrl: 'https://github.com/login/oauth/access_token',
       };
     case 'GITLAB': {
-      const baseUrl = withoutTrailingSlash(ENV.GITLAB_OAUTH_BASE_URL);
+      const baseUrl = normalizeGitLabUrl(ENV.GITLAB_OAUTH_BASE_URL);
       return {
         accountBaseUrl: baseUrl,
         authorizationUrl: `${baseUrl}/oauth/authorize`,

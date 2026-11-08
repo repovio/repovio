@@ -16,7 +16,13 @@ describe('ProviderOAuthService', /** Groups scenarios for ProviderOAuthService. 
     },
   };
   const fetch = jest.fn();
-  const service = new ProviderOAuthService(accounts as never, fetch as never, prisma as never, states as never);
+  const service = new ProviderOAuthService(
+    accounts as never,
+    fetch as never,
+    prisma as never,
+    states as never,
+    {} as never,
+  );
   const admin: AuthenticatedUser = {
     authProvider: 'LOCAL' as const,
     id: 'admin-id',

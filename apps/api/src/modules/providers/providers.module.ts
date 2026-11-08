@@ -11,6 +11,7 @@ import { GiteaActionsAdapter } from './gitea/gitea-actions.adapter.js';
 import { GitHubActionsAdapter } from './github/github-actions.adapter.js';
 import { GitHubAppController } from './github/github-app.controller.js';
 import { GitHubAppService } from './github/github-app.service.js';
+import { GitLabOAuthService } from './gitlab/gitlab-oauth.service.js';
 import { GitLabPipelinesAdapter } from './gitlab/gitlab-pipelines.adapter.js';
 import { ProviderAccountsQueryService } from './provider-accounts-query.service.js';
 import { ProviderAccountsController } from './provider-accounts.controller.js';
@@ -48,6 +49,7 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
     ProviderAccountsService,
     ProviderAccountsQueryService,
     ProviderCredentialService,
+    GitLabOAuthService,
     ProviderOAuthService,
     ProviderOAuthStateService,
     RepositoryMetadataService,
@@ -75,6 +77,7 @@ import { WorkItemSyncService } from './work-item-sync.service.js';
   exports: [
     GitHubAppService,
     ProviderCredentialService,
+    GitLabOAuthService,
     ProviderAdapterRegistry,
     ProviderSyncQueueService,
     ProviderSyncService,

@@ -78,3 +78,20 @@ acceso total. La retirada se aplica en la siguiente solicitud salvo otro permiso
 locales y OIDC, sin sincronización de claims OIDC.
 
 [Grupos de acceso locales](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Eliminar el seguimiento local
+
+Los administradores del sistema pueden seleccionar **Eliminar repositorio** en la página de detalles o el diálogo de
+configuración. La confirmación identifica el repositorio y explica que se eliminan permanentemente los workflows,
+ejecuciones, issues, pull requests, alertas de seguridad, configuración, permisos, historial de webhooks, estado de
+sincronización e historial de notificaciones asociados localmente. La cuenta y los datos del repositorio en el proveedor
+permanecen sin cambios.
+
+La eliminación se bloquea durante una sincronización; espere a que termine y vuelva a intentarlo. Las solicitudes
+pendientes se eliminan con el repositorio. Las suscripciones pierden su filtro de repositorio; una suscripción limitada
+solo a este repositorio se elimina en lugar de convertirse en global. Los canales compartidos se conservan.
+
+El repositorio puede añadirse de nuevo mediante la selección de proveedor existente. El seguimiento comienza desde cero,
+sin recuperar el historial ni la configuración local anterior.

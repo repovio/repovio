@@ -23,7 +23,7 @@ export class McpHttpService implements OnModuleDestroy {
         authInfo,
       }) => factory.create(this.getUser(authInfo)),
       {
-        legacy: 'reject',
+        legacy: 'stateless',
         /** Rejects image loading when the browser cannot decode the selected file. */
         onerror: (error) => this.logger.error(error.message),
       },

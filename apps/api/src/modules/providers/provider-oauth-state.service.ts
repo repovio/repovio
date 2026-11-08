@@ -6,6 +6,9 @@ type ProviderType = 'GITHUB' | 'GITLAB' | 'FORGEJO';
 
 interface ProviderOAuthState {
   baseUrl?: string;
+  targetAccountId?: string;
+  authorizationRevision?: number;
+  gitlabConfiguration?: { baseUrl: string; clientId: string; redirectUri: string };
   displayName: string;
   expiresAt: number;
   providerType: ProviderType;
@@ -50,7 +53,19 @@ export class ProviderOAuthStateService {
         state.expiresAt <= Date.now() ||
         !isProviderType(state.providerType) ||
         (state.baseUrl !== undefined && typeof state.baseUrl !== 'string') ||
-        typeof state.userId !== 'string'
+        typeof state.userId !== 'string' ||
+        !state.userId ||
+        (state.targetAccountId !== undefined &&
+          (typeof state.targetAccountId !== 'string' ||
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(state.targetAccountId) ||
+            state.providerType !== 'GITLAB' ||
+            !Number.isSafeInteger(state.authorizationRevision) ||
+            state.authorizationRevision! < 0)) ||
+        (state.gitlabConfiguration !== undefined &&
+          (!state.gitlabConfiguration ||
+            typeof state.gitlabConfiguration.baseUrl !== 'string' ||
+            typeof state.gitlabConfiguration.clientId !== 'string' ||
+            typeof state.gitlabConfiguration.redirectUri !== 'string'))
       ) {
         throw new Error('Invalid OAuth state');
       }

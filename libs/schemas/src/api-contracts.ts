@@ -61,6 +61,7 @@ export {
   ApiRepositorySyncJobSchema,
   ApiRepositorySyncJobStartSchema,
   ApiRepositorySyncJobSummarySchema,
+  ApiStartExistingProviderOAuthSchema,
   ApiStartProviderOAuthSchema,
   ApiUpdateProviderAccountSchema,
 } from './api/providers.js';

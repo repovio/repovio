@@ -10,6 +10,13 @@ model ProviderAccount {
   authenticationMethod   String   @default("TOKEN") @db.VarChar(32)
   githubInstallationId   String?  @unique @db.VarChar(32)
   githubInstallationState String? @db.VarChar(32)
+  encryptedRefreshToken  String? @db.Text
+  oauthAccessTokenExpiresAt DateTime?
+  oauthClientId          String? @db.Text
+  oauthRedirectUri       String? @db.Text
+  gitlabUserId           String? @db.VarChar(32)
+  oauthStatus            String @default("NONE") @db.VarChar(32)
+  oauthAuthorizationRevision Int @default(0)
   enabled                Boolean  @default(true)
   lastSyncAt             DateTime?
   lastSyncError          String?  @db.Text

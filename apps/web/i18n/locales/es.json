@@ -527,7 +527,12 @@
       "GITEA": "Gitea",
       "GITHUB": "GitHub",
       "GITLAB": "GitLab"
-    }
+    },
+    "connectGitLabOAuth": "Conectar con GitLab OAuth",
+    "reauthorize": "Volver a autorizar",
+    "reauthorizationRequired": "Se requiere una nueva autorización",
+    "oauthCancelled": "Autorización de GitLab cancelada. Se conserva la conexión existente.",
+    "oauthUnavailable": "Configure GitLab OAuth en el entorno de la API para autorizar esta conexión."
   },
   "querrykit": {
     "table": {

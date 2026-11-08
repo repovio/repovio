@@ -8,6 +8,13 @@
     :title="repositoryName"
   >
     <template #actions>
+      <ModulesRepositoriesDeleteButton
+        v-if="isAdmin && repository"
+        :key="repository.id"
+        :repository="repository"
+        :disabled="refreshing || syncing"
+        :after-delete="handleRepositoryDeleted"
+      />
       <UButton
         v-if="isAdmin && repository"
         color="neutral"
@@ -174,6 +181,11 @@ async function loadWebhookConfiguration(id: string): Promise<void> {
   } finally {
     if (repositoryId.value === id) webhookConfigurationLoading.value = false;
   }
+}
+
+/** Return to a fresh repository list after permanent local deletion. */
+async function handleRepositoryDeleted(): Promise<void> {
+  await navigateTo('/repositories');
 }
 
 /** Retain detail-only synchronization metadata after a repository settings update. */

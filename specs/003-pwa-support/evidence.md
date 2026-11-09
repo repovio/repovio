@@ -63,3 +63,7 @@
   and German desktop failure states, plus mobile pending state: readable text, contained buttons, no overflow.
   Full production suite passed 17 scenarios (16.2 seconds); four prompt scenarios reran after duplicate-click coverage.
   Lifecycle uses the real generated worker; prompt failure injection replaces only the reactive plugin boundary.
+
+- T015/T017: Authenticated synthetic API traffic, sign-out and Bob sign-in, manifest/branding/realtime requests, and
+  all-cache inspection passed in one worker-controlled context. Both allowed and denied API responses were observed and
+  were not worker responses. No protected URLs entered caches; no cache configuration repair was necessary.

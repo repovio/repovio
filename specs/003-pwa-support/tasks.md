@@ -82,12 +82,12 @@ as a differently authorized user, inspect all caches and response sources, then 
 
 ### Tests and Evidence
 
-- [ ] T015 [P] [US3] Add `apps/web/tests/pwa/cache-isolation.spec.ts` deterministic authenticated scenarios covering API/authentication, realtime traffic, manifest, and runtime-branding exclusion from every Cache Storage entry; verify user A logout/user B login in one context and prove user B cannot receive A-only data from network or worker responses. Observe representative requests actually occurring, not just empty caches.
+- [x] T015 [P] [US3] Add `apps/web/tests/pwa/cache-isolation.spec.ts` deterministic authenticated scenarios covering API/authentication, realtime traffic, manifest, and runtime-branding exclusion from every Cache Storage entry; verify user A logout/user B login in one context and prove user B cannot receive A-only data from network or worker responses. Observe representative requests actually occurring, not just empty caches.
 - [ ] T016 [P] [US3] Add `apps/web/tests/pwa/connectivity.spec.ts` tests for an already-open screen losing connectivity, unsupported cold offline navigation, and fresh authorized requests after reconnection. Preserve `navigateFallback: null`; assertions must not require cached HTML, offline repository data, or fabricated fresh status.
 
 ### Implementation and Acceptance
 
-- [ ] T017 [US3] If T015/T016 reproduce a cache or worker-routing defect, narrow `apps/web/nuxt.config.ts` precache/runtime behavior while preserving public static assets, `navigateFallback: null`, and `runtimeCaching: []`; otherwise record passing no-change evidence in `specs/003-pwa-support/evidence.md`. Do not introduce offline persistence or weaken authorization.
+- [x] T017 [US3] If T015/T016 reproduce a cache or worker-routing defect, narrow `apps/web/nuxt.config.ts` precache/runtime behavior while preserving public static assets, `navigateFallback: null`, and `runtimeCaching: []`; otherwise record passing no-change evidence in `specs/003-pwa-support/evidence.md`. Do not introduce offline persistence or weaken authorization.
 - [ ] T018 [US3] Execute T015/T016 scenarios against disposable real local/OIDC authenticated sessions with differing repository permissions and the production worker; record sanitized request/cache observations and unavailable OIDC setup in `specs/003-pwa-support/evidence.md`. Mocked authorization results alone do not prove actual server restrictions.
 - [ ] T019 [US3] Update `docs/theming.md` with the verified cache boundary, online-data requirement, unsupported cold offline startup, and reconnection behavior. Cross-reference the reproducible disposable validation steps in `specs/003-pwa-support/quickstart.md` without claiming offline support or unavailable environments verified.
 

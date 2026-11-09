@@ -63,7 +63,7 @@ failed acceptance permits retry, loading spans the request, and accepted updates
 ### Tests and Evidence
 
 - [ ] T010 [P] [US2] Add `apps/web/tests/pwa/update-prompt.spec.ts` deterministic component-boundary browser scenarios for absent `$pwa`, delayed activation, rejected activation, visible localized error, retry, duplicate-click protection, and loading through the awaited request. Use an isolated test fixture without exposing test controls in the shipped application; exercise the real prompt component.
-- [ ] T011 [P] [US2] Add `apps/web/tests/pwa/update-lifecycle.spec.ts` production-worker scenarios for Later, no activation before acceptance, two successive versions, registration failure with usable online routing and no unhandled rejection, multiple controlled tabs, and bounded reload counts. Use T003 isolation; do not mutate worker output concurrently with another suite.
+- [x] T011 [P] [US2] Add `apps/web/tests/pwa/update-lifecycle.spec.ts` production-worker scenarios for Later, no activation before acceptance, two successive versions, registration failure with usable online routing and no unhandled rejection, multiple controlled tabs, and bounded reload counts. Use T003 isolation; do not mutate worker output concurrently with another suite.
 
 ### Implementation and Acceptance
 

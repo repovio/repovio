@@ -48,3 +48,8 @@
 
 - T008: Native desktop/Android/iOS installation paths, secure contexts, metadata refresh, stable identity, and standalone
   local/OIDC checks documented in `docs/theming.md`. Device installation is not inferred from browser emulation.
+
+- T011: Real production worker tests passed two successive versions (exactly four expected reloads), Later preserving a
+  waiting worker, explicit acceptance in two tabs, and rejected registration with a usable online sign-in page and no
+  uncaught error. Worker imports still include `notification-sw.js`. A unique worker query selects each test release,
+  matching the existing suite's update technique; this is lifecycle evidence, not deployment/CDN cache validation.

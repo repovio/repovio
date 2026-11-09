@@ -557,7 +557,12 @@ export class ProviderSyncService {
     lifecycle?: ProviderWorkflowLifecycle,
   ): Promise<void> {
     const { durationMs, providerWorkflowId, workflowKind, workflowPath, ...runData } = run;
-    const persistedRunData = { ...runData, durationMs: durationMs === null ? null : BigInt(durationMs) };
+    const active = run.status === 'QUEUED' || run.status === 'RUNNING';
+    const persistedRunData = {
+      ...runData,
+      completedAt: active ? null : runData.completedAt,
+      durationMs: active || durationMs === null ? null : BigInt(durationMs),
+    };
     const lastSeenAt = new Date();
     const workflow = await this.prisma.workflow.upsert({
       where: { repositoryId_providerWorkflowId: { repositoryId, providerWorkflowId } },

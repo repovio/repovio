@@ -36,3 +36,12 @@
 - Initial cold dev-server request exceeded the default 5-second row assertion; explicit row availability wait allows
   15 seconds for initial compilation. Warm and updated fixture runs passed without retries.
 - Screenshot artifacts: `apps/web/test-results/workflow-run-timing-*/active-timing-*.png` (local, untracked).
+
+- T004 commit: `90cbc62`, pushed.
+
+## T005: Persistence Invariant
+
+- Three regression cases failed before the fix because stored active timing retained epoch/negative values.
+- Expanded coverage: QUEUED and RUNNING through provider listing, explicit detail reconciliation, and the
+  repository queue entry point used by webhook-driven synchronization. Six cases verify repeated stable-identity upserts.
+- Sync suite: 25 tests passed; API typecheck and focused ESLint passed.

@@ -26,3 +26,9 @@
 ## Task Log
 
 - T001: Scope and environment inventory complete. All application behavior changes require a reproduced defect.
+
+- T002: `corepack pnpm install --frozen-lockfile` passed. The initial nested script found system pnpm 10.33.0;
+  a temporary PATH-only Corepack wrapper ensured nested commands used pinned pnpm 11.28.9. No project toolchain changes.
+  `pnpm --dir apps/web e2e:pwa` then passed all 7 baseline scenarios against the production build (3.5 seconds).
+  Manifest no-store, icon responses/dimensions, runtime defaults/overrides, worker activation, Later, accepted update,
+  and invalid branding startup passed. Worker uses static precaching, no navigation fallback, no runtime cache rules.

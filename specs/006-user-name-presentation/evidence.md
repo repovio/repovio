@@ -24,3 +24,5 @@
 - T004: `1f2dfe1` — search users by personal names; focused verification passed before commit.
 
 - T005: `c07c7c6` — show names in user selectors; focused verification passed before commit.
+
+- T006: `035103d` — paginate named browser notification recipients; focused verification passed before commit.

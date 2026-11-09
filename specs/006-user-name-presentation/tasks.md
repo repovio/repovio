@@ -78,7 +78,7 @@ selected value/chip, duplicate-name disambiguation, later-page search, and uncha
       stale-response rejection, and disabled/loading/error states; verify open/selected labels and duplicate IDs in
       `apps/web/tests/e2e/user-groups.spec.ts`, and existing repository selection in
       `apps/web/tests/e2e/repository-access.spec.ts`; include `.changeset/group-user-selection-names.md`.
-- [ ] T006 [P] [US1] Preserve safe name-bearing recipient types and use shared labels in
+- [x] T006 [P] [US1] Preserve safe name-bearing recipient types and use shared labels in
       `apps/web/app/composables/app/notification-channel-draft.ts`,
       `apps/web/app/components/modules/notifications/channel-dialog.vue`,
       `apps/web/app/components/modules/notifications/channel/destination-step.vue`, and

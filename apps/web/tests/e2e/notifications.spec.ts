@@ -160,7 +160,8 @@ test('shows global channel events and system-wide delivery history', /** Verifie
               repositoryId: 'repository-1',
               repositoryName: 'repovio',
               repositoryOwner: 'tobiaswaelde',
-              requestedByUsername: null,
+              requestedByUsername: 'viewer',
+              requestedBy: { id: 'viewer', username: 'viewer', firstName: 'Vera', lastName: 'Viewer' },
               status: 'FAILED',
               subjectKind: 'WORKFLOW_RUN',
               subjectTitle: 'deploy-production',
@@ -236,6 +237,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toContainText(
     'Apprise notification delivery failed.',
   );
+  await expect(page.getByRole('dialog', { name: 'Delivery details' })).toContainText('Vera Viewer (@viewer)');
   await page.setViewportSize({ height: 844, width: 390 });
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toBeVisible();
 });

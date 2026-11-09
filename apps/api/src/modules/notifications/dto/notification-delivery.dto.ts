@@ -22,7 +22,7 @@ type DeliveryAttemptModel = NotificationDeliveryAttempt & {
     pullRequest?: { id: string; number: string; title: string; url: string } | null;
     repository?: { id: string; name: string; owner: string } | null;
     securityAlert?: { id: string; kind: string; providerUrl: string; title: string } | null;
-    requestedBy?: { username: string } | null;
+    requestedBy?: { id: string; username: string; firstName?: string | null; lastName?: string | null } | null;
     workflowRun?: { id: string; url: string; workflowName: string } | null;
   };
 
@@ -94,6 +94,14 @@ export class NotificationDeliveryDto extends createZodDto(ApiNotificationDeliver
           model.issue?.url ??
           model.securityAlert?.providerUrl ??
           null,
+        requestedBy: model.requestedBy
+          ? {
+              id: model.requestedBy.id,
+              username: model.requestedBy.username,
+              firstName: model.requestedBy.firstName ?? null,
+              lastName: model.requestedBy.lastName ?? null,
+            }
+          : null,
         requestedByUsername: model.requestedBy?.username ?? null,
         status: model.status,
         finalError: model.finalError,

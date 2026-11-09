@@ -57,7 +57,7 @@ export class NotificationDeliveriesController {
         notificationChannel: { select: { id: true, name: true, type: true } },
         pullRequest: { select: { id: true, number: true, title: true, url: true } },
         repository: { select: { id: true, name: true, owner: true } },
-        requestedBy: { select: { username: true } },
+        requestedBy: { select: { id: true, username: true, firstName: true, lastName: true } },
         workflowRun: { select: { id: true, url: true, workflowName: true } },
       },
       /** Maps map. */
@@ -77,6 +77,7 @@ export class NotificationDeliveriesController {
         repositoryId: true,
         repositoryName: true,
         repositoryOwner: true,
+        requestedBy: true,
         requestedByUsername: true,
         status: true,
         subjectKind: true,

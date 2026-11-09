@@ -49,7 +49,7 @@ export const notificationDeliveryHistoryInclude = {
   pullRequest: { select: { id: true, number: true, title: true, url: true } },
   repository: { select: { id: true, name: true, owner: true } },
   securityAlert: { select: { id: true, kind: true, providerUrl: true, title: true } },
-  requestedBy: { select: { username: true } },
+  requestedBy: { select: { id: true, username: true, firstName: true, lastName: true } },
   workflowRun: { select: { id: true, url: true, workflowName: true } },
 } satisfies Prisma.NotificationDeliveryInclude;
 

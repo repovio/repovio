@@ -9,6 +9,7 @@ import {
   ApiDashboardPeriodQuerySchema,
   ApiListMcpAccessTokensQuerySchema,
   ApiNotificationChannelSchema,
+  ApiNotificationDeliverySchema,
   ApiNotificationEventSubscriptionInputSchema,
   ApiNotificationRulePreviewInputSchema,
   ApiRemoteAvatarSchema,
@@ -255,4 +256,17 @@ it('preserves safe recipient names and accepts older identities', /** Checks add
   });
   assert.deepEqual(identity.parse({ id: 'u', username: 'viewer' }), { id: 'u', username: 'viewer' });
   assert.equal(identity.safeParse({ id: 'u', username: 'viewer', passwordHash: 'secret' }).success, false);
+});
+
+it('accepts optional nullable safe delivery requester identities', /** Keeps older deliveries readable while rejecting private identity fields. */ () => {
+  const requester = ApiNotificationDeliverySchema.shape.requestedBy;
+  assert.equal(requester.parse(undefined), undefined);
+  assert.equal(requester.parse(null), null);
+  assert.deepEqual(requester.parse({ id: 'u', username: 'viewer', firstName: 'Vera', lastName: null }), {
+    id: 'u',
+    username: 'viewer',
+    firstName: 'Vera',
+    lastName: null,
+  });
+  assert.equal(requester.safeParse({ id: 'u', username: 'viewer', token: 'secret' }).success, false);
 });

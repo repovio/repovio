@@ -1,5 +1,13 @@
 # @repovio/website
 
+## 0.2.1
+
+### Patch Changes
+
+- 3c40032: Expand the next handbook with Keycloak, Microsoft Entra ID, and Auth0 setup guides in all 13 languages, including a
+  complete Keycloak Compose example and provider-specific group mapping and recovery instructions.
+- 574a9cc: Display the website package version on the right side of the footer.
+
 ## 0.2.0
 
 ### Minor Changes

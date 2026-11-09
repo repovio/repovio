@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2.0
+
+### Minor Changes
+
+- 6882997: Allow system administrators to permanently remove tracked repositories and their local history, with synchronization
+  conflict protection and confirmation in English and German. Preserve provider resources and notification scope.
+
+### Patch Changes
+
+- 293676b: Keep localized alert troubleshooting consistent with the canonical GitHub App permission reference.
+- 6882997: Complete repository deletion guidance and matching section anchors in every supported handbook language.
+- 293676b: Fix Dependabot read permissions in GitHub App installation tokens and add readable synchronization warnings with provider-specific troubleshooting details.
+- 0d77674: Document legacy and modern MCP protocol compatibility in every supported handbook language.
+- 0d77674: Restore MCP compatibility with Codex clients using protocol revision 2025-06-18 while preserving modern 2026-07-28
+  requests, per-request bearer authentication, and read-only tool access.
+- 3c40032: Expand the next handbook with Keycloak, Microsoft Entra ID, and Auth0 setup guides in all 13 languages, including a
+  complete Keycloak Compose example and provider-specific group mapping and recovery instructions.
+- 574a9cc: Display the website package version on the right side of the footer.
+
 ## 2.1.0
 
 ### Minor Changes

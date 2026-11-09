@@ -52,10 +52,11 @@ test('excludes protected traffic across sign-out and account switching', /** Ins
       const response = await fetch('/api/v1/repositories/alice-only', {
         headers: { Authorization: `Bearer ${localStorage.getItem('repovio.access-token')}` },
       });
-      return response.status;
+      return { status: response.status, body: await response.text() };
     },
   );
-  expect(denied).toBe(403);
+  expect(denied.status).toBe(403);
+  expect(denied.body).not.toContain('Private Alice fixture');
   expect((await second).fromServiceWorker()).toBe(false);
   await expectPublicCachesOnly(page);
 });

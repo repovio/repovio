@@ -32,7 +32,10 @@ export async function mockApplication(page: Page): Promise<void> {
       if (path.endsWith('/repositories/alice-only')) {
         return route.fulfill({
           status: identity === 'alice' ? 200 : 403,
-          json: { id: 'alice-only', name: 'Private Alice fixture', owner: 'fixture' },
+          json:
+            identity === 'alice'
+              ? { id: 'alice-only', name: 'Private Alice fixture', owner: 'fixture' }
+              : { message: 'Forbidden' },
         });
       }
       return route.fulfill({ json: emptyPage });

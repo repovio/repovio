@@ -28,7 +28,7 @@ its own tests, documentation, validation, graph update, and focused `repovio` pa
 
 **Purpose**: Verify task context and prepare the already selected worktree without changing product behavior.
 
-- [ ] T001 Verify `specs/005-fix-active-run-timing/{spec,plan,tasks}.md` and `.specify/feature.json` resolve this feature; record the authorized issue and planning commit before implementation, preserve the existing Codex worktree, and prepare Node.js 26.13.0/Corepack pnpm 11.28.9 with locked dependencies from `package.json` and `pnpm-lock.yaml`.
+- [x] T001 Verify `specs/005-fix-active-run-timing/{spec,plan,tasks}.md` and `.specify/feature.json` resolve this feature; record the authorized issue and planning commit before implementation, preserve the existing Codex worktree, and prepare Node.js 26.13.0/Corepack pnpm 11.28.9 with locked dependencies from `package.json` and `pnpm-lock.yaml`.
 
 **Acceptance**: Correct issue/spec/task association, reviewed planning commit, and runnable pinned workspace. This task
 cannot bypass missing issue/planning-commit or implementation approval.
@@ -37,7 +37,7 @@ cannot bypass missing issue/planning-commit or implementation approval.
 
 **Purpose**: Establish the baseline and identify timing boundaries used by both stories.
 
-- [ ] T002 Review `apps/api/src/modules/providers/forgejo/forgejo-actions.adapter.ts`, `apps/api/src/modules/providers/sync.service.ts`, `apps/api/src/modules/repositories/dto/resource.dto.ts`, `apps/api/src/modules/dashboard/dto/dashboard-workflow-run.dto.ts`, and `apps/web/app/components/modules/{workflow-runs/table-page,dashboard/latest-runs}.vue`; run their existing focused tests and record preexisting failures in `specs/005-fix-active-run-timing/evidence.md` without changing implementation.
+- [x] T002 Review `apps/api/src/modules/providers/forgejo/forgejo-actions.adapter.ts`, `apps/api/src/modules/providers/sync.service.ts`, `apps/api/src/modules/repositories/dto/resource.dto.ts`, `apps/api/src/modules/dashboard/dto/dashboard-workflow-run.dto.ts`, and `apps/web/app/components/modules/{workflow-runs/table-page,dashboard/latest-runs}.vue`; run their existing focused tests and record preexisting failures in `specs/005-fix-active-run-timing/evidence.md` without changing implementation.
 
 **Acceptance**: Record current approval-waiting duration assertion, provider list/detail/webhook paths, API projection
 paths including repository-scoped reads, existing test commands, and baseline outcomes. Query Graphify before new

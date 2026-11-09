@@ -503,8 +503,19 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
   private toWorkflowRun(run: ForgejoRun): ProviderWorkflowRun {
     const payload = this.parseEventPayload(run.event_payload);
     const event = run.trigger_event ?? run.event ?? null;
-    const startedAt = run.started ? new Date(run.started) : null;
-    const completedAt = run.stopped ? new Date(run.stopped) : null;
+    const status = normalizeWorkflowRunStatus('FORGEJO', run.status);
+    const startedAt = this.parseRunTimestamp(run.started);
+    const stoppedAt = this.parseRunTimestamp(run.stopped);
+    const active = status === 'QUEUED' || status === 'RUNNING';
+    const completedAt = !active && stoppedAt && (!startedAt || stoppedAt >= startedAt) ? stoppedAt : null;
+    const providerDurationMs = run.duration === undefined ? null : run.duration / 1_000_000;
+    const durationMs = active
+      ? null
+      : startedAt && completedAt
+        ? completedAt.getTime() - startedAt.getTime()
+        : providerDurationMs !== null && Number.isFinite(providerDurationMs) && providerDurationMs >= 0
+          ? providerDurationMs
+          : null;
     const changeRequestNumber =
       (payload.pull_request?.number ?? (event?.startsWith('pull_request') ? payload.number : undefined))?.toString() ??
       null;
@@ -526,13 +537,8 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
       providerCreatedAt: new Date(run.created),
       startedAt,
       completedAt,
-      durationMs:
-        startedAt && completedAt
-          ? completedAt.getTime() - startedAt.getTime()
-          : run.duration === undefined
-            ? null
-            : run.duration / 1_000_000,
-      status: normalizeWorkflowRunStatus('FORGEJO', run.status),
+      durationMs,
+      status,
       rawStatus: run.status,
       reviewUrl: awaitingApproval ? run.html_url : null,
       scopeKey: buildWorkflowRunScopeKey(changeRequestNumber, headBranch),
@@ -540,6 +546,17 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
       workflowName,
       workflowPath,
     };
+  }
+
+  /**
+   * Parse a run timestamp, rejecting missing, invalid, and nonpositive provider sentinel instants.
+   * @param value - Optional provider timestamp for a workflow execution.
+   * @returns A valid timestamp after the Unix epoch, or null when timing is unavailable.
+   */
+  private parseRunTimestamp(value: string | null | undefined): Date | null {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) && date.getTime() > 0 ? date : null;
   }
 
   /**

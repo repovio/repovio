@@ -188,7 +188,7 @@ describe('ForgejoActionsAdapter', /** Groups scenarios for ForgejoActionsAdapter
     );
   });
 
-  it('maps native approval state and duration when Forgejo has not started the run', /** Verifies maps native approval state and duration when Forgejo has not started the run. */ async () => {
+  it('maps native approval state without final duration before the run starts', /** Verifies maps native approval state and duration when Forgejo has not started the run. */ async () => {
     const fetchFn = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -223,13 +223,45 @@ describe('ForgejoActionsAdapter', /** Groups scenarios for ForgejoActionsAdapter
       {
         awaitingApproval: true,
         changeRequestNumber: null,
-        durationMs: 3_000,
+        durationMs: null,
         headBranch: '#43',
         reviewUrl: 'https://forgejo.example.test/org/repo/actions/runs/8',
         status: 'QUEUED',
       },
     ]);
   });
+
+  it.each(['running', 'waiting', 'pending'])(
+    'discards final timing for active provider state %s',
+    /** Verify sentinel and stale completion values never finish an active run. */ async (status) => {
+      for (const stopped of ['1970-01-01T00:00:00Z', '2026-08-01T10:05:00Z', null]) {
+        const fetchFn = jest.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              workflow_runs: [
+                {
+                  id: 74,
+                  status,
+                  started: '2026-08-01T10:00:00Z',
+                  stopped,
+                  duration: 3_000_000_000,
+                  created: '2026-08-01T09:59:00Z',
+                  updated: '2026-08-01T10:00:00Z',
+                  html_url: 'https://forgejo.example.test/org/repo/actions/runs/74',
+                },
+              ],
+            }),
+          ),
+        );
+        const runs = await new ForgejoActionsAdapter(fetchFn).listWorkflowRuns(context, {
+          providerRepositoryId: '1',
+          owner: 'org',
+          name: 'repo',
+        });
+        expect(runs[0]).toMatchObject({ completedAt: null, durationMs: null });
+      }
+    },
+  );
 
   it('paginates more than 100 incremental workflow runs', /** Verifies paginates more than 100 incremental workflow runs. */ async () => {
     const firstPage = Array.from(

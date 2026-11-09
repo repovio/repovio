@@ -11,6 +11,11 @@ autenticado pode ver em Repovio.
 O servidor MCP lê o banco de dados Repovio local. Ele não chama APIs de mutação de provedor, inicia sincronização,
 aprova fluxos de trabalho ou altera a configuração Repovio.
 
+O mesmo endpoint `/mcp` aceita o protocolo `2025-06-18` de clientes antigos como Codex e o protocolo moderno
+`2026-07-28`. Clientes antigos usam `initialize` seguido de `notifications/initialized`; clientes modernos enviam os
+metadados do protocolo em cada solicitação. Ambos expõem as mesmas sete ferramentas somente leitura e autenticam cada
+solicitação com o token Bearer do usuário atual. Cada solicitação usa uma nova instância sem sessões MCP persistentes.
+
 <a id="create-an-access-token"></a>
 
 ## Crie um token de acesso

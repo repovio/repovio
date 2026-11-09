@@ -1,15 +1,19 @@
 ---
 title: 'Instalar o Repovio'
-description: 'Exemplos Docker Compose com contas locais ou uma pilha completa Authentik OIDC.'
+description: 'Instalação e configuração com contas locais, Authentik, Keycloak ou serviços OIDC existentes.'
 ---
 
 <a id="before-you-begin"></a>
 
 ## Instalar o Repovio
 
-Escolha um exemplo para uma instalação nova. São necessários Docker Engine, Compose v2, DNS público e proxy reverso TLS.
-Use nomes HTTPS separados para Repovio e Authentik. Imagens privadas exigem acesso ao GHCR. Instalações existentes devem
-seguir os guias de implantação e atualização PostgreSQL da versão; não reutilize volumes antigos nestes exemplos.
+Escolha contas locais, Authentik, Keycloak ou um serviço OIDC existente. Os exemplos abaixo são alternativas completas
+para instalações novas; não combine seus serviços.
+
+São necessários Docker Engine, Compose v2, DNS público e proxy reverso TLS. Use nomes HTTPS separados para Repovio e o
+provedor de identidade auto-hospedado (Authentik ou Keycloak). Imagens privadas exigem acesso ao GHCR. Instalações
+existentes devem seguir os guias de implantação e atualização PostgreSQL da versão; não reutilize volumes antigos nestes
+exemplos.
 
 <a id="shared-compose-configuration"></a>
 
@@ -224,6 +228,147 @@ volumes:
   authentik-templates:
 ```
 
+<a id="docker-compose-with-keycloak"></a>
+
+## Com Keycloak
+
+Use esta pilha completa separadamente. Acrescente os valores abaixo ao .env e gere senhas aleatórias distintas para o
+banco e o administrador bootstrap. Keycloak usa seu próprio PostgreSQL 17 e volume, nunca os do Repovio nem um volume
+PostgreSQL antigo. A imagem fixa Keycloak 26.8.2 com start de produção, não start-dev.
+
+```dotenv
+KEYCLOAK_POSTGRES_PASSWORD=REPLACE_WITH_SEPARATE_RANDOM_HEX_PASSWORD
+KEYCLOAK_ADMIN_USERNAME=bootstrap-admin
+KEYCLOAK_ADMIN_PASSWORD=REPLACE_WITH_SEPARATE_RANDOM_HEX_PASSWORD
+```
+
+```yaml
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: repovio
+      POSTGRES_USER: repovio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U repovio -d repovio']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - repovio-postgres:/var/lib/postgresql
+  migrate:
+    image: ghcr.io/repovio/repovio-api:${REPOVIO_VERSION:?Set an exact release version}
+    restart: 'no'
+    command: ['node_modules/.bin/prisma', 'migrate', 'deploy', '--config', 'prisma.config.ts']
+    environment: &api-environment
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://repovio:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/repovio?schema=public
+      SHADOW_DATABASE_URL: postgresql://repovio:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/repovio_shadow?schema=public
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?Set AUTH_JWT_SECRET}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:?Set TOKEN_ENCRYPTION_KEY}
+      PUBLIC_URL: https://repovio.example.com
+      CORS_ORIGIN: https://repovio.example.com
+      OIDC_CALLBACK_URL: https://repovio.example.com/api/v1/auth/oidc/callback
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    image: ghcr.io/repovio/repovio-api:${REPOVIO_VERSION:?Set an exact release version}
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - '127.0.0.1:3001:3001'
+  web:
+    image: ghcr.io/repovio/repovio-web:${REPOVIO_VERSION:?Set an exact release version}
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      NUXT_PUBLIC_API_BASE_URL: https://repovio.example.com/api/v1
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:3000:3000'
+  keycloak-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:?Set KEYCLOAK_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U keycloak -d keycloak']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - keycloak-postgres:/var/lib/postgresql/data
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    command: ['start']
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:?Set KEYCLOAK_POSTGRES_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?Set KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: https://auth.example.com
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: 'true'
+    depends_on:
+      keycloak-postgres:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:8080:8080'
+    healthcheck:
+      test:
+        - CMD
+        - /bin/bash
+        - -ec
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.0\r\n\r\n' >&3; IFS= read -r status <&3; [[
+          "$$status" == *' 200 '* ]]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+volumes:
+  repovio-postgres:
+  keycloak-postgres:
+```
+
+No exemplo Caddy existente, altere o destino de auth.example.com de 127.0.0.1:9000 para 127.0.0.1:8080. Defina
+KC_HOSTNAME como a URL HTTPS pública. Caddy deve sobrescrever X-Forwarded; somente o proxy confiável deve acessar o
+listener HTTP. Não publique a porta interna 9000 de readiness. Mantenha Allow HTTP issuer desativado: somente a ligação
+proxy–Keycloak usa HTTP.
+
+Abra o console com as credenciais bootstrap. Crie e verifique um administrador permanente no realm master, exclua o
+temporário e remova as duas entradas KC_BOOTSTRAP_ADMIN do Compose e seus valores do .env. Siga o guia Keycloak para
+realm repovio, cliente, grupos e associações. Após reiniciar, verifique discovery e os quatro casos de acesso.
+
+Referências: [Keycloak](/docs/next/authentication#oidc-keycloak) ·
+[Keycloak containers](https://www.keycloak.org/server/containers)
+
+<a id="existing-oidc-provider"></a>
+
+## Usar um provedor existente
+
+Use a pilha Compose de contas locais com seu serviço Keycloak, Entra ID, Auth0 ou Authentik existente. Adicione
+OIDC_CALLBACK_URL com o callback API público exato ao ambiente API compartilhado. Configure o administrador local e siga
+o guia do provedor. Configure issuer e segredos no Repovio, sem inventar variáveis de ambiente.
+
+Referências: [Keycloak](/docs/next/authentication#oidc-keycloak) ·
+[Microsoft Entra ID](/docs/next/authentication#oidc-entra-id) · [Auth0](/docs/next/authentication#oidc-auth0)
+
 <a id="compose-proxy-and-startup"></a>
 
 ## Proxy e inicialização
@@ -283,6 +428,18 @@ docker compose up --detach --wait
 docker compose logs migrate
 curl --fail http://127.0.0.1:3001/api/health
 ```
+
+<a id="keycloak-backup-recovery"></a>
+
+## Backup e recuperação do Keycloak
+
+Execute também os comandos comuns de validação e inicialização. Após reiniciar Keycloak e PostgreSQL, verifique
+readiness, discovery HTTPS e um novo login S256 PKCE; usuários e realm devem persistir.
+
+Faça backup separado dos dois bancos, Compose, .env protegido e TOKEN_ENCRYPTION_KEY. Para Keycloak, use um dump
+PostgreSQL consistente; exportar somente o realm não basta. Restaure em outra instalação com as mesmas versões fixadas
+antes de testar atualizações. Pare Keycloak durante a restauração e verifique usuários, segredos, associações e papéis
+antes de trocar o tráfego. Nunca sobrescreva o único volume funcional.
 
 <a id="recommended-first-session"></a>
 

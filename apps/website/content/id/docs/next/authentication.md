@@ -48,10 +48,10 @@ tidak valid dan simpan lagi sebelum mencoba kembali pemeriksaan koneksi.
 
 ### Grup, peran, dan identitas
 
-Klaim grup dapat berupa satu nama klaim yang sama persis atau jalur yang dipisahkan titik seperti `realm_access.groups`.
-Konfigurasikan nilai grup yang tepat dan peka huruf besar-kecil untuk tiga peran Repovio. Jika beberapa grup cocok,
-Repovio menerapkan `SYSTEM_ADMIN`, lalu `MANAGER`, lalu `VIEWER`. Klaim grup yang tidak cocok, salah format, hilang,
-atau terlalu besar ditolak kecuali **Izinkan pengguna yang tidak cocok sebagai pemirsa** diaktifkan secara eksplisit.
+Claim grup dapat berupa nama persis atau jalur bertitik seperti `realm_access.groups`. Gunakan nilai persis yang peka
+huruf besar-kecil. Jika beberapa grup cocok, prioritasnya `SYSTEM_ADMIN`, lalu `MANAGER`, lalu `VIEWER`. Grup yang
+hilang atau tidak cocok ditolak kecuali akses Viewer tanpa kecocokan diaktifkan secara eksplisit. Claim rusak dan
+kelebihan grup selalu ditolak.
 
 Akun OIDC hanya ditautkan oleh penerbit terverifikasi dan pasangan subjek. Repovio tidak pernah menautkan login OIDC ke
 akun lokal melalui alamat email atau nama pengguna. Nama depan dan belakang disinkronkan dari klaim terverifikasi pada
@@ -66,6 +66,8 @@ akun terkait memperoleh sesi baru dan membatalkan sesi sebelumnya setelah upaya 
 
 ### Contoh penyedia
 
+Panduan penyedia: [Keycloak](#oidc-keycloak) · [Microsoft Entra ID](#oidc-entra-id) · [Auth0](#oidc-auth0)
+
 Untuk Authentik, buat Penyedia OAuth2/OpenID dengan alur kode otorisasi, URL panggilan balik yang tepat di atas, dan
 cakupan `openid`, `profile`, dan `email`. Tambahkan pemetaan cakupan yang mengembalikan klaim grup yang dipilih sebagai
 array nama grup, lampirkan penyedia ke aplikasi, lalu salin penerbit aplikasi, ID klien, dan rahasia klien ke Repovio.
@@ -74,6 +76,112 @@ Untuk penyedia lain yang mematuhi standar, aktifkan Aliran Kode Otorisasi, wajib
 balik yang tepat, dan sertakan `sub` yang stabil ditambah klaim grup yang dikonfigurasi dalam token ID atau respons
 UserInfo. Repovio hanya menerima tanda tangan token ID asimetris dan menolak token yang tidak ditandatangani dan
 ditandatangani HMAC.
+
+<a id="oidc-keycloak"></a>
+
+#### Keycloak
+
+Di konsol Keycloak, buat realm repovio dan klien OpenID Connect repovio. Aktifkan Client authentication dan Standard
+flow; nonaktifkan Implicit flow dan Direct access grants. Daftarkan callback persis di bawah pada Valid redirect URIs,
+wajibkan S256 dan pertahankan RS256. Salin rahasia dari Credentials.
+
+Pada scope khusus klien, tambahkan mapper Group Membership: Token Claim Name groups, Full group path nonaktif, Add to ID
+token aktif. Jadikan profile dan email scope default. Buat repovio-admins, repovio-managers dan repovio-viewers,
+tetapkan pengguna lalu petakan nama grup lengkap ke peran Repovio yang sesuai. Peran realm bukan keanggotaan grup.
+
+```text
+Issuer: https://auth.example.com/realms/repovio
+Discovery: https://auth.example.com/realms/repovio/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Client ID: repovio
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+Referensi: [Keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc_clients)
+
+<a id="oidc-entra-id"></a>
+
+#### Microsoft Entra ID
+
+Di Entra ID → App registrations, buat aplikasi satu tenant dengan platform Web dan callback persis di bawah, tanpa
+penerbitan token implisit. Salin Application (client) ID dan Directory (tenant) ID. Buat rahasia klien dan salin Value,
+bukan ID rahasianya. Gunakan ID tenant pada issuer v2, bukan common atau organizations.
+
+Di Token configuration, tambahkan groups pada ID token untuk grup keamanan dengan Group ID. Buat tiga grup, tetapkan
+pengguna dan petakan ID objek grup ke SYSTEM_ADMIN, MANAGER dan VIEWER. Nama tampilan tidak cocok dengan GUID. Filter
+grup yang ditetapkan mungkin memerlukan lisensi Entra yang sesuai. Gunakan S256 PKCE dan tanda tangan asimetris;
+perbarui rahasia sebelum kedaluwarsa.
+
+Repovio menolak penanda kelebihan grup meskipun akses Viewer tanpa kecocokan diaktifkan. Repovio tidak mengikuti sumber
+claim eksternal atau mengakses Microsoft Graph. Kurangi keanggotaan yang diterbitkan atau filter grup; izin Graph tidak
+mengatasinya.
+
+```text
+Issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+Discovery: https://login.microsoftonline.com/TENANT_ID/v2.0/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: ADMIN_GROUP_OBJECT_ID
+MANAGER: MANAGER_GROUP_OBJECT_ID
+VIEWER: VIEWER_GROUP_OBJECT_ID
+```
+
+Referensi:
+[Microsoft Entra ID](https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles)
+
+<a id="oidc-auth0"></a>
+
+#### Auth0
+
+Buat Regular Web Application, daftarkan callback persis pada Allowed Callback URLs, aktifkan Authorization Code dengan
+S256 PKCE dan pilih RS256. Atur Token Endpoint Authentication Method ke Basic. Salin client ID dan rahasia. Gunakan
+issuer dari discovery tenant atau domain kustom yang dipilih, termasuk garis miring terakhir; jangan campur domain.
+
+Buat Action Login / Post Login dari contoh di bawah, ganti REPLACE_WITH_REPOVIO_CLIENT_ID, deploy dan tambahkan ke Login
+flow. Administrator mengatur app_metadata.repovio_groups tiap pengguna sebagai array berisi repovio-admins,
+repovio-managers atau repovio-viewers; jangan gunakan user_metadata yang dapat diedit pengguna untuk otorisasi. Auth0
+tidak menerbitkan grup ini otomatis; claim pada access token saja tidak cukup. Di Repovio, gunakan nama claim namespaced
+lengkap dan petakan ketiga nilai ke perannya.
+
+```text
+Issuer: https://YOUR_TENANT.REGION.auth0.com/
+Discovery: https://YOUR_TENANT.REGION.auth0.com/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: https://repovio.example.com/groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+```javascript
+/** Add administratively managed Repovio groups to this application's ID token. */
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.client.client_id !== 'REPLACE_WITH_REPOVIO_CLIENT_ID') return;
+  const groups = event.user.app_metadata?.repovio_groups;
+  api.idToken.setCustomClaim('https://repovio.example.com/groups', Array.isArray(groups) ? groups : []);
+};
+```
+
+Referensi: [Auth0](https://auth0.com/docs/secure/tokens/json-web-tokens/create-custom-claims)
+
+<a id="verify-oidc-providers"></a>
+
+#### Validasi dan pemecahan masalah
+
+Untuk setiap penyedia, daftarkan OIDC_CALLBACK_URL persis, minta openid profile email dan gunakan Authorization Code
+dengan S256 PKCE serta tanda tangan asimetris. Simpan issuer, client ID, rahasia, scopes dan claim grup di Pengaturan →
+Autentikasi lalu periksa koneksi. Discovery tidak memverifikasi grup pengguna.
+
+Uji SYSTEM_ADMIN, MANAGER, VIEWER dan pengguna tanpa penetapan yang harus ditolak saat Viewer tanpa kecocokan
+dinonaktifkan. Periksa ejaan grup, jalur Keycloak, ID objek Entra dan claim namespaced Auth0 pada ID token. Pertahankan
+administrator lokal untuk pemulihan. Grup OIDC hanya memberi peran global; akses repositori memerlukan izin Repovio
+terpisah. Konfigurasikan satu penyedia saja.
 
 <a id="oidc-api-contract"></a>
 

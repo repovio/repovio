@@ -10,6 +10,11 @@ in Repovio.
 The MCP server reads the local Repovio database. It does not call provider mutation APIs, start synchronization, approve
 workflows, or change Repovio configuration.
 
+The same `/mcp` endpoint supports the `2025-06-18` protocol used by legacy clients such as Codex and the modern
+`2026-07-28` protocol. Legacy clients use `initialize` followed by `notifications/initialized`; modern clients send
+their protocol metadata with each request. Both expose the same seven read-only tools and authenticate every request
+with the current user's bearer token. Each request uses a fresh server instance without persistent MCP sessions.
+
 <a id="create-an-access-token"></a>
 
 ## Create an access token

@@ -1039,7 +1039,11 @@
     "title": "Repository settings",
     "user": "User",
     "workflowFilters": "Workflow filters",
-    "workflowFiltersDescription": "Deny filters take precedence over allow filters."
+    "workflowFiltersDescription": "Deny filters take precedence over allow filters.",
+    "deleteRepository": "Delete repository",
+    "deleteDescription": "Permanently delete {name} and all its local workflows, runs, issues, pull requests, security alerts, configuration, and notification history from Repovio? This cannot be undone. The repository and its data at the provider remain unchanged.",
+    "deleteSyncConflict": "Synchronization is running. Wait until it finishes, then try again.",
+    "deleteError": "The operation could not be completed. Try again."
   },
   "securityAlerts": {
     "code": "Code scanning",

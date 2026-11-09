@@ -71,3 +71,19 @@ Remoções valem na próxima solicitação, salvo outra concessão. Grupos locai
 sincronizar claims OIDC.
 
 [Grupos de acesso locais](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Excluir o rastreamento local
+
+Administradores do sistema podem selecionar **Eliminar repositório** na página de detalhes ou no diálogo de configurações.
+A confirmação identifica o repositório e explica a exclusão permanente dos workflows, execuções, issues, pull requests,
+alertas de segurança, configurações, permissões, histórico de webhooks, estado de sincronização e histórico de
+notificações associados localmente. A conta do provedor e os dados do repositório no provedor permanecem inalterados.
+
+A exclusão fica bloqueada durante uma sincronização; aguarde a conclusão e tente novamente. Solicitações pendentes são
+excluídas com o repositório. As assinaturas de notificações perdem o filtro desse repositório; uma assinatura restrita
+somente a ele é excluída em vez de se tornar global. Os canais compartilhados são preservados.
+
+O repositório pode ser adicionado novamente pela seleção de provedor existente. O rastreamento recomeça sem restaurar
+o histórico ou as configurações locais anteriores.

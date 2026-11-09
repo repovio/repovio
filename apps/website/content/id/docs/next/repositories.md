@@ -70,3 +70,19 @@ menang. Pengelolaan tetap memerlukan peran global Manager; administrator sistem 
 permintaan berikutnya kecuali ada hak lain. Grup menerima akun lokal dan OIDC tanpa sinkronisasi klaim OIDC.
 
 [Grup akses lokal](/docs/next/users#local-access-groups)
+
+<a id="delete-local-tracking"></a>
+
+## Menghapus pelacakan lokal
+
+Administrator sistem dapat memilih **Hapus repositori** di halaman detail atau dialog pengaturan. Konfirmasi menyebutkan
+nama repositori dan menjelaskan penghapusan permanen workflow, eksekusi, issue, pull request, peringatan keamanan,
+pengaturan, pemberian akses, riwayat webhook, status sinkronisasi, dan riwayat notifikasi terkait yang tersimpan lokal.
+Akun penyedia dan data repositori pada penyedia tetap tidak berubah.
+
+Penghapusan diblokir selama sinkronisasi berjalan; tunggu hingga selesai lalu coba lagi. Permintaan sinkronisasi yang
+menunggu dihapus bersama repositori. Langganan notifikasi kehilangan filter repositori ini; langganan yang hanya mencakup
+repositori tersebut dihapus alih-alih menjadi global. Kanal bersama tetap tersedia.
+
+Repositori dapat ditambahkan kembali melalui pilihan penyedia yang sudah ada. Pelacakan dimulai dari awal tanpa
+memulihkan riwayat atau pengaturan lokal sebelumnya.

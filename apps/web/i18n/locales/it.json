@@ -956,6 +956,10 @@
     }
   },
   "repositoryDetails": {
+    "deleteRepository": "Elimina repository",
+    "deleteDescription": "Eliminare definitivamente {name} e tutti i suoi workflow, esecuzioni, issue, pull request, avvisi di sicurezza, impostazioni e cronologia delle notifiche locali da Repovio? Questa azione non può essere annullata. Il repository e i suoi dati presso il provider rimangono invariati.",
+    "deleteSyncConflict": "È in corso una sincronizzazione. Attendi che termini, poi riprova.",
+    "deleteError": "Impossibile completare questa operazione. Riprova.",
     "activity": {
       "issues": "Issues",
       "pullRequests": "Pull requests",

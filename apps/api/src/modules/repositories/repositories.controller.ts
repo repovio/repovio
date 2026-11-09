@@ -6,13 +6,14 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiConflictResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
   ApiCreateWorkflowFilterSchema,
   ApiRepositoryMembershipSchema,
@@ -88,6 +89,29 @@ export class RepositoriesController {
     private readonly configuration: RepositoryConfigurationService,
     private readonly repositories: RepositoriesQueryService,
   ) {}
+
+  /**
+   * Delete local repository tracking and its owned data after administrator authorization.
+   *
+   * @param request - Authenticated request carrying the administrator identity.
+   * @param repositoryId - UUID of the tracked repository to permanently remove.
+   * @returns Resolves without a response body once deletion commits.
+   * @throws ForbiddenException - System administrator access is required.
+   * @throws NotFoundException - The repository does not exist.
+   * @throws ConflictException - Repository synchronization is running.
+   */
+  @Delete(':repositoryId')
+  @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Local repository tracking and owned history deleted; provider unchanged.' })
+  @ApiErrorResponses()
+  @ApiNotFoundResponse({ description: 'Repository not found.' })
+  @ApiConflictResponse({ description: 'Repository synchronization is running. Retry after it finishes.' })
+  async deleteRepository(
+    @Req() request: { user: AuthenticatedUser },
+    @Param('repositoryId', new ParseUUIDPipe()) repositoryId: string,
+  ): Promise<void> {
+    await this.configuration.deleteRepository(request.user, repositoryId);
+  }
 
   /**
    * Query repositories with server-side filtering, sorting, field selection, and pagination.

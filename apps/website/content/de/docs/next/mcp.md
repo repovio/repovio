@@ -12,6 +12,12 @@ Zusammenfassungen und Trends, die der authentifizierte Benutzer möglicherweise 
 Der MCP-Server liest die lokale Repovio-Datenbank. Es ruft keine Anbietermutations-APIs auf, startet keine
 Synchronisierung, genehmigt keine Workflows und ändert die Repovio-Konfiguration nicht.
 
+Derselbe `/mcp`-Endpunkt unterstützt das von älteren Clients wie Codex verwendete Protokoll `2025-06-18` und das moderne
+Protokoll `2026-07-28`. Ältere Clients verwenden `initialize`, gefolgt von `notifications/initialized`; moderne Clients
+senden ihre Protokollmetadaten mit jeder Anfrage. Beide stellen dieselben sieben schreibgeschützten Tools bereit und
+authentifizieren jede Anfrage mit dem Bearer-Token des aktuellen Benutzers. Jede Anfrage verwendet eine neue
+Serverinstanz ohne dauerhafte MCP-Sitzungen.
+
 <a id="create-an-access-token"></a>
 
 ## Erstellen Sie ein Zugriffstoken

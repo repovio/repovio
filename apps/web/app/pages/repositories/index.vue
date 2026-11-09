@@ -166,6 +166,7 @@
     <ModulesRepositoriesDetailsDialog
       v-model:open="detailsDialogOpen"
       :repository-id="selectedRepositoryId"
+      :after-delete="handleRepositoryDeleted"
       :webhook-configuration="selectedRepositoryWebhookConfiguration"
       :webhook-configuration-error="webhookConfigurationsError"
       :webhook-configuration-loading="webhookConfigurationsLoading"
@@ -363,6 +364,16 @@ defineShortcuts({
 async function handleRepositoryCreated(): Promise<void> {
   page.value = 1;
   await Promise.all([repositoryTable.refresh(), loadWebhookConfigurations()]);
+}
+
+/** Refresh repository choices and remove the deleted selection from browser history. */
+async function handleRepositoryDeleted(): Promise<void> {
+  await handleRepositoryCreated();
+  if (repositoryTable.error.value) throw repositoryTable.error.value;
+  openedFromList.value = false;
+  const query = { ...route.query };
+  delete query.repository;
+  await router.replace({ hash: route.hash, query });
 }
 
 /** Replace a changed repository row without reloading the complete table. */

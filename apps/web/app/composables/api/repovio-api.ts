@@ -238,6 +238,8 @@ export function useRepovioApi() {
       summary: (): Promise<AxiosResponse<PullRequestSummary>> => api.get(`${apiEndpoints.pullRequests}/summary`),
     },
     repositories: {
+      /** Permanently delete local repository tracking and owned history; rejects while synchronization runs. */
+      delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`${apiEndpoints.repositories}/${id}`),
       /** Clears webhook configuration. */
       clearWebhookConfiguration: (id: string): Promise<AxiosResponse<void>> =>
         api.delete(`${apiEndpoints.repositories}/${id}/webhook-configuration`),

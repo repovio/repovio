@@ -89,7 +89,7 @@ as a differently authorized user, inspect all caches and response sources, then 
 
 - [x] T017 [US3] If T015/T016 reproduce a cache or worker-routing defect, narrow `apps/web/nuxt.config.ts` precache/runtime behavior while preserving public static assets, `navigateFallback: null`, and `runtimeCaching: []`; otherwise record passing no-change evidence in `specs/003-pwa-support/evidence.md`. Do not introduce offline persistence or weaken authorization.
 - [ ] T018 [US3] Execute T015/T016 scenarios against disposable real local/OIDC authenticated sessions with differing repository permissions and the production worker; record sanitized request/cache observations and unavailable OIDC setup in `specs/003-pwa-support/evidence.md`. Mocked authorization results alone do not prove actual server restrictions.
-- [ ] T019 [US3] Update `docs/theming.md` with the verified cache boundary, online-data requirement, unsupported cold offline startup, and reconnection behavior. Cross-reference the reproducible disposable validation steps in `specs/003-pwa-support/quickstart.md` without claiming offline support or unavailable environments verified.
+- [x] T019 [US3] Update `docs/theming.md` with the verified cache boundary, online-data requirement, unsupported cold offline startup, and reconnection behavior. Cross-reference the reproducible disposable validation steps in `specs/003-pwa-support/quickstart.md` without claiming offline support or unavailable environments verified.
 
 **Checkpoint**: US3 privacy claims require actual cache observations and authorized online responses.
 

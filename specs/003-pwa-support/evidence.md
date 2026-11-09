@@ -81,3 +81,6 @@
 - T009/T018 external evidence: No Android/iOS device or dedicated OIDC issuer has been made available in this session.
   Native desktop installation and installed-device callback flows were not executed. T009 and T018 remain unchecked;
   Chromium installability and real local-account evidence do not substitute for those missing observations.
+
+- T019: Documented online-only protected data, unsupported cold offline startup, stale rendered information, existing
+  HTTP/session-storage boundaries, update retry/multi-tab behavior, and links to both fixture validation modes.

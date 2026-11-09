@@ -126,3 +126,25 @@ manifest identity, scope, and start URL remain `/`; runtime branding does not cr
 For local or OpenID Connect sign-in, verify the complete flow in the installed application, including the return to an
 authorized deep link. A successful desktop browser login does not prove installed iOS/Android callback behavior. Record
 OS/browser versions and actual installed launches separately from responsive screenshots or Playwright emulation.
+
+### Connectivity and protected data
+
+Installation does not provide offline access to repositories. The service worker precaches public static build assets
+only. It has no navigation fallback and no runtime response cache: protected API/authentication responses, realtime
+traffic, runtime branding, and the manifest remain network-only from the worker's perspective. A cold offline launch
+can fail; an already-open page may keep previously rendered information visible, which does not mean it has fetched a
+fresh repository status. Reconnect before relying on refreshed data.
+
+Local-account regression checks exercise logout and a second account in the same worker-controlled browser context;
+the second account receives only its own authorized online responses. This cache policy does not replace API
+authorization. It also does not imply that all browser HTTP storage is disabled: existing authenticated HTTP headers
+and local session-token persistence retain their existing contracts.
+
+A waiting update offers **Later** or **Update**. Later keeps the current version; accepted activation may affect other
+open tabs because a service-worker registration is shared. Activation failures retain the current page, announce a
+localized status, and allow retry. Registration failure leaves normal online use available. Repeated updates and two-tab
+behavior are covered by production tests; deployment proxy/CDN behavior must be verified in its own environment.
+
+For reproducible mocked and disposable real-API checks, see
+[the PWA validation guide](../specs/003-pwa-support/quickstart.md). Real installed-device and OIDC callback observations
+must be recorded separately; a passing Chromium suite does not verify those platforms.

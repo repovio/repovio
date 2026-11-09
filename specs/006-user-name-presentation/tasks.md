@@ -41,7 +41,7 @@ approved issue and planning commit before product changes. Environment gaps are 
 
 **Purpose**: Establish the shared presentation seam used by every story.
 
-- [ ] T002 Normalize retained name parts in `apps/web/app/utils/user-identity.ts` and expand
+- [x] T002 Normalize retained name parts in `apps/web/app/utils/user-identity.ts` and expand
       `apps/web/app/utils/user-identity.spec.ts`; enforce “Trim surrounding whitespace; display first” for `firstName`,
       “Trim surrounding whitespace; display second” for `lastName`, and “Parenthesized after personal name; standalone
       fallback” for `username`; join retained parts with one space, preserve internal spelling/case/Unicode, suppress redundant

@@ -71,7 +71,7 @@ export class NotificationRulePreviewDto extends createZodDto(ApiNotificationRule
     workflowPatterns: string[];
     repositories: Array<{ repositoryId: string }>;
   }>;
-  recipients: Array<{ user: { id: string; username: string } }>;
+  recipients: Array<{ user: { id: string; username: string; firstName?: string | null; lastName?: string | null } }>;
 }
 
 /** Safe response representation of a global notification channel. */
@@ -102,7 +102,14 @@ export class NotificationChannelDto extends createZodDto(ApiNotificationChannelS
             workflowPatterns: subscription.workflowPatterns,
           }),
         ),
-        browserRecipients: model.recipients.map(/** Projects each entry using `user`. */ ({ user }) => user),
+        browserRecipients: model.recipients.map(
+          /** Projects safe identity fields and normalizes missing names. */ ({ user }) => ({
+            id: user.id,
+            username: user.username,
+            firstName: user.firstName ?? null,
+            lastName: user.lastName ?? null,
+          }),
+        ),
         canManage,
         requiresReconfiguration: model.requiresReconfiguration,
         createdAt: model.createdAt,

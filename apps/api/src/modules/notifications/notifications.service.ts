@@ -33,7 +33,7 @@ export const notificationChannelInclude = {
     include: { repositories: { select: { repositoryId: true } } },
     orderBy: { eventType: 'asc' },
   },
-  recipients: { include: { user: { select: { id: true, username: true } } } },
+  recipients: { include: { user: { select: { id: true, username: true, firstName: true, lastName: true } } } },
 } satisfies Prisma.NotificationChannelInclude;
 
 export const notificationDeliveryHistoryInclude = {

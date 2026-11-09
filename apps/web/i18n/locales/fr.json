@@ -1205,6 +1205,7 @@
     "cancel": "Annuler"
   },
   "organizationWebhooks": {
+    "callbackAvailableAfterSave": "Enregistrez cette configuration pour obtenir son URL de rappel.",
     "title": "Organization webhooks",
     "description": "Configure shared webhooks for {provider}.",
     "badge": "Organization",

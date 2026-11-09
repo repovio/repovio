@@ -2,6 +2,7 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { WorkflowFilterService } from '../repositories/workflow-filter.service.js';
 import type { SystemStatusService } from '../system-status/system-status.service.js';
+import type { ProviderWorkflowLifecycle } from './provider-adapter.js';
 import type { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import type { ProviderCredentialService } from './provider-credential.service.js';
 import { ProviderSyncService } from './sync.service.js';
@@ -850,6 +851,211 @@ describe('ProviderSyncService', /** Groups scenarios for ProviderSyncService. */
     });
   });
 });
+
+describe('ProviderSyncService workflow lifecycle reconciliation', /** Groups lifecycle ordering and preservation regressions. */ () => {
+  it('checks persisted inactive and newly discovered identities once before evaluating events', /** Verifies identity reconciliation precedes notifications. */ async () => {
+    const fixture = createLifecycleSyncFixture('ACTIVE');
+    fixture.adapter.listWorkflowRuns.mockResolvedValue([
+      createWorkflowRun(),
+      { ...createWorkflowRun(), providerRunId: 'new-run', providerWorkflowId: '19' },
+    ]);
+    fixture.adapter.listWorkflowLifecycles.mockResolvedValueOnce([
+      { providerWorkflowId: '17', state: 'ACTIVE', rawState: 'active' },
+    ]);
+
+    await fixture.service.syncEnabledRepositories();
+
+    expect(fixture.adapter.listWorkflowLifecycles).toHaveBeenCalledTimes(2);
+    expect(fixture.adapter.listWorkflowLifecycles).toHaveBeenNthCalledWith(1, expect.anything(), fixture.repository, [
+      { providerWorkflowId: '17' },
+      { providerWorkflowId: '18' },
+    ]);
+    expect(fixture.adapter.listWorkflowLifecycles).toHaveBeenNthCalledWith(2, expect.anything(), fixture.repository, [
+      { providerWorkflowId: '19' },
+    ]);
+    expect(fixture.events).toEqual(['lifecycle', 'notification', 'notification']);
+  });
+
+  it.each(['REMOVED', 'DISABLED'] as const)(
+    'suppresses notifications and preserves run results for %s workflows across repeated synchronization',
+    /** Verifies lifecycle reconciliation never synthesizes run recovery or reactivation. */ async (lifecycleState) => {
+      const fixture = createLifecycleSyncFixture('ACTIVE');
+      fixture.adapter.listWorkflowLifecycles.mockResolvedValue([
+        { providerWorkflowId: '17', state: lifecycleState, rawState: lifecycleState.toLowerCase() },
+      ]);
+
+      await fixture.service.syncEnabledRepositories();
+      await fixture.service.syncEnabledRepositories();
+
+      expect(fixture.state.lifecycleState).toBe(lifecycleState);
+      expect(fixture.notifications.evaluateWorkflowRun).not.toHaveBeenCalled();
+      expect(fixture.prisma.workflowRun.upsert).toHaveBeenCalledTimes(2);
+      expect(fixture.prisma.workflowRun.upsert).toHaveBeenLastCalledWith(
+        expect.objectContaining({ update: expect.objectContaining({ status: 'SUCCESS' }) }),
+      );
+      for (const [input] of fixture.prisma.workflow.upsert.mock.calls)
+        expect(input.update).not.toHaveProperty('lifecycleState');
+      expect(fixture.prisma.workflow.updateMany).toHaveBeenCalledWith({
+        data: {
+          lifecycleCheckedAt: expect.any(Date),
+          lifecycleRawState: lifecycleState.toLowerCase(),
+          lifecycleState,
+        },
+        where: { repositoryId: fixture.repository.id, providerWorkflowId: '17' },
+      });
+    },
+  );
+
+  it('keeps prior removal when historical run payloads have no new lifecycle observation', /** Verifies refreshed historical runs cannot reactivate a removed workflow. */ async () => {
+    const fixture = createLifecycleSyncFixture('REMOVED');
+    const checkedAt = fixture.state.lifecycleCheckedAt;
+
+    await fixture.service.syncEnabledRepositories();
+
+    expect(fixture.state).toMatchObject({ lifecycleCheckedAt: checkedAt, lifecycleState: 'REMOVED' });
+    expect(fixture.prisma.workflow.updateMany).not.toHaveBeenCalled();
+    expect(fixture.notifications.evaluateWorkflowRun).not.toHaveBeenCalled();
+    expect(fixture.prisma.workflow.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.not.objectContaining({ lifecycleState: expect.anything() }) }),
+    );
+  });
+
+  it('initializes newly discovered removed workflows before evaluating their runs', /** Verifies new workflow creation uses the authoritative lifecycle observation. */ async () => {
+    const fixture = createLifecycleSyncFixture('UNKNOWN');
+    fixture.prisma.workflow.findMany.mockResolvedValue([]);
+    fixture.adapter.listWorkflowLifecycles
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ providerWorkflowId: '17', state: 'REMOVED', rawState: 'deleted' }]);
+
+    await fixture.service.syncEnabledRepositories();
+
+    expect(fixture.prisma.workflow.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          lifecycleCheckedAt: expect.any(Date),
+          lifecycleRawState: 'deleted',
+          lifecycleState: 'REMOVED',
+        }),
+      }),
+    );
+    expect(fixture.notifications.evaluateWorkflowRun).not.toHaveBeenCalled();
+  });
+
+  it('persists explicitly disabled repository workflows without requesting unavailable runs', /** Verifies repository CI disabling does not fail before lifecycle reconciliation. */ async () => {
+    const fixture = createLifecycleSyncFixture('ACTIVE');
+    fixture.adapter.listWorkflowLifecycles.mockResolvedValueOnce([
+      { providerWorkflowId: '17', state: 'DISABLED', rawState: 'repository:ci:disabled' },
+    ]);
+    fixture.adapter.listWorkflowRuns.mockRejectedValue(new Error('Actions API unavailable'));
+
+    await fixture.service.syncEnabledRepositories();
+
+    expect(fixture.state).toMatchObject({ lifecycleState: 'DISABLED', lifecycleRawState: 'repository:ci:disabled' });
+    expect(fixture.adapter.listWorkflowRuns).not.toHaveBeenCalled();
+    expect(fixture.prisma.workflowRun.upsert).not.toHaveBeenCalled();
+    expect(fixture.prisma.repository.update).toHaveBeenCalled();
+  });
+
+  it('preserves lifecycle state, timestamp, and workflow cursor when provider lifecycle reads fail', /** Verifies failed reconciliation cannot commit partial lifecycle observations. */ async () => {
+    const fixture = createLifecycleSyncFixture('REMOVED');
+    const checkedAt = fixture.state.lifecycleCheckedAt;
+    const error = new Error('Provider request failed');
+    fixture.adapter.listWorkflowLifecycles.mockRejectedValue(error);
+
+    await expect(fixture.service.syncEnabledRepositories()).rejects.toBe(error);
+
+    expect(fixture.state).toMatchObject({ lifecycleCheckedAt: checkedAt, lifecycleState: 'REMOVED' });
+    expect(fixture.prisma.workflow.updateMany).not.toHaveBeenCalled();
+    expect(fixture.prisma.workflow.upsert).not.toHaveBeenCalled();
+    expect(fixture.prisma.repository.update).not.toHaveBeenCalled();
+    expect(fixture.notifications.evaluateWorkflowRun).not.toHaveBeenCalled();
+    expect(fixture.prisma.providerAccount.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ lastSyncError: expect.any(String) }) }),
+    );
+  });
+});
+
+/**
+ * Build an isolated repository sync fixture with observable lifecycle persistence and notification ordering.
+ * @param lifecycleState - Previously confirmed state of the existing workflow.
+ * @returns The real sync service and focused provider/database doubles.
+ */
+function createLifecycleSyncFixture(lifecycleState: ProviderWorkflowLifecycle['state']) {
+  const repository = { ...createRepository('lifecycle-repository'), lastSyncAt: new Date('2026-08-26T08:00:00Z') };
+  const events: string[] = [];
+  const state = { lifecycleState, lifecycleCheckedAt: new Date('2026-08-26T07:00:00Z'), lifecycleRawState: 'previous' };
+  const adapter = {
+    listWorkflowRuns: jest.fn().mockResolvedValue([createWorkflowRun()]),
+    listWorkflowLifecycles: jest.fn().mockResolvedValue([]),
+  };
+  const prisma = {
+    $transaction: jest.fn(
+      /** Resolves the lifecycle update transaction before run processing. */ (updates: Promise<unknown>[]) =>
+        Promise.all(updates),
+    ),
+    repository: {
+      findMany: jest.fn().mockResolvedValue([repository]),
+      update: jest.fn().mockResolvedValue(undefined),
+    },
+    providerAccount: { update: jest.fn().mockResolvedValue(undefined) },
+    workflow: {
+      findMany: jest.fn().mockResolvedValue([{ providerWorkflowId: '17' }, { providerWorkflowId: '18' }]),
+      findUnique: jest.fn().mockResolvedValue(null),
+      updateMany: jest.fn(
+        /** Records lifecycle persistence before notification evaluation. */
+        async ({ data }: { data: typeof state }) => {
+          Object.assign(state, data);
+          events.push('lifecycle');
+          return { count: 1 };
+        },
+      ),
+      upsert: jest.fn(
+        /** Returns the persisted workflow without treating a run payload as reactivation. */
+        async ({
+          create,
+          update,
+        }: {
+          create: { lifecycleState?: ProviderWorkflowLifecycle['state'] };
+          update: object;
+        }) => ({
+          id: 'workflow-id',
+          ...state,
+          ...(create.lifecycleState ? { lifecycleState: create.lifecycleState } : {}),
+          ...update,
+        }),
+      ),
+    },
+    workflowRun: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue({ status: 'FAILED' }),
+      upsert: jest.fn(
+        /** Returns the persisted run for event evaluation. */ async ({ create }) => ({ id: 'run-id', ...create }),
+      ),
+    },
+  };
+  const notifications = {
+    evaluateWorkflowRun: jest.fn(
+      /** Records notification evaluation after lifecycle persistence. */ async () => {
+        events.push('notification');
+      },
+    ),
+  };
+  const service = new ProviderSyncService(
+    prisma as unknown as PrismaService,
+    { get: jest.fn().mockReturnValue(adapter) } as unknown as ProviderAdapterRegistry,
+    { accessToken: jest.fn().mockResolvedValue('access-token') } as unknown as ProviderCredentialService,
+    { refresh: jest.fn().mockResolvedValue(repository) } as never,
+    { shouldTrack: jest.fn().mockReturnValue(true) } as unknown as WorkflowFilterService,
+    notifications as unknown as NotificationsService,
+    {
+      beginProviderSync: jest.fn().mockReturnValue('sync-id'),
+      finishProviderSync: jest.fn(),
+      refreshRunningWorkflowCount: jest.fn(),
+      updateProviderSync: jest.fn(),
+    } as unknown as SystemStatusService,
+  );
+  return { adapter, events, notifications, prisma, repository, service, state };
+}
 
 /** Creates repository. */
 function createRepository(id: string) {

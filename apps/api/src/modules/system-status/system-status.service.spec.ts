@@ -13,6 +13,9 @@ describe('SystemStatusService', /** Groups scenarios for SystemStatusService. */
     );
 
     await service.onModuleInit();
+    expect(prisma.workflowRun.count).toHaveBeenCalledWith({
+      where: { status: 'RUNNING', workflow: { lifecycleState: { notIn: ['DISABLED', 'REMOVED'] } } },
+    });
     const syncId = service.beginProviderSync();
     service.updateProviderSync(syncId, {
       phase: 'PROCESSING_WORKFLOWS',

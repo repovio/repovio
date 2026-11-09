@@ -696,7 +696,12 @@
     "notAvailable": "—",
     "repositoryFilterLoadError": "Impossible de charger les options du filtre de dépôts.",
     "search": "Rechercher des exécutions",
-    "searchPlaceholder": "Rechercher des workflows ou des dépôts"
+    "searchPlaceholder": "Rechercher des workflows ou des dépôts",
+    "lifecycle": {
+      "REMOVED": "Supprimé",
+      "DISABLED": "Désactivé",
+      "checkedAt": "Dernière vérification : {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} tentatives",

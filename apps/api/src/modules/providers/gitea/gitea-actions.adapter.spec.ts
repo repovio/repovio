@@ -16,6 +16,92 @@ describe('GiteaActionsAdapter', /** Groups scenarios for GiteaActionsAdapter. */
   const context = { accessToken: 'token', baseUrl: 'https://gitea.example.test', providerAccountId: 'account' };
   const repository = { providerRepositoryId: '42', owner: 'repovio', name: 'repovio' };
 
+  it.each([
+    [{ state: 'active' }, 'ACTIVE', 'active'],
+    [{ state: 'deleted' }, 'REMOVED', 'deleted'],
+    [{ state: 'disabled' }, 'DISABLED', 'disabled'],
+    [{ state: 'disabled_manually' }, 'DISABLED', 'disabled_manually'],
+    [{ state: 'disabled_inactivity' }, 'DISABLED', 'disabled_inactivity'],
+    [{ state: 'active', deleted_at: '2026-11-05T12:33:20Z' }, 'REMOVED', 'active'],
+    [{ deleted_at: '2026-11-05T12:33:20Z' }, 'REMOVED', null],
+    [{ state: 'active', deleted_at: null }, 'ACTIVE', 'active'],
+    [{ state: 'active', deleted_at: '0001-01-01T00:00:00Z' }, 'ACTIVE', 'active'],
+    [{ state: 'active', deleted_at: 'invalid' }, 'ACTIVE', 'active'],
+  ])(
+    'normalizes explicit workflow lifecycle %j',
+    /** Verifies recognized provider lifecycle metadata. */ async (payload, state, rawState) => {
+      const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify(payload)));
+      const adapter = new GiteaActionsAdapter(fetchFn);
+
+      await expect(
+        adapter.listWorkflowLifecycles(context, repository, [{ providerWorkflowId: 'ci.yml' }]),
+      ).resolves.toEqual([{ providerWorkflowId: 'ci.yml', rawState, state }]);
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://gitea.example.test/api/v1/repos/repovio/repovio/actions/workflows/ci.yml',
+        expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'token token' }) }),
+      );
+    },
+  );
+
+  it.each([{}, { state: 'future_state' }, { state: null }, { deleted_at: '0001-01-01T00:00:00Z' }, null])(
+    'omits unrecognized lifecycle responses %j',
+    /** Verifies absence of authoritative lifecycle data never means deletion. */ async (payload) => {
+      const adapter = new GiteaActionsAdapter(jest.fn().mockResolvedValue(new Response(JSON.stringify(payload))));
+      await expect(
+        adapter.listWorkflowLifecycles(context, repository, [{ providerWorkflowId: '17' }]),
+      ).resolves.toEqual([]);
+    },
+  );
+
+  it('omits missing workflows and unsupported lifecycle endpoints', /** Verifies 404 never becomes a removal observation. */ async () => {
+    const adapter = new GiteaActionsAdapter(jest.fn().mockResolvedValue(new Response('', { status: 404 })));
+    await expect(adapter.listWorkflowLifecycles(context, repository, [{ providerWorkflowId: '17' }])).resolves.toEqual(
+      [],
+    );
+  });
+
+  it('deduplicates identities and encodes workflow paths', /** Verifies each identity is read at most once. */ async () => {
+    const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify({ state: 'active' })));
+    const adapter = new GiteaActionsAdapter(fetchFn);
+    await expect(
+      adapter.listWorkflowLifecycles(context, repository, [
+        { providerWorkflowId: '.gitea/workflows/ci.yml' },
+        { providerWorkflowId: '.gitea/workflows/ci.yml' },
+        { providerWorkflowId: 'legacy:name:CI' },
+        { providerWorkflowId: 'name:CI' },
+      ]),
+    ).resolves.toHaveLength(1);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith(
+      expect.stringContaining('/actions/workflows/.gitea%2Fworkflows%2Fci.yml'),
+      expect.anything(),
+    );
+  });
+
+  it.each([401, 403, 429, 500])(
+    'preserves lifecycle HTTP failure %i and retry metadata',
+    /** Verifies provider failures propagate without exposing response bodies. */ async (status) => {
+      const adapter = new GiteaActionsAdapter(
+        jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status })),
+      );
+      await expect(
+        adapter.listWorkflowLifecycles(context, repository, [{ providerWorkflowId: '17' }]),
+      ).rejects.toMatchObject({
+        message: `Gitea API request failed with status ${status}.`,
+        status,
+        ...(status === 429 ? { retryAt: expect.any(Date) } : {}),
+      });
+    },
+  );
+
+  it('propagates lifecycle network failures', /** Verifies unknown network state cannot become deletion. */ async () => {
+    const error = new TypeError('Network unavailable');
+    const adapter = new GiteaActionsAdapter(jest.fn().mockRejectedValue(error));
+    await expect(adapter.listWorkflowLifecycles(context, repository, [{ providerWorkflowId: '17' }])).rejects.toBe(
+      error,
+    );
+  });
+
   it('retains Gitea rate-limit timing without exposing the response body', /** Verifies retains Gitea rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GiteaActionsAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),

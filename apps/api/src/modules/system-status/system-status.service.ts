@@ -4,6 +4,7 @@ import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { Subject } from 'rxjs';
 
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { actionableWorkflowRunWhere } from '../workflow-runs/workflow-lifecycle.js';
 import type { ProviderSyncActivity, ProviderSyncActivityUpdate, SystemStatusSnapshot } from './system-status.types.js';
 
 interface ActiveProviderSync extends ProviderSyncActivity {
@@ -113,7 +114,9 @@ export class SystemStatusService implements OnModuleInit {
    */
   async refreshRunningWorkflowCount(): Promise<void> {
     try {
-      this.runningWorkflowCount = await this.prisma.workflowRun.count({ where: { status: 'RUNNING' } });
+      this.runningWorkflowCount = await this.prisma.workflowRun.count({
+        where: { status: 'RUNNING', ...actionableWorkflowRunWhere },
+      });
       this.publish();
     } catch {
       this.logger.warn('Could not refresh the running workflow count.');

@@ -18,6 +18,7 @@ import { RepositoriesQueryService } from '../repositories/repositories-query.ser
 import { WorkflowRunsQueryService } from '../workflow-runs/workflow-runs-query.service.js';
 
 const workflowRunContextInclude = {
+  workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
   repository: {
     select: {
       name: true,
@@ -27,6 +28,7 @@ const workflowRunContextInclude = {
   },
 } satisfies Prisma.WorkflowRunInclude;
 const dashboardRunInclude = {
+  workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
   repository: {
     select: {
       id: true,

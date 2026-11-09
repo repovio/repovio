@@ -13,6 +13,7 @@ import type {
   ProviderRepositoryReference,
   ProviderWebhookRequest,
   ProviderWorkItemQuery,
+  ProviderWorkflowLifecycle,
   ProviderWorkflowRun,
   VerifiedWebhook,
 } from '../provider-adapter.js';
@@ -213,6 +214,55 @@ export class GiteaActionsAdapter implements ProviderAdapter {
       if (pageRuns.length < 100 || !totalCountAllowsAnotherPage || reachedSynchronizationBoundary) break;
     }
     return runs.map(/** Projects each entry using `this.toWorkflowRun(run)`. */ (run) => this.toWorkflowRun(run));
+  }
+
+  /**
+   * Read explicit lifecycle metadata for each known workflow without inferring deletion from missing resources.
+   *
+   * @param context - Read-only provider authentication context.
+   * @param repository - Repository owning the known workflows.
+   * @param workflows - Known provider identities, including inactive workflows.
+   * @returns Confirmed lifecycle observations, omitting unsupported or unrecognized responses.
+   * @throws ProviderRequestError - When a provider read fails; rate-limit retry metadata is preserved.
+   * @throws TypeError - When a provider request fails at the network layer.
+   */
+  async listWorkflowLifecycles(
+    context: ProviderAccountContext,
+    repository: ProviderRepositoryReference,
+    workflows: readonly { providerWorkflowId: string }[],
+  ): Promise<ProviderWorkflowLifecycle[]> {
+    const observations: ProviderWorkflowLifecycle[] = [];
+    const identities = new Set(
+      workflows.map(/** Selects the stable provider workflow identity. */ (workflow) => workflow.providerWorkflowId),
+    );
+    for (const providerWorkflowId of identities) {
+      if (providerWorkflowId.startsWith('legacy:') || providerWorkflowId.startsWith('name:')) continue;
+      const response = await this.fetchFn(
+        this.url(
+          context,
+          `/repos/${repository.owner}/${repository.name}/actions/workflows/${encodeURIComponent(providerWorkflowId)}`,
+        ),
+        { headers: this.headers(context) },
+      );
+      if (response.status === 404) continue;
+      if (!response.ok) throw providerRequestError('Gitea', response);
+      const payload: unknown = await response.json();
+      if (!payload || typeof payload !== 'object') continue;
+      const workflow = payload as { state?: unknown; deleted_at?: unknown };
+      const rawState = typeof workflow.state === 'string' ? workflow.state : null;
+      const deletedAt = typeof workflow.deleted_at === 'string' ? new Date(workflow.deleted_at) : null;
+      const removed = deletedAt !== null && Number.isFinite(deletedAt.getTime()) && deletedAt.getUTCFullYear() > 1;
+      const state =
+        removed || rawState === 'deleted'
+          ? 'REMOVED'
+          : rawState === 'active'
+            ? 'ACTIVE'
+            : rawState === 'disabled' || rawState?.startsWith('disabled_')
+              ? 'DISABLED'
+              : null;
+      if (state) observations.push({ providerWorkflowId, rawState, state });
+    }
+    return observations;
   }
 
   /**

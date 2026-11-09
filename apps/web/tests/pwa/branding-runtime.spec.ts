@@ -31,6 +31,10 @@ test('uses different runtime configurations with the same production build', /**
   expect(manifestResponse.headers()['cache-control']).toBe('no-store');
   const manifest = (await manifestResponse.json()) as BrandingManifest;
   expect(manifest).toMatchObject({
+    id: '/',
+    scope: '/',
+    start_url: '/',
+    display: 'standalone',
     name: 'Example Forge',
     description: 'Example workflow dashboard',
     theme_color: '#112233',

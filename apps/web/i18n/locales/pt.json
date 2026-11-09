@@ -696,7 +696,12 @@
     "notAvailable": "—",
     "repositoryFilterLoadError": "Não foi possível carregar as opções do filtro de repositórios.",
     "search": "Pesquisar execuções de workflow",
-    "searchPlaceholder": "Pesquisar workflows ou repositórios"
+    "searchPlaceholder": "Pesquisar workflows ou repositórios",
+    "lifecycle": {
+      "REMOVED": "Removido",
+      "DISABLED": "Desativado",
+      "checkedAt": "Última verificação: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} tentativas",

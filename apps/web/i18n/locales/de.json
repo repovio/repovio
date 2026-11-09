@@ -696,7 +696,12 @@
     "repositoryFilterLoadError": "Repository-Filteroptionen konnten nicht geladen werden.",
     "search": "Workflow-Ausführungen durchsuchen",
     "searchPlaceholder": "Workflows oder Repositories durchsuchen",
-    "title": "Workflow-Ausführungen"
+    "title": "Workflow-Ausführungen",
+    "lifecycle": {
+      "REMOVED": "Entfernt",
+      "DISABLED": "Deaktiviert",
+      "checkedAt": "Zuletzt geprüft: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} Versuche",

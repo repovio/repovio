@@ -7,7 +7,7 @@ import { createZodDto } from '../../../util/schema-dto.js';
 
 import { toWire } from '../../../util/to-wire.js';
 
-import type { ProviderAccount, Repository, WorkflowRun } from '../../../generated/prisma/client.js';
+import type { ProviderAccount, Repository, Workflow, WorkflowRun } from '../../../generated/prisma/client.js';
 
 /** Safe provider identity displayed alongside a dashboard workflow run. */
 export class DashboardProviderDto extends createZodDto(ApiDashboardProviderSchema) {}
@@ -30,6 +30,8 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
         id: model.id,
         providerRunId: model.providerRunId,
         workflowName: model.workflowName,
+        workflowLifecycleState: model.workflow?.lifecycleState ?? 'UNKNOWN',
+        workflowLifecycleCheckedAt: model.workflow?.lifecycleCheckedAt ?? null,
         displayTitle: model.displayTitle,
         url: model.url,
         providerCreatedAt: model.providerCreatedAt,
@@ -56,6 +58,7 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
 
 /** Workflow run with the safe repository and provider relations required by the dashboard. */
 export type DashboardWorkflowRunModel = WorkflowRun & {
+  workflow?: Pick<Workflow, 'lifecycleState' | 'lifecycleCheckedAt'>;
   repository: Pick<Repository, 'id' | 'name' | 'owner' | 'url'> & {
     providerAccount: Pick<ProviderAccount, 'displayName' | 'id' | 'providerType'>;
   };

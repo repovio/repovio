@@ -12,6 +12,140 @@ const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(f
 describe('GitLabPipelinesAdapter', /** Groups scenarios for GitLabPipelinesAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
 
+  it.each([
+    ['enabled', true, 'UNKNOWN'],
+    ['private', true, 'UNKNOWN'],
+    ['disabled', false, 'DISABLED'],
+    [null, null, null],
+  ])(
+    'reuses repository CI metadata %s for lifecycle checks without another request',
+    /** Verifies repository refresh and lifecycle checks share one authoritative provider response. */ async (
+      setting,
+      workflowCiEnabled,
+      state,
+    ) => {
+      const raw = { ...(readFixture('projects.json') as object[])[0], builds_access_level: setting };
+      const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify(raw)));
+      const adapter = new GitLabPipelinesAdapter(fetchFn);
+      const repository = await adapter.getRepository(context, {
+        providerRepositoryId: '42',
+        owner: 'org',
+        name: 'repository',
+      });
+      expect(repository).toMatchObject({ workflowCiEnabled });
+      if (!repository) throw new Error('Expected repository metadata');
+      const observations = await adapter.listWorkflowLifecycles(context, repository, [
+        { providerWorkflowId: 'ci' },
+        { providerWorkflowId: 'release' },
+      ]);
+      expect(observations).toEqual(
+        state === null
+          ? []
+          : [
+              {
+                providerWorkflowId: 'ci',
+                state,
+                rawState: workflowCiEnabled ? 'repository:ci:enabled' : 'repository:ci:disabled',
+              },
+              {
+                providerWorkflowId: 'release',
+                state,
+                rawState: workflowCiEnabled ? 'repository:ci:enabled' : 'repository:ci:disabled',
+              },
+            ],
+      );
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each([
+    ['disabled', 'DISABLED', 'repository:ci:disabled'],
+    ['enabled', 'UNKNOWN', 'repository:ci:enabled'],
+    ['private', 'UNKNOWN', 'repository:ci:enabled'],
+  ])(
+    'normalizes the explicit repository CI setting %s',
+    /** Verifies shared repository settings are read once and applied to unique workflow identities. */ async (
+      setting,
+      state,
+      rawState,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify({ builds_access_level: setting })));
+      await expect(
+        new GitLabPipelinesAdapter(fetchFn).listWorkflowLifecycles(
+          context,
+          { providerRepositoryId: 'group/repository', owner: 'org', name: 'repository' },
+          [{ providerWorkflowId: 'ci' }, { providerWorkflowId: 'release' }, { providerWorkflowId: 'ci' }],
+        ),
+      ).resolves.toEqual([
+        { providerWorkflowId: 'ci', state, rawState },
+        { providerWorkflowId: 'release', state, rawState },
+      ]);
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+      expect(fetchFn).toHaveBeenCalledWith(
+        'https://gitlab.example.test/api/v4/projects/group%2Frepository',
+        expect.any(Object),
+      );
+    },
+  );
+
+  it.each([{}, { builds_access_level: null }, { builds_access_level: 'unrecognized' }])(
+    'preserves lifecycle state when repository CI metadata is ambiguous: %j',
+    /** Verifies missing and unknown settings cannot retire workflow history. */ async (payload) => {
+      const fetchFn = jest.fn().mockResolvedValue(new Response(JSON.stringify(payload)));
+      await expect(
+        new GitLabPipelinesAdapter(fetchFn).listWorkflowLifecycles(
+          context,
+          { providerRepositoryId: '42', owner: 'org', name: 'repository' },
+          [{ providerWorkflowId: 'ci' }],
+        ),
+      ).resolves.toEqual([]);
+    },
+  );
+
+  it('does not request repository CI metadata without known workflows', /** Verifies empty lifecycle checks require no provider access. */ async () => {
+    const fetchFn = jest.fn();
+    await expect(
+      new GitLabPipelinesAdapter(fetchFn).listWorkflowLifecycles(
+        context,
+        { providerRepositoryId: '42', owner: 'org', name: 'repository' },
+        [],
+      ),
+    ).resolves.toEqual([]);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it.each([403, 429])(
+    'propagates repository CI metadata failures with status %i',
+    /** Verifies errors retain provider status and rate-limit retry metadata. */ async (status) => {
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValue(new Response('sensitive', { status, headers: { 'retry-after': '60' } }));
+      await expect(
+        new GitLabPipelinesAdapter(fetchFn).listWorkflowLifecycles(
+          context,
+          { providerRepositoryId: '42', owner: 'org', name: 'repository' },
+          [{ providerWorkflowId: 'ci' }],
+        ),
+      ).rejects.toMatchObject({
+        message: `GitLab API request failed with status ${status}.`,
+        status,
+        retryAt: expect.any(Date),
+      });
+    },
+  );
+
+  it('propagates repository CI metadata network failures', /** Verifies failed network reads cannot become lifecycle observations. */ async () => {
+    const error = new TypeError('Network unavailable');
+    const fetchFn = jest.fn().mockRejectedValue(error);
+    await expect(
+      new GitLabPipelinesAdapter(fetchFn).listWorkflowLifecycles(
+        context,
+        { providerRepositoryId: '42', owner: 'org', name: 'repository' },
+        [{ providerWorkflowId: 'ci' }],
+      ),
+    ).rejects.toBe(error);
+  });
+
   it('retains GitLab rate-limit timing without exposing the response body', /** Verifies retains GitLab rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GitLabPipelinesAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),

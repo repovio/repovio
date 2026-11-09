@@ -55,6 +55,8 @@ const workflowRunSchema = z.object({
   status: workflowStatusSchema,
   url: z.string(),
   workflowName: z.string(),
+  workflowLifecycleState: z.enum(['UNKNOWN', 'ACTIVE', 'DISABLED', 'REMOVED']).optional(),
+  workflowLifecycleCheckedAt: z.string().nullable().optional(),
 });
 const dashboardRunSchema = z.object({
   awaitingApproval: z.boolean(),
@@ -71,6 +73,8 @@ const dashboardRunSchema = z.object({
   status: workflowStatusSchema,
   url: z.string(),
   workflowName: z.string(),
+  workflowLifecycleState: z.enum(['UNKNOWN', 'ACTIVE', 'DISABLED', 'REMOVED']).optional(),
+  workflowLifecycleCheckedAt: z.string().nullable().optional(),
 });
 const paginatedRepositorySchema = z.object({
   items: z.array(repositorySchema),

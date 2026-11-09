@@ -175,3 +175,14 @@ remain unverified; the browser scenarios use synthetic transport fixtures.
 
 The AST graph was refreshed without LLM extraction; only `graphify-out/graph.json` is versionable. Local reports, HTML,
 caches, screenshots, traces, server logs, and runtime configuration stay outside the reviewed source scope.
+
+## PR Integration Verification (2026-11-09)
+
+The feature branch incorporates `origin/main` at `b2d2390`. Conflict resolution retains both fixed Repository scope and
+the Workflow lifecycle fields/badge introduced on main. The Graphify union driver validated the graph merge, followed
+by an AST-only refresh.
+
+After integration, all 56 Web unit tests and the same 41 dedicated Chromium scenarios passed. Full Web/test ESLint,
+Nuxt typecheck, documentation coverage (654 handwritten files), canonical formatting, Changesets status, and whitespace
+checks passed. The feature adds one minor Changeset for `repovio`. The four legacy failures above remain historical
+baseline evidence; that broad legacy suite was not repeated during PR preparation.

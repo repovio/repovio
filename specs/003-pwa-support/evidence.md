@@ -38,3 +38,6 @@
 
 - T004: Synthetic Alice/Bob fixtures, real sign-in form helper, controlled-worker readiness, and all-cache URL inspection
   implemented. Disposable API/OIDC prerequisites documented. Mocked browser evidence remains separate from server proof.
+
+- T005: Default/custom manifest assertions now include stable id, scope, start URL, and standalone display. Both
+  manifest unit tests and production runtime-branding assertions passed; no manifest implementation defect found.

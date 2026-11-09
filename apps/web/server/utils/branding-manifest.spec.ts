@@ -8,6 +8,7 @@ describe('runtime branding manifest', /** Verify metadata and icon purpose bound
     expect(manifest).toMatchObject({
       name: 'Repovio',
       short_name: 'Repovio',
+      id: '/',
       display: 'standalone',
       scope: '/',
       start_url: '/',
@@ -29,6 +30,10 @@ describe('runtime branding manifest', /** Verify metadata and icon purpose bound
       brandPwaMaskableIcon: '',
     });
     expect(manifest).toMatchObject({
+      id: '/',
+      scope: '/',
+      start_url: '/',
+      display: 'standalone',
       name: 'Example',
       description: 'Example dashboard',
       theme_color: '#112233',

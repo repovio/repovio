@@ -42,7 +42,7 @@ platform matrix, then verify local/OIDC login and a permitted deep link. Unsuppo
 
 ### Tests and Evidence
 
-- [ ] T005 [P] [US1] Extend `apps/web/tests/pwa/branding-runtime.spec.ts` manifest/icon assertions and `apps/web/server/utils/branding-manifest.spec.ts` identity tests: preserve `id`, `scope`, and `start_url` as `/`, `display` as `standalone`, `no-store`, PNG dimensions, optional maskable behavior, and default/custom runtime branding without rebuild.
+- [x] T005 [P] [US1] Extend `apps/web/tests/pwa/branding-runtime.spec.ts` manifest/icon assertions and `apps/web/server/utils/branding-manifest.spec.ts` identity tests: preserve `id`, `scope`, and `start_url` as `/`, `display` as `standalone`, `no-store`, PNG dimensions, optional maskable behavior, and default/custom runtime branding without rebuild.
 - [ ] T006 [P] [US1] Add `apps/web/tests/pwa/launch.spec.ts` production tests for root/deep-link routing, normal online use without installation APIs, and local login with permitted/denied repository routes using T004 fixtures. Keep mocked routing assertions distinct from real local/OIDC authentication validation.
 
 ### Implementation and Acceptance

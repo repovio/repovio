@@ -1,4 +1,5 @@
 import type { AxiosResponse } from 'axios';
+import { userSearchWhere } from '~/util/user-search';
 
 import type { OidcCheckResult, OidcConfig, UpdateOidcConfig } from '~/types/api/auth';
 import { apiEndpoints } from '~/types/api/endpoints';
@@ -413,12 +414,12 @@ export function useRepovioApi() {
     },
     users: {
       /** Searches users without silently truncating installations with more than 100 accounts. */
-      search: (username: string, page = 1): Promise<AxiosResponse<PaginatedResource<User>>> =>
+      search: (search: string, page = 1): Promise<AxiosResponse<PaginatedResource<User>>> =>
         api.get(apiEndpoints.users, {
           params: {
             page,
             perPage: 10,
-            where: JSON.stringify({ username: { contains: username, mode: 'insensitive' } }),
+            where: JSON.stringify(userSearchWhere(search)),
             orderBy: JSON.stringify([{ username: 'asc' }, { id: 'asc' }]),
           },
         }),

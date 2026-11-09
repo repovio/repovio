@@ -1,0 +1,16 @@
+meta {
+  name: get channel
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{host}}/api/v1/notification-channels
+  body: none
+  auth: inherit
+}
+
+docs {
+  Safe browserRecipients include id, username, firstName and lastName. Absent personal names are null.
+  Recipient credentials and private authentication fields are never returned.
+}

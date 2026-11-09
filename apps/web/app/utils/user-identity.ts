@@ -12,6 +12,7 @@ export function getUserDisplayName(user: UserIdentity): string {
       .filter(
         /** Keeps entries matching `Boolean(value?.trim())`. */ (value): value is string => Boolean(value?.trim()),
       )
+      .map(/** Removes surrounding whitespace from each retained name part. */ (value) => value.trim())
       .join(' ') || user.username
   );
 }

@@ -92,7 +92,7 @@ export class NotificationsController {
           include: { repositories: { select: { repositoryId: true } } },
           orderBy: { eventType: 'asc' },
         },
-        recipients: { include: { user: { select: { id: true, username: true } } } },
+        recipients: { include: { user: { select: { id: true, username: true, firstName: true, lastName: true } } } },
       },
       /** Maps map. */
       map: (
@@ -101,7 +101,9 @@ export class NotificationsController {
             eventSubscriptions: {
               include: { repositories: { select: { repositoryId: true } } };
             };
-            recipients: { include: { user: { select: { id: true; username: true } } } };
+            recipients: {
+              include: { user: { select: { id: true; username: true; firstName: true; lastName: true } } };
+            };
           };
         }>,
       ) => NotificationChannelDto.fromModel(channel, ability.can(CaslAction.Manage, CaslSubject.NotificationChannel)),

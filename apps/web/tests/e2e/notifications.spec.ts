@@ -5,6 +5,11 @@ const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1
 
 /** Mocks shell. */
 async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'SYSTEM_ADMIN'): Promise<void> {
+  await page.route(
+    '**/api/v1/**',
+    /** Isolate shell metadata from live services during mocked browser tests. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 1 } } }),
+  );
   await page.addInitScript(
     /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
       window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
@@ -62,7 +67,9 @@ async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'SYSTEM_A
     /** Supplies the mocked response for `/api/v1/users**`. */ (route) =>
       route.fulfill({
         json: {
-          items: [{ id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'admin' }],
+          items: [
+            { id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'admin', firstName: 'Vera', lastName: 'Viewer' },
+          ],
           meta: pageMeta,
         },
       }),
@@ -158,7 +165,8 @@ test('shows global channel events and system-wide delivery history', /** Verifie
               repositoryId: 'repository-1',
               repositoryName: 'repovio',
               repositoryOwner: 'tobiaswaelde',
-              requestedByUsername: null,
+              requestedByUsername: 'viewer',
+              requestedBy: { id: 'viewer', username: 'viewer', firstName: 'Vera', lastName: 'Viewer' },
               status: 'FAILED',
               subjectKind: 'WORKFLOW_RUN',
               subjectTitle: 'deploy-production',
@@ -234,6 +242,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toContainText(
     'Apprise notification delivery failed.',
   );
+  await expect(page.getByRole('dialog', { name: 'Delivery details' })).toContainText('Vera Viewer (@viewer)');
   await page.setViewportSize({ height: 844, width: 390 });
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toBeVisible();
 });
@@ -570,7 +579,7 @@ for (const transport of [
       await dialog.getByLabel('Apprise URL', { exact: false }).fill('jsons://synthetic-secret-token@example.com/topic');
     } else {
       await dialog.getByRole('button', { name: 'Browser recipients', exact: false }).click();
-      await page.getByRole('option', { name: '@admin', exact: true }).click();
+      await page.getByRole('option', { name: 'Vera Viewer (@admin)', exact: true }).click();
       await page.keyboard.press('Escape');
     }
     await dialog.getByRole('button', { name: 'Next', exact: true }).click();
@@ -582,5 +591,156 @@ for (const transport of [
     await dialog.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(dialog).not.toBeVisible();
     expect(saves).toBe(1);
+  });
+}
+
+test('shows name-first recipient summaries and refreshed names', /** Verifies named and older recipient identities in the real channel table. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  let firstName = 'Vera';
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies safe current-profile identities and an older username-only recipient. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [
+            {
+              id: 'named',
+              name: 'Named recipients',
+              type: 'BROWSER_PUSH',
+              enabled: true,
+              urlScheme: null,
+              eventSubscriptions: [],
+              canManage: true,
+              requiresReconfiguration: false,
+              createdAt: '2026-11-09T10:00:00Z',
+              updatedAt: '2026-11-09T10:00:00Z',
+              browserRecipients: [
+                { id: 'viewer', username: 'viewer', firstName, lastName: 'Viewer' },
+                { id: 'legacy', username: 'legacy' },
+              ],
+            },
+          ],
+          meta: pageMeta,
+        },
+      }),
+  );
+  await page.goto('/notifications');
+  await expect(page.getByText('Vera Viewer (@viewer), legacy', { exact: true })).toBeVisible();
+  firstName = 'Updated';
+  await page.reload();
+  await expect(page.getByText('Updated Viewer (@viewer), legacy', { exact: true })).toBeVisible();
+});
+
+for (const locale of ['en', 'de']) {
+  test(`retains named recipient selections across remote pages (${locale})`, /** Verifies configured identities, remote full-name discovery, and narrow selected labels. */ async ({
+    page,
+  }) => {
+    const de = locale === 'de';
+    await mockShell(page);
+    await page.addInitScript(
+      /** Apply the requested locale before mounting. */ (locale) => {
+        document.cookie = `repovio-locale=${locale}; path=/`;
+      },
+      locale,
+    );
+    await page.route(
+      '**/api/v1/browser-push',
+      /** Enable existing browser-channel editing without browser permission. */ (route) =>
+        route.fulfill({ json: { available: true, publicKey: 'synthetic', subscriptionCount: 0 } }),
+    );
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Supply a configured recipient absent from candidate pages. */ (route) =>
+        route.fulfill({
+          json: {
+            items: [
+              {
+                id: 'named',
+                name: 'Named recipients',
+                type: 'BROWSER_PUSH',
+                enabled: true,
+                urlScheme: null,
+                eventSubscriptions: [],
+                canManage: true,
+                requiresReconfiguration: false,
+                createdAt: '2026-11-09T10:00:00Z',
+                updatedAt: '2026-11-09T10:00:00Z',
+                browserRecipients: [
+                  {
+                    id: '30b7b20a-159a-42c7-a283-0246848d5ab5',
+                    username: 'existing',
+                    firstName: 'Existing',
+                    lastName: 'Recipient',
+                  },
+                ],
+              },
+            ],
+            meta: pageMeta,
+          },
+        }),
+    );
+    const queries: URL[] = [];
+    await page.route(
+      '**/api/v1/users**',
+      /** Resolve beyond-100 candidates only through paginated remote discovery. */ (route) => {
+        const url = new URL(route.request().url());
+        queries.push(url);
+        expect(url.searchParams.get('perPage')).toBe('10');
+        const where = JSON.parse(url.searchParams.get('where') ?? '{}');
+        const searching = where.OR?.[0]?.username?.contains === 'Jörg Wälde';
+        return route.fulfill({
+          json: {
+            items: searching
+              ? [
+                  {
+                    id: '30b7b20a-159a-42c7-a283-0246848d5ab6',
+                    username: 'beyond',
+                    firstName: ' Jörg ',
+                    lastName: ' Wälde ',
+                  },
+                ]
+              : [{ id: 'fallback', username: 'legacy' }],
+            meta: { pageCount: searching ? 1 : 11, itemCount: searching ? 1 : 101 },
+          },
+        });
+      },
+    );
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: de ? 'Kanal bearbeiten' : 'Edit channel', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: de ? 'Weiter' : 'Next', exact: true }).click();
+    const trigger = dialog.getByRole('button', { name: de ? 'Browser-Empfänger' : 'Browser recipients', exact: false });
+    await expect(trigger).toContainText('Existing Recipient (@existing)');
+    await trigger.click();
+    await page.getByRole('combobox').last().fill('Jörg Wälde');
+    await page.getByRole('option', { name: 'Jörg Wälde (@beyond)', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toContainText('Existing Recipient (@existing)');
+    await expect(trigger).toContainText('Jörg Wälde (@beyond)');
+    await trigger.click();
+    await page.getByRole('combobox').last().fill('');
+    const nextResponse = page.waitForResponse(
+      /** Wait for the actual later-page response before closing the menu. */ (response) =>
+        response.url().includes('/users?') && new URL(response.url()).searchParams.get('page') === '2',
+    );
+    await page
+      .getByRole('button', { name: de ? 'Nächste Seite' : 'Next page', exact: true })
+      .last()
+      .click();
+    await nextResponse;
+    await expect(page.getByText(de ? 'Seite 2' : 'Page 2', { exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toContainText('Jörg Wälde (@beyond)');
+    expect(
+      queries.some(
+        /** Confirm the selector actually requested a later page. */ (url) => url.searchParams.get('page') === '2',
+      ),
+    ).toBe(true);
+    await page.screenshot({ path: `/tmp/repovio76-recipients-wide-${locale}.png` });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(trigger).toContainText('Existing Recipient (@existing)');
+    await page.screenshot({ path: `/tmp/repovio76-recipients-narrow-${locale}.png` });
   });
 }

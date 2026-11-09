@@ -60,12 +60,14 @@
               <span v-else>{{ delivery.subjectTitle ?? '—' }}</span>
             </dd>
           </div>
-          <div v-if="delivery.requestedByUsername">
+          <div v-if="delivery.requestedBy || delivery.requestedByUsername">
             <dt class="text-muted">
               {{ $t('notifications.historyView.requestedBy') }}
             </dt>
             <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -- Preserve inline text spacing. -->
-            <dd>@{{ delivery.requestedByUsername }}</dd>
+            <dd>
+              {{ delivery.requestedBy ? getUserIdentityLabel(delivery.requestedBy) : delivery.requestedByUsername }}
+            </dd>
           </div>
         </dl>
         <UAlert v-if="delivery.finalError" color="error" variant="subtle" :description="delivery.finalError" />
@@ -110,6 +112,7 @@
 import { defineModel, defineProps } from 'vue';
 import { useDateTime } from '~/composables/use-date-time';
 import type { NotificationDelivery } from '~/types/api/resources';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 defineProps<{ delivery: NotificationDelivery | null }>();
 const open = defineModel<boolean>('open', { required: true });
 const { formatDateTime } = useDateTime();

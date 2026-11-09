@@ -3,6 +3,7 @@ import { ApiCreateNotificationChannelSchema, ApiUpdateNotificationChannelSchema 
 import { isAxiosError } from 'axios';
 import { computed, ref, watch, type Ref } from 'vue';
 import { z } from 'zod';
+import { getUserIdentityLabel, type UserIdentity } from '../../utils/user-identity';
 
 import type { useRepovioApi } from '~/composables/api/repovio-api';
 import type {
@@ -19,7 +20,7 @@ export interface ChannelDraftProps {
   browserPushAvailable: boolean;
   channel: NotificationChannel | null;
   repositories: Array<{ id: string; name: string; owner: string }>;
-  users: Array<{ id: string; username: string }>;
+  users?: Array<UserIdentity & { id: string }>;
   onSaved?: () => Promise<void>;
 }
 
@@ -219,9 +220,9 @@ export function useNotificationChannelDraft(
   );
   const userOptions = computed(
     /** Derives user options from the current reactive dependencies. */ () =>
-      props.users.map(
-        /** Projects each entry using `({ label: `@${user.username}`, value: user.id })`. */ (user) => ({
-          label: `@${user.username}`,
+      [...(props.users ?? []), ...(props.channel?.browserRecipients ?? [])].map(
+        /** Formats each available or configured recipient identity. */ (user) => ({
+          label: getUserIdentityLabel(user),
           value: user.id,
         }),
       ),

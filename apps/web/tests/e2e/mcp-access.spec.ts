@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 const admin = {
   createdAt: '2026-09-12T08:00:00.000Z',
-  firstName: null,
+  firstName: 'Ada',
   id: 'playwright-admin',
-  lastName: null,
+  lastName: 'Lovelace',
   role: 'SYSTEM_ADMIN',
   updatedAt: '2026-09-12T08:00:00.000Z',
   username: 'playwright',
@@ -165,6 +165,7 @@ test('allows an administrator to inspect and revoke user token metadata', /** Ve
   await page.goto('/admin/users');
   await page.getByRole('button', { name: 'Manage MCP tokens' }).click();
   await expect(page.getByRole('heading', { name: 'MCP access tokens' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toContainText('Ada Lovelace (@playwright)');
   await expect(page.getByText('Automation')).toBeVisible();
   await expect(page.getByText('Active', { exact: true })).toBeVisible();
   await expect(page.getByText('Never used', { exact: false })).toBeVisible();

@@ -115,4 +115,27 @@ describe('local access group integration', /** Shares isolated database-backed g
       ForbiddenException,
     );
   });
+  it('combines name search with the group scope and administrative ability', /** Prevents search predicates from expanding member visibility. */ async () => {
+    const group = await groups.create(admin, { name: 'Named users' });
+    await prisma.user.update({ where: { id: viewer.id }, data: { firstName: 'Vera', lastName: 'Viewer' } });
+    await prisma.user.create({
+      data: { username: 'outsider', passwordHash: 'synthetic', firstName: 'Vera', lastName: 'Viewer', role: 'VIEWER' },
+    });
+    await groups.addMember(admin, group.id, viewer.id);
+    const query = {
+      page: 1,
+      perPage: 10,
+      fields: 'id,username,firstName,lastName',
+      where: {
+        AND: [
+          { firstName: { contains: 'vera', mode: 'insensitive' as const } },
+          { lastName: { contains: 'viewer', mode: 'insensitive' as const } },
+        ],
+      },
+    };
+    const result = await controller.members({ user: admin }, group.id, query);
+    expect(result.items).toEqual([{ id: viewer.id, username: viewer.username, firstName: 'Vera', lastName: 'Viewer' }]);
+    expect(JSON.stringify(result)).not.toContain('passwordHash');
+    await expect(controller.members({ user: viewer }, group.id, query)).rejects.toThrow(ForbiddenException);
+  });
 });

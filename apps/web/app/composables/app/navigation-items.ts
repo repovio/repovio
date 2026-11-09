@@ -132,25 +132,13 @@ export function useNavigationItems(attentionCounts: NavigationAttentionCounts = 
       ];
     },
   );
-  const notifications = computed<AppNavigationItem[]>(
-    /** Derives notifications from the current reactive dependencies. */ () => [
-      {
-        active: isActive('/notifications', true),
-        icon: 'i-lucide-radio-tower',
-        label: t('notifications.tabs.channels'),
-        to: '/notifications',
-      },
-      ...(auth.user?.role === 'SYSTEM_ADMIN'
-        ? [
-            {
-              active: isActive('/notifications/history'),
-              icon: 'i-lucide-history',
-              label: t('notifications.tabs.history'),
-              to: '/notifications/history',
-            },
-          ]
-        : []),
-    ],
+  const notifications = computed<AppNavigationItem>(
+    /** Derives notifications from the current reactive dependencies. */ () => ({
+      active: isActive('/notifications'),
+      icon: 'i-lucide-bell',
+      label: t('layout.notifications'),
+      to: '/notifications',
+    }),
   );
   const administration = computed<AppNavigationItem[]>(
     /** Derives administration from the current reactive dependencies. */ () => {
@@ -220,17 +208,7 @@ export function useNavigationItems(attentionCounts: NavigationAttentionCounts = 
         { label: t('layout.operations'), type: 'label' },
         toMenuItem(repositories.value),
         toMenuItem(jobs.value),
-        {
-          'aria-label': t('layout.notifications'),
-          active: notifications.value.some(
-            /** Checks whether any entry satisfies `item.active`. */ (item) => item.active,
-          ),
-          children: notifications.value.map(toMenuItem),
-          defaultOpen: true,
-          icon: 'i-lucide-bell',
-          label: t('layout.notifications'),
-          type: 'trigger',
-        },
+        toMenuItem(notifications.value),
       ];
 
       if (administration.value.length > 0) {
@@ -250,7 +228,7 @@ export function useNavigationItems(attentionCounts: NavigationAttentionCounts = 
       ...alerts.value,
       repositories.value,
       jobs.value,
-      ...notifications.value,
+      notifications.value,
       ...administration.value,
     ],
   );

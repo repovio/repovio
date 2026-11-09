@@ -355,7 +355,7 @@ test('refreshes and hides attention badges after navigation', /** Verifies refre
 
   awaitingApprovalCount = 0;
   needsAttentionCount = 0;
-  await navigation.getByRole('link', { name: 'Channels' }).click();
+  await navigation.getByRole('link', { name: 'Notifications', exact: true }).click();
   await expect(page).toHaveURL(/\/notifications$/);
   await expect(workflowRuns.locator('[data-slot="linkTrailingBadge"]')).toHaveCount(0);
 });
@@ -678,5 +678,94 @@ for (const width of [320, 1440]) {
     await outside.click();
     await expect(popover).toBeHidden();
     await expect(outside).toBeFocused();
+  });
+}
+
+for (const locale of ['en', 'de'] as const) {
+  test(`opens notification channels directly across navigation surfaces (${locale})`, /** Verifies one localized destination in desktop, search, collapsed, and mobile navigation. */ async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockApplication(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    const labels =
+      locale === 'de'
+        ? {
+            navigation: 'Hauptnavigation',
+            notifications: 'Benachrichtigungen',
+            channels: 'Kanäle',
+            history: 'Zustellverlauf',
+            collapse: 'Seitenleiste einklappen',
+            openSidebar: 'Seitenleiste öffnen',
+            expand: 'Seitenleiste ausklappen',
+            search: 'Suche',
+            query: 'Suchen oder Befehl eingeben',
+          }
+        : {
+            navigation: 'Primary navigation',
+            notifications: 'Notifications',
+            channels: 'Channels',
+            history: 'Delivery history',
+            collapse: 'Collapse sidebar',
+            openSidebar: 'Open sidebar',
+            expand: 'Expand sidebar',
+            search: 'Search',
+            query: 'Search or type a command',
+          };
+    await page.goto('/');
+    const navigation = page.getByRole('navigation', { name: labels.navigation });
+    const notifications = navigation.getByRole('link', { name: labels.notifications, exact: true });
+    await expect(notifications).toHaveCount(1);
+    await expect(notifications).toHaveAttribute('href', '/notifications');
+    await expect(notifications).not.toHaveAttribute('aria-expanded');
+    await expect(navigation.getByRole('button', { name: labels.notifications, exact: true })).toHaveCount(0);
+    await expect(navigation.getByRole('link', { name: labels.channels, exact: true })).toHaveCount(0);
+    await expect(navigation.getByRole('link', { name: labels.history, exact: true })).toHaveCount(0);
+    await notifications.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/notifications$/);
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    await page.screenshot({
+      path: testInfo.outputPath(`notifications-expanded-${locale}.png`),
+      animations: 'disabled',
+    });
+
+    await page.locator('#global-search-trigger').click();
+    const palette = page.getByRole('dialog', { name: labels.search, exact: true });
+    await expect(palette.getByRole('option', { name: labels.notifications, exact: true })).toHaveCount(1);
+    await expect(palette.getByRole('option', { name: labels.channels, exact: true })).toHaveCount(0);
+    await expect(palette.getByRole('option', { name: labels.history, exact: true })).toHaveCount(0);
+    await palette.getByPlaceholder(labels.query).fill(labels.notifications);
+    await expect(palette.getByRole('option', { name: labels.notifications, exact: true })).toBeVisible();
+    await palette.getByRole('option', { name: labels.notifications, exact: true }).click();
+    await expect(palette).not.toBeVisible();
+    await expect(page).toHaveURL(/\/notifications$/);
+
+    await page.getByRole('button', { name: labels.collapse, exact: true }).click();
+    await expect(page.getByRole('complementary')).toHaveAttribute('data-collapsed', 'true');
+    await expect(notifications).toBeVisible();
+    await notifications.click();
+    await expect(page).toHaveURL(/\/notifications$/);
+    await page.screenshot({
+      path: testInfo.outputPath(`notifications-collapsed-${locale}.png`),
+      animations: 'disabled',
+    });
+    await page.getByRole('button', { name: labels.expand, exact: true }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.getByRole('button', { name: labels.openSidebar, exact: true }).click();
+    const mobile = page.getByRole('dialog').getByRole('navigation', { name: labels.navigation });
+    const mobileNotifications = mobile.getByRole('link', { name: labels.notifications, exact: true });
+    await expect(mobileNotifications).toHaveCount(1);
+    await expect(mobile.getByRole('link', { name: labels.channels, exact: true })).toHaveCount(0);
+    await expect(mobile.getByRole('link', { name: labels.history, exact: true })).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath(`notifications-mobile-menu-${locale}.png`),
+      animations: 'disabled',
+    });
+    await mobileNotifications.click();
+    await expect(page).toHaveURL(/\/notifications$/);
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`notifications-mobile-${locale}.png`), animations: 'disabled' });
   });
 }

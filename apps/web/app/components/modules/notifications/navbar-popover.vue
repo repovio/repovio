@@ -89,14 +89,6 @@
         <p class="text-xs text-muted">
           {{ $t('notifications.navbar.acceptanceHint') }}
         </p>
-        <UButton
-          v-if="auth.user?.role === 'SYSTEM_ADMIN'"
-          color="neutral"
-          variant="link"
-          to="/notifications/history"
-          :label="$t('notifications.tabs.history')"
-          @click="open = false"
-        />
       </section>
     </template>
   </UPopover>

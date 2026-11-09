@@ -4,6 +4,17 @@
 @import '@nuxt/ui';
 @import './brand.css';
 
+@layer base {
+  :where(button, input[type='button'], input[type='submit'], input[type='reset'], [role='button']):not(
+    :disabled,
+    [disabled],
+    [aria-disabled='true'],
+    [data-disabled]
+  ) {
+    cursor: pointer;
+  }
+}
+
 @theme {
   --font-display: 'JetBrains Mono', ui-monospace, monospace;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;

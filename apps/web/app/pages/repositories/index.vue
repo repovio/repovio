@@ -54,7 +54,9 @@
       :ui="{
         th: 'first:pl-8 bg-neutral-100 dark:bg-neutral-950/20',
         td: 'first:pl-8',
+        tr: 'data-[selected]:cursor-pointer',
       }"
+      @select="selectRow"
     >
       <template #name-cell="{ row }">
         <NuxtLink class="font-medium hover:underline" :to="`/repositories/${row.original.id}`">
@@ -107,7 +109,7 @@
         <span class="flex justify-end">{{ column.columnDef.header }}</span>
       </template>
       <template #actions-cell="{ row }">
-        <div class="flex justify-end gap-1">
+        <div class="flex justify-end gap-1" data-row-navigation-ignore>
           <UTooltip :text="$t('dashboard.openProvider')">
             <UButton
               color="neutral"
@@ -170,6 +172,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';
@@ -186,6 +189,9 @@ type RepositoryTableColumn = ColumnDefinition<RepositoryRow> & { header: string;
 
 definePageMeta({ fullWidth: true });
 
+const selectRow = useTableRowNavigation<{ id: string }>(
+  /** Resolve the existing full Repository Overview. */ (item) => `/repositories/${encodeURIComponent(item.id)}`,
+);
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();

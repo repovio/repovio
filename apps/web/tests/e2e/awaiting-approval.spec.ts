@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 test('lists approval-gated workflows with provider and pull-request actions', /** Verifies lists approval-gated workflows with provider and pull-request actions. */ async ({
   page,
@@ -103,6 +104,7 @@ test('lists approval-gated workflows with provider and pull-request actions', /*
     .toBe(true);
   await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
   await expect(table.getByText('GitHub', { exact: true })).toBeVisible();
+  await expectTableHover(page, table);
   const approveLink = page.getByRole('link', { name: 'Approve in provider' });
   await expect(approveLink).toHaveAttribute('href', 'https://github.com/twaelde/repovio/actions/runs/42');
   const reviewLink = page.getByRole('link', { name: 'Open pull request' });

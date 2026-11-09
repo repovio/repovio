@@ -15,8 +15,9 @@ export default defineAppConfig({
     },
     table: {
       slots: {
-        td: 'p-2 border-b border-default',
-        th: 'p-2 truncate',
+        td: 'p-2 border-b border-default data-[pinned=left]:bg-default data-[pinned=right]:bg-default',
+        tr: 'data-[selected]:hover:bg-elevated data-[selected]:hover:[&>td]:bg-elevated',
+        th: 'p-2 truncate data-[pinned=left]:bg-default data-[pinned=right]:bg-default',
       },
     },
     icons: {

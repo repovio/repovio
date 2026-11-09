@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 /** Verify the Query Kit provider table and its credential-validated add dialog. */
 test('provider account table opens an add dialog with structured native controls', /** Verifies provider account table opens an add dialog with structured native controls. */ async ({
@@ -62,6 +63,7 @@ test('provider account table opens an add dialog with structured native controls
   await expect(breadcrumb.locator('[class~="i-lucide:layout-dashboard"]')).toBeVisible();
   await expect(breadcrumb.locator('[class~="i-lucide:plug-zap"]')).toBeVisible();
   await expect(page.getByText('Production GitHub')).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await expect(page.getByRole('columnheader', { name: 'Webhook' })).toHaveCount(0);
   await expect(page.locator('#main-content [class~="i-tabler:brand-github"]')).toBeVisible();
   await expect(page.getByRole('button', { name: /add provider|anbieter hinzufügen/i })).toBeVisible();

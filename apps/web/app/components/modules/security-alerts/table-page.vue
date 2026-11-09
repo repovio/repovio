@@ -1,5 +1,6 @@
 <template>
-  <LayoutPage
+  <CommonTablePageFrame
+    :embedded="embedded"
     :breadcrumbs="[
       { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
       { icon: 'i-lucide-shield-alert', label: $t('securityAlerts.title') },
@@ -51,7 +52,7 @@
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
           </template>
         </QTableSorting>
-        <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <QTableFiltering v-model:filtering="filtering" :fields="visibleFilterFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
           </template>
@@ -79,7 +80,14 @@
         :description="$t('securityAlerts.unavailableDescription', { count: unavailableCount })"
         :title="$t('securityAlerts.unavailable')"
       />
+      <UAlert
+        v-if="unknownAvailability"
+        color="neutral"
+        variant="subtle"
+        :title="$t('securityAlerts.unknownAvailability')"
+      />
       <ModulesWorkItemsSummaryCards
+        v-if="!repositoryId"
         :loading="supportingLoading"
         :metrics="summaryMetrics"
         :title="$t('securityAlerts.openSummary')"
@@ -95,14 +103,20 @@
       :title="$t('securityAlerts.loadError')"
     />
     <UTable
+      v-if="!repositoryId || !tableError"
       sticky
       v-model:column-pinning="columnPinning"
       class="min-h-0 flex-1 overflow-x-auto"
       :columns="columns"
       :data="items"
-      :empty="$t('securityAlerts.empty')"
+      :empty="scopedEmpty"
       :loading="loading"
-      :ui="{ th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20', td: 'first:pl-6 align-top' }"
+      :ui="{
+        tr: 'data-[selected]:cursor-pointer',
+        th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
+        td: 'first:pl-6 align-top',
+      }"
+      @select="selectRow"
     >
       <template #title-cell="{ row }">
         <NuxtLink class="font-medium hover:underline" :to="`/alerts/${row.original.id}`">
@@ -129,7 +143,7 @@
         <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
       </template>
       <template #actions-cell="{ row }">
-        <div class="flex justify-end">
+        <div class="flex justify-end" data-row-navigation-ignore>
           <UButton
             color="neutral"
             icon="i-tabler-external-link"
@@ -149,14 +163,15 @@
       :total-items="totalItems"
       shortcuts
     />
-  </LayoutPage>
+  </CommonTablePageFrame>
 </template>
 
 <script setup lang="ts">
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
+import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 
-import { defineProps } from 'vue';
+import { defineProps, onScopeDispose } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
 import { useProviderType } from '~/composables/enums/provider-type';
@@ -172,9 +187,12 @@ import type {
 import { providerTypes } from '~/types/api/resources';
 import type { ColumnDefinition } from '~/types/table';
 
-const props = defineProps<{ kind: SecurityAlertKind }>();
+const props = defineProps<{ kind: SecurityAlertKind; repositoryId?: string; embedded?: boolean }>();
 type AlertRow = SecurityAlert & Record<string, unknown>;
 type AlertColumn = ColumnDefinition<AlertRow> & { header: string; id: string };
+const selectRow = useTableRowNavigation<{ id: string }>(
+  /** Open the existing Security Alert detail. */ (item) => `/alerts/${encodeURIComponent(item.id)}`,
+);
 const { t } = useI18n();
 const api = useRepovioApi();
 const route = useRoute();
@@ -214,9 +232,36 @@ const unavailableCount = computed(
   /** Derives unavailable count from the current reactive dependencies. */
   () =>
     filterOptions.value.availability.filter(
-      /** Keeps entries matching `availability === 'UNAVAILABLE' && kind === props.kind`. */
-      ({ availability, kind }) => availability === 'UNAVAILABLE' && kind === props.kind,
+      /** Keeps unavailable entries for the current category and optional Repository scope. */
+      ({ availability, kind, repositoryId }) =>
+        (availability === 'UNAVAILABLE' || (!!props.repositoryId && availability === 'UNSUPPORTED')) &&
+        kind === props.kind &&
+        (!props.repositoryId || repositoryId === props.repositoryId),
     ).length,
+);
+const unknownAvailability = computed(
+  /** Missing metadata must not be interpreted as successful zero findings. */ () =>
+    !!props.repositoryId &&
+    !supportingLoading.value &&
+    !supportingError.value &&
+    !filterOptions.value.availability.some(
+      /** Match availability to this Repository/category pair. */ (item) =>
+        item.repositoryId === props.repositoryId &&
+        item.kind === props.kind &&
+        ['AVAILABLE', 'UNAVAILABLE', 'UNSUPPORTED'].includes(item.availability),
+    ),
+);
+const scopedEmpty = computed(
+  /** Do not label unsupported or unknown security coverage as no findings. */ () =>
+    t(
+      props.repositoryId && supportingError.value
+        ? 'securityAlerts.loadError'
+        : props.repositoryId && unavailableCount.value > 0
+          ? 'securityAlerts.unavailable'
+          : unknownAvailability.value
+            ? 'securityAlerts.unknownAvailability'
+            : 'securityAlerts.empty',
+    ),
 );
 const columnDefinition = computed<AlertColumn[]>(
   /** Derives column definition from the current reactive dependencies. */ () => [
@@ -357,11 +402,20 @@ const filterFields = computed<FilterField[]>(
           ]),
   ],
 );
+const visibleFilterFields = computed(
+  /** Scoped views cannot switch Repository or Provider through a filter control. */ () =>
+    filterFields.value.filter(
+      /** Preserve all other field metadata. */ (field) =>
+        !props.repositoryId || !['repositoryId', 'repository.providerAccount.providerType'].includes(field.value),
+    ),
+);
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => ({
     AND: [
       { kind: props.kind },
-      ...(typeof route.query.repositoryId === 'string' ? [{ repositoryId: route.query.repositoryId }] : []),
+      ...(!props.repositoryId && typeof route.query.repositoryId === 'string'
+        ? [{ repositoryId: route.query.repositoryId }]
+        : []),
       ...(selectedPath.value ? [{ location: { path: ['path'], equals: selectedPath.value } }] : []),
       ...(updatedFrom.value
         ? [{ providerUpdatedAt: { gte: new Date(`${updatedFrom.value}T00:00:00.000Z`).toISOString() } }]
@@ -389,6 +443,8 @@ const table = useTable({
   defaultItemsPerPage: 25,
   endpoint: 'security-alerts',
   name: `security-alerts-${props.kind.toLocaleLowerCase()}`,
+  repositoryId: props.repositoryId,
+  scopeKind: props.kind,
   staticFields: ['id', 'repositoryOwner', 'providerUrl'],
   staticFilter,
 });
@@ -428,13 +484,21 @@ const summaryMetrics = computed(
     },
   ],
 );
+let supportingGeneration = 0;
+onScopeDispose(
+  /** Invalidate supporting responses when leaving this table identity. */ () => {
+    supportingGeneration++;
+  },
+);
 /** Loads supporting data. */
 async function loadSupportingData(): Promise<void> {
+  const generation = ++supportingGeneration;
   supportingLoading.value = true;
   const [summaryResult, optionsResult] = await Promise.allSettled([
-    api.securityAlerts.summary(),
+    props.repositoryId ? Promise.resolve({ data: null }) : api.securityAlerts.summary(),
     api.securityAlerts.filterOptions(),
   ]);
+  if (generation !== supportingGeneration) return;
   if (summaryResult.status === 'fulfilled') summary.value = summaryResult.value.data;
   if (optionsResult.status === 'fulfilled') filterOptions.value = optionsResult.value.data;
   supportingError.value = summaryResult.status === 'rejected' || optionsResult.status === 'rejected';

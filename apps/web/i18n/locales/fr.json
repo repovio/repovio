@@ -1048,7 +1048,9 @@
     "title": "Paramètres du dépôt",
     "user": "Utilisateur",
     "workflowFilters": "Filtres de flux",
-    "workflowFiltersDescription": "Les filtres d’exclusion ont priorité sur les filtres d’autorisation."
+    "workflowFiltersDescription": "Les filtres d’exclusion ont priorité sur les filtres d’autorisation.",
+    "overview": "Vue d’ensemble",
+    "navigation": "Navigation du dépôt"
   },
   "securityAlerts": {
     "code": "Code scanning",
@@ -1095,7 +1097,9 @@
     },
     "title": "Alerts",
     "unavailable": "Unavailable data",
-    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
+    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available.",
+    "categoryNavigation": "Catégories de sécurité",
+    "unknownAvailability": "La disponibilité est inconnue ou la synchronisation est inachevée."
   },
   "sidebar": {
     "github": "Open GitHub repository",

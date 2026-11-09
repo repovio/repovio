@@ -22,7 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="shortcut in globalShortcuts" :key="shortcut.id" class="border-t border-default">
+          <tr v-for="shortcut in globalShortcuts" :key="shortcut.id" class="border-t border-default hover:bg-elevated">
             <td class="p-2">
               {{ t(shortcut.scope) }}
             </td>

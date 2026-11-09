@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { mockRepositoryApplication } from './fixtures/repository-detail';
 
 const repository = {
   enabled: true,
@@ -438,4 +439,24 @@ test('administrator configures a webhook for one repository', /** Verifies admin
   await expect(page.locator('html')).toHaveClass(/light/);
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('repository-webhook-light-mobile.png'), fullPage: true });
+});
+
+test('Repository section links restore direct destinations and browser history', /** Keep the navigation-first journey in the existing regression suite. */ async ({
+  page,
+}) => {
+  await mockRepositoryApplication(page, 'VIEWER');
+  await page.goto('/repositories/repository-1');
+  const navigation = page.getByRole('navigation', { name: 'Repository navigation', exact: true });
+  await expect(navigation.getByRole('link', { name: 'Overview', exact: true })).toHaveAttribute(
+    'href',
+    '/repositories/repository-1',
+  );
+  await navigation.getByRole('link', { name: 'Workflow runs', exact: true }).click();
+  await expect(page).toHaveURL('/repositories/repository-1/workflow-runs');
+  await navigation.getByRole('link', { name: 'Issues', exact: true }).click();
+  await expect(page).toHaveURL('/repositories/repository-1/issues');
+  await page.goBack();
+  await expect(page).toHaveURL('/repositories/repository-1/workflow-runs');
+  await page.reload();
+  await expect(page.locator('tbody')).toContainText('Build repository-1');
 });

@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-09
 
-**Status**: Plan and tasks approved; issue creation and planning commit/push authorized. Implementation awaits approval.
+**Status**: Implemented and locally verified; review and separate merge approval pending.
 
 **Issue**: [#71](https://github.com/repovio/repovio/issues/71)
 
@@ -74,4 +74,5 @@ so manual registration at the Provider does not require finding a separate confi
 - An empty read-only field with localized explanatory help satisfies the initial creation state. Preallocating callback
   addresses before saving is outside this correction's scope.
 - The existing organization webhook feature is the dependency; this correction does not alter its approved artifacts.
-- No new provider operations, persistence changes, releases, commits, or deployment are authorized by planning.
+- Provider operations, persistence changes, releases, and deployment remain outside this correction. Implementation and
+  its task commits were separately approved after planning delivery.

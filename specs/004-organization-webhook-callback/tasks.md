@@ -46,7 +46,7 @@ Run English at 1440px and German at 390px, including failure, clipboard-denial, 
 
 ### Regression coverage and implementation
 
-- [ ] T003 [US1] Deliver the complete callback-field correction: first extend `apps/web/tests/e2e/organization-webhooks.spec.ts` with form-scoped accessible selectors and confirm the missing-field regression fails; then update `apps/web/app/components/modules/providers/organization-webhooks-dialog.vue` to compute the selected callback from `configurations` and `editingId`, preserving "The matching configuration's `callbackUrl`, otherwise an empty string. Never persisted separately." Add exactly one labeled, focusable, selectable, read-only, non-required input inside the form, reuse existing callback/copy labels and clipboard error helper, give the copy button `type="button"`, disable it for an empty value, and add pre-save help in `apps/web/i18n/locales/en.json` and `apps/web/i18n/locales/de.json`. Cover successful create, create-pending/failure with retryable scope/secret input, two-configuration switching, rotation success/failure, Add another, successful removal, close/reopen, exact public-hostname copying, clipboard denial, unchanged request payloads, loading/dismissal behavior, existing cards, viewer restrictions, and repository inheritance. Keep callback outside strict form/request state; never synthesize a URL or change stored-secret handling. Add exactly one `repovio` patch Changeset at `.changeset/organization-webhook-callback-field.md` through the existing Changesets workflow, run `graphify update .` for `graphify-out/graph.json`, document any new callable, and pass focused browser coverage plus affected lint/type/format/documentation checks before the separately authorized task commit and push.
+- [x] T003 [US1] Deliver the complete callback-field correction: first extend `apps/web/tests/e2e/organization-webhooks.spec.ts` with form-scoped accessible selectors and confirm the missing-field regression fails; then update `apps/web/app/components/modules/providers/organization-webhooks-dialog.vue` to compute the selected callback from `configurations` and `editingId`, preserving "The matching configuration's `callbackUrl`, otherwise an empty string. Never persisted separately." Add exactly one labeled, focusable, selectable, read-only, non-required input inside the form, reuse existing callback/copy labels and clipboard error helper, give the copy button `type="button"`, disable it for an empty value, and add pre-save help in `apps/web/i18n/locales/en.json` and `apps/web/i18n/locales/de.json`. Cover successful create, create-pending/failure with retryable scope/secret input, two-configuration switching, rotation success/failure, Add another, successful removal, close/reopen, exact public-hostname copying, clipboard denial, unchanged request payloads, loading/dismissal behavior, existing cards, viewer restrictions, and repository inheritance. Keep callback outside strict form/request state; never synthesize a URL or change stored-secret handling. Add exactly one `repovio` patch Changeset at `.changeset/organization-webhook-callback-field.md` through the existing Changesets workflow, run `graphify update .` for `graphify-out/graph.json`, document any new callable, and pass focused browser coverage plus affected lint/type/format/documentation checks before the separately authorized task commit and push.
 
 **Checkpoint**: US1 is the complete MVP. No additional stories, API work, or abstraction are needed.
 
@@ -54,9 +54,9 @@ Run English at 1440px and German at 390px, including failure, clipboard-denial, 
 
 **Purpose**: Verify the finished correction without adding behavior. T004 and T005 may run concurrently after T003.
 
-- [ ] T004 [P] Run `corepack pnpm --dir apps/web e2e tests/e2e/organization-webhooks.spec.ts` against the web server described in `specs/004-organization-webhook-callback/quickstart.md`; inspect screenshots from `apps/web/tests/e2e/organization-webhooks.spec.ts` for empty/saved English desktop and German mobile states, keyboard access, long callback usability, and no horizontal overflow at 390px. Verify each form-scoped callback value and actual clipboard stub content, not a list-card value. Preserve existing administrator/viewer, secret, pending/error, and inherited-badge assertions.
-- [ ] T005 [P] Run the affected checks defined by `apps/web/package.json`, `package.json`, and `scripts/format.mjs`: `corepack pnpm --dir apps/web lint`, `corepack pnpm --dir apps/web typecheck`, `corepack pnpm documentation:check`, `corepack pnpm format:check`, and `git diff --check`; confirm canonical formatting is stable across two passes and review only in-scope source, locale, test, Changeset, and graph changes. Investigate failures without weakening rules or changing unrelated files.
-- [ ] T006 Reconcile observed verification outcomes in `specs/004-organization-webhook-callback/quickstart.md` and completion state in `specs/004-organization-webhook-callback/tasks.md`; record commands, screenshot evidence, any remaining limitations, and authorized commit references. Check FR-001 through FR-007 and SC-001 through SC-004 against `specs/004-organization-webhook-callback/spec.md`; mark implementation complete only after required checks and its authorized commit succeed. Disclose live-provider, Docker, or remote CI behavior that was not verified; do not deploy, release, or merge.
+- [x] T004 [P] Run `corepack pnpm --dir apps/web e2e tests/e2e/organization-webhooks.spec.ts` against the web server described in `specs/004-organization-webhook-callback/quickstart.md`; inspect screenshots from `apps/web/tests/e2e/organization-webhooks.spec.ts` for empty/saved English desktop and German mobile states, keyboard access, long callback usability, and no horizontal overflow at 390px. Verify each form-scoped callback value and actual clipboard stub content, not a list-card value. Preserve existing administrator/viewer, secret, pending/error, and inherited-badge assertions.
+- [x] T005 [P] Run the affected checks defined by `apps/web/package.json`, `package.json`, and `scripts/format.mjs`: `corepack pnpm --dir apps/web lint`, `corepack pnpm --dir apps/web typecheck`, `corepack pnpm documentation:check`, `corepack pnpm format:check`, and `git diff --check`; confirm canonical formatting is stable across two passes and review only in-scope source, locale, test, Changeset, and graph changes. Investigate failures without weakening rules or changing unrelated files.
+- [x] T006 Reconcile observed verification outcomes in `specs/004-organization-webhook-callback/quickstart.md` and completion state in `specs/004-organization-webhook-callback/tasks.md`; record commands, screenshot evidence, any remaining limitations, and authorized commit references. Check FR-001 through FR-007 and SC-001 through SC-004 against `specs/004-organization-webhook-callback/spec.md`; mark implementation complete only after required checks and its authorized commit succeed. Disclose live-provider, Docker, or remote CI behavior that was not verified; do not deploy, release, or merge.
 
 ## Dependencies & Execution Order
 
@@ -114,3 +114,24 @@ spawning agents or require a parallel execution environment.
 | FR-006, SC-004: locales, keyboard access, responsive layout | T003, T004, T005 |
 | FR-007: permissions, pending/errors, secrets                | T002, T003, T004 |
 | Whole-feature acceptance and honest evidence                | T006             |
+
+## Completion Evidence
+
+- T001/T002: verified feature context, 15/15 requirements-checklist items, pinned Node.js 26.13.0 and pnpm 11.28.9,
+  ignored build/test output, strict DTOs, server callback construction, and the existing selection lifecycle.
+- T003: implemented and committed as `4e55316b8172cb1cfdd6306cb4b9e27aac46eb1a`; pushed to the issue branch with exactly
+  one focused `repovio` patch Changeset and staged-source graph. No API, schema, database, or composable changes.
+- T004: five Chromium scenarios passed; English at 1440px and German at 390px. Empty/saved/long callback screenshots
+  inspected; form readonly, keyboard focus/copy, dialog focus return, overflow, creation/rotation failures and retries,
+  selected URLs, reset/removal/reopening, secret handling, existing cards, inheritance, and viewer restrictions verified.
+- T005: web lint, focused test-file ESLint, web typecheck, repository documentation check, canonical formatting,
+  two-pass changed-file formatting stability, Changeset status, and whitespace checks passed.
+- T006: acceptance evidence and limits recorded in [quickstart.md](quickstart.md); no unresolved requirements remain.
+  Task status and delivery commit references are synchronized to issue #71 after publication.
+
+The missing-field regression was observed before implementation: the form-scoped Callback URL textbox count was 0,
+expected 1. The corrected full browser suite passed 5/5 in 25.3 seconds. Initial global pnpm 10.33.0 interference was
+resolved with a local Corepack shim; pinned versions and tracked toolchain configuration remain unchanged.
+
+No live provider, Docker, or remote CI pass is claimed. The existing Graphify environment lacks SQL extraction support;
+no SQL changed. No deployment, release, or merge performed.

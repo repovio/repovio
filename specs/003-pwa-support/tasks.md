@@ -97,9 +97,9 @@ as a differently authorized user, inspect all caches and response sources, then 
 
 **Purpose**: Reconcile story evidence, run affected checks, and prepare reviewable delivery.
 
-- [ ] T020 Reconcile FR-001 through FR-008, every story acceptance scenario, and `specs/003-pwa-support/contracts/pwa.md` against `specs/003-pwa-support/evidence.md`; classify remaining defects, platform limitations, and unavailable device/OIDC evidence explicitly. Do not mark unsupported or unexecuted scenarios as passed.
-- [ ] T021 Run `apps/web/package.json` web test, typecheck, lint, and `e2e:pwa` targets plus root documentation/branding/canonical formatting checks from `specs/003-pwa-support/quickstart.md`; investigate affected failures, run two stable formatting passes, inspect status/diffs and `git diff --check`, and record exact results in `specs/003-pwa-support/evidence.md`. Broaden checks only for additional changed projects.
-- [ ] T022 If substantive implementation is prepared for a requested commit, add exactly one focused `repovio` Changeset per such commit under `.changeset/`, refresh `graphify-out/graph.json` with changed sources under the repository rules, and review scoped diffs. Update completion status in `specs/003-pwa-support/tasks.md`; commit/push/PR/merge remain subject to their explicit authorization rules, and no deployment is included.
+- [x] T020 Reconcile FR-001 through FR-008, every story acceptance scenario, and `specs/003-pwa-support/contracts/pwa.md` against `specs/003-pwa-support/evidence.md`; classify remaining defects, platform limitations, and unavailable device/OIDC evidence explicitly. Do not mark unsupported or unexecuted scenarios as passed.
+- [x] T021 Run `apps/web/package.json` web test, typecheck, lint, and `e2e:pwa` targets plus root documentation/branding/canonical formatting checks from `specs/003-pwa-support/quickstart.md`; investigate affected failures, run two stable formatting passes, inspect status/diffs and `git diff --check`, and record exact results in `specs/003-pwa-support/evidence.md`. Broaden checks only for additional changed projects.
+- [x] T022 If substantive implementation is prepared for a requested commit, add exactly one focused `repovio` Changeset per such commit under `.changeset/`, refresh `graphify-out/graph.json` with changed sources under the repository rules, and review scoped diffs. Update completion status in `specs/003-pwa-support/tasks.md`; commit/push/PR/merge remain subject to their explicit authorization rules, and no deployment is included.
 
 ## Dependencies and Execution Order
 
@@ -149,3 +149,9 @@ run all browser processes against the same build. Generated task labels describe
 
 22 tasks: 2 setup, 2 foundational, 5 US1, 5 US2, 5 US3, and 3 cross-cutting. Six `[P]` tasks form three independent
 file-ownership pairs. No task is complete at generation time.
+
+## Delivery Status
+
+20/22 tasks complete. T009 and T018 remain open because the user confirmed that native devices and an isolated OIDC
+instance are unavailable. T018's real local-account/API portion passed; its OIDC portion is unverified. All automated
+implementation and verification work is complete. This is not a claim that every acceptance environment was tested.

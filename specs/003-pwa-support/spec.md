@@ -1,12 +1,12 @@
 # Feature Specification: PWA Support Audit and Gap Closure
 
-**Branch**: `codex/pwa-support-plan` | **Created**: 2026-11-09 | **Status**: Planned; implementation tasks generated
+**Branch**: `codex/pwa-support-plan` | **Created**: 2026-11-09 | **Status**: Implemented and locally verified; native-device/OIDC evidence unavailable
 
 **Request**: Audit existing PWA support and close gaps, confirmed by the user in this chat.
 
 **Issue**: [#64: Audit existing PWA support and close verified gaps](https://github.com/repovio/repovio/issues/64).
-Prior runtime-branding work: [#26](https://github.com/repovio/repovio/issues/26). The user authorized issue creation and
-task generation; application implementation remains a subsequent step.
+Prior runtime-branding work: [#26](https://github.com/repovio/repovio/issues/26). The user authorized issue creation, task generation, and subsequent implementation, with specifications committed first.
+Native-device and OIDC evidence remain unavailable as confirmed by the user.
 
 ## Existing Behavior
 

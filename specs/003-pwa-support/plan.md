@@ -48,7 +48,8 @@ promise; preserve manifest identity and runtime branding; normal online use surv
 
 **Issue binding**: The user explicitly requested issue creation and task generation. Issue
 [#64](https://github.com/repovio/repovio/issues/64) now owns this bounded scope; the prior issue-selection gate is resolved.
-[Implementation tasks](tasks.md) are prepared. Application implementation, commits, and deployment were not requested.
+[Implementation tasks](tasks.md) are prepared. The user subsequently authorized implementation and requested specifications to be committed first. Implementation
+is locally verified; native-device/OIDC evidence remains unavailable. No merge or deployment is authorized.
 
 ## Project Structure
 

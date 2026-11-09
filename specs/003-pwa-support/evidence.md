@@ -91,3 +91,50 @@
   the complete suite with this correction: all 18 production scenarios passed (19.5 seconds), including the real API.
 - Availability confirmed by the user: no Android/iOS devices or isolated OIDC test instance are available. T009 and the
   OIDC portion of T018 cannot be completed in this environment and remain explicitly unverified.
+
+## Final Requirement Assessment
+
+| Requirement | Result           | Evidence                                                                                                   |
+| ----------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| FR-001      | Verified         | Baseline inventory, scoped repairs, and classified evidence                                                |
+| FR-002      | Verified         | Default/custom manifest identity, icons, production runtime tests                                          |
+| FR-003      | Verified         | Held activation, disabled duplicate input, rejection, retry, dismissal, live status region                 |
+| FR-004      | Verified locally | Synthetic traffic plus real Nest/PostgreSQL authorization and all-cache inspection                         |
+| FR-005      | Verified         | Registration failure, two worker versions, two tabs, absent-plugin setup                                   |
+| FR-006      | Partial          | Installation guidance and Chromium installability pass; native installation unavailable                    |
+| FR-007      | Verified scope   | EN/DE, 390/1440 px, keyboard, accessibility semantics, screenshots; no spoken screenreader session claimed |
+| FR-008      | Partial          | Notification import and real local login/deep links pass; installed OIDC callback unavailable              |
+
+## Final Checks and Task Reconciliation
+
+- T020: Every functional requirement and story acceptance scenario mapped to evidence above. No known application
+  defect remains in tested scope. T009 is unverified; T018 has real local API evidence but no OIDC evidence. Both remain
+  unchecked after the user confirmed these environments are unavailable.
+- T021: Full current production build and all 18 Playwright scenarios passed, including the opt-in real API project.
+  All 48 web unit tests passed. Web typecheck, web lint plus scoped PWA test/config ESLint, documentation coverage,
+  branding check, and canonical formatting passed. Two-pass scoped formatting and local link checks are stable.
+  Nuxt emits its existing module-type warning; checks exit successfully. No remote CI, live providers, native installs,
+  OIDC instance, registry publishing, release, or deployment behavior is claimed.
+- T022: Specifications committed/pushed before implementation. Each substantive test/application implementation commit
+  contains one focused `repovio` Changeset. AST graph refreshed; scope diffs reviewed. SQL graph extraction remains
+  unavailable because optional `tree_sitter_sql` is not installed; this feature changes no SQL. Existing semantic graph
+  data was preserved; no semantic rebuild performed. Review delivery is a draft while external evidence remains open.
+
+### Commit Traceability
+
+- `974495f`: docs: specify PWA support audit for #64
+- `e4112d5`: docs: record PWA audit scope and environment (#64 T001)
+- `54f0dcb`: docs: verify production PWA baseline (#64 T002)
+- `fc2492c`: test: isolate production PWA worker scenarios (#64 T003)
+- `1b7de0c`: test: add authenticated PWA fixtures (#64 T004)
+- `3625347`: test: preserve runtime PWA identity (#64 T005)
+- `0412e15`: test: verify installed-app routing boundaries (#64 T006 T007)
+- `7f8d75b`: docs: describe native PWA installation (#64 T008)
+- `4bcd2bc`: test: cover repeated PWA updates and registration failures (#64 T011)
+- `86ec0d5`: fix: announce PWA update failures accessibly (#64 T010 T012 T013 T014)
+- `9521c5f`: test: verify authenticated PWA cache isolation (#64 T015 T017)
+- `bec246a`: test: prove PWA connectivity boundaries (#64 T016)
+- `a5f86b8`: test: verify PWA sessions against disposable API (#64 T018)
+- `944fc96`: docs: explain PWA online-data and update boundaries (#64 T019)
+- `196c5c4`: test: keep denied PWA fixture responses private (#64)
+- `bcd1b79`: test: restart disposable PWA web fixtures per build (#64)

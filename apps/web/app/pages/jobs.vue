@@ -124,13 +124,7 @@
         <span class="whitespace-nowrap text-xs text-muted">{{ formatTimestamp(row.original.startedAt) }}</span>
       </template>
       <template #lastError-cell="{ row }">
-        <p v-if="row.original.status === 'WARNING'" class="max-w-72 whitespace-normal text-xs text-warning">
-          {{
-            $t('jobs.warningKinds', {
-              kinds: row.original.warningKinds.map((kind) => $t(`securityAlerts.kindTitles.${kind}`)).join(', '),
-            })
-          }}
-        </p>
+        <ModulesJobsWarningDetails v-if="row.original.status === 'WARNING'" :job="row.original" />
         <p v-else-if="row.original.lastError" class="max-w-72 whitespace-normal text-xs text-error">
           {{ $t(`jobs.errors.${syncErrorKind(row.original.lastError)}`) }}
         </p>

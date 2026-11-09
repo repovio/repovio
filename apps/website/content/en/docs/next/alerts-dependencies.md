@@ -40,3 +40,13 @@ Clear filters and verify management membership if no findings appear. Inspect [J
 unsupported kinds or permission warnings. Existing GitHub OAuth accounts may need reauthorization with
 `security_events`; see [Provider OAuth](/docs/next/provider-oauth). Retry failed loads after recovery; absence of
 visible findings is not proof that the provider has scanned the repository or that every alert type is supported.
+
+## Troubleshoot unavailable alerts
+
+In **Jobs**, choose **Details** beside an unavailable alert warning. Other synchronization scopes have completed;
+unavailable alerts do not mean the repository has no findings. GitHub can return the same unavailable response for
+missing permissions and disabled or unavailable security features, so the warning does not establish an exact cause.
+Check the affected repository security features and the connection's read access. GitHub App installations need the
+optional Dependabot alerts permission; approve updated installation permissions in GitHub when
+needed. Check PAT permissions or reauthorize an OAuth connection as appropriate. Then retry the job. Repovio does not
+change provider permissions or enable security features.

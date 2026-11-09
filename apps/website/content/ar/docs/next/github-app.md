@@ -27,7 +27,7 @@ Pull requests (pull_requests)
 Metadata (metadata, automatic)
 
 Optional repository permissions (Read-only):
-Dependabot alerts (dependabot_alerts)
+Dependabot alerts (vulnerability_alerts)
 Code scanning alerts (security_events)
 Secret scanning alerts (secret_scanning_alerts)
 

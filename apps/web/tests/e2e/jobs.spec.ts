@@ -61,6 +61,7 @@ const jobs = [
 async function mockJobsPage(
   page: Page,
   onQuery: (url: string) => void = /** Returns `undefined` to the caller. */ () => undefined,
+  options: { role?: 'SYSTEM_ADMIN' | 'MANAGER'; providerType?: string } = {},
 ): Promise<void> {
   await page.addInitScript(
     /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
@@ -69,7 +70,7 @@ async function mockJobsPage(
   await page.route(
     '**/api/v1/auth/me',
     /** Supplies the mocked response for `/api/v1/auth/me`. */ (route) =>
-      route.fulfill({ json: { id: 'admin-id', role: 'SYSTEM_ADMIN', username: 'admin' } }),
+      route.fulfill({ json: { id: 'admin-id', role: options.role ?? 'SYSTEM_ADMIN', username: 'admin' } }),
   );
   await page.route(
     '**/api/v1/settings',
@@ -107,7 +108,16 @@ async function mockJobsPage(
       onQuery(route.request().url());
       return route.fulfill({
         json: {
-          items: jobs,
+          items: [
+            jobs[0],
+            jobs[1],
+            {
+              ...jobs[2],
+              providerType: options.providerType ?? jobs[2].providerType,
+              providerName: options.providerType ?? jobs[2].providerName,
+              warningKinds: options.providerType === 'GITHUB' ? ['DEPENDENCY', 'CODE', 'SECRET'] : jobs[2].warningKinds,
+            },
+          ],
           meta: { hasNextPage: false, hasPrevPage: false, itemCount: 3, page: 1, pageCount: 1, perPage: 10 },
         },
       });
@@ -140,7 +150,7 @@ test('shows available jobs, progress, start actions, and root navigation section
 
   await expect(page.getByRole('heading', { name: 'Jobs' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Repository synchronization' })).toBeVisible();
-  await expect(page.getByText('repovio/repovio')).toBeVisible();
+  await expect(page.getByText('tobiaswaelde/repovio')).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Provider' })).toBeVisible();
   await expect(page.getByText('Processing workflows: 7/12')).toBeVisible();
   await expect(page.getByRole('progressbar', { name: '58%' })).toHaveAttribute('aria-valuenow', '7');
@@ -252,3 +262,75 @@ test('restores the selected page size across visits', /** Verifies restores the 
     )
     .toBe('50');
 });
+
+for (const locale of ['en', 'de'] as const) {
+  for (const providerType of ['GITHUB', 'GITLAB', 'FORGEJO']) {
+    test(`explains ${providerType} warnings in ${locale} with accessible responsive details`, /** Verifies diagnostic content, navigation permissions, responsive layout and focus restoration. */ async ({
+      page,
+      context,
+    }) => {
+      const isAdmin = providerType === 'GITHUB';
+      await context.addCookies([{ name: 'repovio-locale', value: locale, url: 'http://localhost' }]);
+      await mockJobsPage(page, undefined, { providerType, role: isAdmin ? 'SYSTEM_ADMIN' : 'MANAGER' });
+      await page.setViewportSize({ width: 1073, height: 1194 });
+      await page.goto('/jobs');
+      const warningRow = page.getByRole('row').filter({ hasText: 'team/partial-alerts' });
+      const trigger = warningRow.getByRole('button', { name: /partial-alerts/ });
+      await expect(
+        page.getByRole('columnheader', { name: locale === 'en' ? 'Notes' : 'Hinweise', exact: true }),
+      ).toBeVisible();
+      const warningCell = trigger.locator('..').locator('..');
+      expect((await warningCell.boundingBox())!.width).toBeGreaterThanOrEqual(256);
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText('team/partial-alerts');
+      await expect(dialog).toContainText(providerType);
+      await expect(dialog).toContainText(
+        locale === 'en'
+          ? 'Other synchronization scopes completed.'
+          : 'Andere Synchronisierungsbereiche wurden abgeschlossen.',
+      );
+      await expect(dialog).toContainText(
+        locale === 'en' ? 'cannot determine the exact cause' : 'kann den genauen Grund nicht bestimmen',
+      );
+      const adminLink = dialog.getByRole('link', {
+        name: locale === 'en' ? 'Manage provider accounts' : 'Provider-Konten verwalten',
+      });
+      await expect(adminLink).toHaveCount(isAdmin ? 1 : 0);
+      if (isAdmin) await expect(adminLink).toHaveAttribute('href', '/admin/providers');
+      if (providerType === 'GITHUB') {
+        await expect(dialog).toContainText('GitHub App');
+        await expect(dialog).toContainText(locale === 'en' ? 'Dependency alerts' : 'Abhängigkeitswarnungen');
+      }
+      if (providerType === 'GITLAB') await expect(dialog).toContainText('read_api');
+      if (providerType === 'FORGEJO')
+        await expect(dialog).toContainText(locale === 'en' ? 'provider connection' : 'Provider-Verbindung');
+      for (const width of [1073, 1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await expect(dialog).toBeVisible();
+        const bounds = (await dialog.boundingBox())!;
+        expect(bounds.x).toBeGreaterThanOrEqual(0);
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+        await page.screenshot({
+          path: resolve(process.cwd(), `test-results/captures/jobs-warning-${providerType}-${locale}-${width}.png`),
+          fullPage: true,
+        });
+      }
+      if (isAdmin) {
+        await adminLink.scrollIntoViewIfNeeded();
+        await expect(adminLink).toBeInViewport();
+      }
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await expect(trigger).toBeFocused();
+      expect(
+        await page.evaluate(
+          /** Checks that only the table, not the entire document, can overflow horizontally. */ () =>
+            document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
+    });
+  }
+}

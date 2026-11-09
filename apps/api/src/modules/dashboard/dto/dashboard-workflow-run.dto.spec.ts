@@ -55,6 +55,8 @@ describe('DashboardWorkflowRunDto', /** Groups scenarios for DashboardWorkflowRu
       status: 'FAILED',
       url: 'https://github.com/repovio/repovio/actions/runs/1',
       workflowName: 'Test',
+      workflowLifecycleState: 'UNKNOWN',
+      workflowLifecycleCheckedAt: null,
     });
     expect(dto).not.toHaveProperty('provider.encryptedAccessToken');
     expect(dto).not.toHaveProperty('repository.encryptedWebhookSecret');

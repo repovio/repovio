@@ -20,6 +20,7 @@ interface AuthenticatedRequest {
 }
 
 const workflowRunContextInclude = {
+  workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
   repository: {
     select: {
       name: true,

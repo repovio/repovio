@@ -33,10 +33,11 @@ describe('WorkflowRunsController', /** Groups scenarios for WorkflowRunsControll
       changeRequestNumber: null,
       workflowId: 'workflow-1',
       workflowName: 'Build',
+      workflow: { lifecycleState: 'REMOVED', lifecycleCheckedAt: new Date('2026-11-09T12:00:00Z') },
     } satisfies WorkflowRunResourceModel;
     const query = {
       fields:
-        'id,url,workflowName,displayTitle,status,durationMs,completedAt,repositoryName,repositoryOwner,providerType',
+        'id,url,workflowName,displayTitle,status,durationMs,completedAt,repositoryName,repositoryOwner,providerType,workflowLifecycleState,workflowLifecycleCheckedAt',
       page: 1,
       perPage: 25,
     } as WorkflowRunQueryDto;
@@ -58,6 +59,7 @@ describe('WorkflowRunsController', /** Groups scenarios for WorkflowRunsControll
     expect(workflowRuns.query).toHaveBeenCalledWith(
       expect.objectContaining({
         include: {
+          workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
           repository: {
             select: {
               name: true,
@@ -81,6 +83,8 @@ describe('WorkflowRunsController', /** Groups scenarios for WorkflowRunsControll
         status: 'SUCCESS',
         url: workflowRun.url,
         workflowName: 'Build',
+        workflowLifecycleState: 'REMOVED',
+        workflowLifecycleCheckedAt: '2026-11-09T12:00:00.000Z',
       },
     ]);
   });

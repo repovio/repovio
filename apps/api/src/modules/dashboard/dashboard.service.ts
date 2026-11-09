@@ -23,6 +23,7 @@ import type {
 } from './dto/workflow-run-trend.dto.js';
 
 const dashboardRunInclude = {
+  workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
   repository: {
     select: {
       id: true,

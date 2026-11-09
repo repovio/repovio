@@ -14,7 +14,8 @@ import type { NotificationPayload } from './notification-channel-adapter.js';
   delivered: boolean;
   error: string | null;
   recordAttempt: boolean;
-  subscriptionId: string;
+  subscriptionId: string | null;
+  targetId: string;
 }
 
 /** Manages current-user browser subscriptions and native Web Push delivery. */
@@ -47,6 +48,20 @@ export class BrowserPushService {
       publicKey: this.available ? ENV.WEB_PUSH_VAPID_PUBLIC_KEY : null,
       subscriptionCount: await this.prisma.browserPushSubscription.count({ where: { userId } }),
     };
+  }
+
+  /**
+   * Check whether a browser endpoint is enrolled under the authenticated User.
+   *
+   * @param userId Authenticated User whose enrollment may be inspected.
+   * @param endpoint Browser push endpoint hashed for an ownership-scoped lookup.
+   * @returns Enrollment state without revealing another User's identity or enrollment.
+   */
+  async enrolled(userId: string, endpoint: string): Promise<{ enrolled: boolean }> {
+    const count = await this.prisma.browserPushSubscription.count({
+      where: { endpointHash: this.hashEndpoint(endpoint), userId },
+    });
+    return { enrolled: count > 0 };
   }
 
   /**
@@ -110,18 +125,28 @@ export class BrowserPushService {
    * @param userId - Local user identifier targeted by the operation.
    * @param payload - Notification content shared across delivery transports.
    * @param deliveredSubscriptionIds - Device subscriptions already delivered successfully and excluded from retries.
+   * @param recipientPreviouslyAccepted Whether trusted persisted attempts already prove this recipient had an accepted device.
    * @returns Delivery outcomes for the remaining registered browser subscriptions.
    * @throws ServiceUnavailableException - No browser push subscriptions are registered.
    */
-  async sendToUser(userId: string, payload: NotificationPayload, deliveredSubscriptionIds: Set<string>) {
+  async sendToUser(
+    userId: string,
+    payload: NotificationPayload,
+    deliveredSubscriptionIds: Set<string>,
+    recipientPreviouslyAccepted = false,
+  ): Promise<BrowserPushDeliveryResult[]> {
     this.assertAvailable();
-    const subscriptions = await this.prisma.browserPushSubscription.findMany({
-      where: { userId, id: { notIn: [...deliveredSubscriptionIds] } },
-    });
-    if (subscriptions.length === 0 && deliveredSubscriptionIds.size === 0)
+    const subscriptions = await this.prisma.browserPushSubscription.findMany({ where: { userId } });
+    if (subscriptions.length === 0) {
+      if (recipientPreviouslyAccepted) return [];
       throw new ServiceUnavailableException('No browser push subscriptions are registered.');
+    }
+    const pending = subscriptions.filter(
+      /** Exclude successes only after restricting subscriptions to the recipient. */ (subscription) =>
+        !deliveredSubscriptionIds.has(subscription.id),
+    );
     return Promise.all(
-      subscriptions.map(
+      pending.map(
         /** Projects each entry using `this.send(subscription, payload)`. */ (subscription) =>
           this.send(subscription, payload),
       ),
@@ -162,17 +187,30 @@ export class BrowserPushService {
           },
         },
       );
-      return { delivered: true, error: null, recordAttempt: true, subscriptionId: subscription.id };
+      return {
+        delivered: true,
+        error: null,
+        recordAttempt: true,
+        subscriptionId: subscription.id,
+        targetId: subscription.id,
+      };
     } catch (error) {
       if (error instanceof webPush.WebPushError && [404, 410].includes(error.statusCode)) {
-        await this.prisma.browserPushSubscription.delete({ where: { id: subscription.id } });
-        return { delivered: true, error: null, recordAttempt: false, subscriptionId: subscription.id };
+        await this.prisma.browserPushSubscription.deleteMany({ where: { id: subscription.id } });
+        return {
+          delivered: false,
+          error: 'Browser push subscription expired.',
+          recordAttempt: true,
+          subscriptionId: null,
+          targetId: subscription.id,
+        };
       }
       return {
         delivered: false,
         error: 'Browser push delivery failed.',
         recordAttempt: true,
         subscriptionId: subscription.id,
+        targetId: subscription.id,
       };
     }
   }

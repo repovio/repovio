@@ -34,6 +34,8 @@ export {
   ApiMcpAccessTokenSchema,
 } from './api/mcp.js';
 export {
+  ApiBrowserPushEnrollmentSchema,
+  ApiBrowserPushLookupSchema,
   ApiBrowserPushStatusSchema,
   ApiCreateNotificationChannelSchema,
   ApiNotificationChannelQuerySchema,
@@ -46,6 +48,8 @@ export {
   ApiNotificationRulePreviewMatchSchema,
   ApiNotificationRulePreviewSchema,
   ApiNotificationSearchQuerySchema,
+  ApiRecentNotificationSchema,
+  ApiRecentNotificationsSchema,
   ApiRegisterBrowserPushSubscriptionSchema,
   ApiRemoveBrowserPushSubscriptionSchema,
   ApiUpdateNotificationChannelSchema,

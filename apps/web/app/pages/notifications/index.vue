@@ -1,51 +1,14 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col">
-    <div class="border-b border-default p-4 sm:px-6">
-      <UAlert
-        v-if="push.error.value"
-        class="mb-4"
-        color="error"
-        icon="i-lucide-circle-alert"
-        variant="subtle"
-        :title="$t('notifications.push.error')"
-      />
-      <UCard :ui="{ body: 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between' }">
-        <div class="flex min-w-0 items-start gap-3">
-          <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-monitor-smartphone" />
-          <div>
-            <p class="font-semibold">
-              {{ $t('notifications.push.title') }}
-            </p>
-            <p class="text-sm text-muted">
-              {{
-                $t('notifications.push.description', {
-                  count: push.subscriptionCount.value,
-                })
-              }}
-            </p>
-          </div>
-        </div>
-        <UButton
-          color="neutral"
-          :disabled="!push.supported.value || !push.available.value"
-          :icon="push.currentDeviceEnabled.value ? 'i-lucide-bell-off' : 'i-lucide-bell-ring'"
-          :label="
-            !push.available.value
-              ? $t('notifications.push.unavailable')
-              : push.currentDeviceEnabled.value
-                ? $t('notifications.push.disable')
-                : $t('notifications.push.enable')
-          "
-          :loading="push.loading.value"
-          @click="push.currentDeviceEnabled.value ? disablePush() : push.enable()"
-        />
-      </UCard>
-    </div>
-
-    <div
-      class="flex min-w-0 flex-wrap items-center gap-2 border-b border-default p-3 sm:justify-end sm:px-4"
-      data-table-toolbar
-    >
+  <LayoutPage
+    full-width
+    :breadcrumbs="[
+      { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
+      { icon: 'i-lucide-bell', label: $t('layout.notifications') },
+    ]"
+    :padded="false"
+    :title="$t('notifications.title')"
+  >
+    <template #actions>
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -73,7 +36,15 @@
         :label="$t('notifications.channels.add')"
         @click="openCreate"
       />
-    </div>
+      <UButton
+        v-if="auth.user?.role === 'SYSTEM_ADMIN'"
+        color="neutral"
+        icon="i-lucide-history"
+        to="/notifications/history"
+        variant="soft"
+        :label="$t('notifications.tabs.history')"
+      />
+    </template>
 
     <UAlert
       v-if="tableError"
@@ -189,7 +160,7 @@
       :users="users"
       @saved="handleSaved"
     />
-  </div>
+  </LayoutPage>
 </template>
 
 <script setup lang="ts">
@@ -318,17 +289,6 @@ function openEdit(channel: NotificationChannel): void {
 /** Handles saved. */
 async function handleSaved(): Promise<void> {
   await channelTable.refresh();
-}
-
-/** Confirm removal of this browser's push subscription. */
-async function disablePush(): Promise<void> {
-  await confirmDestructiveAction(
-    t('notifications.push.disable'),
-    /** Unsubscribe this device and surface errors inside the confirmation. */ async () => {
-      await push.disable();
-      if (push.error.value) throw new Error('Push subscription removal failed.');
-    },
-  );
 }
 
 /** Toggles index. */

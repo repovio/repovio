@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Le notifiche push richiedono HTTPS e un browser compatibile.",
+        "permission": "Consenti le notifiche nelle impostazioni del browser, poi riprova.",
+        "worker": "Impossibile attivare il servizio di notifiche. Ricarica e riprova.",
+        "enrollment": "Registrazione del dispositivo non riuscita. Riprova per ripristinarla.",
+        "availability": "Impossibile verificare la disponibilità delle notifiche."
+      },
+      "cleanupTitle": "Rimozione del dispositivo non riuscita",
+      "cleanupDescription": "Riprova a rimuovere la registrazione del browser oppure continua la disconnessione.",
+      "continueSignOut": "Continua la disconnessione"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Cronologia delle consegne",
       "rules": "Regole"
     },
-    "title": "Notifiche"
+    "title": "Notifiche",
+    "wizard": {
+      "steps": "Passaggi di configurazione",
+      "identity": "Nome e tipo",
+      "destination": "Destinazione",
+      "events": "Eventi",
+      "review": "Anteprima e verifica",
+      "back": "Indietro",
+      "next": "Avanti",
+      "credentialsHidden": "Le credenziali sono nascoste e conservate salvo sostituzione esplicita.",
+      "previewHint": "L’anteprima verifica le esecuzioni storiche. Gli altri eventi non vengono simulati. Non viene inviata alcuna notifica.",
+      "recipientCount": "{count} destinatari",
+      "repositoryCount": "{count} repository"
+    },
+    "navbar": {
+      "title": "Notifiche",
+      "retry": "Riprova",
+      "loading": "Caricamento delle notifiche recenti…",
+      "empty": "Nessuna notifica recente.",
+      "acceptanceHint": "Inviato significa accettato dal servizio push, non letto o visualizzato.",
+      "status": {
+        "PENDING": "In attesa",
+        "DELIVERED": "Inviato",
+        "FAILED": "Non riuscito"
+      },
+      "open": "Apri pannello delle notifiche"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Consegnata",

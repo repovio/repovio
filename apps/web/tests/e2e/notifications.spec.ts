@@ -4,7 +4,7 @@ import { expectTableHover } from './fixtures/table-hover';
 const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 };
 
 /** Mocks shell. */
-async function mockShell(page: Page): Promise<void> {
+async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'SYSTEM_ADMIN'): Promise<void> {
   await page.addInitScript(
     /** Initializes browser-side authentication and preferences before page scripts run. */ () =>
       window.localStorage.setItem('repovio.access-token', 'playwright-access-token'),
@@ -18,7 +18,7 @@ async function mockShell(page: Page): Promise<void> {
           firstName: null,
           id: 'user-1',
           lastName: null,
-          role: 'SYSTEM_ADMIN',
+          role,
           username: 'admin',
         },
       }),
@@ -43,6 +43,11 @@ async function mockShell(page: Page): Promise<void> {
     /** Supplies the mocked response for `/api/v1/dashboard/**`. */ (route) => route.fulfill({ json: [] }),
   );
   await page.route(
+    '**/api/v1/notifications/recent',
+    /** Supplies bounded personal history independently of push capability. */ (route) =>
+      route.fulfill({ json: { items: [] } }),
+  );
+  await page.route(
     '**/api/v1/browser-push',
     /** Supplies the mocked response for `/api/v1/browser-push`. */ (route) =>
       route.fulfill({ json: { available: false, publicKey: null, subscriptionCount: 0 } }),
@@ -57,7 +62,7 @@ async function mockShell(page: Page): Promise<void> {
     /** Supplies the mocked response for `/api/v1/users**`. */ (route) =>
       route.fulfill({
         json: {
-          items: [{ id: 'user-1', username: 'admin' }],
+          items: [{ id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'admin' }],
           meta: pageMeta,
         },
       }),
@@ -178,6 +183,11 @@ test('shows global channel events and system-wide delivery history', /** Verifie
     'page',
   );
   await expect(page.locator('[data-page-navigation]')).toHaveCount(0);
+  await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
+  await expect(
+    page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Rules', exact: true })).toHaveCount(0);
   await expect(page.getByRole('cell', { name: 'Operations' })).toBeVisible();
   await expectTableHover(page, page.getByRole('table'));
@@ -190,18 +200,22 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   const addChannel = page.getByRole('button', { name: 'Add channel' });
   await addChannel.click();
   const dialog = page.getByRole('dialog', { name: 'Add notification channel' });
-  await expect(dialog.getByText('Events', { exact: true })).toBeVisible();
-  await expect(dialog.getByRole('checkbox', { name: 'Dependency alert opened' })).toBeVisible();
-  await expect(dialog.getByRole('checkbox', { name: 'Secret scanning alert resolved' })).toBeVisible();
   await expect(dialog.locator(':focus')).toHaveCount(1);
   await dialog.getByRole('textbox', { name: /^Name\*?$/ }).fill('Operations');
+  await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
   await dialog.getByRole('textbox', { name: 'SMTP server' }).fill('smtp.example.com');
   await dialog.getByRole('textbox', { name: 'From address' }).fill('repovio@example.com');
   await dialog.getByRole('textbox', { name: 'Recipients' }).fill('operations@example.com');
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(dialog.getByText('Events', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('checkbox', { name: 'Dependency alert opened' })).toBeVisible();
+  await expect(dialog.getByRole('checkbox', { name: 'Secret scanning alert resolved' })).toBeVisible();
   await dialog.getByRole('checkbox', { name: 'Workflow failed' }).check();
   await expect(dialog.getByText('Repository filters')).toBeVisible();
   await expect(dialog.getByText('Workflow patterns')).toBeVisible();
   await dialog.getByRole('textbox', { name: 'Workflow patterns' }).fill('deploy-*');
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
   await dialog.getByRole('button', { name: 'Preview matching runs' }).click();
   await expect(dialog.getByText('1 recent workflow runs match this rule.')).toBeVisible();
   await expect(dialog.getByRole('link', { name: /tobiaswaelde\/repovio · deploy-production/ })).toHaveAttribute(
@@ -212,6 +226,8 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await expect(addChannel).toBeFocused();
 
   await notificationNavigation.getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
   await expect(page.getByText('deploy-production')).toBeVisible();
   await expectTableHover(page, page.getByRole('table'));
   await page.getByRole('button', { name: 'View delivery details' }).click();
@@ -249,6 +265,7 @@ for (const locale of ['en', 'de'] as const) {
       locale === 'de'
         ? {
             add: 'Kanal hinzufügen',
+            next: 'Weiter',
             error: 'Gib einen gültigen Wert ein.',
             from: 'Absenderadresse',
             preview: 'Passende Läufe anzeigen',
@@ -259,6 +276,7 @@ for (const locale of ['en', 'de'] as const) {
           }
         : {
             add: 'Add channel',
+            next: 'Next',
             error: 'Enter a valid value.',
             from: 'From address',
             preview: 'Preview matching runs',
@@ -335,27 +353,43 @@ for (const locale of ['en', 'de'] as const) {
     await page.getByRole('button', { name: labels.add, exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: /^Name\*?$/ }).fill('  Operations  ');
+    const next = dialog.getByRole('button', { name: labels.next, exact: true });
+    await next.click();
     await dialog.getByRole('textbox', { name: labels.smtp }).fill('smtp.example.com');
     await dialog.getByRole('textbox', { name: labels.from }).fill('repovio@example.com');
     const recipients = dialog.getByRole('textbox', { name: labels.recipients });
     await recipients.fill('invalid-address');
     await recipients.press('Tab');
     await expect(recipients).toHaveAttribute('aria-invalid', 'true');
+    await next.click();
+    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: labels.save, exact: true })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: labels.preview, exact: true })).toHaveCount(0);
+    expect(createRequests).toBe(0);
+    expect(previewRequests).toBe(0);
+    await recipients.scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-validation-${locale}.png`),
+      fullPage: true,
+      animations: 'disabled',
+    });
+
+    await recipients.fill('operations@example.com');
+    await next.click();
     const workflow = dialog.getByRole('checkbox', { name: labels.workflow, exact: true });
     await workflow.click();
     await expect(workflow).toBeChecked();
-    const save = dialog.getByRole('button', { name: labels.save, exact: true });
-    await save.click();
-    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
-    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
-    expect(createRequests).toBe(0);
+    await next.click();
     await dialog.getByRole('button', { name: labels.preview, exact: true }).click();
-    await expect(recipients).toHaveAttribute('aria-invalid', 'true');
-    expect(previewRequests).toBe(0);
-    await recipients.scrollIntoViewIfNeeded();
-    await page.screenshot({ path: testInfo.outputPath(`notification-validation-${locale}.png`), fullPage: true });
-
-    await recipients.fill('operations@example.com');
+    await expect.poll(/** Reads completed preview requests. */ () => previewRequests).toBe(1);
+    const save = dialog.getByRole('button', { name: labels.save, exact: true });
+    await expect(save).toBeEnabled();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-review-${locale}.png`),
+      fullPage: true,
+      animations: 'disabled',
+    });
     await save.click();
     await expect
       .poll(/** Evaluates `createRequests` when expect.poll invokes this callback. */ () => createRequests)
@@ -364,5 +398,189 @@ for (const locale of ['en', 'de'] as const) {
     await expect(dialog).toBeVisible();
     releaseCreation?.();
     await expect(dialog).not.toBeVisible();
+  });
+}
+
+test('shows private navbar history with independent error, retry, empty and safe-link states', /** Exercises global notifications without browser-push availability. */ async ({
+  page,
+}, testInfo) => {
+  await mockShell(page);
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies an empty administrative table. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } }),
+  );
+  let historyCalls = 0;
+  await page.route(
+    '**/api/v1/notifications/recent',
+    /** Simulates a recoverable history failure followed by empty and successful responses. */ (route) => {
+      historyCalls++;
+      if (historyCalls === 1) return route.fulfill({ status: 503, json: { message: 'Temporarily unavailable' } });
+      return route.fulfill({
+        json: {
+          items:
+            historyCalls === 2
+              ? []
+              : [
+                  {
+                    id: 'personal-delivery',
+                    createdAt: '2026-11-09T10:00:00.000Z',
+                    kind: 'TEST',
+                    eventType: null,
+                    repository: null,
+                    subjectTitle: 'Personal test notification',
+                    subjectUrl: 'https://example.com/personal',
+                    status: 'DELIVERED',
+                  },
+                ],
+        },
+      });
+    },
+  );
+  await page.goto('/notifications');
+  const trigger = page.locator('[data-navbar-notifications]');
+  await expect(trigger).toBeVisible();
+  await expect
+    .poll(
+      /** Checks DOM placement immediately before the current user's dropdown trigger. */ () =>
+        trigger.evaluate(
+          /** Inspects adjacent navbar controls without changing their state. */ (element) =>
+            element.nextElementSibling?.getAttribute('aria-label'),
+        ),
+    )
+    .toBe('admin');
+  expect(historyCalls).toBe(0);
+  await trigger.click();
+  const popover = page.locator('section[aria-label="Notifications"]');
+  await expect(popover.getByRole('alert')).toContainText('Notification data could not be loaded.');
+  await expect(page.locator('[data-page-content]').getByText('Browser notifications', { exact: true })).toHaveCount(0);
+  await popover.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(popover.getByText('No recent notifications.', { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await expect(popover.getByRole('link', { name: 'Personal test notification', exact: true })).toHaveAttribute(
+    'href',
+    'https://example.com/personal',
+  );
+  await expect(popover.getByText(/Sent means accepted by a push service/)).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath('notification-navbar-desktop.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+});
+
+test('keeps administrative history inaccessible to a viewer', /** Verifies toolbar and navbar visibility agree with the route guard. */ async ({
+  page,
+}) => {
+  await mockShell(page, 'VIEWER');
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies a viewer-visible empty channel table. */ (route) =>
+      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } }),
+  );
+  await page.goto('/notifications');
+  await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+  await expect(
+    page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Add channel', exact: true })).toHaveCount(0);
+  await page.locator('[data-navbar-notifications]').click();
+  await expect(
+    page.locator('section[aria-label="Notifications"]').getByRole('link', { name: 'Delivery history', exact: true }),
+  ).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.goto('/notifications/history');
+  await expect(page).toHaveURL(/\/$/);
+});
+
+for (const transport of [
+  { type: 'EMAIL', label: 'Email' },
+  { type: 'GOTIFY', label: 'Gotify' },
+  { type: 'NTFY', label: 'ntfy' },
+  { type: 'DISCORD', label: 'Discord' },
+  { type: 'CUSTOM_APPRISE', label: 'Custom Apprise URL' },
+  { type: 'BROWSER_PUSH', label: 'Browser push' },
+]) {
+  test(`creates ${transport.type} through all four channel steps`, /** Exercises transport-specific fields and one final save without a workflow preview. */ async ({
+    page,
+  }) => {
+    await mockShell(page);
+    await page.route(
+      '**/api/v1/browser-push',
+      /** Enables channel-type selection without requesting browser permission. */ (route) =>
+        route.fulfill({ json: { available: true, publicKey: 'synthetic-public-key', subscriptionCount: 0 } }),
+    );
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Supplies a refreshable empty channel table. */ (route) =>
+        route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } }),
+    );
+    let saves = 0;
+    await page.route(
+      '**/api/v1/notification-channels',
+      /** Checks the transport payload and completes the one requested save. */ async (route) => {
+        if (route.request().method() !== 'POST') return route.fulfill({ json: [] });
+        saves++;
+        const body = route.request().postDataJSON();
+        expect(body.type).toBe(transport.type);
+        expect(body.eventSubscriptions).toEqual([
+          { eventType: 'ISSUE_OPENED', repositoryIds: [], workflowPatterns: [] },
+        ]);
+        if (transport.type === 'BROWSER_PUSH')
+          expect(body.browserRecipientUserIds).toEqual(['30b7b20a-159a-42c7-a283-0246848d5ab4']);
+        await route.fulfill({
+          json: {
+            ...body,
+            id: 'created-channel',
+            createdAt: '2026-11-09T10:00:00.000Z',
+            updatedAt: '2026-11-09T10:00:00.000Z',
+            browserRecipients: [],
+            canManage: true,
+            requiresReconfiguration: false,
+            urlScheme: transport.type,
+          },
+        });
+      },
+    );
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: 'Add channel', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add notification channel', exact: true });
+    await dialog.getByRole('textbox', { name: /^Name\*?$/ }).fill(`Synthetic ${transport.type}`);
+    if (transport.type !== 'EMAIL') {
+      await dialog.getByRole('combobox', { name: /^Type/ }).click();
+      await page.getByRole('option', { name: transport.label, exact: true }).click();
+    }
+    await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+    if (transport.type === 'EMAIL') {
+      await dialog.getByRole('textbox', { name: 'SMTP server' }).fill('smtp.example.com');
+      await dialog.getByRole('textbox', { name: 'From address' }).fill('repovio@example.com');
+      await dialog.getByRole('textbox', { name: 'Recipients' }).fill('operations@example.com');
+    } else if (transport.type === 'GOTIFY') {
+      await dialog.getByRole('textbox', { name: 'Server URL' }).fill('https://gotify.example.com');
+      await dialog.getByLabel('Application token', { exact: false }).fill('synthetic-secret-token');
+    } else if (transport.type === 'NTFY') {
+      await dialog.getByRole('textbox', { name: 'Topic' }).fill('synthetic-topic');
+    } else if (transport.type === 'DISCORD') {
+      await dialog
+        .getByRole('textbox', { name: 'Webhook URL' })
+        .fill('https://discord.com/api/webhooks/synthetic-id/synthetic-secret-token');
+    } else if (transport.type === 'CUSTOM_APPRISE') {
+      await dialog.getByLabel('Apprise URL', { exact: false }).fill('jsons://synthetic-secret-token@example.com/topic');
+    } else {
+      await dialog.getByRole('button', { name: 'Browser recipients', exact: false }).click();
+      await page.getByRole('option', { name: '@admin', exact: true }).click();
+      await page.keyboard.press('Escape');
+    }
+    await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+    await dialog.getByRole('checkbox', { name: 'New issue', exact: true }).check();
+    await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(dialog.getByRole('paragraph').filter({ hasText: /Credentials are hidden/ })).toBeVisible();
+    await expect(dialog).not.toContainText('synthetic-secret-token');
+    await expect(dialog.getByRole('button', { name: 'Preview matching runs', exact: true })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(saves).toBe(1);
   });
 }

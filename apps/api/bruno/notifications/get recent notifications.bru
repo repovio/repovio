@@ -1,0 +1,15 @@
+meta {
+  name: get recent notifications
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/notifications/recent
+  body: none
+  auth: inherit
+}
+
+docs {
+  Returns at most five deliveries attributed to the authenticated recipient under current Repository permissions.
+}

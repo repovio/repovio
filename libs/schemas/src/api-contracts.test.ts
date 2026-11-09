@@ -209,3 +209,37 @@ describe('local account and access group boundaries', /** Covers new administrat
       assert.equal(ApiSaveUserGroupSchema.safeParse({ name }).success, false);
   });
 });
+
+import {
+  ApiBrowserPushEnrollmentSchema,
+  ApiBrowserPushLookupSchema,
+  ApiRecentNotificationsSchema,
+} from './api-contracts.js';
+
+describe('notification personal boundaries', /** Groups private notification contract cases. */ () => {
+  it('bounds lookup endpoints and hides all ownership details', /** Checks strict enrollment contracts. */ () => {
+    assert.equal(ApiBrowserPushLookupSchema.safeParse({ endpoint: 'http://push.example.test' }).success, false);
+    assert.equal(
+      ApiBrowserPushLookupSchema.safeParse({ endpoint: 'https://push.example.test/' + 'a'.repeat(4096) }).success,
+      false,
+    );
+    assert.deepEqual(ApiBrowserPushEnrollmentSchema.parse({ enrolled: false }), { enrolled: false });
+    assert.equal(ApiBrowserPushEnrollmentSchema.safeParse({ enrolled: true, userId: 'secret' }).success, false);
+  });
+  it('accepts private test history but rejects excess entries and secret fields', /** Checks history nullability and limits. */ () => {
+    const item = {
+      id: repositoryId,
+      createdAt: '2026-11-09T12:00:00.000Z',
+      kind: 'TEST',
+      eventType: null,
+      repository: null,
+      subjectTitle: 'Test',
+      subjectUrl: null,
+      status: 'FAILED',
+    };
+    assert.equal(ApiRecentNotificationsSchema.safeParse({ items: [item] }).success, true);
+    assert.equal(ApiRecentNotificationsSchema.safeParse({ items: Array(6).fill(item) }).success, false);
+    assert.equal(ApiRecentNotificationsSchema.safeParse({ items: [{ ...item, endpoint: 'secret' }] }).success, false);
+    assert.equal(ApiRecentNotificationsSchema.safeParse({ items: [{ ...item, status: 'READ' }] }).success, false);
+  });
+});

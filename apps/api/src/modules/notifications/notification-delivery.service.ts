@@ -202,11 +202,21 @@ export class NotificationDeliveryService {
       return false;
     }
     let delivered = true;
-    let recipientFailure = false;
     for (const { user } of channel.recipients) {
       try {
-        const results = await this.browserPush.sendToUser(user.id, payload, deliveredSubscriptionIds);
+        const recipientPreviouslyAccepted = delivery.attempts.some(
+          /** Use immutable recipient attribution, never a different User's or legacy device success. */ (
+            priorAttempt,
+          ) => priorAttempt.recipientUserId === user.id && Boolean(priorAttempt.deliveredAt),
+        );
+        const results = await this.browserPush.sendToUser(
+          user.id,
+          payload,
+          deliveredSubscriptionIds,
+          recipientPreviouslyAccepted,
+        );
         for (const result of results) {
+          if (!result.delivered) delivered = false;
           if (!result.recordAttempt) continue;
           await this.createAttempt(
             delivery.id,
@@ -214,17 +224,27 @@ export class NotificationDeliveryService {
             attempt,
             result.delivered,
             result.error,
-            result.subscriptionId,
+            result.subscriptionId ?? undefined,
+            user.id,
+            (result.targetId ?? result.subscriptionId)
+              ? `device:${result.targetId ?? result.subscriptionId}`
+              : `user:${user.id}`,
           );
-          if (!result.delivered) delivered = false;
         }
       } catch {
-        recipientFailure = true;
         delivered = false;
+        await this.createAttempt(
+          delivery.id,
+          channel.id,
+          attempt,
+          false,
+          'Browser push delivery failed.',
+          undefined,
+          user.id,
+          `user:${user.id}`,
+        );
       }
     }
-    if (recipientFailure)
-      await this.createAttempt(delivery.id, channel.id, attempt, false, 'Browser push delivery failed.');
     return delivered;
   }
 
@@ -237,6 +257,8 @@ export class NotificationDeliveryService {
    * @param delivered - Whether the notification reached all required targets.
    * @param error - Failure to classify or sanitized message to persist.
    * @param subscriptionId - Optional browser subscription associated with this attempt.
+   * @param recipientUserId User targeted by this browser attempt, retained independently of device retirement.
+   * @param targetKey Immutable browser device or no-device recipient identity, independent of nullable foreign keys.
    * @returns A promise that resolves when the operation completes.
    */
   private async createAttempt(
@@ -246,6 +268,8 @@ export class NotificationDeliveryService {
     delivered: boolean,
     error: string | null = null,
     subscriptionId?: string,
+    recipientUserId?: string,
+    targetKey?: string,
   ): Promise<void> {
     await this.prisma.notificationDeliveryAttempt.create({
       data: {
@@ -255,6 +279,8 @@ export class NotificationDeliveryService {
         notificationChannelId: channelId,
         notificationDeliveryId: deliveryId,
         ...(subscriptionId ? { browserPushSubscriptionId: subscriptionId } : {}),
+        ...(recipientUserId ? { recipientUserId } : {}),
+        ...(targetKey ? { targetKey } : {}),
       },
     });
   }

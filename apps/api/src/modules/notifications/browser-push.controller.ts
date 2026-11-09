@@ -1,11 +1,20 @@
 import { Body, Controller, Delete, Get, HttpCode, Post, Req } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import { Authenticated } from '../auth/authenticated.decorator.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import { BrowserPushService } from './browser-push.service.js';
 import {
+  BrowserPushEnrollmentDto,
+  BrowserPushLookupDto,
   BrowserPushStatusDto,
   RegisterBrowserPushSubscriptionDto,
   RemoveBrowserPushSubscriptionDto,
@@ -39,6 +48,25 @@ export class BrowserPushController {
   @ApiOkResponse({ type: BrowserPushStatusDto })
   async status(@Req() request: AuthenticatedRequest): Promise<BrowserPushStatusDto> {
     return this.browserPush.status(request.user.id);
+  }
+
+  /**
+   * Inspect enrollment for the current account without revealing foreign owners.
+   * @param request Authenticated caller whose enrollment is inspected.
+   * @param input Browser endpoint to match by encrypted hash and user identity.
+   * @returns Safe ownership confirmation.
+   */
+  @ApiUnauthorizedResponse({ description: 'An authenticated session is required.' })
+  @ApiBadRequestResponse({ description: 'The endpoint lookup input is invalid.' })
+  @Post('subscriptions/status')
+  @HttpCode(200)
+  @ZodSerializerDto(BrowserPushEnrollmentDto)
+  @ApiOkResponse({ type: BrowserPushEnrollmentDto })
+  async enrolled(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: BrowserPushLookupDto,
+  ): Promise<BrowserPushEnrollmentDto> {
+    return this.browserPush.enrolled(request.user.id, input.endpoint);
   }
 
   /**

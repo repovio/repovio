@@ -1,3 +1,4 @@
 <template>
+  <ModulesNotificationsNavbarPopover />
   <LayoutUserMenu />
 </template>

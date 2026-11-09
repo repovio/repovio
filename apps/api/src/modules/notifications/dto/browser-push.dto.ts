@@ -1,4 +1,6 @@
 import {
+  ApiBrowserPushEnrollmentSchema,
+  ApiBrowserPushLookupSchema,
   ApiBrowserPushStatusSchema,
   ApiRegisterBrowserPushSubscriptionSchema,
   ApiRemoveBrowserPushSubscriptionSchema,
@@ -13,3 +15,8 @@ export class RegisterBrowserPushSubscriptionDto extends createZodDto(ApiRegister
 
 /** Identifies one current-user browser subscription for removal. */
 export class RemoveBrowserPushSubscriptionDto extends createZodDto(ApiRemoveBrowserPushSubscriptionSchema) {}
+
+/** Safe authenticated lookup input. */
+export class BrowserPushLookupDto extends createZodDto(ApiBrowserPushLookupSchema) {}
+/** Current-user ownership result without foreign enrollment metadata. */
+export class BrowserPushEnrollmentDto extends createZodDto(ApiBrowserPushEnrollmentSchema) {}

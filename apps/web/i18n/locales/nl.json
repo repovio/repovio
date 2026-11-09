@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Pushmeldingen vereisen HTTPS en een ondersteunde browser.",
+        "permission": "Sta meldingen toe in de browserinstellingen en probeer opnieuw.",
+        "worker": "De meldingsservice kon niet starten. Herlaad en probeer opnieuw.",
+        "enrollment": "Apparaatregistratie mislukt. Probeer opnieuw om dit te herstellen.",
+        "availability": "Beschikbaarheid van meldingen kon niet worden geladen."
+      },
+      "cleanupTitle": "Apparaat verwijderen mislukt",
+      "cleanupDescription": "Probeer deze browserregistratie opnieuw te verwijderen of ga door met afmelden.",
+      "continueSignOut": "Doorgaan met afmelden"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Bezorggeschiedenis",
       "rules": "Regels"
     },
-    "title": "Meldingen"
+    "title": "Meldingen",
+    "wizard": {
+      "steps": "Configuratiestappen",
+      "identity": "Naam en type",
+      "destination": "Bestemming",
+      "events": "Gebeurtenissen",
+      "review": "Voorbeeld en controle",
+      "back": "Terug",
+      "next": "Volgende",
+      "credentialsHidden": "Inloggegevens zijn verborgen en blijven behouden tenzij expliciet vervangen.",
+      "previewHint": "Het voorbeeld controleert eerdere workflowuitvoeringen. Andere gebeurtenissen worden niet gesimuleerd. Er wordt geen melding verzonden.",
+      "recipientCount": "{count} ontvangers",
+      "repositoryCount": "{count} repository’s"
+    },
+    "navbar": {
+      "title": "Meldingen",
+      "retry": "Opnieuw proberen",
+      "loading": "Recente meldingen laden…",
+      "empty": "Geen recente meldingen.",
+      "acceptanceHint": "Verzonden betekent geaccepteerd door de pushdienst, niet gelezen of weergegeven.",
+      "status": {
+        "PENDING": "In behandeling",
+        "DELIVERED": "Verzonden",
+        "FAILED": "Mislukt"
+      },
+      "open": "Meldingenpaneel openen"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Bezorgd",

@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { RecentNotificationsController } from './recent-notifications.controller.js';
+import { RecentNotificationsService } from './recent-notifications.service.js';
 
 import { CaslModule } from '../../casl/casl.module.js';
 import { JobsModule } from '../../jobs/jobs.module.js';
@@ -17,8 +19,14 @@ import { NotificationsService } from './notifications.service.js';
 /** Registers global notification configuration and delivery. */
 @Module({
   imports: [CaslModule, JobsModule, RepositoriesModule, SecurityModule],
-  controllers: [NotificationsController, NotificationDeliveriesController, BrowserPushController],
+  controllers: [
+    RecentNotificationsController,
+    NotificationsController,
+    NotificationDeliveriesController,
+    BrowserPushController,
+  ],
   providers: [
+    RecentNotificationsService,
     NotificationsService,
     NotificationDeliveryService,
     NotificationChannelUrlService,

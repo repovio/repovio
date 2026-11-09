@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "As notificações push exigem HTTPS e um navegador compatível.",
+        "permission": "Permita notificações nas configurações do navegador e tente novamente.",
+        "worker": "Não foi possível ativar o serviço de notificações. Recarregue e tente novamente.",
+        "enrollment": "Falha ao registrar o dispositivo. Tente novamente para reparar.",
+        "availability": "Não foi possível consultar a disponibilidade de notificações."
+      },
+      "cleanupTitle": "Falha ao remover dispositivo",
+      "cleanupDescription": "Tente remover o registro deste navegador novamente ou continue saindo.",
+      "continueSignOut": "Continuar saindo"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Histórico de entrega",
       "rules": "Regras"
     },
-    "title": "Notificações"
+    "title": "Notificações",
+    "wizard": {
+      "steps": "Etapas de configuração",
+      "identity": "Nome e tipo",
+      "destination": "Destino",
+      "events": "Eventos",
+      "review": "Prévia e revisão",
+      "back": "Voltar",
+      "next": "Avançar",
+      "credentialsHidden": "As credenciais estão ocultas e são preservadas, a menos que sejam substituídas explicitamente.",
+      "previewHint": "A prévia verifica execuções históricas. Outros eventos não são simulados. Nenhuma notificação é enviada.",
+      "recipientCount": "{count} destinatários",
+      "repositoryCount": "{count} repositórios"
+    },
+    "navbar": {
+      "title": "Notificações",
+      "retry": "Tentar novamente",
+      "loading": "Carregando notificações recentes…",
+      "empty": "Nenhuma notificação recente.",
+      "acceptanceHint": "Enviado significa aceito pelo serviço push, não lido nem exibido.",
+      "status": {
+        "PENDING": "Pendente",
+        "DELIVERED": "Enviado",
+        "FAILED": "Falhou"
+      },
+      "open": "Abrir painel de notificações"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Entregue",

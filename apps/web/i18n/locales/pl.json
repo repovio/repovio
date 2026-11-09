@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Powiadomienia push wymagają HTTPS i obsługiwanej przeglądarki.",
+        "permission": "Zezwól na powiadomienia w ustawieniach przeglądarki i spróbuj ponownie.",
+        "worker": "Nie można uruchomić usługi powiadomień. Odśwież i spróbuj ponownie.",
+        "enrollment": "Rejestracja urządzenia nie powiodła się. Spróbuj ponownie.",
+        "availability": "Nie można sprawdzić dostępności powiadomień."
+      },
+      "cleanupTitle": "Nie udało się usunąć urządzenia",
+      "cleanupDescription": "Spróbuj ponownie usunąć rejestrację przeglądarki lub kontynuuj wylogowanie.",
+      "continueSignOut": "Kontynuuj wylogowanie"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Historia dostarczania",
       "rules": "Reguły"
     },
-    "title": "Powiadomienia"
+    "title": "Powiadomienia",
+    "wizard": {
+      "steps": "Kroki konfiguracji",
+      "identity": "Nazwa i typ",
+      "destination": "Cel",
+      "events": "Zdarzenia",
+      "review": "Podgląd i sprawdzenie",
+      "back": "Wstecz",
+      "next": "Dalej",
+      "credentialsHidden": "Dane uwierzytelniające są ukryte i zachowywane, chyba że zostaną jawnie zastąpione.",
+      "previewHint": "Podgląd sprawdza historyczne uruchomienia. Inne zdarzenia nie są symulowane. Powiadomienie nie jest wysyłane.",
+      "recipientCount": "{count} odbiorców",
+      "repositoryCount": "{count} repozytoriów"
+    },
+    "navbar": {
+      "title": "Powiadomienia",
+      "retry": "Spróbuj ponownie",
+      "loading": "Ładowanie ostatnich powiadomień…",
+      "empty": "Brak ostatnich powiadomień.",
+      "acceptanceHint": "Wysłano oznacza akceptację przez usługę push, a nie odczytanie lub wyświetlenie.",
+      "status": {
+        "PENDING": "Oczekuje",
+        "DELIVERED": "Wysłano",
+        "FAILED": "Błąd"
+      },
+      "open": "Otwórz panel powiadomień"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Dostarczono",

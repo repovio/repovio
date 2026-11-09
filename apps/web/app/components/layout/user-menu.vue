@@ -26,6 +26,21 @@
       <span class="hidden max-w-64 truncate text-sm sm:inline">{{ getUserDisplayName(auth.user) }}</span>
     </UButton>
   </UDropdownMenu>
+  <UModal
+    v-model:open="cleanupFailed"
+    :title="$t('notifications.push.cleanupTitle')"
+    :description="$t('notifications.push.cleanupDescription')"
+  >
+    <template #footer>
+      <UButton color="neutral" :label="$t('notifications.navbar.retry')" :loading="signingOut" @click="signOut()" />
+      <UButton
+        color="error"
+        :label="$t('notifications.push.continueSignOut')"
+        :loading="signingOut"
+        @click="signOut(true)"
+      />
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -40,6 +55,7 @@ import { getUserDisplayName } from '~/utils/user-identity';
 
 const auth = useAuthStore();
 const signingOut = ref(false);
+const cleanupFailed = ref(false);
 const menuTrigger = useTemplateRef('menuTrigger');
 const shortcutsRequested = ref(false);
 const { open: shortcutsOpen } = useShortcuts();
@@ -107,13 +123,17 @@ const items = computed<DropdownMenuItem[]>(
 );
 
 /** End the browser session before returning to the public sign-in route. */
-async function signOut(): Promise<void> {
+async function signOut(force = false): Promise<void> {
   if (signingOut.value) return;
 
   signingOut.value = true;
   try {
-    await auth.signOut();
+    await auth.signOut(force);
+    cleanupFailed.value = false;
     await navigateTo('/auth/signin');
+  } catch {
+    if (auth.user) cleanupFailed.value = true;
+    else await navigateTo('/auth/signin');
   } finally {
     signingOut.value = false;
   }

@@ -16,6 +16,7 @@ import type {
   ProviderSecurityAlertResult,
   ProviderWebhookRequest,
   ProviderWorkItemQuery,
+  ProviderWorkflowLifecycle,
   ProviderWorkflowRun,
   VerifiedWebhook,
 } from '../provider-adapter.js';
@@ -25,6 +26,7 @@ import { isWorkflowRunAwaitingApproval, normalizeWorkflowRunStatus } from '../wo
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 interface GitLabProject {
+  builds_access_level?: string;
   id: number;
   name: string;
   web_url: string;
@@ -213,7 +215,16 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
     );
     if (response.status === 404) return null;
     if (!response.ok) throw providerRequestError('GitLab', response);
-    return this.toRepository((await response.json()) as GitLabProject);
+    const raw = (await response.json()) as GitLabProject;
+    return {
+      ...this.toRepository(raw),
+      workflowCiEnabled:
+        raw.builds_access_level === 'disabled'
+          ? false
+          : ['enabled', 'private'].includes(raw.builds_access_level ?? '')
+            ? true
+            : null,
+    };
   }
 
   /**
@@ -241,6 +252,47 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
     );
     return pipelines.map(
       /** Projects each entry using `this.toWorkflowRun(pipeline)`. */ (pipeline) => this.toWorkflowRun(pipeline),
+    );
+  }
+
+  /**
+   * Read repository-level CI availability without inferring deletion from historical runs.
+   *
+   * @param context - Read-only provider authentication context.
+   * @param repository - Repository whose CI feature is inspected.
+   * @param workflows - Known workflow identities to classify together.
+   * @returns Explicit repository disabling or UNKNOWN after CI is re-enabled; omitted when unavailable.
+   * @throws ProviderRequestError - When the provider request fails; retry metadata is preserved.
+   * @throws TypeError - When the provider request fails at the network layer.
+   */
+  async listWorkflowLifecycles(
+    context: ProviderAccountContext,
+    repository: ProviderRepositoryReference,
+    workflows: readonly { providerWorkflowId: string }[],
+  ): Promise<ProviderWorkflowLifecycle[]> {
+    if (workflows.length === 0) return [];
+    const raw =
+      repository.workflowCiEnabled !== undefined
+        ? {
+            builds_access_level:
+              repository.workflowCiEnabled === null ? undefined : repository.workflowCiEnabled ? 'enabled' : 'disabled',
+          }
+        : await this.request<{ builds_access_level?: string }>(
+            context,
+            `/projects/${encodeURIComponent(repository.providerRepositoryId)}`,
+          );
+    const disabled = raw.builds_access_level === 'disabled';
+    const enabled = raw.builds_access_level === 'enabled' || raw.builds_access_level === 'private';
+    if (!disabled && !enabled) return [];
+    return [
+      ...new Set(workflows.map(/** Selects each known workflow identity. */ (workflow) => workflow.providerWorkflowId)),
+    ].map(
+      /** Applies the explicit repository CI setting to each known workflow. */
+      (providerWorkflowId) => ({
+        providerWorkflowId,
+        state: disabled ? 'DISABLED' : 'UNKNOWN',
+        rawState: disabled ? 'repository:ci:disabled' : 'repository:ci:enabled',
+      }),
     );
   }
 

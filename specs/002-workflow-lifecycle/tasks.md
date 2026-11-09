@@ -11,7 +11,7 @@ track validated task commits, not the earlier editing chronology.
 
 ## Phase 2: Foundation
 
-- [ ] T001 Add the lifecycle enum, additive migration, and adapter contract in apps/api/prisma and provider-adapter.ts.
+- [x] T001 Add the lifecycle enum, additive migration, and adapter contract in apps/api/prisma and provider-adapter.ts.
 
 ## Phase 3: User Story 1 - Current Actionable Runs
 
@@ -46,3 +46,9 @@ read-only provider access, CASL restrictions, historical outcomes, and retention
 
 Task commit SHAs and actual check results are added as each commit succeeds. No task is considered delivered solely
 because its code was edited or tested before issue #61 was created.
+
+## Completed Task Commits
+
+| Task | Commit    | Validation                                                            |
+| ---- | --------- | --------------------------------------------------------------------- |
+| T001 | `96780ff` | Staged schema validation, clean migrations, and API typecheck passed. |

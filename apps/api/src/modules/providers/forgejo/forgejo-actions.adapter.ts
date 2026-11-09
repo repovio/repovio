@@ -19,6 +19,7 @@ import type {
   ProviderRepositoryReference,
   ProviderWebhookRequest,
   ProviderWorkItemQuery,
+  ProviderWorkflowLifecycle,
   ProviderWorkflowRun,
   VerifiedWebhook,
 } from '../provider-adapter.js';
@@ -30,6 +31,7 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 const FORGEJO_PAGE_SIZE = 100;
 
 interface ForgejoRepository {
+  has_actions?: boolean;
   id: number;
   name: string;
   html_url: string;
@@ -183,7 +185,11 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
     });
     if (response.status === 404) return null;
     if (!response.ok) throw providerRequestError('Forgejo', response);
-    return this.toRepository((await response.json()) as ForgejoRepository);
+    const raw = (await response.json()) as ForgejoRepository;
+    return {
+      ...this.toRepository(raw),
+      workflowCiEnabled: typeof raw.has_actions === 'boolean' ? raw.has_actions : null,
+    };
   }
 
   /**
@@ -229,6 +235,41 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
     } while (hasMoreRecentRuns);
 
     return runs.map(/** Projects each entry using `this.toWorkflowRun(run)`. */ (run) => this.toWorkflowRun(run));
+  }
+
+  /**
+   * Read repository-level CI availability without inferring deletion from historical runs.
+   *
+   * @param context - Read-only provider authentication context.
+   * @param repository - Repository whose CI feature is inspected.
+   * @param workflows - Known workflow identities to classify together.
+   * @returns Explicit repository disabling or UNKNOWN after CI is re-enabled; omitted when unavailable.
+   * @throws ProviderRequestError - When the provider request fails; retry metadata is preserved.
+   * @throws TypeError - When the provider request fails at the network layer.
+   */
+  async listWorkflowLifecycles(
+    context: ProviderAccountContext,
+    repository: ProviderRepositoryReference,
+    workflows: readonly { providerWorkflowId: string }[],
+  ): Promise<ProviderWorkflowLifecycle[]> {
+    if (workflows.length === 0) return [];
+    const raw =
+      repository.workflowCiEnabled !== undefined
+        ? { has_actions: repository.workflowCiEnabled }
+        : await this.request<{ has_actions?: boolean }>(context, `/repositories/${repository.providerRepositoryId}`);
+    const disabled = raw.has_actions === false;
+    const enabled = raw.has_actions === true;
+    if (!disabled && !enabled) return [];
+    return [
+      ...new Set(workflows.map(/** Selects each known workflow identity. */ (workflow) => workflow.providerWorkflowId)),
+    ].map(
+      /** Applies the explicit repository CI setting to each known workflow. */
+      (providerWorkflowId) => ({
+        providerWorkflowId,
+        state: disabled ? 'DISABLED' : 'UNKNOWN',
+        rawState: disabled ? 'repository:ci:disabled' : 'repository:ci:enabled',
+      }),
+    );
   }
 
   /**

@@ -853,7 +853,17 @@
       "enable": "Auf diesem Gerät aktivieren",
       "error": "Die Browser-Benachrichtigungen konnten nicht aktualisiert werden.",
       "title": "Browser-Benachrichtigungen",
-      "unavailable": "Browser-Push nicht verfügbar"
+      "unavailable": "Browser-Push nicht verfügbar",
+      "states": {
+        "unsupported": "Browser-Push erfordert HTTPS und einen unterstützten Browser.",
+        "permission": "Benachrichtigungen in den Browsereinstellungen erlauben, dann erneut versuchen.",
+        "worker": "Der Benachrichtigungs-Worker konnte nicht starten. Neu laden und erneut versuchen.",
+        "enrollment": "Die Geräteanmeldung ist fehlgeschlagen. Zum Reparieren erneut versuchen.",
+        "availability": "Die Verfügbarkeit von Benachrichtigungen konnte nicht geladen werden."
+      },
+      "cleanupTitle": "Geräteabmeldung fehlgeschlagen",
+      "cleanupDescription": "Die Abmeldung dieses Browsers erneut versuchen oder ausdrücklich mit dem Abmelden fortfahren.",
+      "continueSignOut": "Trotzdem abmelden"
     },
     "requiresReconfiguration": "Erfordert eine Neukonfiguration",
     "rulesView": {
@@ -877,7 +887,33 @@
       "history": "Zustellverlauf",
       "rules": "Regeln"
     },
-    "title": "Benachrichtigungen"
+    "title": "Benachrichtigungen",
+    "wizard": {
+      "steps": "Schritte der Kanaleinrichtung",
+      "identity": "Name und Typ",
+      "destination": "Ziel",
+      "events": "Ereignisse",
+      "review": "Vorschau und Prüfung",
+      "back": "Zurück",
+      "next": "Weiter",
+      "credentialsHidden": "Zugangsdaten sind verborgen. Bestehende Zugangsdaten bleiben ohne ausdrücklichen Austausch erhalten.",
+      "previewHint": "Die Vorschau prüft historische Workflow-Treffer. Andere Ereignistypen werden nicht simuliert. Es wird keine Benachrichtigung gesendet.",
+      "recipientCount": "{count} Empfänger",
+      "repositoryCount": "{count} Repositories"
+    },
+    "navbar": {
+      "title": "Benachrichtigungen",
+      "retry": "Erneut versuchen",
+      "loading": "Letzte Benachrichtigungen werden geladen…",
+      "empty": "Keine aktuellen Benachrichtigungen.",
+      "acceptanceHint": "Gesendet bedeutet vom Push-Dienst angenommen, nicht gelesen oder angezeigt.",
+      "status": {
+        "PENDING": "Ausstehend",
+        "DELIVERED": "Gesendet",
+        "FAILED": "Fehlgeschlagen"
+      },
+      "open": "Benachrichtigungsbereich öffnen"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Zugestellt",

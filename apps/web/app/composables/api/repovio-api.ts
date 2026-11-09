@@ -4,6 +4,7 @@ import type { OidcCheckResult, OidcConfig, UpdateOidcConfig } from '~/types/api/
 import { apiEndpoints } from '~/types/api/endpoints';
 import type {
   ApplicationSettings,
+  BrowserPushEnrollment,
   BrowserPushStatus,
   ConnectGitHubApp,
   CreatedMcpAccessToken,
@@ -33,6 +34,7 @@ import type {
   ProviderRepository,
   PullRequest,
   PullRequestSummary,
+  RecentNotifications,
   Repository,
   RepositoryDetail,
   RepositoryGroup,
@@ -163,7 +165,14 @@ export function useRepovioApi() {
       update: (id: string, input: UpdateNotificationChannel): Promise<AxiosResponse<NotificationChannel>> =>
         api.patch(`${apiEndpoints.notificationChannels}/${id}`, input),
     },
+    notifications: {
+      /** Fetches at most five current-user deliveries with live repository authorization. */
+      recent: (): Promise<AxiosResponse<RecentNotifications>> => api.get('/notifications/recent'),
+    },
     browserPush: {
+      /** Checks enrollment without disclosing another account's ownership. */
+      enrolled: (endpoint: string): Promise<AxiosResponse<BrowserPushEnrollment>> =>
+        api.post(`${apiEndpoints.browserPush}/subscriptions/status`, { endpoint }),
       /** Fetches browser-push availability and subscription state. */
       status: (): Promise<AxiosResponse<BrowserPushStatus>> => api.get(apiEndpoints.browserPush),
       /** Registers this browser push subscription for the authenticated user. */

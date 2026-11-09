@@ -2,6 +2,10 @@ model NotificationDeliveryAttempt {
   id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now())
 
+  targetKey String? @db.VarChar(128)
+  recipientUserId String? @db.Uuid
+  recipientUser User? @relation("NotificationAttemptRecipient", fields: [recipientUserId], references: [id], onDelete: SetNull)
+
   attempt       Int
   deliveredAt   DateTime?
   error         String? @db.Text
@@ -18,5 +22,6 @@ model NotificationDeliveryAttempt {
   @@index([notificationDeliveryId, notificationChannelId, attempt], map: "notification_delivery_attempts_delivery_channel_attempt_idx")
   @@index([notificationChannelId, createdAt], map: "notification_delivery_attempts_notificationChannelId_createdAt_")
   @@index([browserPushSubscriptionId, createdAt])
+  @@index([recipientUserId, notificationDeliveryId, createdAt], map: "notification_attempt_recipient_delivery_created_idx")
   @@map("notification_delivery_attempts")
 }

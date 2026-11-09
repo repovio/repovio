@@ -19,6 +19,7 @@ model User {
   repositoryMemberships           RepositoryMembership[]
   notificationChannelRecipients   NotificationChannelRecipient[]
   browserPushSubscriptions        BrowserPushSubscription[]
+  receivedNotificationAttempts NotificationDeliveryAttempt[] @relation("NotificationAttemptRecipient")
   requestedNotificationDeliveries NotificationDelivery[]         @relation("NotificationDeliveryRequester")
   oidcSessionExchanges            OidcSessionExchange[]
 

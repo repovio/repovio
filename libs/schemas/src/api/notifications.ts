@@ -390,3 +390,24 @@ export const ApiNotificationChannelQuerySchema = resourceQuerySchemas.Notificati
 export const ApiNotificationDeliveryQuerySchema = resourceQuerySchemas.NotificationDelivery.extend(
   ApiNotificationSearchQuerySchema.pick({ search: true }).shape,
 );
+
+/** Current-device endpoint lookup; endpoint content is never placed in a query string. */
+export const ApiBrowserPushLookupSchema = ApiRemoveBrowserPushSubscriptionSchema;
+
+/** Safe enrollment lookup without foreign ownership metadata. */
+export const ApiBrowserPushEnrollmentSchema = z.strictObject({ enrolled: z.boolean() });
+
+/** Recipient-scoped summary of one logical delivery, without transport credentials. */
+export const ApiRecentNotificationSchema = z.strictObject({
+  id: z.uuid(),
+  createdAt: z.iso.datetime({ offset: true }),
+  kind: ApiNotificationDeliverySchema.shape.kind,
+  eventType: ApiNotificationDeliverySchema.shape.eventType,
+  repository: z.strictObject({ id: z.uuid(), owner: z.string(), name: z.string() }).nullable(),
+  subjectTitle: z.string(),
+  subjectUrl: z.url({ protocol: /^https?$/ }).nullable(),
+  status: ApiNotificationDeliverySchema.shape.status,
+});
+
+/** Five newest private deliveries, independent of administrative history. */
+export const ApiRecentNotificationsSchema = z.strictObject({ items: z.array(ApiRecentNotificationSchema).max(5) });

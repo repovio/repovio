@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   ApiApplicationSettingsSchema,
+  ApiBrowserPushEnrollmentSchema,
   ApiBrowserPushStatusSchema,
   ApiCreatedMcpAccessTokenSchema,
   ApiCreateMcpAccessTokenSchema,
@@ -25,6 +26,8 @@ import {
   ApiProviderRepositorySchema,
   ApiPullRequestSchema,
   ApiPullRequestSummarySchema,
+  ApiRecentNotificationSchema,
+  ApiRecentNotificationsSchema,
   ApiRepositoryDetailSchema,
   ApiRepositoryHealthSchema,
   ApiRepositoryMembershipSchema,
@@ -818,3 +821,10 @@ export const HttpErrorSchema = z.strictObject({
 export type CreateUser = z.infer<typeof ApiCreateUserSchema>;
 /** Values accepted for an administrative password reset. */
 export type ResetUserPassword = z.infer<typeof ApiResetUserPasswordSchema>;
+
+/** Current-user ownership confirmation for a local browser subscription. */
+export type BrowserPushEnrollment = z.output<typeof ApiBrowserPushEnrollmentSchema>;
+/** Private logical notification without destination details. */
+export type RecentNotification = z.output<typeof ApiRecentNotificationSchema>;
+/** Bounded private history envelope. */
+export type RecentNotifications = z.output<typeof ApiRecentNotificationsSchema>;

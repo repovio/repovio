@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Las notificaciones push requieren HTTPS y un navegador compatible.",
+        "permission": "Permite las notificaciones en los ajustes del navegador y vuelve a intentarlo.",
+        "worker": "No se pudo activar el servicio de notificaciones. Recarga y reintenta.",
+        "enrollment": "No se pudo registrar el dispositivo. Reintenta para repararlo.",
+        "availability": "No se pudo consultar la disponibilidad de notificaciones."
+      },
+      "cleanupTitle": "Error al desvincular el dispositivo",
+      "cleanupDescription": "Reintenta eliminar el registro de este navegador o continúa cerrando sesión.",
+      "continueSignOut": "Continuar cerrando sesión"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Historial de entregas",
       "rules": "Reglas"
     },
-    "title": "Notificaciones"
+    "title": "Notificaciones",
+    "wizard": {
+      "steps": "Pasos de configuración",
+      "identity": "Nombre y tipo",
+      "destination": "Destino",
+      "events": "Eventos",
+      "review": "Vista previa y revisión",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "credentialsHidden": "Las credenciales están ocultas y se conservan salvo que se reemplacen.",
+      "previewHint": "La vista previa consulta ejecuciones históricas. Otros eventos no se simulan. No se envía ninguna notificación.",
+      "recipientCount": "{count} destinatarios",
+      "repositoryCount": "{count} repositorios"
+    },
+    "navbar": {
+      "title": "Notificaciones",
+      "retry": "Reintentar",
+      "loading": "Cargando notificaciones recientes…",
+      "empty": "No hay notificaciones recientes.",
+      "acceptanceHint": "Enviado significa aceptado por el servicio push, no leído ni mostrado.",
+      "status": {
+        "PENDING": "Pendiente",
+        "DELIVERED": "Enviado",
+        "FAILED": "Error"
+      },
+      "open": "Abrir panel de notificaciones"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Entregado",

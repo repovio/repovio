@@ -818,7 +818,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Les notifications push nécessitent HTTPS et un navigateur compatible.",
+        "permission": "Autorisez les notifications dans les paramètres du navigateur, puis réessayez.",
+        "worker": "Le service de notifications n’a pas pu démarrer. Rechargez et réessayez.",
+        "enrollment": "L’inscription de l’appareil a échoué. Réessayez pour la réparer.",
+        "availability": "Impossible de vérifier la disponibilité des notifications."
+      },
+      "cleanupTitle": "Échec de la suppression de l’appareil",
+      "cleanupDescription": "Réessayez de supprimer cette inscription ou poursuivez la déconnexion.",
+      "continueSignOut": "Poursuivre la déconnexion"
     },
     "rulesView": {
       "add": "Add rule",
@@ -877,7 +887,33 @@
       "history": "Historique de livraison",
       "rules": "Règles"
     },
-    "title": "Notifications"
+    "title": "Notifications",
+    "wizard": {
+      "steps": "Étapes de configuration",
+      "identity": "Nom et type",
+      "destination": "Destination",
+      "events": "Événements",
+      "review": "Aperçu et vérification",
+      "back": "Retour",
+      "next": "Suivant",
+      "credentialsHidden": "Les identifiants sont masqués et conservés sauf remplacement explicite.",
+      "previewHint": "L’aperçu vérifie les exécutions historiques. Les autres événements ne sont pas simulés. Aucune notification n’est envoyée.",
+      "recipientCount": "{count} destinataires",
+      "repositoryCount": "{count} dépôts"
+    },
+    "navbar": {
+      "title": "Notifications",
+      "retry": "Réessayer",
+      "loading": "Chargement des notifications récentes…",
+      "empty": "Aucune notification récente.",
+      "acceptanceHint": "Envoyé signifie accepté par le service push, pas lu ni affiché.",
+      "status": {
+        "PENDING": "En attente",
+        "DELIVERED": "Envoyé",
+        "FAILED": "Échec"
+      },
+      "open": "Ouvrir le panneau de notifications"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Livrée",

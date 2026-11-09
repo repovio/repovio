@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
 import { accessTokenStorageKey, useApi } from '~/composables/api/api';
+import { cleanupBrowserPush } from '~/composables/app/browser-push';
 import type {
   AuthResult,
   AuthenticatedUser,
@@ -55,8 +56,18 @@ export const useAuthStore = defineStore(
       }
     }
 
-    /** Sign out locally even if the API is temporarily unreachable. */
-    async function signOut(): Promise<void> {
+    /**
+     * Remove this device's enrollment before ending its authenticated session.
+     * @param force Continue after device cleanup failure only when explicitly requested by the user.
+     * @returns Completion after local authentication is cleared, unless normal cleanup requires retry.
+     * @throws Propagates cleanup errors for normal sign-out and remote sign-out failures after local clearing.
+     */
+    async function signOut(force = false): Promise<void> {
+      try {
+        await cleanupBrowserPush();
+      } catch (error) {
+        if (!force) throw error;
+      }
       try {
         await useApi().post('/auth/signout');
       } finally {

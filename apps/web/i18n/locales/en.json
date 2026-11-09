@@ -853,7 +853,17 @@
       "enable": "Enable on this device",
       "error": "Browser notifications could not be updated.",
       "title": "Browser notifications",
-      "unavailable": "Browser push unavailable"
+      "unavailable": "Browser push unavailable",
+      "states": {
+        "unsupported": "Browser push requires HTTPS and a supported browser.",
+        "permission": "Allow notifications in browser settings, then try again.",
+        "worker": "The notification worker could not activate. Reload and retry.",
+        "enrollment": "Device enrollment failed. Retry to repair this device.",
+        "availability": "Notification availability could not be loaded."
+      },
+      "cleanupTitle": "Device cleanup failed",
+      "cleanupDescription": "Retry removing this browser enrollment, or explicitly continue signing out.",
+      "continueSignOut": "Continue signing out"
     },
     "requiresReconfiguration": "Requires reconfiguration",
     "rulesView": {
@@ -877,7 +887,33 @@
       "history": "Delivery history",
       "rules": "Rules"
     },
-    "title": "Notifications"
+    "title": "Notifications",
+    "wizard": {
+      "steps": "Channel setup steps",
+      "identity": "Name and type",
+      "destination": "Destination",
+      "events": "Events",
+      "review": "Preview and review",
+      "back": "Back",
+      "next": "Next",
+      "credentialsHidden": "Credentials are hidden; existing credentials are preserved unless replaced.",
+      "previewHint": "Preview checks historical workflow matches. Other event types are not simulated. No notification is sent.",
+      "recipientCount": "{count} recipients",
+      "repositoryCount": "{count} repositories"
+    },
+    "navbar": {
+      "title": "Notifications",
+      "retry": "Retry",
+      "loading": "Loading recent notifications…",
+      "empty": "No recent notifications.",
+      "acceptanceHint": "Sent means accepted by a push service, not read or displayed.",
+      "status": {
+        "PENDING": "Pending",
+        "DELIVERED": "Sent",
+        "FAILED": "Failed"
+      },
+      "open": "Open notification panel"
+    }
   },
   "notificationDeliveryStatus": {
     "DELIVERED": "Delivered",

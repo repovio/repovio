@@ -1,9 +1,15 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col">
-    <div
-      class="flex min-w-0 flex-wrap items-center gap-2 border-b border-default p-3 sm:justify-end sm:px-4"
-      data-table-toolbar
-    >
+  <LayoutPage
+    full-width
+    :breadcrumbs="[
+      { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
+      { icon: 'i-lucide-bell', label: $t('layout.notifications'), to: '/notifications' },
+      { label: $t('notifications.tabs.history') },
+    ]"
+    :padded="false"
+    :title="$t('notifications.tabs.history')"
+  >
+    <template #actions>
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -25,7 +31,7 @@
           <CommonTablePopoverTrigger kind="options" :open="open" :toggle="toggle" />
         </template>
       </QTableOptions>
-    </div>
+    </template>
     <UAlert
       v-if="tableError"
       class="m-4"
@@ -112,7 +118,7 @@
       shortcuts
     />
     <ModulesNotificationsDeliveryDetailsDialog v-model:open="detailsOpen" :delivery="selectedDelivery" />
-  </div>
+  </LayoutPage>
 </template>
 
 <script setup lang="ts">

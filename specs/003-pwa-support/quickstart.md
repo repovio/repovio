@@ -67,3 +67,29 @@ Cache Storage, and reconnection using the production service worker.
 For OIDC, configure a dedicated test issuer/client and exact callback URL, using a controlled HTTPS origin reachable by
 the test device. Verify the real redirect and callback in standalone mode. No device or issuer access means that evidence
 remains unverified; mocks and mobile viewport emulation cannot replace it.
+
+### Opt-in real API regression
+
+The `local-api` Playwright project is enabled only when `PWA_REAL_WEB_URL` is set. Prepare two local Viewer accounts named
+`alice` and `bob`, with first/last names `Alice Fixture` and `Bob Fixture`, sharing a disposable test password. Prepare a
+repository named `alice-private`, owned by `fixture`; grant only Alice Viewer access. Keep its Provider Account disabled
+and scheduling disabled so the fixture never contacts a provider. Do not seed a shared database.
+
+Start a separate process from the existing production build with `HOST=127.0.0.1`, `PORT=3313`, and
+`NUXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3331/api/v1`; start the disposable API on port 3331 with its CORS origin set to
+`http://127.0.0.1:3313`. Supply these fixture variables from a private local environment:
+
+| Variable                 | Value                                                    |
+| ------------------------ | -------------------------------------------------------- |
+| `PWA_REAL_WEB_URL`       | `http://127.0.0.1:3313`                                  |
+| `PWA_REAL_API_URL`       | `http://127.0.0.1:3331/api/v1`; loopback hosts only      |
+| `PWA_REAL_REPOSITORY_ID` | UUID of the disposable Alice-only repository             |
+| `PWA_REAL_TEST_PASSWORD` | Disposable test password; never a real user's credential |
+
+```sh
+corepack pnpm --dir apps/web exec playwright test --config playwright.pwa.config.ts --project local-api
+```
+
+This project uses no API mocks. It proves real local sign-in, permitted deep-link reload, logout/account switching,
+a denied second-user read, cache exclusion, offline request failure, and fresh authenticated recovery. It does not prove
+OIDC redirects or native installation. Remove only the task-created processes/database after collecting evidence.

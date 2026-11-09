@@ -50,6 +50,9 @@ export default defineConfig({
       name: 'chromium',
       testMatch: /(?:^|\/)(pwa|launch|update-prompt|update-lifecycle|cache-isolation|connectivity)\.spec\.ts$/,
     },
+    ...(process.env.PWA_REAL_WEB_URL
+      ? [{ name: 'local-api', testMatch: 'real-api.spec.ts', use: { baseURL: process.env.PWA_REAL_WEB_URL } }]
+      : []),
     { name: 'runtime-branding', testMatch: 'branding-runtime.spec.ts', use: { baseURL: 'http://127.0.0.1:3311' } },
   ],
 });

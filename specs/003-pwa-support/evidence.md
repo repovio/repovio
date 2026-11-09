@@ -71,3 +71,13 @@
 - T016: A fully mounted page survives network loss; real uncached manifest requests fail offline, a new document cannot
   cold-start offline, and reconnection obtains a fresh network response. The test does not use mocked API responses as
   offline evidence. `navigateFallback: null` and `runtimeCaching: []` remain unchanged.
+
+- T018 (local portion): Opt-in `local-api` project passed against a freshly migrated PostgreSQL 18 container and the
+  built Nest API on port 3331, with the same production web build on port 3313. Two real Viewer accounts and an Alice-only
+  repository were seeded only in this disposable database; provider disabled and scheduler disabled. No API mocks.
+  Verified Alice's 200 response and permitted deep-link reload, actual logout persistence cleanup, Bob's denied read,
+  all-cache exclusion, authenticated offline failure, and fresh Bob identity after reconnection. The committed opt-in
+  regression passed (1 test, 2.4 seconds); a separate direct browser check also passed. Real OIDC remains unverified.
+- T009/T018 external evidence: No Android/iOS device or dedicated OIDC issuer has been made available in this session.
+  Native desktop installation and installed-device callback flows were not executed. T009 and T018 remain unchecked;
+  Chromium installability and real local-account evidence do not substitute for those missing observations.

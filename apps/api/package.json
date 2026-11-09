@@ -55,7 +55,7 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@querry-kit/nest": "^1.1.2",
-    "@scalar/nestjs-api-reference": "^1.2.34",
+    "@scalar/nestjs-api-reference": "^1.2.35",
     "bcrypt": "^6.0.0",
     "dotenv": "^18.0.9",
     "envalid": "^9.0.0",

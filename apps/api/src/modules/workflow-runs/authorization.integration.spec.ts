@@ -207,6 +207,97 @@ describe.each(['direct', 'group'] as const)(
       },
     );
 
+    it.each(['REMOVED', 'DISABLED'] as const)(
+      'excludes %s workflows from actionable lists while preserving authorized history and historical metrics',
+      /** Verifies lifecycle filtering precedes pagination, counts, and authorization-sensitive reads. */ async (
+        lifecycleState,
+      ) => {
+        const previousRun = await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } });
+        const period = { from: '2026-08-26T00:00:00.000Z', to: '2026-08-26T23:59:59.999Z' };
+        const beforeSummary = await dashboard.getSummary(users.viewer, period);
+        const beforeTrend = await dashboard.getTrend(users.viewer, { ...period, bucket: 'day' });
+        const approval = await prisma.workflowRun.create({
+          data: {
+            awaitingApproval: true,
+            displayTitle: 'Historical approval',
+            providerCreatedAt: new Date('2026-08-26T11:00:00Z'),
+            providerRunId: 'lifecycle-approval',
+            repositoryId: previousRun.repositoryId,
+            scopeKey: 'change-request:42',
+            status: 'QUEUED',
+            url: 'https://github.com/repovio/visible/actions/runs/lifecycle-approval',
+            workflowId: visibleWorkflowId,
+            workflowName: previousRun.workflowName,
+          },
+        });
+        const running = await prisma.workflowRun.create({
+          data: {
+            displayTitle: 'Historical running run',
+            providerCreatedAt: new Date('2026-08-26T12:00:00Z'),
+            providerRunId: 'lifecycle-running',
+            repositoryId: previousRun.repositoryId,
+            scopeKey: 'branch:release',
+            status: 'RUNNING',
+            url: 'https://github.com/repovio/visible/actions/runs/lifecycle-running',
+            workflowId: visibleWorkflowId,
+            workflowName: previousRun.workflowName,
+          },
+        });
+        const ability = await runs.getReadAbility(users.viewer);
+        await expect(runs.findNeedsAttention({ select: { id: true } }, ability)).resolves.toEqual([
+          { id: visibleRunId },
+        ]);
+        await expect(dashboard.getAwaitingApproval(users.viewer)).resolves.toHaveLength(1);
+
+        await prisma.workflow.update({
+          data: { lifecycleState, lifecycleCheckedAt: new Date('2026-11-09T12:00:00Z') },
+          where: { id: visibleWorkflowId },
+        });
+
+        const options = await runs.toNeedsAttentionQueryOptions({ perPage: 1, page: 1 }, ability);
+        await expect(runs.query(options, ability)).resolves.toMatchObject({ items: [], pageMeta: { itemCount: 0 } });
+        await expect(runs.findCurrent({ select: { id: true } }, ability)).resolves.toEqual([]);
+        await expect(runs.findNeedsAttention({ select: { id: true } }, ability)).resolves.toEqual([]);
+        await expect(dashboard.getAwaitingApproval(users.viewer)).resolves.toEqual([]);
+        await expect(dashboard.getLatestFailures(users.viewer)).resolves.toEqual([]);
+        await expect(dashboard.getSummary(users.viewer, period)).resolves.toMatchObject({
+          awaitingApprovalCount: 0,
+          queuedCount: 0,
+          runningCount: 0,
+          completedCount: beforeSummary.completedCount,
+          statuses: beforeSummary.statuses,
+          successRate: beforeSummary.successRate,
+        });
+        await expect(dashboard.getTrend(users.viewer, { ...period, bucket: 'day' })).resolves.toEqual(beforeTrend);
+        const history = await runs.findMany<{ id: string; status: string }>(
+          { select: { id: true, status: true } },
+          ability,
+        );
+        expect(history).toEqual(
+          expect.arrayContaining([
+            { id: visibleRunId, status: 'FAILED' },
+            { id: approval.id, status: 'QUEUED' },
+            { id: running.id, status: 'RUNNING' },
+          ]),
+        );
+        expect(history).not.toContainEqual(expect.objectContaining({ id: hiddenRunId }));
+        await expect(
+          runs.findMany({ select: { id: true } }, await runs.getReadAbility(users.outsider)),
+        ).resolves.toEqual([]);
+
+        await prisma.workflow.update({ data: { lifecycleState: 'ACTIVE' }, where: { id: visibleWorkflowId } });
+        await expect(runs.findNeedsAttention({ select: { id: true } }, ability)).resolves.toEqual([
+          { id: visibleRunId },
+        ]);
+        await expect(dashboard.getAwaitingApproval(users.viewer)).resolves.toHaveLength(1);
+        await expect(dashboard.getSummary(users.viewer, period)).resolves.toMatchObject({
+          awaitingApprovalCount: 1,
+          queuedCount: 1,
+          runningCount: 1,
+        });
+      },
+    );
+
     it('removes a failed provider run after the same run is refreshed as successful', /** Verifies removes a failed provider run after the same run is refreshed as successful. */ async () => {
       const ability = await runs.getReadAbility(users.viewer);
 

@@ -16,7 +16,7 @@ track validated task commits, not the earlier editing chronology.
 ## Phase 3: User Story 1 - Current Actionable Runs
 
 - [x] T002 [US1] Add four read-only lifecycle adapters and focused tests in apps/api/src/modules/providers.
-- [ ] T003 [US1] Reconcile lifecycle before event evaluation and reuse metadata in providers/sync.service.ts and
+- [x] T003 [US1] Reconcile lifecycle before event evaluation and reuse metadata in providers/sync.service.ts and
       providers/repository-metadata.service.ts; verify ordering, errors, and history preservation.
 - [ ] T004 [US1] Apply canonical current-view filtering and counters in workflow-runs and system-status; verify PostgreSQL
       pagination, reactivation, historical metrics, and repository authorization.
@@ -53,3 +53,4 @@ because its code was edited or tested before issue #61 was created.
 | ---- | --------- | --------------------------------------------------------------------- |
 | T001 | `96780ff` | Staged schema validation, clean migrations, and API typecheck passed. |
 | T002 | `f68e97b` | Staged four-adapter test suites and API typecheck passed.             |
+| T003 | `e15f607` | Staged synchronization/metadata tests and API typecheck passed.       |

@@ -140,7 +140,7 @@ describe('WorkflowRunsQueryService', /** Groups scenarios for WorkflowRunsQueryS
             awaitingApproval: false,
             completedAt: { not: null },
             status: { in: ['SUCCESS', 'FAILED', 'CANCELLED', 'SKIPPED', 'UNKNOWN'] },
-            workflow: { kind: 'STANDARD' },
+            workflow: { kind: 'STANDARD', lifecycleState: { notIn: ['DISABLED', 'REMOVED'] } },
           },
         ],
       },
@@ -203,7 +203,7 @@ describe('WorkflowRunsQueryService', /** Groups scenarios for WorkflowRunsQueryS
       select: { id: true },
       skip: undefined,
       take: undefined,
-      where: { AND: [{}, {}] },
+      where: { AND: [{}, { workflow: { lifecycleState: { notIn: ['DISABLED', 'REMOVED'] } } }] },
     });
     expect(mocks.workflowRun.findMany).toHaveBeenNthCalledWith(
       2,

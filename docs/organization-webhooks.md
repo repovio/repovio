@@ -20,3 +20,18 @@ normalized scope, callback URL and last accepted delivery time, never signing se
 
 Apply the additive database migration before the new API starts. It preserves existing repositories and their signing secrets.
 Rollback to the prior application can retain the added tables; do not drop configuration/receipt history during rollback.
+
+## Signed delivery
+
+Configure JSON POST delivery to `/api/webhooks/organization/<configuration-id>` (also available under `/api/v1`).
+The callback selects provider, connection, namespace and secret from the stored configuration. Existing provider signature
+verification runs before repository matching. GitLab accepts supported signed webhooks or its legacy secret token.
+
+Verified events refresh only already tracked, enabled repositories on enabled connections. GitLab group scopes include
+slash-delimited descendants, never similarly prefixed sibling groups. Unknown repositories, ping, and events without
+repository context are acknowledged without imports. Invalid signatures or disabled connections return HTTP 401;
+authenticated malformed payloads return HTTP 400. Successful durable acceptance returns HTTP 202 with duplicate metadata.
+
+Receipts and repository refresh work commit together. Repeated delivery identities do not queue duplicate work, including
+matching repository/delivery IDs received through organization and repository hooks. Queue failures roll receipts back so
+provider retries remain effective. Existing repository and GitHub App webhook paths remain valid.

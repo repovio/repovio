@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Post,
   Req,
   VERSION_NEUTRAL,
@@ -14,6 +15,7 @@ import type { FastifyRequest } from 'fastify';
 
 import type { ProviderType } from '../../generated/prisma/client.js';
 import { GitHubAppWebhookService } from './github-app-webhook.service.js';
+import { OrganizationWebhookService } from './organization-webhook.service.js';
 import { WebhookService, type WebhookAcceptance } from './webhook.service.js';
 
 /** Accepts signed GitHub, GitLab, Forgejo, and Gitea webhook deliveries. */
@@ -25,11 +27,36 @@ export class WebhookController {
    *
    * @param webhooks - Service verifying and durably accepting provider webhooks.
    * @param githubApp - Central App webhook verification and lifecycle handling.
+   * @param organizationWebhooks - Central organization and GitLab group delivery verification.
    */
   constructor(
     private readonly webhooks: WebhookService,
     private readonly githubApp: GitHubAppWebhookService,
+    private readonly organizationWebhooks: OrganizationWebhookService,
   ) {}
+
+  /**
+   * Accept a signed organization or GitLab group webhook.
+   * @param webhookId - Local configuration selecting provider, namespace, and connection.
+   * @param request - Raw provider request preserved for signature verification.
+   * @returns Durable asynchronous acceptance.
+   * @throws BadRequestException - The raw body is missing or malformed.
+   * @throws UnauthorizedException - Configuration or signature validation failed.
+   * @throws Error - Verification or durable processing fails.
+   */
+  @Post('organization/:webhookId')
+  @HttpCode(202)
+  @Version(['1', VERSION_NEUTRAL])
+  @ApiOperation({ summary: 'Accept a signed organization or GitLab group webhook' })
+  @ApiParam({ name: 'webhookId', format: 'uuid' })
+  @ApiAcceptedResponse({ description: 'The organization delivery was durably accepted.' })
+  organization(
+    @Param('webhookId', new ParseUUIDPipe()) webhookId: string,
+    @Req() request: RawBodyRequest<FastifyRequest>,
+  ): Promise<WebhookAcceptance> {
+    if (!request.rawBody) throw new BadRequestException('The webhook request body is required.');
+    return this.organizationWebhooks.receive(webhookId, { headers: request.headers, payload: request.rawBody });
+  }
 
   /**
    * Accept a central signed GitHub App delivery.

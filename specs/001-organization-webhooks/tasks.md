@@ -21,7 +21,7 @@ No repository/toolchain initialization or new provider credentials are needed.
 
 **Independent test**: Real configuration HTTP requests cover validation, authorization, uniqueness, scope isolation, and secrets.
 
-- [ ] T1 [US1] Add `apps/api/prisma/organization-webhook.prisma`, its migration and Provider Account relation;
+- [x] T1 [US1] Add `apps/api/prisma/organization-webhook.prisma`, its migration and Provider Account relation;
       `apps/api/src/modules/organization-webhooks/` administrator configuration/controller/module and management tests;
       `libs/schemas/src/api/organization-webhooks.ts` contracts; Bruno requests and complete Spec-Kit artifacts.
       Register configuration independently of the T2 receiver. Validate clean/upgrade migrations and task checks, then commit
@@ -57,6 +57,8 @@ Within a task, schema/HTTP tests or locale/browser checks can execute independen
 No parallel agents are required. No merge, deployment, or production migration is authorized.
 
 ## Delivery records
+
+- T1: `f1f19db81429f02f60f1bbdea3b791e934933542`; pushed. Isolated index snapshot: administrator HTTP integration (2 tests), API typecheck/build, root lint/format, full-application OpenAPI export, and all 41 migrations on a clean disposable PostgreSQL 18 database passed.
 
 Commit SHAs and current validation outcomes are recorded in issue #58 after each successful task commit and push. The next
 task commit also carries the preceding task's SHA in this document, avoiding impossible self-referential commit hashes.

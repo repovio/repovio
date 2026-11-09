@@ -47,3 +47,5 @@
 - Current frontend Axios consumers retain additional response fields; new schemas explicitly allow older responses with
   absent names/requester. This is not a claim that arbitrary external strict historical consumers accept new fields.
 - Notifications: safe explicit recipient/requester projections; credential exclusion and older-response parsing tested.
+
+- T010: `c6a96c2` — show names in notification summaries; focused verification passed before commit.

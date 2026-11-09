@@ -123,7 +123,7 @@ requester history, dialogs, confirmations, and accessible descriptions, then ref
       `apps/web/app/components/layout/user-menu.vue`; test dialogs, accessible text, and refreshed profile identity in
       `apps/web/tests/e2e/user-management.spec.ts` and `apps/web/tests/e2e/mcp-access.spec.ts`; retain credential input
       semantics and use existing locale interpolation where possible; include `.changeset/account-identity-names.md`.
-- [ ] T010 [US2] Format notification recipient summaries in `apps/web/app/pages/notifications/index.vue` using the same
+- [x] T010 [US2] Format notification recipient summaries in `apps/web/app/pages/notifications/index.vue` using the same
       safe identity fields and shared helper; prove named/older-response summaries and post-edit refresh in
       `apps/web/tests/e2e/notifications.spec.ts`; audit all person-reference surfaces against
       `specs/006-user-name-presentation/research.md` and record the inventory in

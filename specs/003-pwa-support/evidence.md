@@ -45,3 +45,6 @@
 - T006/T007: Production local sign-in, authenticated deep-link reload, and denied repository UI passed using explicit
   synthetic responses. HTTP 403 was observed on the API request; the private title was absent. No routing or manifest
   application repair needed. Mocked authorization is not claimed as real server evidence.
+
+- T008: Native desktop/Android/iOS installation paths, secure contexts, metadata refresh, stable identity, and standalone
+  local/OIDC checks documented in `docs/theming.md`. Device installation is not inferred from browser emulation.

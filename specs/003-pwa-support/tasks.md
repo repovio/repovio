@@ -48,7 +48,7 @@ platform matrix, then verify local/OIDC login and a permitted deep link. Unsuppo
 ### Implementation and Acceptance
 
 - [x] T007 [US1] Fix only defects reproduced by T005/T006 in `apps/web/server/utils/branding-manifest.ts`, `apps/web/server/routes/manifest.webmanifest.get.ts`, or `apps/web/nuxt.config.ts`; preserve manifest identity, runtime customization, and existing sign-in ownership. If behavior passes, record no-change evidence in `specs/003-pwa-support/evidence.md` rather than refactor.
-- [ ] T008 [US1] Document native desktop Chromium/Android Chromium installation and iOS Safari Add to Home Screen in `docs/theming.md`, including HTTPS, metadata refresh/reinstallation, and unsupported installation controls; do not add an install banner or infer installation state from a missing event.
+- [x] T008 [US1] Document native desktop Chromium/Android Chromium installation and iOS Safari Add to Home Screen in `docs/theming.md`, including HTTPS, metadata refresh/reinstallation, and unsupported installation controls; do not add an install banner or infer installation state from a missing event.
 - [ ] T009 [US1] Execute real desktop/Android/iOS installation and standalone root/deep-link launch checks, including disposable local and configured OIDC sign-in; record OS/browser versions, observed display mode, result, and sanitized evidence in `specs/003-pwa-support/evidence.md`. Mark unavailable devices or OIDC configuration unverified; emulation cannot complete real-device evidence.
 
 **Checkpoint**: US1 is independently testable; automated success does not complete unavailable device checks.

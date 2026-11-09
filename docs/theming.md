@@ -104,3 +104,25 @@ invalid-startup regression tests against the same production build with two conf
 
 If using a reverse proxy, route `/api/branding` and `/api/branding/*` to the web service, alongside
 `/manifest.webmanifest`. The existing Nest application endpoints under `/api/v1` still belong to the API service.
+
+### Install and launch
+
+Use HTTPS for a shared installation. Desktop localhost is suitable for development checks; an untrusted HTTP LAN
+address does not provide the secure context needed for production service workers. Install through native browser
+controls rather than expecting an application-specific Install button:
+
+- Desktop Chromium: open Repovio, then use the address-bar installation control or the browser menu's installation
+  command when offered. Launch the installed application and verify that it opens the same origin in a standalone window.
+- Android Chromium: open Repovio in Chrome and choose the browser menu's **Install app** or **Add to Home screen** option.
+  Browser versions may offer different labels or an ordinary shortcut; verify the resulting launch mode on the device.
+- iOS/iPadOS Safari: open Repovio, open the Share menu, and choose **Add to Home Screen**. Enable **Open as Web App** if
+  that control is available. Launch the saved icon to verify standalone behavior and sign in on the installed surface.
+
+The browser controls installation availability and wording. Missing installation controls do not prevent normal online
+use, and absence of `beforeinstallprompt` does not prove that an application is unsupported or already installed.
+Brand name/icon updates on an existing installation may require browser metadata refresh or reinstallation. The stable
+manifest identity, scope, and start URL remain `/`; runtime branding does not create a new application identity.
+
+For local or OpenID Connect sign-in, verify the complete flow in the installed application, including the return to an
+authorized deep link. A successful desktop browser login does not prove installed iOS/Android callback behavior. Record
+OS/browser versions and actual installed launches separately from responsive screenshots or Playwright emulation.

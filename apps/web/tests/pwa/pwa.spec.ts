@@ -6,15 +6,15 @@ import { expect, test } from '@playwright/test';
 const serviceWorkerPath = resolve(process.cwd(), '.output/public/sw.js');
 let originalServiceWorker = '';
 
-test.beforeAll(
-  /** Prepares shared test state for test.beforeAll. */ async () => {
+test.beforeEach(
+  /** Read the original worker before each scenario. */ async () => {
     originalServiceWorker = await readFile(serviceWorkerPath, 'utf8');
   },
 );
 
-test.afterAll(
-  /** Restores shared test state for test.afterAll. */ async () => {
-    await writeFile(serviceWorkerPath, originalServiceWorker);
+test.afterEach(
+  /** Restore the worker even when a scenario fails. */ async () => {
+    if (originalServiceWorker) await writeFile(serviceWorkerPath, originalServiceWorker);
   },
 );
 

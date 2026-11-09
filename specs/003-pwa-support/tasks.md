@@ -28,7 +28,7 @@ are future outputs; do not mark tasks complete merely because a plan exists.
 
 **Purpose**: Ensure production tests can safely exercise worker updates and authenticated sessions.
 
-- [ ] T003 Harden `apps/web/tests/pwa/pwa.spec.ts` worker mutation cleanup and `apps/web/playwright.pwa.config.ts` suite isolation before adding scenarios: restore original worker bytes after assertion failures, prevent concurrent mutation of one `.output` directory, and explicitly include new lifecycle/cache/launch spec files in the correct project. Keep runtime-branding tests on their configured custom server.
+- [x] T003 Harden `apps/web/tests/pwa/pwa.spec.ts` worker mutation cleanup and `apps/web/playwright.pwa.config.ts` suite isolation before adding scenarios: restore original worker bytes after assertion failures, prevent concurrent mutation of one `.output` directory, and explicitly include new lifecycle/cache/launch spec files in the correct project. Keep runtime-branding tests on their configured custom server.
 - [ ] T004 Add reusable fixture helpers in `apps/web/tests/pwa/helpers.ts` for worker readiness, cache enumeration, sanitized request observations, and deterministic authenticated users with different repository access. Document a disposable API/database and test OIDC setup in `specs/003-pwa-support/quickstart.md`; never use or record production credentials. Fixtures must allow mocked tests and real authenticated integration evidence to be distinguished.
 
 **Checkpoint**: T001–T004 complete before story execution. No new runtime package, API endpoint, or database model.

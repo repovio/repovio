@@ -6,6 +6,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/pwa',
   timeout: 60_000,
+  // All scenarios share production output; worker updates must never overlap.
+  workers: 1,
+  fullyParallel: false,
   use: {
     baseURL: 'http://127.0.0.1:3310',
     headless: true,
@@ -43,7 +46,10 @@ export default defineConfig({
     },
   ],
   projects: [
-    { name: 'chromium', testMatch: 'pwa.spec.ts' },
+    {
+      name: 'chromium',
+      testMatch: /(?:^|\/)(pwa|launch|update-prompt|update-lifecycle|cache-isolation|connectivity)\.spec\.ts$/,
+    },
     { name: 'runtime-branding', testMatch: 'branding-runtime.spec.ts', use: { baseURL: 'http://127.0.0.1:3311' } },
   ],
 });

@@ -32,3 +32,6 @@
   `pnpm --dir apps/web e2e:pwa` then passed all 7 baseline scenarios against the production build (3.5 seconds).
   Manifest no-store, icon responses/dimensions, runtime defaults/overrides, worker activation, Later, accepted update,
   and invalid branding startup passed. Worker uses static precaching, no navigation fallback, no runtime cache rules.
+
+- T003: One Playwright worker serializes shared build mutations; per-test restoration prevents failed scenarios from
+  leaking a changed worker into the next test. All 7 production scenarios and scoped ESLint/documentation checks passed.

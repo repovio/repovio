@@ -29,6 +29,15 @@ sincronización puede incluir el progreso del elemento. La recuperación de la c
 desconectado significa que las actualizaciones en vivo pueden estar obsoletas; inspeccione la API y vuelva a intentarlo
 antes de confiar en los recuentos mostrados.
 
+<a id="personal-notifications"></a>
+
+## Notificaciones personales
+
+La campana abre los controles del dispositivo y hasta cinco entregas push recientes dirigidas a usted. Las entradas
+respetan los permisos actuales de repositorios y alertas; una lista vacía no revela el historial de otros usuarios.
+Entregado significa que el servicio push aceptó la notificación, no que alguien la haya leído. Los administradores
+del sistema pueden abrir el historial administrativo de entregas desde el mismo panel.
+
 <a id="user-menu-and-footer"></a>
 
 ## Menú de usuario y pie de página

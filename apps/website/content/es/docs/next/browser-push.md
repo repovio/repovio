@@ -24,6 +24,11 @@ disponible. Utilice un contexto de navegador seguro y un navegador que admita tr
 
 ## Activar o desactivar este dispositivo
 
+Abra la campana de la barra de la aplicación para activar o desactivar el push en este dispositivo. El control
+comprueba la suscripción del navegador y su registro para la cuenta actual. Una suscripción existente no demuestra
+que esta cuenta esté inscrita. Reintente tras un fallo de registro. Al cerrar sesión, reintente la limpieza del
+dispositivo si falla o elija explícitamente continuar cerrando sesión.
+
 Utilice **Habilitar en este dispositivo** y otorgue permiso de notificación al navegador cuando lo solicite. La
 suscripción pertenece al usuario y navegador actual. Un administrador selecciona los usuarios destinatarios en un canal
 de notificaciones push del navegador; Cada destinatario necesita un dispositivo habilitado. Rechazar el permiso del

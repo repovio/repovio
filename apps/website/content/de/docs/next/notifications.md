@@ -17,6 +17,11 @@ Typ-/aktivierte Filter, Sortierung, Spaltenoptionen und Paginierung.
 
 ## Erstellen Sie ein Ziel
 
+Der Dialog zum Erstellen und Bearbeiten hat vier Schritte: **Name und Typ**, **Ziel**, **Ereignisse** und **Vorschau und Prüfung**.
+Legen Sie Name, Typ und Aktivierung fest, konfigurieren Sie das Ziel, wählen Sie Ereignisse und Filter und prüfen Sie
+Zusammenfassung und optionale Workflow-Vorschau vor dem Speichern. Zurück/Weiter erhält den Entwurf.
+Zugangsdaten werden in der Zusammenfassung nicht angezeigt.
+
 Wählen Sie **Kanal hinzufügen**, geben Sie einen Namen ein, wählen Sie einen Typ aus und konfigurieren Sie das Ziel:
 
 - **E-Mail:** SMTP-Host/-Port, Transportsicherheit, Absender, optionale Authentifizierung und Empfänger.

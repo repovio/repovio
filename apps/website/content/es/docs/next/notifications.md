@@ -17,6 +17,11 @@ y la hora de actualización; utilice filtros de tipo/habilitados, clasificación
 
 ## Crear un destino
 
+El diálogo de creación y edición tiene cuatro pasos: **Nombre y tipo**, **Destino**, **Eventos** y **Vista previa y revisión**.
+Defina nombre, tipo y activación, configure el destino, elija eventos y filtros y revise el resumen y la vista previa
+opcional de workflows antes de guardar. Atrás/Siguiente conserva el borrador. Las credenciales del destino se ocultan
+en el resumen.
+
 Elija **Agregar canal**, ingrese un nombre, seleccione un tipo y configure el destino:
 
 - **Correo electrónico:** Host/puerto SMTP, seguridad de transporte, remitente, autenticación opcional y destinatarios.

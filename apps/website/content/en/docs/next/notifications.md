@@ -16,6 +16,10 @@ state, and updated time; use type/enabled filters, sorting, column controls, and
 
 ## Create a destination
 
+The create/edit dialog has four steps: **Name and type**, **Destination**, **Events**, and **Preview and review**. Set the
+name, type, and enabled state; configure the destination; choose event subscriptions and filters; then review the summary
+and optional workflow preview before saving. Back/Next preserves the draft. Destination credentials are hidden in the review.
+
 Choose **Add channel**, enter a name, select a type, and configure the destination:
 
 - **Email:** SMTP host/port, transport security, sender, optional authentication, and recipients.

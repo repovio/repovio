@@ -24,6 +24,11 @@ Utilisez un contexte de navigateur sécurisé et un navigateur prenant en charge
 
 ## Activer ou désactiver cet appareil
 
+Ouvrez la cloche de la barre d’application pour activer ou désactiver le push sur cet appareil. Le contrôle vérifie
+l’abonnement du navigateur et son enregistrement pour le compte actuel. Un abonnement existant ne prouve pas que ce
+compte est inscrit. Réessayez après un échec d’enregistrement. À la déconnexion, réessayez le nettoyage de l’appareil
+s’il échoue ou choisissez explicitement de poursuivre la déconnexion.
+
 Utilisez **Activer sur cet appareil** et accordez l'autorisation de notification du navigateur lorsque cela est demandé.
 L'abonnement appartient à l'utilisateur et au navigateur actuels. Un administrateur sélectionne les utilisateurs
 destinataires dans un canal push du navigateur ; chaque destinataire a besoin d'un appareil activé. Le refus de

@@ -24,6 +24,11 @@ de navegador seguro e um navegador que suporte service workers e API Push.
 
 ## Habilite ou desabilite este dispositivo
 
+Abra o sino na barra do aplicativo para ativar ou desativar o push neste dispositivo. O controle verifica a assinatura
+do navegador e seu registro para a conta atual. Uma assinatura existente não comprova a inscrição desta conta.
+Tente novamente após falha no registro. Ao sair, tente novamente a limpeza do dispositivo se ela falhar ou escolha
+explicitamente continuar saindo.
+
 Use **Ativar neste dispositivo** e conceda permissão de notificação do navegador quando solicitado. A assinatura
 pertence ao usuário e navegador atuais. Um administrador seleciona usuários destinatários em um canal push do navegador;
 cada destinatário precisa de um dispositivo habilitado. Recusar a permissão do navegador impede a assinatura; ajuste a

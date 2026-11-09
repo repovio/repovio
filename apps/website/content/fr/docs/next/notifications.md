@@ -18,6 +18,11 @@ pagination.
 
 ## Créer une destination
 
+La création et la modification suivent quatre étapes : **Nom et type**, **Destination**, **Événements** et
+**Aperçu et vérification**. Définissez nom, type et activation, configurez la destination, choisissez événements et filtres, puis
+vérifiez le résumé et l’aperçu facultatif des workflows avant d’enregistrer. Précédent/Suivant conserve le brouillon.
+Les identifiants de destination sont masqués dans le résumé.
+
 Choisissez **Ajouter un canal**, saisissez un nom, sélectionnez un type et configurez la destination :
 
 - **E-mail :** Hôte/port SMTP, sécurité du transport, expéditeur, authentification facultative et destinataires.

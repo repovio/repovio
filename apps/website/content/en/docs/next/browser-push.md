@@ -23,6 +23,11 @@ context and a browser supporting service workers and Push API.
 
 ## Enable or disable this device
 
+Open the bell in the app bar to enable or disable browser push for this device. The control checks both the browser
+subscription and its registration for the current account. An existing browser subscription alone does not prove that
+this account is enrolled. After server registration fails, retry enrollment; when signing out, retry failed device
+cleanup or explicitly continue signing out.
+
 Use **Enable on this device** and grant the browser's notification permission when requested. The subscription belongs
 to the current user and browser. An administrator selects recipient users in a browser-push channel; each recipient
 needs an enabled device. Refusing browser permission prevents subscription; adjust the site's browser permission and

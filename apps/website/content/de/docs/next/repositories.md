@@ -7,16 +7,14 @@ description: 'Verfolgen Sie Repositorys, überprüfen Sie Aktivitäten und konfi
 
 ## Durchsuchen und Details öffnen
 
-Alle angemeldeten Benutzer können Repositorys auflisten, die sie lesen dürfen. In der Tabelle werden Eigentümer/Name,
-aktivierter Status, Mitglieder, Anzahl beibehaltener Ausführungen, Aufbewahrung und letzte Synchronisierung angezeigt.
-Verwenden Sie aktivierte Filterung, Sortierung, Spaltensteuerung und Paginierung. Öffnen Sie den Anbieterlink für das
-externe Repository, die Detailseite für synchronisierte Aktivitäten oder den Einstellungsdialog für die Konfiguration.
-Eine fehlende Mitgliedschaft oder ein entferntes Repository kann zu einem unzugänglichen Detailstatus führen.
+Öffnen Sie ein Repository aus der Tabelle. Die Navigation enthält Übersicht, Workflow-Ausführungen, Issues,
+Pull Requests, Sicherheitswarnungen und Einstellungen. Aktivitätsseiten bleiben auf das Repository beschränkt und
+bieten Filter, Sortierung, Paginierung und Zeilennavigation. Sicherheitswarnungen benötigen Verwaltungsrechte;
+Einstellungen sind nur für Systemadministratoren verfügbar. Der Anbieterlink öffnet das externe Repository.
+Der Einstellungsdialog bleibt über die Repository-Liste erreichbar.
 
-Auf der Detailseite werden allgemeine Informationen, Aufbewahrung, Alter der letzten Synchronisierung/Daten,
-konfiguriertes Intervall, aktueller Job sowie aktuelle Workflows, Probleme und Pull Requests zusammengefasst. Manager
-mit Repository-Verwaltungszugriff und Administratoren sehen auch Sicherheitswarnungsaktivitäten. Ausstehende/laufende
-Jobs zeigen den Fortschritt an; Warnungen und Fehler umfassen kategorisierte sichere Fehler.
+Die Übersicht zeigt allgemeine Informationen, Aufbewahrung, letzte Synchronisierung/Datenalter, Intervall, aktuellen
+Job und jüngste Aktivitäten. Ausstehende/laufende Jobs zeigen Fortschritt; Fehler werden sicher kategorisiert.
 
 <a id="add-and-maintain-tracking"></a>
 

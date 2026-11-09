@@ -14,7 +14,7 @@ Use the [Repovio glossary](GLOSSARY.md) for canonical product and domain termino
 
 The repository contains the API and web dashboard. Ongoing work is tracked in [GitHub Issues](https://github.com/repovio/repovio/issues).
 
-See [branding upgrade](https://github.com/repovio/docs/blob/75e5fd90af4384cb85259772d5bd0e92ab5aade7/en/docs/next/branding-upgrade.md) before upgrading an existing deployment.
+See [branding upgrade](apps/website/content/en/docs/next/branding-upgrade.md) before upgrading an existing deployment.
 Customize colors, typography, logos, metadata, links, and PWA icons through
 [runtime theming and branding](docs/theming.md); environment variables and read-only mounts work without image rebuilds.
 
@@ -23,7 +23,7 @@ Customize colors, typography, logos, metadata, links, and PWA icons through
 - Node.js 26.13.0, managed through [nvm](https://github.com/nvm-sh/nvm) or an
   equivalent Node version manager.
 - Corepack-enabled pnpm 11.28.9.
-- Docker and Docker Compose for the future local PostgreSQL and application
+- Docker and Docker Compose for the local PostgreSQL and application
   stack.
 
 ## Setup
@@ -62,6 +62,18 @@ API accepts the following variables:
 | `CORS_ORIGIN`                     | No       | `http://localhost:3000` | One origin, comma-separated origins, or `*`.                                                           |
 | `PUBLIC_URL`                      | No       | `http://localhost:3000` | Public Repovio URL; must use HTTP or HTTPS.                                                            |
 | `OIDC_CALLBACK_URL`               | No       | Local API callback      | Exact public API callback URL registered with the optional OpenID Connect provider.                    |
+| `OAUTH_CALLBACK_URL`              | No       | Local provider callback | Public API callback registered with provider OAuth applications; distinct from sign-in OIDC.           |
+| `GITHUB_OAUTH_CLIENT_ID`          | No       | Empty                   | GitHub OAuth client ID; configure together with its client secret.                                     |
+| `GITHUB_OAUTH_CLIENT_SECRET`      | No       | Empty                   | GitHub OAuth client secret.                                                                            |
+| `GITLAB_OAUTH_BASE_URL`           | No       | `https://gitlab.com`    | GitLab instance used by the configured OAuth application.                                              |
+| `GITLAB_OAUTH_CLIENT_ID`          | No       | Empty                   | GitLab OAuth client ID; configure together with its client secret.                                     |
+| `GITLAB_OAUTH_CLIENT_SECRET`      | No       | Empty                   | GitLab OAuth client secret.                                                                            |
+| `FORGEJO_OAUTH_BASE_URL`          | No       | Empty                   | Forgejo instance URL; required when Forgejo OAuth is configured.                                       |
+| `FORGEJO_OAUTH_CLIENT_ID`         | No       | Empty                   | Forgejo OAuth client ID; configure together with its client secret.                                    |
+| `FORGEJO_OAUTH_CLIENT_SECRET`     | No       | Empty                   | Forgejo OAuth client secret.                                                                           |
+| `WEB_PUSH_VAPID_PUBLIC_KEY`       | No       | Empty                   | Browser-push public key; configure all three VAPID settings together or leave all empty.               |
+| `WEB_PUSH_VAPID_PRIVATE_KEY`      | No       | Empty                   | Browser-push private key; keep it secret.                                                              |
+| `WEB_PUSH_VAPID_SUBJECT`          | No       | Empty                   | Browser-push contact URI using `mailto:` or `https://`.                                                |
 | `AUTH_JWT_ISSUER`                 | No       | `repovio`               | JWT issuer identifier.                                                                                 |
 | `AUTH_JWT_SECRET`                 | Yes      | —                       | Long, unique secret used to sign JWTs.                                                                 |
 | `AUTH_JWT_EXPIRATION`             | No       | `7d`                    | JWT lifetime accepted by the Nest JWT module.                                                          |
@@ -72,6 +84,10 @@ API accepts the following variables:
 `REPOVIO_ENV_FILE` is an optional local loader setting. When set, the API
 loads that file after the root `.env` file, allowing a local override without
 changing the shared template.
+
+`OAUTH_CALLBACK_URL` defaults to `http://localhost:3001/api/v1/provider-accounts/oauth/callback`.
+See [provider OAuth setup](apps/website/content/en/docs/next/provider-oauth.md) and
+[browser push](apps/website/content/en/docs/next/browser-push.md) for registration and device enrollment.
 
 The following variables are used by the Docker Compose deployment rather than
 by the Nest API's `envalid` configuration:
@@ -117,7 +133,7 @@ pnpm branding:check
 pnpm changeset status
 ```
 
-Public documentation is maintained in `repovio/docs` and rendered by the private `repovio/website` project.
+Public documentation is maintained in `apps/website/content` and rendered by the `@repovio/website` workspace package.
 
 ## OpenAPI export
 
@@ -133,21 +149,23 @@ pnpm --filter @repovio/api test:openapi
 
 The exporter uses synthetic configuration, skips local environment files, and emits deterministic JSON with a relative
 server URL. The website release publisher runs it against the exact released application revision, archives the schema
-in `repovio/docs`, and bundles it into the static, versioned reference. Never generate a release snapshot from a running
-production instance or an unreviewed working tree.
+in `apps/website/content/openapi`, and bundles it into the static, versioned reference. Never generate a release snapshot
+from a running production instance or an unreviewed working tree.
 
 ## Changesets and releases
 
-Repovio uses one private root package and Changesets for release management.
-Add exactly one focused Changeset for every substantive implementation commit:
+Repovio uses Changesets for the private `repovio` application package and the independent `@repovio/website` package.
+Add exactly one focused Changeset for every substantive implementation commit. Select the application for application
+changes and the website for website or handbook changes; include both when both need a release:
 
 ```bash
 pnpm changeset
 ```
 
-The GitHub deployment workflow will create or update a release pull request.
-After that pull request is merged, it creates the release tag and publishes
-matching API and web Docker images to GitHub Container Registry.
+The GitHub deployment workflow creates or updates a release pull request. After that pull request is manually merged,
+it creates package-specific release tags and publishes the changed packages' Docker images to GitHub Container Registry.
+Application releases publish matching API and web images; website-only releases publish only the website image.
+See the [website release guide](apps/website/README.md) for documentation archive promotion and publication.
 
 ## Dependency updates
 

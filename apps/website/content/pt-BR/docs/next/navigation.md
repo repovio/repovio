@@ -28,6 +28,15 @@ sincronização pode incluir o progresso do item. A recuperação da conexão at
 significa que as atualizações ao vivo podem estar desatualizadas; inspecione a API e tente novamente antes de confiar
 nas contagens exibidas.
 
+<a id="personal-notifications"></a>
+
+## Notificações pessoais
+
+O sino abre os controles do dispositivo e até cinco entregas push recentes destinadas a você. As entradas respeitam
+as permissões atuais de repositórios e alertas; uma lista vazia não revela o histórico de outras pessoas. Entregue
+significa aceitação pelo serviço push, não leitura. Administradores do sistema podem abrir o histórico administrativo
+de entregas no mesmo painel.
+
 <a id="user-menu-and-footer"></a>
 
 ## Menu do usuário e rodapé

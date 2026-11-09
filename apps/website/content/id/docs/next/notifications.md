@@ -17,6 +17,11 @@ pengurutan, kontrol kolom, dan penomoran halaman.
 
 ## Buat tujuan
 
+Dialog pembuatan dan penyuntingan memiliki empat langkah: **Nama dan jenis**, **Tujuan**, **Peristiwa**, dan **Pratinjau dan tinjauan**.
+Tetapkan nama, jenis, dan status aktif, atur tujuan, pilih langganan peristiwa dan filter, lalu tinjau ringkasan serta
+pratinjau workflow opsional sebelum menyimpan. Kembali/Berikutnya mempertahankan draf. Kredensial tujuan disembunyikan
+dalam ringkasan.
+
 Pilih **Tambahkan saluran**, masukkan nama, pilih jenis, dan konfigurasikan tujuan:
 
 - **Email:** Host/port SMTP, keamanan transportasi, pengirim, autentikasi opsional, dan penerima.

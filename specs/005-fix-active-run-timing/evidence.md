@@ -24,3 +24,15 @@
 - After the fix: Forgejo suite 27/27 passed; focused ESLint and API typecheck passed.
 - QUEUED/RUNNING final timing is null; malformed/nonpositive start/stop sentinels are unavailable.
 - Existing approval metadata and valid terminal controls remain unchanged.
+
+- T003 commit: `97eb300`, pushed.
+
+## T004: Run-Aware Presentation
+
+- Focused Vitest: 3 passed; web typecheck and changed-file ESLint passed.
+- Playwright: 4 passed, covering dashboard/history in English/German with stale active payloads.
+- Screenshots inspected at desktop/mobile widths. Dashboard shows Unknown/Unbekannt and an em dash; history shows
+  two em dashes. Existing mobile table horizontally scrolls; no layout change was introduced.
+- Initial cold dev-server request exceeded the default 5-second row assertion; explicit row availability wait allows
+  15 seconds for initial compilation. Warm and updated fixture runs passed without retries.
+- Screenshot artifacts: `apps/web/test-results/workflow-run-timing-*/active-timing-*.png` (local, untracked).

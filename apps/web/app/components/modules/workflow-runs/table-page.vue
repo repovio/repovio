@@ -103,10 +103,14 @@
         <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.startedAt) }}</span>
       </template>
       <template #completedAt-cell="{ row }">
-        <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.completedAt) }}</span>
+        <span class="whitespace-nowrap text-sm text-muted">
+          {{ formatTimestamp(workflowRunTiming(row.original).completedAt) }}
+        </span>
       </template>
       <template #durationMs-cell="{ row }">
-        <span class="whitespace-nowrap text-sm text-muted">{{ formatDuration(row.original.durationMs) }}</span>
+        <span class="whitespace-nowrap text-sm text-muted">
+          {{ formatDuration(workflowRunTiming(row.original).durationMs) }}
+        </span>
       </template>
       <template #actions-header="{ column }">
         <span class="flex justify-end">{{ column.columnDef.header }}</span>
@@ -161,6 +165,7 @@ import {
   loadWorkflowRunRepositoryFilterOptions,
   type WorkflowRunRepositoryFilterOption,
 } from '~/utils/workflow-run-filtering';
+import { workflowRunTiming } from '~/utils/workflow-run-timing';
 
 interface BreadcrumbItem {
   icon: string;

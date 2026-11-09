@@ -41,3 +41,7 @@
 
 - T005: Default/custom manifest assertions now include stable id, scope, start URL, and standalone display. Both
   manifest unit tests and production runtime-branding assertions passed; no manifest implementation defect found.
+
+- T006/T007: Production local sign-in, authenticated deep-link reload, and denied repository UI passed using explicit
+  synthetic responses. HTTP 403 was observed on the API request; the private title was absent. No routing or manifest
+  application repair needed. Mocked authorization is not claimed as real server evidence.

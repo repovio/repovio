@@ -50,7 +50,7 @@ export default defineAppConfig({
       info: 'i-tabler-info-square-rounded',
       light: 'i-tabler-sun',
       loading: 'i-tabler-loader-2',
-      menu: 'i-tabler-menu',
+      menu: 'i-tabler-menu-2',
       minus: 'i-tabler-minus',
       panelClose: 'i-tabler-layout-sidebar-left-collapse',
       panelOpen: 'i-tabler-layout-sidebar-left-expand',

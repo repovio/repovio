@@ -680,3 +680,71 @@ for (const width of [320, 1440]) {
     await expect(outside).toBeFocused();
   });
 }
+
+for (const locale of ['en', 'de']) {
+  for (const theme of ['light', 'dark']) {
+    test(`sidebar menu icon stays bundled and usable in ${locale} ${theme}`, /** Verify the responsive menu asset and preserve sidebar interactions across breakpoints. */ async ({
+      page,
+      baseURL,
+    }, testInfo) => {
+      await mockApplication(page);
+      await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+      await page.addInitScript(
+        /** Apply the requested theme before the application initializes. */ (value) =>
+          localStorage.setItem('nuxt-color-mode', value),
+        theme,
+      );
+      const externalIconRequests: string[] = [];
+      await page.route(
+        /https?:\/\/(?:api\.iconify\.design|api\.simplesvg\.com|api\.unisvg\.com|cdn\.jsdelivr\.net|unpkg\.com)\/.*/,
+        /** Block external icon services so the assertion requires the bundled asset. */ async (route) => {
+          externalIconRequests.push(route.request().url());
+          await route.abort();
+        },
+      );
+      const openLabel = locale === 'de' ? 'Seitenleiste öffnen' : 'Open sidebar';
+      const collapseLabel = locale === 'de' ? 'Seitenleiste einklappen' : 'Collapse sidebar';
+      const expandLabel = locale === 'de' ? 'Seitenleiste ausklappen' : 'Expand sidebar';
+      for (const viewport of [
+        { width: 982, height: 1134 },
+        { width: 390, height: 844 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveClass(new RegExp(theme));
+        const open = page.getByRole('button', { name: openLabel, exact: true });
+        const icon = open.locator('[class~="i-tabler:menu-2"]');
+        await expect(icon).toBeVisible();
+        await expect
+          .poll(
+            /** Inspect actual local SVG data rather than trusting an icon class name. */ () =>
+              icon.evaluate(
+                /** Read the bundled icon's computed mask data. */ (element) =>
+                  getComputedStyle(element).getPropertyValue('--svg'),
+              ),
+          )
+          .toContain('data:image/svg+xml');
+        await page.screenshot({ path: testInfo.outputPath(`sidebar-${viewport.width}.png`) });
+        await open.click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toBeHidden();
+        await expect(open).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toBeHidden();
+        await expect(icon).toBeVisible();
+        await expect(page).toHaveURL(`${baseURL}/`);
+      }
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.getByRole('button', { name: collapseLabel, exact: true }).click();
+      await expect(page.getByRole('button', { name: expandLabel, exact: true })).toBeVisible();
+      await page.reload();
+      await expect(page.getByRole('button', { name: expandLabel, exact: true })).toBeVisible();
+      await page.getByRole('button', { name: expandLabel, exact: true }).click();
+      await expect(page.getByRole('button', { name: collapseLabel, exact: true })).toBeVisible();
+      expect(externalIconRequests).toEqual([]);
+    });
+  }
+}

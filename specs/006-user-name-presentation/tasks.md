@@ -116,7 +116,7 @@ requester history, dialogs, confirmations, and accessible descriptions, then ref
       identity in `apps/web/tests/e2e/user-groups.spec.ts` and `apps/web/tests/e2e/repository-access.spec.ts`; update
       `apps/web/i18n/locales/en.json` and `apps/web/i18n/locales/de.json` only if copy changes; include
       `.changeset/membership-identity-names.md`.
-- [ ] T009 [P] [US2] Align administration secondary usernames and deletion targets in
+- [x] T009 [P] [US2] Align administration secondary usernames and deletion targets in
       `apps/web/app/pages/admin/users.vue`, reset target text in
       `apps/web/app/components/modules/users/account-dialog.vue`, and MCP target descriptions in
       `apps/web/app/components/modules/mcp/user-token-dialog.vue`; retain/verify personal-name-first navigation in

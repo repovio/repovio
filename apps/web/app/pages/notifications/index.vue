@@ -76,7 +76,7 @@
         <span class="text-sm text-muted">
           {{
             row.original.browserRecipients.length > 0
-              ? row.original.browserRecipients.map(({ username }) => `@${username}`).join(', ')
+              ? row.original.browserRecipients.map(getUserIdentityLabel).join(', ')
               : row.original.urlScheme
           }}
         </span>
@@ -165,6 +165,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useDestructiveAction } from '~/composables/app/destructive-action';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { useRepovioApi } from '~/composables/api/repovio-api';

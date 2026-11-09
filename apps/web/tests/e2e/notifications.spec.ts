@@ -588,3 +588,42 @@ for (const transport of [
     expect(saves).toBe(1);
   });
 }
+
+test('shows name-first recipient summaries and refreshed names', /** Verifies named and older recipient identities in the real channel table. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  let firstName = 'Vera';
+  await page.route(
+    '**/api/v1/notification-channels/query**',
+    /** Supplies safe current-profile identities and an older username-only recipient. */ (route) =>
+      route.fulfill({
+        json: {
+          items: [
+            {
+              id: 'named',
+              name: 'Named recipients',
+              type: 'BROWSER_PUSH',
+              enabled: true,
+              urlScheme: null,
+              eventSubscriptions: [],
+              canManage: true,
+              requiresReconfiguration: false,
+              createdAt: '2026-11-09T10:00:00Z',
+              updatedAt: '2026-11-09T10:00:00Z',
+              browserRecipients: [
+                { id: 'viewer', username: 'viewer', firstName, lastName: 'Viewer' },
+                { id: 'legacy', username: 'legacy' },
+              ],
+            },
+          ],
+          meta: pageMeta,
+        },
+      }),
+  );
+  await page.goto('/notifications');
+  await expect(page.getByText('Vera Viewer (@viewer), legacy', { exact: true })).toBeVisible();
+  firstName = 'Updated';
+  await page.reload();
+  await expect(page.getByText('Updated Viewer (@viewer), legacy', { exact: true })).toBeVisible();
+});

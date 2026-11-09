@@ -30,3 +30,20 @@
 - T007: `3dbae00` — show safe delivery requester identities; focused verification passed before commit.
 
 - T008: `97562a1` — use names in membership identities; focused verification passed before commit.
+
+- T009: `b2995a8` — identify account actions by personal names; focused verification passed before commit.
+
+## Surface Inventory Review
+
+- Shared display/selection labels normalize complete, partial, absent, padded, and Unicode name parts.
+- Group picker, repository access picker, browser recipients: named choices and stable IDs; repository/browser discovery
+  is paginated rather than capped at 100. Group search retains stale-response and page-reset behavior.
+- Group and repository member rows/removal targets, account rows/reset/delete targets, MCP owner descriptions,
+  notification summaries and delivery requester details all use shared names or parenthesized secondary usernames.
+- Existing account navigation, User avatar accessible labels, and repository member avatar tooltips already use the
+  shared helpers and remain covered by the helper change and browser matrix.
+- Scoped source audit found remaining username references only in identity transport, credential editing,
+  destination-service configuration, Provider Actors, or parenthesized secondary labels.
+- Current frontend Axios consumers retain additional response fields; new schemas explicitly allow older responses with
+  absent names/requester. This is not a claim that arbitrary external strict historical consumers accept new fields.
+- Notifications: safe explicit recipient/requester projections; credential exclusion and older-response parsing tested.

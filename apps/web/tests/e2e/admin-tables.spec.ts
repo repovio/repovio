@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 /** Hover an action and verify its accessible tooltip content. */
 async function expectActionTooltip(page: Page, trigger: Locator, text: string): Promise<void> {
@@ -139,6 +140,7 @@ test('repository and user administration render full-page Query Kit tables', /**
   await expect(page.getByRole('columnheader', { name: 'Workflow runs' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Members' })).toBeVisible();
   await expect(page.locator('tbody')).toContainText('12');
+  await expectTableHover(page, page.getByRole('table').first());
   const membersCell = page.locator('tbody td').filter({ hasText: '+1' });
   await expect(membersCell).toContainText('+1');
   await membersCell.getByText('M1', { exact: true }).hover();
@@ -178,6 +180,7 @@ test('repository and user administration render full-page Query Kit tables', /**
   await expect(userBreadcrumb.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
   await expect(userBreadcrumb).toContainText('Users');
   await expect(page.getByText('System administrator', { exact: true })).toBeVisible();
+  await expectTableHover(page, page.getByRole('table').first());
   const deleteUserButton = page.getByRole('button', { name: 'Delete' });
   await expect(deleteUserButton).toBeDisabled();
   await expectActionTooltip(page, deleteUserButton, 'Delete');
@@ -324,6 +327,7 @@ test('adds multiple repositories selected from an enabled provider account', /**
   await expect(nextButton).toBeEnabled();
   await nextButton.click();
   await expect(page.getByRole('checkbox', { name: 'Select repovio/already-tracked' })).toBeDisabled();
+  await expectTableHover(page, page.getByRole('dialog').getByRole('table'));
   await page.getByPlaceholder('Search repositories').fill('repository');
   await page.getByRole('checkbox', { name: 'Select repovio/new-repository' }).click();
   await page.getByRole('checkbox', { name: 'Select repovio/another-repository' }).click();
@@ -478,6 +482,8 @@ test('repository dialog loads retention, filters, and members', /** Verifies rep
   await expect(workflowRunRetention).toHaveValue('30');
   await expect(repositoryDialog.getByText('draft-*', { exact: true })).toBeVisible();
   await expect(repositoryDialog.getByText('maintainer', { exact: true })).toBeVisible();
+  await expectTableHover(page, repositoryDialog.getByRole('table').nth(0));
+  await expectTableHover(page, repositoryDialog.getByRole('table').nth(1));
   await expect(repositoryDialog.getByRole('button', { name: 'Add workflow filter' })).toBeDisabled();
   await expect(repositoryDialog.getByRole('button', { name: 'Add member' })).toBeDisabled();
   await expect(repositoryDialog.getByRole('columnheader', { name: 'Actions' }).first()).toHaveCSS('position', 'sticky');
@@ -625,6 +631,7 @@ test('workflow runs render in a filterable and sortable full-page table', /** Ve
   await expect(page.getByRole('columnheader', { name: 'Title' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Workflow' })).toBeVisible();
   await expect(page.locator('tbody').getByText('Build on main', { exact: true })).toBeVisible();
+  await expectTableHover(page, page.getByRole('table').first());
   await expect(page.locator('tbody').getByText('Build', { exact: true })).toBeVisible();
   await expect(page.locator('tbody').getByRole('link', { name: 'Build on main', exact: true })).toHaveCount(0);
   await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();

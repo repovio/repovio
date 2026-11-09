@@ -1084,7 +1084,9 @@
     "title": "Repository-instellingen",
     "user": "Gebruiker",
     "workflowFilters": "Workflowfilters",
-    "workflowFiltersDescription": "Uitsluitfilters hebben voorrang op toestaanfilters."
+    "workflowFiltersDescription": "Uitsluitfilters hebben voorrang op toestaanfilters.",
+    "overview": "Overzicht",
+    "navigation": "Repositorynavigatie"
   },
   "securityAlerts": {
     "code": "Code scanning",
@@ -1131,7 +1133,9 @@
     },
     "title": "Alerts",
     "unavailable": "Unavailable data",
-    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
+    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available.",
+    "categoryNavigation": "Beveiligingscategorieën",
+    "unknownAvailability": "Beschikbaarheid is onbekend of synchronisatie is niet voltooid."
   },
   "sidebar": {
     "github": "Open GitHub repository",

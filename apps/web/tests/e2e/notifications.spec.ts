@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 };
 
@@ -189,6 +190,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Rules', exact: true })).toHaveCount(0);
   await expect(page.getByRole('cell', { name: 'Operations' })).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await expect(page.getByText('Workflow failed', { exact: true })).toBeVisible();
   const channelFields = channelQueryUrl?.searchParams.get('fields')?.split(',') ?? [];
   expect(channelFields).toEqual(expect.arrayContaining(['urlScheme', 'browserRecipients', 'eventSubscriptions']));
@@ -227,6 +229,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
   await expect(page.getByText('deploy-production')).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await page.getByRole('button', { name: 'View delivery details' }).click();
   await expect(page.getByRole('dialog', { name: 'Delivery details' })).toContainText(
     'Apprise notification delivery failed.',

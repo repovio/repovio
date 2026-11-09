@@ -155,6 +155,8 @@ all notification changes preserved and restored. The current PWA fixture isolati
 - The expanded production PWA suite passed **18/18**, including runtime branding, connectivity/cache isolation,
   update lifecycle, and the notification handler regressions.
 - Production notifications, dashboard, and responsive page-layout browser checks passed **30/30**.
+- A subsequent concurrent merge of PR #67 (`046f210`) was integrated into the draft PR. Root lint/typecheck,
+  all **78 web unit tests**, production web build, and the **30/30** browser suite passed again on that combined tree.
 - The PR is prepared as a draft because T017 and T047 still require real network-push receipt and a trusted physical
   OS notification click. Earlier synthetic tests and the prior failed real enrollment attempt do not close those gates.
 - The preexisting implementation was intentionally left uncommitted until this PR request under AGENTS.md. Delivery

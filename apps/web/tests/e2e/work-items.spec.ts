@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 const issue = {
   assignees: [{ avatarUrl: null, displayName: 'Alex Example', url: null, username: 'alex' }],
@@ -118,6 +119,7 @@ test('filters issues by every selected label and updated range, then renders san
   await expect(issueBreadcrumbs.getByText('Issues', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Issues' })).toBeVisible();
   await expect(page.getByText('Track provider issues')).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await page.getByRole('button', { name: 'Labels' }).click();
   await page.getByRole('option', { name: 'Bug' }).click();
   await page.getByRole('option', { name: 'Priority: High' }).click();

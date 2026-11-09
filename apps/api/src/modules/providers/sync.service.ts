@@ -10,6 +10,7 @@ import type {
   ProviderAdapter,
   ProviderRepositoryReference,
   ProviderSyncScope,
+  ProviderWorkflowLifecycle,
   ProviderWorkflowRun,
 } from './provider-adapter.js';
 import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
@@ -20,6 +21,7 @@ import type { RepositorySyncProgressReporter } from './sync-progress.js';
 import { WorkItemSyncService } from './work-item-sync.service.js';
 
 type SyncRepository = Awaited<ReturnType<PrismaService['repository']['findMany']>>[number] & {
+  workflowCiEnabled?: boolean | null;
   providerAccount: { id: string; providerType: ProviderType; baseUrl: string | null; encryptedAccessToken: string };
   workflowFilters: { mode: 'ALLOW' | 'DENY'; pattern: string }[];
 };
@@ -187,8 +189,12 @@ export class ProviderSyncService {
         return;
       }
       await reportProgress?.({ current: null, phase: 'FETCHING_WORKFLOWS', total: null });
-      const { existingProviderRunIds, runs } = await this.findWorkflowRuns(context, refreshedRepository, adapter);
-      await this.processWorkflowRuns(repository, runs, existingProviderRunIds, progress, reportProgress);
+      const { existingProviderRunIds, runs, lifecycles } = await this.reconcileWorkflowLifecycles(
+        context,
+        refreshedRepository,
+        adapter,
+      );
+      await this.processWorkflowRuns(repository, runs, existingProviderRunIds, progress, reportProgress, lifecycles);
       await reportProgress?.({ current: null, phase: 'REFRESHING_CHANGE_REQUESTS', total: null });
       await this.workItems?.reconcileWorkflowRunChangeRequests(repository.id);
       await this.refreshChangeRequestStates(context, refreshedRepository, adapter);
@@ -262,6 +268,113 @@ export class ProviderSyncService {
   }
 
   /**
+   * Refresh known and newly discovered workflow identities before evaluating run events.
+   *
+   * @param context - Read-only provider authentication context.
+   * @param repository - Repository whose workflows are being synchronized.
+   * @param adapter - Provider implementation exposing lifecycle observations when supported.
+   * @returns Discovered runs and confirmed lifecycle observations for existing and new workflows.
+   * @throws ProviderRequestError - When lifecycle reads fail; no observations are persisted until all reads succeed.
+   * @throws TypeError - When a provider read fails at the network layer.
+   */
+  private async reconcileWorkflowLifecycles(
+    context: ProviderAccountContext,
+    repository: SyncRepository,
+    adapter: ProviderAdapter,
+  ): Promise<{
+    existingProviderRunIds: Set<string>;
+    runs: ProviderWorkflowRun[];
+    lifecycles: Map<string, ProviderWorkflowLifecycle>;
+  }> {
+    if (!adapter.listWorkflowLifecycles)
+      return {
+        ...(await this.findWorkflowRuns(context, repository, adapter)),
+        lifecycles: new Map(),
+      };
+    const workflows = await this.prisma.workflow.findMany({
+      select: { providerWorkflowId: true },
+      where: { repositoryId: repository.id },
+    });
+    const knownIds = new Set(
+      workflows.map(
+        /** Selects known workflow identities, including inactive ones. */ (workflow) => workflow.providerWorkflowId,
+      ),
+    );
+    const observations = await adapter.listWorkflowLifecycles(context, repository, workflows);
+    const repositoryCiDisabled =
+      repository.workflowCiEnabled === false ||
+      observations.some(
+        /** Identifies explicit repository-level disabling. */ (observation) =>
+          observation.rawState === 'repository:ci:disabled' && observation.state === 'DISABLED',
+      );
+    const discovered = repositoryCiDisabled
+      ? { existingProviderRunIds: new Set<string>(), runs: [] as ProviderWorkflowRun[] }
+      : await this.findWorkflowRuns(context, repository, adapter);
+    const newIds = new Set(
+      discovered.runs
+        .filter(
+          /** Checks only newly discovered tracked identities. */ (run) =>
+            !knownIds.has(run.providerWorkflowId) &&
+            this.filters.shouldTrack(run.workflowName, repository.workflowFilters),
+        )
+        .map(/** Selects a newly discovered identity. */ (run) => run.providerWorkflowId),
+    );
+    if (newIds.size > 0) {
+      const repositoryObservation = observations.find(
+        /** Reuses one repository-level setting for all new identities. */ (observation) =>
+          observation.rawState?.startsWith('repository:ci:'),
+      );
+      if (repositoryObservation)
+        observations.push(
+          ...[...newIds].map(
+            /** Copies the confirmed repository setting without another provider read. */ (providerWorkflowId) => ({
+              ...repositoryObservation,
+              providerWorkflowId,
+            }),
+          ),
+        );
+      else if (
+        knownIds.size === 0 ||
+        (repository.providerAccount.providerType !== 'FORGEJO' && repository.providerAccount.providerType !== 'GITLAB')
+      )
+        observations.push(
+          ...(await adapter.listWorkflowLifecycles(
+            context,
+            repository,
+            [...newIds].map(
+              /** Builds an identity-only provider request. */ (providerWorkflowId) => ({ providerWorkflowId }),
+            ),
+          )),
+        );
+    }
+    const checkedAt = new Date();
+    await this.prisma.$transaction(
+      observations.map(
+        /** Updates only known identities in this repository. */ (observation) =>
+          this.prisma.workflow.updateMany({
+            data: {
+              lifecycleState: observation.state,
+              lifecycleRawState: observation.rawState,
+              lifecycleCheckedAt: checkedAt,
+            },
+            where: { repositoryId: repository.id, providerWorkflowId: observation.providerWorkflowId },
+          }),
+      ),
+    );
+    return {
+      ...discovered,
+      lifecycles: new Map(
+        observations.map(
+          /** Indexes authoritative observations for new workflows. */ (observation) => [
+            observation.providerWorkflowId,
+            observation,
+          ],
+        ),
+      ),
+    };
+  }
+
+  /**
    * Persist tracked runs and report progress for each discovered or refreshed run.
    *
    * @param repository - Repository identity and metadata required by the operation.
@@ -269,6 +382,7 @@ export class ProviderSyncService {
    * @param existingProviderRunIds - Existing runs that remain tracked even when filters changed after persistence.
    * @param progress - Aggregate synchronization identifier and repository counts.
    * @param reportProgress - Optional asynchronous callback persisting per-repository progress.
+   * @param lifecycles - Authoritative observations used for newly discovered workflows.
    * @returns A promise that resolves when the operation completes.
    * @throws Error - When an event delivery lacks its repository, event type, or source work item.
    */
@@ -278,6 +392,7 @@ export class ProviderSyncService {
     existingProviderRunIds: Set<string>,
     progress: SyncProgress,
     reportProgress?: RepositorySyncProgressReporter,
+    lifecycles: Map<string, ProviderWorkflowLifecycle> = new Map(),
   ): Promise<void> {
     await reportProgress?.({ current: 0, phase: 'PROCESSING_WORKFLOWS', total: runs.length });
     this.status.updateProviderSync(progress.id, {
@@ -292,7 +407,12 @@ export class ProviderSyncService {
         existingProviderRunIds.has(run.providerRunId) ||
         this.filters.shouldTrack(run.workflowName, repository.workflowFilters)
       )
-        await this.persistRunAndEvaluateEvents(repository.id, run, !repository.lastSyncAt);
+        await this.persistRunAndEvaluateEvents(
+          repository.id,
+          run,
+          !repository.lastSyncAt,
+          lifecycles.get(run.providerWorkflowId),
+        );
       await reportProgress?.({ current: index + 1, phase: 'PROCESSING_WORKFLOWS', total: runs.length });
       this.status.updateProviderSync(progress.id, {
         phase: 'PROCESSING_WORKFLOWS',
@@ -425,6 +545,7 @@ export class ProviderSyncService {
    *
    * @param repositoryId - Local identifier of the tracked repository.
    * @param run - Workflow run whose provider data or persisted state is being processed.
+   * @param lifecycle - Confirmed lifecycle metadata for a newly discovered workflow.
    * @param baseline - Whether this is the initial synchronization, during which lifecycle notifications are suppressed.
    * @returns A promise that resolves when the operation completes.
    * @throws Error - When an event delivery lacks its repository, event type, or source work item.
@@ -433,6 +554,7 @@ export class ProviderSyncService {
     repositoryId: string,
     run: ProviderWorkflowRun,
     baseline: boolean,
+    lifecycle?: ProviderWorkflowLifecycle,
   ): Promise<void> {
     const { durationMs, providerWorkflowId, workflowKind, workflowPath, ...runData } = run;
     const persistedRunData = { ...runData, durationMs: durationMs === null ? null : BigInt(durationMs) };
@@ -440,6 +562,13 @@ export class ProviderSyncService {
     const workflow = await this.prisma.workflow.upsert({
       where: { repositoryId_providerWorkflowId: { repositoryId, providerWorkflowId } },
       create: {
+        ...(lifecycle
+          ? {
+              lifecycleState: lifecycle.state,
+              lifecycleRawState: lifecycle.rawState,
+              lifecycleCheckedAt: lastSeenAt,
+            }
+          : {}),
         kind: workflowKind,
         lastSeenAt,
         name: run.workflowName,
@@ -480,7 +609,8 @@ export class ProviderSyncService {
         workflowId: workflow.id,
       },
     });
-    await this.notifications.evaluateWorkflowRun(workflowRun, previous?.status ?? null, baseline);
+    if (workflow.lifecycleState !== 'REMOVED' && workflow.lifecycleState !== 'DISABLED')
+      await this.notifications.evaluateWorkflowRun(workflowRun, previous?.status ?? null, baseline);
     if (workflowRun.pullRequestId) await this.workItems?.refreshPullRequestWorkflowStatus(workflowRun.pullRequestId);
   }
 

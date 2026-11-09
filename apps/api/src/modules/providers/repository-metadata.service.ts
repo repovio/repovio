@@ -85,13 +85,15 @@ export class RepositoryMetadataService {
     if (metadata.providerRepositoryId !== repository.providerRepositoryId)
       throw new ConflictException('Provider repository identity does not match the tracked repository.');
 
+    const lifecycleMetadata =
+      metadata.workflowCiEnabled === undefined ? {} : { workflowCiEnabled: metadata.workflowCiEnabled };
     if (metadata.name === repository.name && metadata.owner === repository.owner && metadata.url === repository.url)
-      return repository;
+      return metadata.workflowCiEnabled === undefined ? repository : { ...repository, ...lifecycleMetadata };
 
     await this.prisma.repository.update({
       where: { id: repository.id },
       data: { name: metadata.name, owner: metadata.owner, url: metadata.url },
     });
-    return { ...repository, name: metadata.name, owner: metadata.owner, url: metadata.url };
+    return { ...repository, ...lifecycleMetadata, name: metadata.name, owner: metadata.owner, url: metadata.url };
   }
 }

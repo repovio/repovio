@@ -13,7 +13,7 @@ and defend run-row rendering against previously persisted bad values. Reuse exis
 localized unavailable labels. Preserve valid terminal timing, including zero duration. No live elapsed counter.
 
 Planning, task generation, [Issue #74](https://github.com/repovio/repovio/issues/74), and the planning-only commit/push
-are approved. Product implementation, deployment, and merging remain separately gated.
+and product implementation are approved. All implementation tasks are complete; deployment and merging remain separately gated.
 
 ## Technical Context
 
@@ -45,14 +45,14 @@ coverage; change their timing mapping only if the same invariant fails. No unrel
 Pre-research and post-design gates:
 
 - PASS: Bounded user-reported bug, aligned with `PLAN.md`; no later issue work. Issue #74 supplies the
-  authorized tracking association; product implementation remains pending approval.
+  authorized tracking association; implementation approval was granted before source changes.
 - PASS: Provider operations remain read-only; no permission, credential, or notification changes.
 - PASS: Existing synchronization identity/upserts remain idempotent. Active timing is replaced, never merged back
   from stale terminal fields.
 - PASS: Existing DTO keys, nullability, repository restrictions, and schema remain compatible.
 - PASS: Design requires focused provider/sync/read-projection and presentation tests plus browser checks in both locales.
 - PASS: No vocabulary change, toolchain migration, schema migration, or new infrastructure.
-- PASS: Planning files only; commits and task generation remain separate workflow decisions.
+- PASS: Planning and implementation approvals were obtained separately; substantive task commits each contain one Changeset.
 
 No constitution exceptions. Documentation coverage follows explicit project instructions if implementation begins.
 
@@ -117,4 +117,4 @@ All design unknowns resolved; live-provider reproduction remains unverified evid
 
 ## Complexity Tracking
 
-No new architecture or justified violations. Feature context uses the existing Codex worktree and issue branch. Task generation is complete in [tasks.md](tasks.md); implementation has not run.
+No new architecture or justified violations. Feature context uses the existing Codex worktree and issue branch. Implementation and local verification are complete in [tasks.md](tasks.md); see [evidence.md](evidence.md).

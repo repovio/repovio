@@ -6,7 +6,7 @@
 
 **Created**: 2026-11-09
 
-**Status**: Planned; issue creation and planning commit approved; implementation pending.
+**Status**: Implemented and locally verified; pull request review and merge pending.
 
 **Input**: Active Workflow Runs display negative duration and a completion date of January 1, 1970.
 

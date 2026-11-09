@@ -4,7 +4,7 @@
 [data-model.md](data-model.md), and [contracts/ui-api.md](contracts/ui-api.md).
 
 **Approval**: Task generation, [Issue #74](https://github.com/repovio/repovio/issues/74), and the planning-only commit/push
-are approved on 2026-11-09. Implementation and merge remain separate decisions. All tasks below are unstarted.
+are approved on 2026-11-09. Implementation is approved and all tasks below are complete. Merge remains a separate decision.
 
 **Branch**: `codex/74-fix-active-run-timing`.
 
@@ -82,7 +82,7 @@ no duplicate run is created during transitions. No new status, schema field, or 
 
 ## Phase 5: Cross-Cutting Verification
 
-- [ ] T009 Validate the complete matrix in `specs/005-fix-active-run-timing/quickstart.md`; run affected API/web tests, lint, typecheck, documentation coverage, canonical formatting twice, `git diff --check`, and browser checks; verify `graphify-out/graph.json` matches source changes and record results, screenshot paths, task commit SHAs, and any unverified live-provider behavior in `specs/005-fix-active-run-timing/evidence.md`.
+- [x] T009 Validate the complete matrix in `specs/005-fix-active-run-timing/quickstart.md`; run affected API/web tests, lint, typecheck, documentation coverage, canonical formatting twice, `git diff --check`, and browser checks; verify `graphify-out/graph.json` matches source changes and record results, screenshot paths, task commit SHAs, and any unverified live-provider behavior in `specs/005-fix-active-run-timing/evidence.md`.
 
 **Acceptance**: All seven functional requirements and four success criteria have evidence. Disclose unrelated baseline
 failures; do not weaken checks. No release, deployment, bulk repair, or merge follows from task-generation approval.

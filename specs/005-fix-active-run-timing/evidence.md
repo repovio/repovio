@@ -100,3 +100,39 @@
 - These adapters now validate endpoints before deriving duration. Independently supplied GitLab duration remains
   available when valid. GitHub mapping changed only after this additional parity failure was reproduced.
 - Updated adapter suites: 97 tests passed; API typecheck passed. Final validation follows below.
+
+- T009 correction commit: `3d2fafb`, pushed.
+
+## Final Verification (T009)
+
+| Check                                      | Result                                                                               |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Full API suite on task-owned PostgreSQL 18 | 110 suites, 794 tests passed                                                         |
+| Full web unit suite                        | 23 files, 97 tests passed                                                            |
+| Timing browser acceptance                  | 10 scenarios passed, English/German, dashboard/global/repository history             |
+| Root lint and guideline regressions        | Passed, including documentation coverage for 680 handwritten files                   |
+| Root typecheck                             | All 5 Nx targets passed                                                              |
+| Canonical formatting                       | Root check passed; changed-file formatting stable across two passes                  |
+| Whitespace, artifact links, task IDs       | Passed                                                                               |
+| Changesets                                 | Seven focused patch entries for `repovio`; one per substantive implementation commit |
+| Graphify pre-commit                        | Passed; generated graph contains no absolute worktree/interpreter paths              |
+
+Final source revision tested: `3d2fafb`. Subsequent completion commit changes documentation only. `origin/main`
+remained at `1466da6` during final verification. Provider integrations retain their existing read-only requests.
+
+## Acceptance Traceability
+
+- FR-001/SC-001: Forgejo/provider parity, sync, DTO/controller, and stale active browser fixtures.
+- FR-002/SC-002: Sentinel, malformed, reversed, negative/nonfinite, and derived-endpoint regression matrices.
+- FR-003/SC-003: Valid terminal values, independent fallback, and zero-duration unit/browser assertions.
+- FR-004: Real persisted active rows normalize before synchronization; stale browser payloads are guarded independently.
+- FR-005: Same provider run identity survives repeated sync and active/terminal transitions; null overwrites are explicit.
+- FR-006/SC-004: English/German browser assertions and visually inspected desktop/mobile screenshots.
+- FR-007: Real PostgreSQL direct/group grant and field-selection assertions; approval metadata controls remain intact.
+
+## Limits
+
+Live provider payloads and production deployment were not exercised. Browser evidence uses synthetic intercepted
+API responses; PostgreSQL integration evidence uses a dedicated disposable container. No schema migration or bulk
+production data repair was added. Historical retained aggregates are not rewritten. Graphify's SQL parser dependency
+is unavailable; AST hook reports the existing SQL extraction limitation without failing.

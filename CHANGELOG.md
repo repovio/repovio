@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.3.0
+
+### Minor Changes
+
+- bc2cd70: Consolidate notification toolbars, guide channel setup through four steps, and add private recent notifications to the
+  navbar. Repair browser-push enrollment, account cleanup, expired-device outcomes, and durable recipient attribution.
+
+  Apply the additive notification-attempt migrations before starting the updated API. Existing unattributed attempts stay
+  outside personal history; administrative delivery history remains available to System Administrators.
+
+- cc6ecd8: Add administrator-owned organization and GitLab group webhook configuration with encrypted, write-only signing secrets, immutable namespaces, safe configuration APIs, and an additive database migration.
+- cc6ecd8: Accept signed organization and GitLab group webhook deliveries, including subgroup namespaces, and schedule read-only synchronization for matching tracked repositories. Persist receipts and queue work atomically, deduplicate repeated deliveries, and preserve existing repository and GitHub App ingress.
+- cc6ecd8: Add localized organization/group webhook management and automatic repository inheritance with a blue Organization badge. Preserve repository secrets as fallback and display the most specific GitLab group configuration. Repository webhook metadata now includes its effective source and organization configuration; strict API clients must accept the additional fields.
+- 046f210: Add Repository detail pages with six-section navigation, scoped activity and security views, and consistent accessible table-row navigation and hover feedback.
+
+### Patch Changes
+
+- b2d2390: Add reusable authenticated PWA browser fixtures and explicit cache-boundary assertions.
+- b2d2390: Verify service-worker caches exclude protected responses across local sign-out and account switching.
+- b2d2390: Verify uncached dynamic responses fail offline and recover through fresh network requests.
+- b2d2390: Ensure denied PWA authorization fixtures contain no private record data and assert the response body boundary.
+- b2d2390: Start disposable PWA integration web servers from the current build to avoid stale asset metadata across rebuilds.
+- b2d2390: Cover production sign-in, deep-link reloads, and denied repository navigation without custom installation APIs.
+- b2d2390: Cover repeated service-worker releases, explicit acceptance across tabs, and recoverable registration failures.
+- b2d2390: Verify installation identity remains stable across runtime branding configurations.
+- b2d2390: Add opt-in PWA verification against disposable local API accounts and repository permissions.
+- b2d2390: Isolate production service-worker tests and restore worker bytes after every scenario.
+- b2d2390: Announce PWA update status and activation failures to assistive technology, with regression coverage for loading and retry.
+- cd5a0c4: Document workflow lifecycle visibility, provider limitations, and the additive migration rollout.
+- d9cb3c6: Update Scalar API reference to 1.2.35 to include the HTML content-type fix for API documentation rendering.
+- cd5a0c4: Persist provider-confirmed workflow lifecycle state independently of historical run outcomes with an additive migration.
+- cd5a0c4: Read explicit workflow lifecycle metadata from GitHub and Gitea and repository CI availability from Forgejo and GitLab.
+- cd5a0c4: Reconcile workflow lifecycle before processing runs and suppress new notifications for confirmed inactive workflows.
+- cd5a0c4: Exclude removed and disabled workflows from current attention, approval, and active-run lists and counters.
+- cd5a0c4: Expose projectable workflow lifecycle state and check time consistently in API, dashboard, MCP, and OpenAPI contracts.
+- cd5a0c4: Show localized lifecycle badges and accessible check-time tooltips in retained workflow-run history.
+
 ## 2.2.0
 
 ### Minor Changes

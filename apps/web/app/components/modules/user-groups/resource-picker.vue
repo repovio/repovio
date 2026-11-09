@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 const props = defineProps<{ kind: 'users' | 'groups'; disabled?: boolean }>();
 const selected = defineModel<string>();
 const api = useRepovioApi();
@@ -78,7 +79,7 @@ async function load(): Promise<void> {
     items.value = response.data.items.map(
       /** Labels the safe account or group candidate. */ (item) => ({
         id: item.id,
-        label: 'username' in item ? item.username : item.name,
+        label: 'username' in item ? getUserIdentityLabel(item) : item.name,
       }),
     );
     pageCount.value = response.data.meta.pageCount;

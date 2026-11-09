@@ -68,7 +68,7 @@ selected value/chip, duplicate-name disambiguation, later-page search, and uncha
       `firstName`/`lastName`” and “New name properties may be absent in older responses; current API explicitly emits
       string/null values.” Add safe-response/authorization regression coverage, relevant examples in proposed
       `apps/api/bruno/notifications/get channel.bru`, and `.changeset/notification-recipient-names.md`.
-- [ ] T004 [US1] Extend User search in `apps/web/app/composables/api/repovio-api.ts` with focused transport assertions in
+- [x] T004 [US1] Extend User search in `apps/web/app/composables/api/repovio-api.ts` with focused transport assertions in
       proposed `apps/web/app/composables/api/user-search.spec.ts`; use whole-query username matching OR all name tokens
       across firstName/lastName case-insensitively, omit empty predicates, preserve username/ID ordering and pagination;
       verify server permission composition in `apps/api/src/modules/user-groups/user-groups.integration.spec.ts` and browser

@@ -20,3 +20,5 @@
 - T002: `f125c13` — normalize user identity names; focused verification passed before commit.
 
 - T003: `8ecbdfb` — expose safe notification recipient names; focused verification passed before commit.
+
+- T004: `1f2dfe1` — search users by personal names; focused verification passed before commit.

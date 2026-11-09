@@ -53,3 +53,13 @@
   waiting worker, explicit acceptance in two tabs, and rejected registration with a usable online sign-in page and no
   uncaught error. Worker imports still include `notification-sw.js`. A unique worker query selects each test release,
   matching the existing suite's update technique; this is lifecycle evidence, not deployment/CDN cache validation.
+
+- T010/T012: Regression reproduced in all four EN/DE/viewport scenarios: the real update component had no accessible
+  live status region. Added `role="status"` to the existing alert; tests now pass failure announcement semantics, held
+  request loading, disabled duplicate clicks, retry, and Later. A focused compiled-component setup test verifies absent
+  `$pwa` remains inert. These test/fix tasks form one working increment rather than committing a failing intermediate.
+- T013/T014: Existing EN/DE translations required no text changes. Keyboard focus/Enter, 390/1440 px width, scroll-width
+  assertions, pending/failure screenshots, and explicit retry passed. Screenshots visually inspected for English mobile
+  and German desktop failure states, plus mobile pending state: readable text, contained buttons, no overflow.
+  Full production suite passed 17 scenarios (16.2 seconds); four prompt scenarios reran after duplicate-click coverage.
+  Lifecycle uses the real generated worker; prompt failure injection replaces only the reactive plugin boundary.

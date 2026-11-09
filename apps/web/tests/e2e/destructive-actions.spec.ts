@@ -78,6 +78,7 @@ for (const locale of ['en', 'de']) {
     expect(requests).toBe(1);
     await confirm.click();
     await expect(confirm).toBeDisabled();
+    await expect(confirm).not.toHaveCSS('cursor', 'pointer');
     await expect(dialog.getByRole('button', { name: de ? 'Abbrechen' : 'Cancel', exact: true })).toBeDisabled();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeVisible();

@@ -24,7 +24,7 @@ track validated task commits, not the earlier editing chronology.
 ## Phase 4: User Story 2 - Preserved History
 
 - [x] T005 [US2] Extend shared schemas, DTOs, context loading, and API/MCP/OpenAPI contract tests in libs/schemas and apps/api.
-- [ ] T006 [US2] Add the lifecycle badge, complete locales, and browser regressions in apps/web.
+- [x] T006 [US2] Add the lifecycle badge, complete locales, and browser regressions in apps/web.
 
 ## Phase 5: Documentation and Verification
 
@@ -56,3 +56,4 @@ because its code was edited or tested before issue #61 was created.
 | T003 | `e15f607` | Staged synchronization/metadata tests and API typecheck passed.                              |
 | T004 | `466aa4d` | Staged query/counter tests, PostgreSQL authorization integration, and API typecheck passed.  |
 | T005 | `a381e10` | Staged contract tests, API typecheck/build, and deterministic offline OpenAPI export passed. |
+| T006 | `1033138` | 47 web unit tests, 5 Chromium scenarios, and web typecheck passed.                           |

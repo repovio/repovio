@@ -24,3 +24,17 @@ An empty result can be correct after a successful replacement run. For older fai
 [All runs](/docs/next/workflow-runs). Clear filters and check repository memberships before treating an absent context
 as missing data. Provider actions are observed asynchronously; inspect [Jobs](/docs/next/guide-jobs) if state stays
 stale. Loading and request errors are separate from an empty queue; retry after API recovery.
+
+## Removed and disabled workflows
+
+After synchronization confirms a workflow is removed or disabled, its runs leave Needs attention, Awaiting approval,
+and current active-run counters. All runs retains their actual outcomes and displays a lifecycle badge with the latest
+confirmed check time. Historical metrics and configured retention remain unchanged. Reactivation restores current views.
+
+GitHub and supported Gitea versions expose individual workflow lifecycle metadata. Forgejo Actions and GitLab CI/CD
+repository-level disabling is supported; disappearance of an individual Forgejo definition or GitLab pipeline name is
+inconclusive. Unknown states, missing runs, and inaccessible APIs never prove removal. A failed check preserves the last
+confirmed state; inspect Jobs for synchronization failures.
+
+The additive database migration must run before the updated application. Existing workflows start as Unknown and are
+classified by the next workflow synchronization. Application rollback may leave the additional columns in place.

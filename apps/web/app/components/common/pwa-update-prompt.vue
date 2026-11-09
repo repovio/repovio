@@ -8,6 +8,7 @@
       color="primary"
       icon="i-lucide-refresh-cw"
       orientation="horizontal"
+      role="status"
       variant="solid"
       :description="updateFailed ? t('pwa.updateError') : t('pwa.updateDescription')"
       :title="t('pwa.updateTitle')"

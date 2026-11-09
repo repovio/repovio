@@ -17,6 +17,7 @@ import type {
   ProviderWebhookRequest,
   ProviderWorkItemLabel,
   ProviderWorkItemQuery,
+  ProviderWorkflowLifecycle,
   ProviderWorkflowRun,
   VerifiedWebhook,
 } from '../provider-adapter.js';
@@ -283,6 +284,53 @@ export class GitHubActionsAdapter implements ProviderAdapter {
           this.resolveWorkflowRun(context, repository, run),
       ),
     );
+  }
+
+  /**
+   * Read authoritative lifecycle observations for distinct native GitHub workflow identities.
+   * Missing workflows and unrecognized states are omitted rather than interpreted as deletion.
+   *
+   * @param context - Read-only provider account credentials and instance configuration.
+   * @param repository - Repository owning the known workflow identities.
+   * @param workflows - Known workflow identities, including inactive workflows.
+   * @returns Confirmed lifecycle observations with the provider's raw state.
+   * @throws ProviderRequestError - When a provider read fails, preserving retry metadata.
+   * @throws TypeError - When a provider request fails at the network layer.
+   */
+  async listWorkflowLifecycles(
+    context: ProviderAccountContext,
+    repository: ProviderRepositoryReference,
+    workflows: readonly { providerWorkflowId: string }[],
+  ): Promise<ProviderWorkflowLifecycle[]> {
+    const observations: ProviderWorkflowLifecycle[] = [];
+    const identities = new Set(
+      workflows.map(/** Selects the provider-native workflow identity. */ (workflow) => workflow.providerWorkflowId),
+    );
+    for (const providerWorkflowId of identities) {
+      if (!/^[1-9]\d*$/.test(providerWorkflowId)) continue;
+      const response = await this.fetchFn(
+        this.url(
+          context,
+          `/repos/${repository.owner}/${repository.name}/actions/workflows/${encodeURIComponent(providerWorkflowId)}`,
+        ),
+        { headers: this.headers(context) },
+      );
+      if (response.status === 404) continue;
+      if (!response.ok) throw providerRequestError('GitHub', response);
+      const payload = (await response.json()) as { state?: unknown };
+      const rawState = payload.state;
+      if (typeof rawState !== 'string') continue;
+      const state =
+        rawState === 'active'
+          ? 'ACTIVE'
+          : rawState === 'deleted'
+            ? 'REMOVED'
+            : rawState.startsWith('disabled_')
+              ? 'DISABLED'
+              : null;
+      if (state) observations.push({ providerWorkflowId, rawState, state });
+    }
+    return observations;
   }
 
   /**

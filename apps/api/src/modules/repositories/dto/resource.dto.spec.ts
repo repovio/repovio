@@ -142,7 +142,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
 
     expect(
       Fields.parseAndValidate(
-        'id,url,workflowName,displayTitle,status,completedAt,durationMs,repositoryName,repositoryOwner,providerType',
+        'id,url,workflowName,displayTitle,status,completedAt,durationMs,repositoryName,repositoryOwner,providerType,workflowLifecycleState,workflowLifecycleCheckedAt',
         schema,
       ),
     ).toEqual({
@@ -156,6 +156,8 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
       status: true,
       url: true,
       workflowName: true,
+      workflowLifecycleState: true,
+      workflowLifecycleCheckedAt: true,
     });
   });
 
@@ -164,6 +166,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
       id: 'run',
       providerRunId: '1',
       workflowName: 'Build',
+      workflow: { lifecycleState: 'REMOVED', lifecycleCheckedAt: new Date('2026-11-09T12:00:00Z') },
       displayTitle: 'Build on main',
       url: 'https://example.test/run',
       providerCreatedAt: new Date(),
@@ -186,6 +189,8 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
     expect(dto.status).toBe('RUNNING');
     expect(dto).toMatchObject({
       displayTitle: 'Build on main',
+      workflowLifecycleState: 'REMOVED',
+      workflowLifecycleCheckedAt: '2026-11-09T12:00:00.000Z',
       durationMs: 2_592_164_000,
       providerType: 'GITHUB',
       repositoryName: 'repovio',

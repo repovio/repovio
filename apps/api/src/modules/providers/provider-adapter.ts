@@ -20,6 +20,8 @@ export interface ProviderAccountContext {
 
 /** Repository returned by a provider's repository-discovery API. */
 export interface ProviderRepository {
+  /** CI availability observed during this repository read; null means inconclusive. */
+  workflowCiEnabled?: boolean | null;
   name: string;
   owner: string;
   providerRepositoryId: string;
@@ -28,6 +30,8 @@ export interface ProviderRepository {
 
 /** Repository identity retained by Repovio for provider run requests. */
 export interface ProviderRepositoryReference {
+  /** Reuse repository metadata from this sync instead of issuing a duplicate read. */
+  workflowCiEnabled?: boolean | null;
   name: string;
   owner: string;
   providerRepositoryId: string;
@@ -133,6 +137,13 @@ export interface ProviderChangeRequestState {
   mergedAt: Date | null;
   state: 'OPEN' | 'CLOSED' | 'MERGED';
   targetBranch: string | null;
+}
+
+/** Authoritative provider lifecycle observation; omitted identities preserve stored knowledge. */
+export interface ProviderWorkflowLifecycle {
+  providerWorkflowId: string;
+  state: 'UNKNOWN' | 'ACTIVE' | 'DISABLED' | 'REMOVED';
+  rawState: string | null;
 }
 
 /** Provider workflow run normalized before persistence in Repovio. */
@@ -339,6 +350,20 @@ export interface ProviderAdapter {
     repository: ProviderRepositoryReference,
     updatedAfter?: Date,
   ): Promise<ProviderWorkflowRun[]>;
+  /**
+   * Read authoritative lifecycle metadata once for each known workflow identity.
+   * Omitted results mean no reliable lifecycle information and must preserve stored state.
+   *
+   * @param context - Read-only provider authentication context.
+   * @param repository - Repository owning the workflows.
+   * @param workflows - Known workflow identities, including inactive workflows.
+   * @returns Confirmed lifecycle observations; absence never means removal.
+   */
+  listWorkflowLifecycles?(
+    context: ProviderAccountContext,
+    repository: ProviderRepositoryReference,
+    workflows: readonly { providerWorkflowId: string }[],
+  ): Promise<ProviderWorkflowLifecycle[]>;
   /**
    * Read the provider identity to verify credentials without modifying provider resources.
    *

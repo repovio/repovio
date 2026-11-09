@@ -24,6 +24,7 @@ import type {
   RepositoryMembership,
   RepositorySyncRequest,
   User,
+  Workflow,
   WorkflowFilter,
   WorkflowRun,
 } from '../../../generated/prisma/client.js';
@@ -193,6 +194,8 @@ export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
             id: model.id,
             providerRunId: model.providerRunId,
             workflowName: model.workflowName,
+            workflowLifecycleState: model.workflow?.lifecycleState ?? 'UNKNOWN',
+            workflowLifecycleCheckedAt: model.workflow?.lifecycleCheckedAt ?? null,
             displayTitle: model.displayTitle,
             url: model.url,
             providerCreatedAt: model.providerCreatedAt,
@@ -223,6 +226,7 @@ export type WorkflowRunResourceModel = Omit<
   | 'changeRequestTargetBranch'
   | 'pullRequestId'
 > & {
+  workflow?: Pick<Workflow, 'lifecycleState' | 'lifecycleCheckedAt'>;
   repository: Pick<Repository, 'name' | 'owner'> & {
     providerAccount: Pick<ProviderAccount, 'providerType'>;
   };

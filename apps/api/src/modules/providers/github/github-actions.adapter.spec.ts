@@ -12,6 +12,87 @@ const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(f
 describe('GitHubActionsAdapter', /** Groups scenarios for GitHubActionsAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
 
+  it('reads authoritative lifecycle states once per native workflow identity', /** Verifies lifecycle normalization and identity deduplication. */ async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: 'deleted' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: 'disabled_manually' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: 'active' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: 'disabled_inactivity' })));
+    const adapter = new GitHubActionsAdapter(fetchFn);
+
+    await expect(
+      adapter.listWorkflowLifecycles(context, { owner: 'octo', name: 'repovio', providerRepositoryId: '1' }, [
+        { providerWorkflowId: '408114051' },
+        { providerWorkflowId: '2' },
+        { providerWorkflowId: '3' },
+        { providerWorkflowId: '4' },
+        { providerWorkflowId: '408114051' },
+        { providerWorkflowId: 'legacy:name:Documentation' },
+      ]),
+    ).resolves.toEqual([
+      { providerWorkflowId: '408114051', rawState: 'deleted', state: 'REMOVED' },
+      { providerWorkflowId: '2', rawState: 'disabled_manually', state: 'DISABLED' },
+      { providerWorkflowId: '3', rawState: 'active', state: 'ACTIVE' },
+      { providerWorkflowId: '4', rawState: 'disabled_inactivity', state: 'DISABLED' },
+    ]);
+    expect(fetchFn).toHaveBeenCalledTimes(4);
+    expect(fetchFn).toHaveBeenNthCalledWith(
+      1,
+      'https://api.github.com/repos/octo/repovio/actions/workflows/408114051',
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+    expect(
+      fetchFn.mock.calls.every(
+        /** Ensures lifecycle reads never issue provider mutations. */ ([, init]) =>
+          !init.method || init.method === 'GET',
+      ),
+    ).toBe(true);
+  });
+
+  it('omits unknown, malformed, and missing lifecycle observations', /** Verifies ambiguous responses never imply removal. */ async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: 'future_state' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ state: null })))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }));
+
+    await expect(
+      new GitHubActionsAdapter(fetchFn).listWorkflowLifecycles(
+        context,
+        { owner: 'octo', name: 'repovio', providerRepositoryId: '1' },
+        [{ providerWorkflowId: '1' }, { providerWorkflowId: '2' }, { providerWorkflowId: '3' }],
+      ),
+    ).resolves.toEqual([]);
+  });
+
+  it.each([401, 403, 429, 500])(
+    'preserves lifecycle provider errors with status %i',
+    /** Verifies lifecycle failures remain visible to synchronization retry handling. */ async (status) => {
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValue(new Response('sensitive response', { headers: { 'retry-after': '60' }, status }));
+
+      await expect(
+        new GitHubActionsAdapter(fetchFn).listWorkflowLifecycles(
+          context,
+          { owner: 'octo', name: 'repovio', providerRepositoryId: '1' },
+          [{ providerWorkflowId: '1' }],
+        ),
+      ).rejects.toMatchObject({ message: `GitHub API request failed with status ${status}.`, status });
+    },
+  );
+
+  it('propagates lifecycle network failures', /** Verifies network failures cannot become lifecycle observations. */ async () => {
+    const error = new TypeError('Network unavailable');
+    const adapter = new GitHubActionsAdapter(jest.fn().mockRejectedValue(error));
+    await expect(
+      adapter.listWorkflowLifecycles(context, { owner: 'octo', name: 'repovio', providerRepositoryId: '1' }, [
+        { providerWorkflowId: '1' },
+      ]),
+    ).rejects.toBe(error);
+  });
+
   it('retains GitHub rate-limit timing without exposing the response body', /** Verifies retains GitHub rate-limit timing without exposing the response body. */ async () => {
     const adapter = new GitHubActionsAdapter(
       jest.fn().mockResolvedValue(new Response('sensitive', { headers: { 'retry-after': '60' }, status: 429 })),

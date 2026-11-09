@@ -79,6 +79,10 @@
       </template>
       <template #workflowName-cell="{ row }">
         <span class="text-sm text-muted">{{ row.original.workflowName }}</span>
+        <ModulesWorkflowRunsLifecycleBadge
+          :checked-at="row.original.workflowLifecycleCheckedAt"
+          :state="row.original.workflowLifecycleState"
+        />
       </template>
       <template #repositoryName-cell="{ row }">
         <span>{{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}</span>
@@ -290,7 +294,7 @@ const workflowRunTable = useTable({
   defaultItemsPerPage: 25,
   endpoint: props.endpoint,
   name: props.name,
-  staticFields: ['id', 'repositoryOwner', 'url'],
+  staticFields: ['id', 'repositoryOwner', 'url', 'workflowLifecycleState', 'workflowLifecycleCheckedAt'],
   staticFilter,
 });
 const {

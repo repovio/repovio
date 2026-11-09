@@ -696,7 +696,12 @@
     "repositoryFilterLoadError": "Repository filter options could not be loaded.",
     "search": "Search workflow runs",
     "searchPlaceholder": "Search workflows or repositories",
-    "title": "Workflow runs"
+    "title": "Workflow runs",
+    "lifecycle": {
+      "REMOVED": "Removed",
+      "DISABLED": "Disabled",
+      "checkedAt": "Last checked: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} attempts",

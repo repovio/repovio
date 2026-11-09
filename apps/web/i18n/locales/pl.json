@@ -696,7 +696,12 @@
     "notAvailable": "—",
     "repositoryFilterLoadError": "Nie udało się załadować opcji filtra repozytoriów.",
     "search": "Szukaj wykonań workflow",
-    "searchPlaceholder": "Szukaj przepływów lub repozytoriów"
+    "searchPlaceholder": "Szukaj przepływów lub repozytoriów",
+    "lifecycle": {
+      "REMOVED": "Usunięty",
+      "DISABLED": "Wyłączony",
+      "checkedAt": "Ostatnio sprawdzono: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} prób",

@@ -48,6 +48,13 @@ test('exports the real application deterministically without any network access 
     assert.deepEqual(document.servers, [{ url: '/' }]);
     assert.ok(Object.keys(document.paths).length > 20);
     assert.ok(document.paths['/api/health']);
+    assert.deepEqual(
+      document.components.schemas.WorkflowRunDtoPage.properties.items.items.properties.workflowLifecycleState.enum,
+      ['UNKNOWN', 'ACTIVE', 'DISABLED', 'REMOVED'],
+    );
+    assert.ok(
+      document.components.schemas.WorkflowRunDtoPage.properties.items.items.properties.workflowLifecycleCheckedAt,
+    );
     assert.ok(!document.paths['/api/v1/mcp']);
     assert.ok(!first.includes('private-deployment.example.invalid'));
     assert.ok(!first.includes('inherited-secret-must-not-appear'));

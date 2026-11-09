@@ -1,0 +1,6 @@
+enum WorkflowLifecycleState {
+  UNKNOWN
+  ACTIVE
+  DISABLED
+  REMOVED
+}

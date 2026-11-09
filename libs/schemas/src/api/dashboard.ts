@@ -76,6 +76,8 @@ export const ApiDashboardWorkflowRunSchema = z.strictObject({
   id: z.string(),
   providerRunId: z.string(),
   workflowName: z.string(),
+  workflowLifecycleState: z.enum(['UNKNOWN', 'ACTIVE', 'DISABLED', 'REMOVED']).optional(),
+  workflowLifecycleCheckedAt: z.iso.datetime({ offset: true }).nullable().optional(),
   displayTitle: z.string(),
   url: z.string(),
   providerCreatedAt: z.iso.datetime({ offset: true }),

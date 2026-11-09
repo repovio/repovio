@@ -11,6 +11,7 @@ import type { Prisma, WorkflowRun } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import type { WorkflowRunQueryDto } from './dto/workflow-run-query.dto.js';
+import { actionableWorkflowRunWhere } from './workflow-lifecycle.js';
 
 const terminalWorkflowRunStatuses = ['SUCCESS', 'FAILED', 'CANCELLED', 'SKIPPED', 'UNKNOWN'] as const;
 
@@ -18,7 +19,7 @@ const needsAttentionCandidateWhere = {
   awaitingApproval: false,
   completedAt: { not: null },
   status: { in: [...terminalWorkflowRunStatuses] },
-  workflow: { kind: 'STANDARD' },
+  workflow: { kind: 'STANDARD', ...actionableWorkflowRunWhere.workflow },
 } satisfies Prisma.WorkflowRunWhereInput;
 
 const actionableChangeRequestWhere = {
@@ -270,6 +271,7 @@ export class WorkflowRunsQueryService extends QueryService<
         distinct: ['workflowId', 'scopeKey'],
         orderBy: [{ providerCreatedAt: 'desc' }, { id: 'desc' }],
         select: { id: true },
+        where: actionableWorkflowRunWhere,
       },
       ability,
     );

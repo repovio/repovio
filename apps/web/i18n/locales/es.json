@@ -696,7 +696,12 @@
     "notAvailable": "—",
     "repositoryFilterLoadError": "No se pudieron cargar las opciones del filtro de repositorios.",
     "search": "Buscar ejecuciones de flujo",
-    "searchPlaceholder": "Buscar flujos o repositorios"
+    "searchPlaceholder": "Buscar flujos o repositorios",
+    "lifecycle": {
+      "REMOVED": "Eliminado",
+      "DISABLED": "Desactivado",
+      "checkedAt": "Última comprobación: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} intentos",

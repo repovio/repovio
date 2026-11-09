@@ -28,6 +28,12 @@ It is distinct from a Repovio User and does not imply access to Repovio.
 A named automation within a Repository whose executions are tracked together.
 For GitLab, Repovio groups pipeline executions under a workflow identity derived from the pipeline name or its fallback.
 
+**Workflow Lifecycle**:
+A Workflow's last confirmed availability at its Provider: Active, Disabled, Removed, or Unknown.
+Disabled and Removed Workflows are excluded from current attention, approval, and active-run views, while their runs
+remain available in history under the configured Retention policy. Unknown does not imply removal.
+A historical Workflow Run cannot reactivate a Workflow; fresh provider metadata is required.
+
 **Workflow Run**:
 One execution of a Workflow, with its own status, timing, and branch or change-request context.
 A GitLab pipeline execution is represented as a Workflow Run.

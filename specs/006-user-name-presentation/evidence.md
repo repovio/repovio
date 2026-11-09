@@ -74,3 +74,8 @@
   the Gotify scenario. API responses are mocked for browser tests; PostgreSQL-backed API tests ran separately.
 - No implementation extension hooks are configured. All ten implementation increments have one focused patch Changeset;
   setup and verification documentation have no fabricated release entries. Merge remains unapproved.
+
+- T012: `59bf762` — record user identity acceptance evidence; focused verification passed before commit.
+
+- Cleanup: stopped the two task-owned web servers and removed the isolated PostgreSQL container and its anonymous volume.
+- Final delivery: all twelve tasks completed; PR creation follows. Remote CI and merge remain separate from local proof.

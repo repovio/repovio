@@ -4,7 +4,7 @@
 [UI/API contract](contracts/user-identity.md), and [validation guide](quickstart.md).
 
 **Status**: Implementation and per-task commit/push approved for issue
-[#76](https://github.com/repovio/repovio/issues/76). T001–T011 completed and pushed; final verification in progress.
+[#76](https://github.com/repovio/repovio/issues/76). All twelve tasks completed, verified, and pushed.
 Merge remains a separate approval.
 
 **Branch**: `codex/76-user-name-presentation`.
@@ -152,7 +152,7 @@ identifiable without empty parentheses, fabricated names, or changed selected ID
 
 ## Phase 6: Cross-Cutting Verification
 
-- [ ] T012 Run all affected checks and browser scenarios from `specs/006-user-name-presentation/quickstart.md`, verify
+- [x] T012 Run all affected checks and browser scenarios from `specs/006-user-name-presentation/quickstart.md`, verify
       contract consistency and unchanged permissions/credential exclusion, inspect desktop/narrow EN/DE screenshots, and
       record actual commands/results, task commit SHAs, per-surface evidence, and any explicit blockers in
       `specs/006-user-name-presentation/evidence.md`; validate canonical formatting stability, required documentation,

@@ -45,3 +45,16 @@
 - Expanded coverage: QUEUED and RUNNING through provider listing, explicit detail reconciliation, and the
   repository queue entry point used by webhook-driven synchronization. Six cases verify repeated stable-identity upserts.
 - Sync suite: 25 tests passed; API typecheck and focused ESLint passed.
+
+- T005 commit: `a02a499`, pushed.
+
+## T006: Existing Row Read Projections
+
+- Five new DTO/controller regression cases failed before the fix, exposing stale completion or final duration.
+- Resource and dashboard DTOs now mask active final timing before wire serialization and field projection.
+- Focused DTO/controller suites: 14 tests passed; actual PostgreSQL authorization suite: 30 tests passed.
+- Database cases cover direct/group grants, repository-scoped reads, inaccessible repositories, and requested timing
+  fields without status. Status remains internal and is not exposed by restricted field selection.
+- API typecheck and changed-file ESLint passed. Existing nullable schemas/OpenAPI keys and client DTO types unchanged.
+- Integration database is task-owned `repovio74-postgres` on loopback port 55474, initialized from the existing 46
+  migrations. Only synthetic test data is truncated by the repository's guarded test cleanup.

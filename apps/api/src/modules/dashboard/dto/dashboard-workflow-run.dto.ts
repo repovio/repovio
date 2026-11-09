@@ -24,6 +24,7 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: DashboardWorkflowRunModel): DashboardWorkflowRunDto {
+    const active = model.status === 'QUEUED' || model.status === 'RUNNING';
     return DashboardWorkflowRunDto.schema.parse(
       toWire({
         awaitingApproval: model.awaitingApproval,
@@ -36,8 +37,8 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
         url: model.url,
         providerCreatedAt: model.providerCreatedAt,
         startedAt: model.startedAt,
-        completedAt: model.completedAt,
-        durationMs: model.durationMs === null ? null : Number(model.durationMs),
+        completedAt: active ? null : model.completedAt,
+        durationMs: active || model.durationMs === null ? null : Number(model.durationMs),
         reviewUrl: model.reviewUrl,
         status: model.status,
         repository: {

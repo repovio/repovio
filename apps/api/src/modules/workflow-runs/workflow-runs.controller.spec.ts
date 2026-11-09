@@ -89,6 +89,75 @@ describe('WorkflowRunsController', /** Groups scenarios for WorkflowRunsControll
     ]);
   });
 
+  it('normalizes active timing while projecting fields without exposing status', /** Verifies loads and projects the repository and provider context required by the history table. */ async () => {
+    const workflowRun = {
+      awaitingApproval: false,
+      completedAt: new Date('2026-09-08T08:02:30.000Z'),
+      createdAt: new Date('2026-09-08T08:00:00.000Z'),
+      displayTitle: 'Build on main',
+      durationMs: 150_000n,
+      event: 'push',
+      headBranch: 'main',
+      headSha: '0123456789abcdef',
+      id: 'run-1',
+      providerCreatedAt: new Date('2026-09-08T08:00:00.000Z'),
+      providerRunId: '42',
+      rawStatus: 'completed',
+      reviewUrl: null,
+      repository: {
+        name: 'repovio',
+        owner: 'twaelde',
+        providerAccount: { providerType: 'GITHUB' },
+      },
+      repositoryId: 'repository-1',
+      scopeKey: 'branch:main',
+      startedAt: new Date('2026-09-08T08:00:00.000Z'),
+      status: 'RUNNING',
+      updatedAt: new Date('2026-09-08T08:02:30.000Z'),
+      url: 'https://github.com/repovio/repovio/actions/runs/42',
+      changeRequestNumber: null,
+      workflowId: 'workflow-1',
+      workflowName: 'Build',
+      workflow: { lifecycleState: 'REMOVED', lifecycleCheckedAt: new Date('2026-11-09T12:00:00Z') },
+    } satisfies WorkflowRunResourceModel;
+    const query = {
+      fields: 'id,completedAt,durationMs',
+      page: 1,
+      perPage: 25,
+    } as WorkflowRunQueryDto;
+    const workflowRuns = {
+      getReadAbility: jest.fn().mockResolvedValue(undefined),
+      query: jest.fn().mockResolvedValue({
+        items: [workflowRun],
+        pageMeta: { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 25 },
+      }),
+      toQueryOptions: jest.fn().mockReturnValue(query),
+    };
+    const controller = new WorkflowRunsController(workflowRuns as unknown as WorkflowRunsQueryService);
+
+    const response = await controller.query(
+      { user: { authProvider: 'LOCAL' as const, id: 'admin', role: 'SYSTEM_ADMIN', username: 'admin' } },
+      query,
+    );
+
+    expect(workflowRuns.query).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          workflow: { select: { lifecycleState: true, lifecycleCheckedAt: true } },
+          repository: {
+            select: {
+              name: true,
+              owner: true,
+              providerAccount: { select: { providerType: true } },
+            },
+          },
+        },
+      }),
+      undefined,
+    );
+    expect(response.items).toEqual([{ id: 'run-1', completedAt: null, durationMs: null }]);
+  });
+
   it('applies the canonical needs-attention predicate before Query Kit pagination and projection', /** Verifies applies the canonical needs-attention predicate before Query Kit pagination and projection. */ async () => {
     const ability = {};
     const query = { page: 2, perPage: 10, search: 'deploy' } as WorkflowRunQueryDto;

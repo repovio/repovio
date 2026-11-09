@@ -187,6 +187,7 @@ export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: WorkflowRunResourceModel, ability?: AppAbility): WorkflowRunDto {
+    const active = model.status === 'QUEUED' || model.status === 'RUNNING';
     return toWire(
       filterCaslFields(
         WorkflowRunDto.schema.parse(
@@ -200,8 +201,8 @@ export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
             url: model.url,
             providerCreatedAt: model.providerCreatedAt,
             startedAt: model.startedAt,
-            completedAt: model.completedAt,
-            durationMs: model.durationMs === null ? null : Number(model.durationMs),
+            completedAt: active ? null : model.completedAt,
+            durationMs: active || model.durationMs === null ? null : Number(model.durationMs),
             status: model.status,
             repositoryId: model.repositoryId,
             repositoryName: model.repository.name,

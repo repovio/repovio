@@ -57,7 +57,7 @@ username-equals-name identities. Existing callers remain compatible; no labels a
 **Independent Test**: Select named Users in repository access, group membership, and browser recipients; verify option,
 selected value/chip, duplicate-name disambiguation, later-page search, and unchanged saved User IDs.
 
-- [ ] T003 [US1] Extend safe channel recipient projections in
+- [x] T003 [US1] Extend safe channel recipient projections in
       `apps/api/src/modules/notifications/notifications.controller.ts`,
       `apps/api/src/modules/notifications/notifications.service.ts`,
       `apps/api/src/modules/notifications/notification-delivery.service.ts`, and

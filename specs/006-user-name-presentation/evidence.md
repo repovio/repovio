@@ -18,3 +18,5 @@
 - T001: `3d48a22` — record user identity validation baseline; focused verification passed before commit.
 
 - T002: `f125c13` — normalize user identity names; focused verification passed before commit.
+
+- T003: `8ecbdfb` — expose safe notification recipient names; focused verification passed before commit.

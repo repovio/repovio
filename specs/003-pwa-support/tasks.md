@@ -5,8 +5,8 @@
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md),
 [contracts/pwa.md](contracts/pwa.md), and [quickstart.md](quickstart.md).
 
-**Authorization**: This checklist is generated for subsequent implementation. No application implementation, commit,
-merge, release, or deployment is performed by task generation.
+**Authorization**: The user authorized implementation of issue #64 after task generation and requested that specifications
+be committed first. Specifications are committed as `974495f`. No merge, release, or deployment is authorized.
 
 **Tests**: Required by FR-004/FR-005 and the constitution. Add coverage before any corresponding fix; baseline behavior
 may already pass. Demonstrate a failing regression for a reproduced defect, then fix it. Do not manufacture failures
@@ -21,7 +21,7 @@ are future outputs; do not mark tasks complete merely because a plan exists.
 
 **Purpose**: Establish scope, pinned tooling, and a reproducible production baseline.
 
-- [ ] T001 Confirm issue #64 scope against `specs/003-pwa-support/spec.md`, `PLAN.md`, `AGENTS.md`, `GLOSSARY.md`, and `docs/coding-guidelines.md`; create `specs/003-pwa-support/evidence.md` with revision, commands, environment versions, and a FR-001 through FR-008 evidence matrix. Inspect status/diffs before changes and checks; preserve unrelated work.
+- [x] T001 Confirm issue #64 scope against `specs/003-pwa-support/spec.md`, `PLAN.md`, `AGENTS.md`, `GLOSSARY.md`, and `docs/coding-guidelines.md`; create `specs/003-pwa-support/evidence.md` with revision, commands, environment versions, and a FR-001 through FR-008 evidence matrix. Inspect status/diffs before changes and checks; preserve unrelated work.
 - [ ] T002 Install the committed lockfile using Node.js 26.13.0 and Corepack pnpm 11.28.9, run the existing `apps/web/package.json` `e2e:pwa` command, and inventory `apps/web/nuxt.config.ts`, generated worker caches, manifest headers/icons, and current test coverage in `specs/003-pwa-support/evidence.md`. Classify each finding as verified, missing coverage, confirmed defect, or platform limitation without changing version ranges or compiler aliases.
 
 ## Phase 2: Foundational Prerequisites

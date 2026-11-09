@@ -33,7 +33,7 @@ No repository/toolchain initialization or new provider credentials are needed.
 
 **Independent test**: Real signatures and PostgreSQL exercise valid/invalid/repeated/concurrent deliveries and rollback.
 
-- [ ] T2 [US2] Add `apps/api/src/modules/webhooks/organization-webhook.service.ts`, its stable/versioned controller callback,
+- [x] T2 [US2] Add `apps/api/src/modules/webhooks/organization-webhook.service.ts`, its stable/versioned controller callback,
       module registration and shared delivery headers; add organization namespace matching and delivery integration coverage.
       Depends on T1. Keep repository metadata unchanged until T3. Validate provider/isolation/transaction cases, then commit
       with exactly one focused Changeset and staged-source graph and push.
@@ -44,7 +44,7 @@ No repository/toolchain initialization or new provider credentials are needed.
 
 **Independent test**: Production-build English/desktop and German/mobile browser journeys and viewer restrictions.
 
-- [ ] T3 [US3] Update repository configuration DTO/schema/service, `apps/web/app/components/modules/providers/` management,
+- [x] T3 [US3] Update repository configuration DTO/schema/service, `apps/web/app/components/modules/providers/` management,
       repository badge/details, typed API composables, English/German text and existing locale fallbacks;
       `apps/web/tests/e2e/organization-webhooks.spec.ts`, glossary and setup docs. Depends on T1/T2. Run final regression and
       standards checks, then commit with exactly one focused Changeset and staged-source graph and push.
@@ -58,6 +58,10 @@ No parallel agents are required. No merge, deployment, or production migration i
 
 ## Delivery records
 
+- T3: final staged snapshot verified with 612 API, 47 web, and 15 schema tests; 10 production-build browser cases; root lint, typecheck, formatting, API/web builds and offline OpenAPI export. The successful commit SHA is recorded in issue #58 after push.
+
+- T2: `b4772d36c575282ea99350283a3e7f8d374bcbaa`; pushed. Isolated index snapshot: 35 webhook tests with real signatures/PostgreSQL, API typecheck/build, root lint and canonical formatting passed.
+
 - T1: `f1f19db81429f02f60f1bbdea3b791e934933542`; pushed. Isolated index snapshot: administrator HTTP integration (2 tests), API typecheck/build, root lint/format, full-application OpenAPI export, and all 41 migrations on a clean disposable PostgreSQL 18 database passed.
 
 Commit SHAs and current validation outcomes are recorded in issue #58 after each successful task commit and push. The next
@@ -65,7 +69,7 @@ task commit also carries the preceding task's SHA in this document, avoiding imp
 
 ## Verification evidence
 
-- API: 105 suites, 611 tests passed against disposable PostgreSQL 18, including actual signatures for all four providers.
+- API: 105 suites, 612 tests passed against disposable PostgreSQL 18, including actual signatures for all four providers.
 - Web: 15 suites, 47 tests passed. Shared schemas: 15 tests passed.
 - Browser: all three new organization-webhook cases passed against the production build, including English/desktop,
   German/mobile, inherited details, creation/rotation/removal, loading/error states, fallback, and viewer restrictions.

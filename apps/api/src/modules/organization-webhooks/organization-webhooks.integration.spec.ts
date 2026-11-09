@@ -19,6 +19,8 @@ import { GitLabPipelinesAdapter } from '../providers/gitlab/gitlab-pipelines.ada
 import { ProviderAdapterRegistry } from '../providers/provider-adapter.registry.js';
 import { ProviderCredentialService } from '../providers/provider-credential.service.js';
 import { ProviderSyncQueueService } from '../providers/sync-queue.service.js';
+import { RepositoryConfigurationService } from '../repositories/repository-configuration.service.js';
+import { WorkflowFilterService } from '../repositories/workflow-filter.service.js';
 import { GitHubAppWebhookService } from '../webhooks/github-app-webhook.service.js';
 import { OrganizationWebhookService } from '../webhooks/organization-webhook.service.js';
 import { WebhookController } from '../webhooks/webhook.controller.js';
@@ -44,6 +46,7 @@ describe('Organization webhook HTTP and persistence', /** Group isolated synthet
   const repositoryWebhooks = new WebhookService(prisma, registry, new ProviderCredentialService(encryption), queue);
   const receiver = new OrganizationWebhookService(prisma, encryption, registry, queue, repositoryWebhooks);
   const configurations = new OrganizationWebhooksService(prisma, encryption);
+  const repositories = new RepositoryConfigurationService(prisma, encryption, new WorkflowFilterService());
   let http: NestFastifyApplication;
 
   beforeAll(
@@ -319,6 +322,52 @@ describe('Organization webhook HTTP and persistence', /** Group isolated synthet
     expect(await prisma.webhookDelivery.findMany({ select: { repositoryId: true } })).toEqual([
       { repositoryId: child.id },
     ]);
+  });
+
+  it('preserves organization display priority, deepest GitLab group, and repository fallback', /** Inspect real safe metadata before and after removal. */ async () => {
+    const connection = await account('GITLAB');
+    const repo = await repository(connection.id, 'acme/team');
+    const parent = await configurations.create(administrator, connection.id, { scope: 'acme', webhookSecret: secret });
+    const child = await configurations.create(administrator, connection.id, {
+      scope: 'acme/team',
+      webhookSecret: secret,
+    });
+    expect((await repositories.listWebhookConfigurations(administrator))[0]).toMatchObject({
+      source: 'ORGANIZATION',
+      organizationWebhook: { id: child.id },
+      callbackUrl: child.callbackUrl,
+    });
+    await configurations.remove(administrator, connection.id, child.id);
+    expect((await repositories.listWebhookConfigurations(administrator))[0]?.organizationWebhook?.id).toBe(parent.id);
+    await configurations.remove(administrator, connection.id, parent.id);
+    expect((await repositories.listWebhookConfigurations(administrator))[0]).toMatchObject({
+      source: 'REPOSITORY',
+      configured: true,
+      organizationWebhook: null,
+    });
+    expect(
+      encryption.decrypt(
+        (await prisma.repository.findUniqueOrThrow({ where: { id: repo.id } })).encryptedWebhookSecret!,
+      ),
+    ).toBe(secret);
+  });
+
+  it('automatically covers multiple tracked repositories with one organization configuration', /** Verify one setup applies across repositories without individual organization assignments. */ async () => {
+    const connection = await account();
+    const first = await repository(connection.id, 'acme', '42');
+    const second = await repository(connection.id, 'acme', '43');
+    const hook = await configurations.create(administrator, connection.id, { scope: 'acme', webhookSecret: secret });
+    const metadata = await repositories.listWebhookConfigurations(administrator);
+    expect(metadata).toHaveLength(2);
+    for (const configuration of metadata) {
+      expect(configuration).toMatchObject({ source: 'ORGANIZATION', organizationWebhook: { id: hook.id } });
+    }
+    for (const id of [42, 43]) {
+      expect((await post(hook.id, delivery('GITHUB', { repository: { id } }))).statusCode).toBe(202);
+    }
+    const queued = await prisma.repositorySyncRequest.findMany({ select: { repositoryId: true } });
+    expect(queued).toEqual(expect.arrayContaining([{ repositoryId: first.id }, { repositoryId: second.id }]));
+    expect(queued).toHaveLength(2);
   });
 
   it('rejects disabled connections and ignores disabled repositories', /** Prevent disabled resources from entering the synchronization queue. */ async () => {

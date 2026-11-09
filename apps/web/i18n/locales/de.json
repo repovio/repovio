@@ -1158,5 +1158,32 @@
     "confirm": "Entfernen",
     "error": "Entfernen fehlgeschlagen. Bitte erneut versuchen.",
     "cancel": "Abbrechen"
+  },
+  "organizationWebhooks": {
+    "title": "Organisations-Webhooks",
+    "description": "Gemeinsame Webhooks für {provider} konfigurieren.",
+    "badge": "Organisation",
+    "localConfiguration": "Nur lokal konfiguriert. Registriere diesen Webhook manuell beim Anbieter. Vorhandene Repository-Secrets bleiben als Rückfall erhalten.",
+    "gitlabTier": "GitLab-Gruppen-Webhooks benötigen Premium oder Ultimate und schließen Untergruppen ein.",
+    "empty": "Keine Organisations-Webhooks konfiguriert.",
+    "load": "Organisations-Webhooks laden",
+    "error": "Webhooks konnten nicht verarbeitet werden. Erneut versuchen.",
+    "edit": "Webhook verwalten",
+    "add": "Organisations-Webhook hinzufügen",
+    "addAnother": "Weitere Organisation hinzufügen",
+    "rotate": "Secret wechseln",
+    "organization": "Organisation",
+    "groupPath": "Vollständiger Gruppenpfad",
+    "secretHelp": "Mindestens 16 Zeichen verwenden. Dieses Secret in die Webhook-Einstellungen beim Anbieter kopieren. Gespeicherte Secrets können nicht abgerufen werden.",
+    "inherited": "Organisations-Webhook: {scope}",
+    "manage": "Anbieter-Webhooks verwalten",
+    "instructions": {
+      "GITHUB": "Organisationseinstellungen > Webhooks > Webhook hinzufügen öffnen. Callback-URL, JSON-Inhaltstyp und dasselbe Secret verwenden. Gewünschte Workflow-, Issue-, Pull-Request- und Sicherheitsereignisse auswählen. Organisationsinhaber-Rechte erforderlich.",
+      "FORGEJO": "Organisationseinstellungen > Webhooks öffnen und einen Forgejo-Webhook mit Callback-URL, JSON-Inhaltstyp und demselben Secret hinzufügen. Gewünschte unterstützte Repository-Ereignisse auswählen.",
+      "GITEA": "Organisationseinstellungen > Webhooks öffnen und einen Gitea-Webhook mit Callback-URL, JSON-Inhaltstyp und demselben Secret hinzufügen. Gewünschte unterstützte Repository-Ereignisse auswählen.",
+      "GITLAB": "Gruppeneinstellungen > Webhooks öffnen. Callback-URL und je nach GitLab-Version dasselbe Signatur-Secret oder Secret-Token verwenden. Gewünschte Pipeline-, Job-, Issue- und Merge-Request-Ereignisse auswählen. Alle eingebundenen Projekte dieser Gruppe und ihrer Untergruppen sind abgedeckt."
+    },
+    "rotationConfirm": "Ich aktualisiere den Organisations- oder Gruppen-Webhook beim Anbieter mit dem neuen Secret.",
+    "lastDelivery": "Letzte akzeptierte Zustellung: {value}"
   }
 }

@@ -263,6 +263,53 @@ describe('ForgejoActionsAdapter', /** Groups scenarios for ForgejoActionsAdapter
     },
   );
 
+  it.each([
+    ['success', null, null, 0, null, 0],
+    ['failure', 'invalid', '1970-01-01T00:00:00Z', 3_000_000_000, null, 3000],
+    ['cancelled', '2026-11-09T10:00:00Z', '2026-11-09T09:59:00Z', undefined, null, null],
+    ['skipped', '2026-11-09T10:00:00Z', '2026-11-09T10:00:00Z', undefined, '2026-11-09T10:00:00Z', 0],
+    ['unrecognized', null, '2026-11-09T10:00:00Z', -1, '2026-11-09T10:00:00Z', null],
+    ['success', null, null, null, null, null],
+  ])(
+    'validates terminal Forgejo timing for %s with start %s and stop %s',
+    /** Preserve zero and native nanosecond fallback while rejecting invalid timestamps and durations. */ async (
+      status,
+      started,
+      stopped,
+      duration,
+      expectedStop,
+      expectedDuration,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            workflow_runs: [
+              {
+                id: 74,
+                status,
+                started,
+                stopped,
+                duration,
+                created: '2026-11-09T09:59:00Z',
+                updated: '2026-11-09T10:00:00Z',
+                html_url: 'https://example.test/runs/74',
+              },
+            ],
+          }),
+        ),
+      );
+      const runs = await new ForgejoActionsAdapter(fetchFn).listWorkflowRuns(context, {
+        providerRepositoryId: '1',
+        owner: 'org',
+        name: 'repo',
+      });
+      expect(runs[0]).toMatchObject({
+        completedAt: expectedStop ? new Date(expectedStop) : null,
+        durationMs: expectedDuration,
+      });
+    },
+  );
+
   it('paginates more than 100 incremental workflow runs', /** Verifies paginates more than 100 incremental workflow runs. */ async () => {
     const firstPage = Array.from(
       { length: 100 },

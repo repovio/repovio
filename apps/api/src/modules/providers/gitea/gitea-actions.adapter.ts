@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { normalizeWorkflowRunTiming } from '../../workflow-runs/workflow-run-timing.js';
 import type {
   ProviderAccountContext,
   ProviderAccountValidation,
@@ -506,12 +507,19 @@ export class GiteaActionsAdapter implements ProviderAdapter {
     const headBranch = run.head_branch ?? null;
     const workflowName = run.workflow_name ?? run.name ?? 'Workflow';
     const workflowPath = run.path ?? null;
+    const status = normalizeWorkflowRunStatus('GITEA', run.status, run.conclusion ?? null);
+    const timing = normalizeWorkflowRunTiming({
+      status,
+      startedAt,
+      completedAt,
+      durationMs: startedAt && completedAt ? completedAt.getTime() - startedAt.getTime() : null,
+    });
     return {
       awaitingApproval: isWorkflowRunAwaitingApproval('GITEA', run.status, run.conclusion ?? null),
       changeRequestNumber,
-      completedAt,
+      completedAt: timing.completedAt,
       displayTitle: run.name ?? workflowName,
-      durationMs: startedAt && completedAt ? completedAt.getTime() - startedAt.getTime() : null,
+      durationMs: timing.durationMs,
       event: run.event ?? null,
       headBranch,
       headSha: run.head_sha ?? null,
@@ -521,8 +529,8 @@ export class GiteaActionsAdapter implements ProviderAdapter {
       rawStatus: run.conclusion ?? run.status,
       reviewUrl: null,
       scopeKey: buildWorkflowRunScopeKey(changeRequestNumber, headBranch),
-      startedAt,
-      status: normalizeWorkflowRunStatus('GITEA', run.status, run.conclusion ?? null),
+      startedAt: timing.startedAt,
+      status,
       url: run.html_url,
       workflowKind: 'STANDARD',
       workflowName,

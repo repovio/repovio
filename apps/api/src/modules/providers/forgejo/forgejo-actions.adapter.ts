@@ -508,7 +508,7 @@ export class ForgejoActionsAdapter implements ProviderAdapter {
     const stoppedAt = this.parseRunTimestamp(run.stopped);
     const active = status === 'QUEUED' || status === 'RUNNING';
     const completedAt = !active && stoppedAt && (!startedAt || stoppedAt >= startedAt) ? stoppedAt : null;
-    const providerDurationMs = run.duration === undefined ? null : run.duration / 1_000_000;
+    const providerDurationMs = typeof run.duration === 'number' ? run.duration / 1_000_000 : null;
     const durationMs = active
       ? null
       : startedAt && completedAt

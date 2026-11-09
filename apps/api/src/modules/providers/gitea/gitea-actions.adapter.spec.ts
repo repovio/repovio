@@ -17,6 +17,45 @@ describe('GiteaActionsAdapter', /** Groups scenarios for GiteaActionsAdapter. */
   const repository = { providerRepositoryId: '42', owner: 'repovio', name: 'repovio' };
 
   it.each([
+    ['in_progress', 'RUNNING'],
+    ['queued', 'QUEUED'],
+    ['completed', 'SUCCESS'],
+  ])(
+    'keeps final timing consistent for %s',
+    /** Verify active timing is absent while valid terminal history remains intact. */ async (
+      status,
+      expectedStatus,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 74,
+            status,
+            conclusion: status === 'completed' ? 'success' : null,
+            created_at: '2026-11-09T09:59:00Z',
+            run_started_at: '2026-11-09T10:00:00Z',
+            updated_at: '2026-11-09T10:02:00Z',
+            completed_at: '2026-11-09T10:02:00Z',
+            html_url: 'https://example.test/runs/74',
+            name: 'CI',
+            event: 'push',
+          }),
+        ),
+      );
+      const run = await new GiteaActionsAdapter(fetchFn).getWorkflowRun(
+        context,
+        { providerRepositoryId: '1', owner: 'org', name: 'repo' },
+        '74',
+      );
+      expect(run).toMatchObject({
+        status: expectedStatus,
+        completedAt: expectedStatus === 'SUCCESS' ? new Date('2026-11-09T10:02:00Z') : null,
+        durationMs: expectedStatus === 'SUCCESS' ? 120_000 : null,
+      });
+    },
+  );
+
+  it.each([
     [{ state: 'active' }, 'ACTIVE', 'active'],
     [{ state: 'deleted' }, 'REMOVED', 'deleted'],
     [{ state: 'disabled' }, 'DISABLED', 'disabled'],

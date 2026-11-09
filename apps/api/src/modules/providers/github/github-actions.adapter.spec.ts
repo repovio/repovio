@@ -12,6 +12,45 @@ const readFixture = (name: string): unknown => JSON.parse(readFileSync(resolve(f
 describe('GitHubActionsAdapter', /** Groups scenarios for GitHubActionsAdapter. */ () => {
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
 
+  it.each([
+    ['in_progress', 'RUNNING'],
+    ['queued', 'QUEUED'],
+    ['completed', 'SUCCESS'],
+  ])(
+    'keeps final timing consistent for %s',
+    /** Verify active timing is absent while valid terminal history remains intact. */ async (
+      status,
+      expectedStatus,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 74,
+            status,
+            conclusion: status === 'completed' ? 'success' : null,
+            created_at: '2026-11-09T09:59:00Z',
+            run_started_at: '2026-11-09T10:00:00Z',
+            updated_at: '2026-11-09T10:02:00Z',
+            completed_at: '2026-11-09T10:02:00Z',
+            html_url: 'https://example.test/runs/74',
+            name: 'CI',
+            event: 'push',
+          }),
+        ),
+      );
+      const run = await new GitHubActionsAdapter(fetchFn).getWorkflowRun(
+        context,
+        { providerRepositoryId: '1', owner: 'org', name: 'repo' },
+        '74',
+      );
+      expect(run).toMatchObject({
+        status: expectedStatus,
+        completedAt: expectedStatus === 'SUCCESS' ? new Date('2026-11-09T10:02:00Z') : null,
+        durationMs: expectedStatus === 'SUCCESS' ? 120_000 : null,
+      });
+    },
+  );
+
   it('reads authoritative lifecycle states once per native workflow identity', /** Verifies lifecycle normalization and identity deduplication. */ async () => {
     const fetchFn = jest
       .fn()

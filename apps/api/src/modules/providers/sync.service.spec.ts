@@ -166,6 +166,23 @@ describe('ProviderSyncService', /** Groups scenarios for ProviderSyncService. */
     },
   );
 
+  it('records terminal timing on the same active row and clears it again on a return to active', /** Verify stable identity and round fractional provider milliseconds at the BigInt persistence boundary. */ async () => {
+    const { adapter, prisma, service } = createLifecycleSyncFixture('ACTIVE');
+    const run = createWorkflowRun();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, status: 'RUNNING' }]);
+    await service.syncEnabledRepositories();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, durationMs: 3000.25 }]);
+    await service.syncEnabledRepositories();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, status: 'QUEUED' }]);
+    await service.syncEnabledRepositories();
+    const calls = prisma.workflowRun.upsert.mock.calls;
+    expect(calls[0][0].update).toMatchObject({ completedAt: null, durationMs: null, status: 'RUNNING' });
+    expect(calls[1][0].update).toMatchObject({ completedAt: run.completedAt, durationMs: 3000n, status: 'SUCCESS' });
+    expect(calls[2][0].update).toMatchObject({ completedAt: null, durationMs: null, status: 'QUEUED' });
+    expect(calls[1][0].where).toEqual(calls[0][0].where);
+    expect(calls[2][0].where).toEqual(calls[0][0].where);
+  });
+
   it('moves migrated name-based runs to their provider-native workflow on first observation', /** Verifies moves migrated name-based runs to their provider-native workflow on first observation. */ async () => {
     const repository = createRepository('repository');
     const run = createWorkflowRun();

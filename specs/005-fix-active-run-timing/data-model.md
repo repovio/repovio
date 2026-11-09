@@ -29,3 +29,5 @@ Provider-sentinel classification is run-specific; it must not become a global ru
 Read projections hide final timing for already persisted active rows immediately. Presentation guards protect older
 cached payloads. Existing synchronization subsequently replaces invalid active values. No database backfill, migration,
 or retention change is required. Provider-specific valid terminal-duration conversions remain unchanged.
+
+Provider submillisecond durations are rounded to the nearest millisecond only at the BigInt persistence boundary.

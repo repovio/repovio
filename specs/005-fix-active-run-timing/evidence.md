@@ -58,3 +58,19 @@
 - API typecheck and changed-file ESLint passed. Existing nullable schemas/OpenAPI keys and client DTO types unchanged.
 - Integration database is task-owned `repovio74-postgres` on loopback port 55474, initialized from the existing 46
   migrations. Only synthetic test data is truncated by the repository's guarded test cleanup.
+
+- T006 commit: `327310e`, pushed.
+
+## T007: Terminal Timing and Provider Parity
+
+- Provider parity regression exposed four failing Gitea/GitLab active-state cases; GitHub already passed and its
+  implementation remains unchanged. Gitea/GitLab now use the shared timing validator.
+- Shared validation is also used by persistence and both API DTOs. It preserves independently valid terminal timing,
+  including zero; rejects malformed/epoch/pre-start completion and negative/nonfinite duration; retains BigInt values.
+- Added wire-schema tests for malformed stored terminal timing, Forgejo fallback/zero/sentinel cases, and same-row
+  active-to-terminal-to-active transitions. Fractional provider milliseconds round only before BigInt storage.
+- Provider/sync/DTO suites: 154 tests passed before the additional terminal matrix; terminal/helper/sync suites:
+  80 tests passed. Full affected suite and integration results are recorded under final verification.
+- API typecheck and changed-file ESLint passed.
+
+- Final T007 affected run: 9 suites, 212 tests passed, including real PostgreSQL authorization.

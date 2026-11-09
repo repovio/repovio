@@ -4,6 +4,7 @@ import {
   ApiDashboardWorkflowRunSchema,
 } from '@repovio/schemas';
 import { createZodDto } from '../../../util/schema-dto.js';
+import { normalizeWorkflowRunTiming } from '../../workflow-runs/workflow-run-timing.js';
 
 import { toWire } from '../../../util/to-wire.js';
 
@@ -24,7 +25,7 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: DashboardWorkflowRunModel): DashboardWorkflowRunDto {
-    const active = model.status === 'QUEUED' || model.status === 'RUNNING';
+    const timing = normalizeWorkflowRunTiming(model);
     return DashboardWorkflowRunDto.schema.parse(
       toWire({
         awaitingApproval: model.awaitingApproval,
@@ -36,9 +37,9 @@ export class DashboardWorkflowRunDto extends createZodDto(ApiDashboardWorkflowRu
         displayTitle: model.displayTitle,
         url: model.url,
         providerCreatedAt: model.providerCreatedAt,
-        startedAt: model.startedAt,
-        completedAt: active ? null : model.completedAt,
-        durationMs: active || model.durationMs === null ? null : Number(model.durationMs),
+        startedAt: timing.startedAt,
+        completedAt: timing.completedAt,
+        durationMs: timing.durationMs === null ? null : Number(timing.durationMs),
         reviewUrl: model.reviewUrl,
         status: model.status,
         repository: {

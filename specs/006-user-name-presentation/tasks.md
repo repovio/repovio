@@ -3,8 +3,9 @@
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md), [data-model.md](data-model.md),
 [UI/API contract](contracts/user-identity.md), and [validation guide](quickstart.md).
 
-**Status**: Plan and tasks approved; issue [#76](https://github.com/repovio/repovio/issues/76) created and planning-file
-commit/push authorized. All work below is unstarted. Product implementation requires separate approval.
+**Status**: Implementation and per-task commit/push approved for issue
+[#76](https://github.com/repovio/repovio/issues/76). T001–T011 completed and pushed; final verification in progress.
+Merge remains a separate approval.
 
 **Branch**: `codex/76-user-name-presentation`.
 
@@ -139,7 +140,7 @@ Provider Actors, destination credentials, and username edit/sign-in fields retai
 **Independent Test**: Open/reopen every selector with partial, null, blank, and padded-name fixtures; verify labels remain
 identifiable without empty parentheses, fabricated names, or changed selected IDs.
 
-- [ ] T011 [US3] Extend existing fixtures/assertions in `apps/web/app/utils/user-identity.spec.ts`,
+- [x] T011 [US3] Extend existing fixtures/assertions in `apps/web/app/utils/user-identity.spec.ts`,
       `apps/web/tests/e2e/user-management.spec.ts`, `apps/web/tests/e2e/user-groups.spec.ts`,
       `apps/web/tests/e2e/repository-access.spec.ts`, and `apps/web/tests/e2e/notifications.spec.ts` for complete/partial/null/
       whitespace-only/padded/Unicode/duplicate names, older username-only responses, and missing requester behavior;

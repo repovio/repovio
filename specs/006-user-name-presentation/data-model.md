@@ -18,15 +18,15 @@ Join nonempty trimmed name parts with one space. Preserve internal spelling, Uni
 Compact display uses the name or username fallback. Selection appends ` (@username)` if it adds identifying information.
 Detect actual personal-name presence independently of string equality. Never store derived labels.
 
-| First name | Last name  | Username | Selection label         |
-| ---------- | ---------- | -------- | ----------------------- |
-| Vera       | Viewer     | viewer   | `Vera Viewer (@viewer)` |
-| `Vera`     | `Viewer`   | viewer   | `Vera Viewer (@viewer)` |
-| Vera       | null       | viewer   | `Vera (@viewer)`        |
-| null       | Viewer     | viewer   | `Viewer (@viewer)`      |
-| null       | null       | viewer   | `viewer`                |
-| whitespace | whitespace | viewer   | `viewer`                |
-| viewer     | null       | viewer   | `viewer`                |
+| First name | Last name    | Username | Selection label         |
+| ---------- | ------------ | -------- | ----------------------- |
+| Vera       | Viewer       | viewer   | `Vera Viewer (@viewer)` |
+| `" Vera "` | `" Viewer "` | viewer   | `Vera Viewer (@viewer)` |
+| Vera       | null         | viewer   | `Vera (@viewer)`        |
+| null       | Viewer       | viewer   | `Viewer (@viewer)`      |
+| null       | null         | viewer   | `viewer`                |
+| whitespace | whitespace   | viewer   | `viewer`                |
+| viewer     | null         | viewer   | `viewer`                |
 
 Duplicate names remain distinguishable by username and stable ID. Compact non-selector presentation may omit username.
 

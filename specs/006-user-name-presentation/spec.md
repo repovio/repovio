@@ -6,7 +6,7 @@
 
 **Created**: 2026-11-09
 
-**Status**: Plan and tasks approved; issue and planning commit authorized; implementation pending
+**Status**: Implemented and locally verified; merge pending
 
 **Input**: User description: "User selection should always show first and last names, with usernames at most in
 parentheses. Enforce this throughout the application."
@@ -116,5 +116,4 @@ As an administrator, I can still identify existing local and OIDC Users whose pe
 - Login forms and explicit username editing fields continue to display the actual username as an editable credential.
 - Existing local and OIDC profile names are authoritative; no required-name migration or provider lookup is introduced.
 - Username fallback for missing names is necessary for compatibility. Existing `(@username)` punctuation is retained.
-- The user approved the plan, tasks, issue #76, and planning-file commit/push. Product implementation and merge require
-  separate workflow approvals.
+- The user approved the plan, tasks, issue #76, implementation, and per-task commit/push. Merge remains a separate approval.

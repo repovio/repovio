@@ -49,3 +49,28 @@
 - Notifications: safe explicit recipient/requester projections; credential exclusion and older-response parsing tested.
 
 - T010: `c6a96c2` — show names in notification summaries; focused verification passed before commit.
+
+- T011: `edf0428` — verify user name fallback workflows; focused verification passed before commit.
+
+## Feature-Wide Validation
+
+- API Jest: 111 suites, 796 tests passed against the isolated PostgreSQL database (46 existing migrations applied).
+- Nx `web,schemas` lint/typecheck/test targets: all seven targets succeeded without cache hits.
+- API typecheck and API lint passed; API TSDoc checked 775 declarations in 182 source files.
+- Shared schema tests: 19 passed, including additive recipient/requester names, absent older fields, and private-field rejection.
+- Documentation check passed for 685 handwritten files; guideline regression suite: 21 tests passed.
+- Canonical repository formatting passed; scoped write/check pipelines were stable on the second pass.
+- API and web production builds passed. Changesets status reports one `repovio` patch release from ten focused entries.
+- Focused browser checks passed for memberships, accounts, MCP targets, recipient summaries, requester details, and fallback
+  cases. Desktop and 390-pixel EN/DE screenshots were inspected with synthetic data; no clipping outside controls or
+  invalid fixture errors remain. Full labels remain accessible when long selected text is truncated.
+- The initial combined development-server browser run had 31 passes and one Gotify dropdown timeout while a Nuxt
+  production build ran against the same worktree. No product fix was inferred from that environmental interruption;
+  the complete affected browser matrix is rerun against the built server without HMR.
+- Provider integrations, Docker application images, deployment, and external strict historical clients are not validated
+  by mocked browser fixtures or these local checks. No provider operations or production changes were performed.
+
+- Final browser matrix against the built production server: all 32 Chromium scenarios passed in 22.4 seconds, including
+  the Gotify scenario. API responses are mocked for browser tests; PostgreSQL-backed API tests ran separately.
+- No implementation extension hooks are configured. All ten implementation increments have one focused patch Changeset;
+  setup and verification documentation have no fabricated release entries. Merge remains unapproved.

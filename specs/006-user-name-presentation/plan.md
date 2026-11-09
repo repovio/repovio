@@ -33,15 +33,16 @@ current 100-account choice limit. Website marketing and Provider Actor presentat
 | Gate                            | Before research                                                | After design                                       |
 | ------------------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
 | Approved architecture and scope | PASS: direct user-requested planning within existing workflows | PASS: no unrelated features                        |
-| Active issue and delivery order | Issue #76; planning commit authorized                          | Approved plan/tasks; implementation pending        |
+| Active issue and delivery order | Issue #76; planning commit authorized                          | Implemented; local checks passed                   |
 | Provider read-only              | PASS: no provider integration changes                          | PASS: no provider calls required                   |
 | Authorization and secrets       | PASS: reuse authorized resources                               | PASS: safe name projections and permission tests   |
 | Durable operations              | PASS: no delivery/retry semantics changed                      | PASS: assignment IDs remain unchanged              |
 | Verification and localization   | PASS: affected checks identified                               | PASS: contracts, permissions, EN/DE browser matrix |
 | Engineering conventions         | PASS: reuse helpers and module boundaries                      | PASS: no dependencies or architectural layer added |
 
-Issue #76 owns this scope. The user approved plan/task generation and issue creation with planning-file commit/push.
-Implementation remains a separate approval gate. No constitutional exception is proposed.
+Issue #76 owns this scope. Plan, tasks, issue creation, implementation, and per-task commit/push were explicitly approved.
+Merge remains a separate approval gate. Implementation evidence is recorded in [evidence.md](evidence.md). No
+constitutional exception was needed.
 
 ## Project Structure
 

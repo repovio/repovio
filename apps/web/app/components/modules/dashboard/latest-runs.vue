@@ -31,7 +31,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="run in runs" :key="run.id" class="border-b border-default last:border-0">
+          <tr v-for="run in runs" :key="run.id" class="border-b border-default last:border-0 hover:bg-elevated">
             <td class="py-3">
               <p class="font-medium">
                 {{ run.displayTitle }}

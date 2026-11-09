@@ -1043,7 +1043,9 @@
     "deleteRepository": "Delete repository",
     "deleteDescription": "Permanently delete {name} and all its local workflows, runs, issues, pull requests, security alerts, configuration, and notification history from Repovio? This cannot be undone. The repository and its data at the provider remain unchanged.",
     "deleteSyncConflict": "Synchronization is running. Wait until it finishes, then try again.",
-    "deleteError": "The operation could not be completed. Try again."
+    "deleteError": "The operation could not be completed. Try again.",
+    "overview": "Overview",
+    "navigation": "Repository navigation"
   },
   "securityAlerts": {
     "code": "Code scanning",
@@ -1090,7 +1092,9 @@
     },
     "title": "Alerts",
     "unavailable": "Unavailable data",
-    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
+    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available.",
+    "categoryNavigation": "Security categories",
+    "unknownAvailability": "Availability is unknown or synchronization has not completed."
   },
   "sidebar": {
     "github": "Open GitHub repository",

@@ -9,6 +9,7 @@
           </h2>
         </div>
         <UButton
+          v-if="route.path !== pageUrl"
           color="neutral"
           trailing-icon="i-lucide-arrow-right"
           variant="ghost"
@@ -86,6 +87,7 @@ interface ActivityItem {
 const props = defineProps<{ kind: ActivityKind; repositoryId: string }>();
 const { t } = useI18n();
 const api = useRepovioApi();
+const route = useRoute();
 const { formatDateTime } = useDateTime();
 const items = ref<ActivityItem[]>([]);
 const loading = ref(true);
@@ -100,10 +102,11 @@ const icon = computed(
 );
 const pageUrl = computed(
   /** Derives page url from the current reactive dependencies. */ () => {
-    if (props.kind === 'issues') return '/issues';
-    if (props.kind === 'pullRequests') return '/pull-requests';
-    if (props.kind === 'securityAlerts') return `/alerts/dependencies?repositoryId=${props.repositoryId}`;
-    return '/workflow-runs';
+    if (props.kind === 'issues') return `/repositories/${encodeURIComponent(props.repositoryId)}/issues`;
+    if (props.kind === 'pullRequests') return `/repositories/${encodeURIComponent(props.repositoryId)}/pull-requests`;
+    if (props.kind === 'securityAlerts')
+      return `/repositories/${encodeURIComponent(props.repositoryId)}/security-alerts`;
+    return `/repositories/${encodeURIComponent(props.repositoryId)}/workflow-runs`;
   },
 );
 const title = computed(

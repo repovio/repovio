@@ -1,5 +1,6 @@
 <template>
-  <LayoutPage
+  <CommonTablePageFrame
+    :embedded="embedded"
     :breadcrumbs="[
       { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
       { icon: kindIcon, label: pageTitle },
@@ -50,7 +51,7 @@
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
           </template>
         </QTableSorting>
-        <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <QTableFiltering v-model:filtering="filtering" :fields="visibleFilterFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
           </template>
@@ -69,7 +70,7 @@
       </div>
     </template>
 
-    <div class="p-4 sm:p-6">
+    <div v-if="!repositoryId" class="p-4 sm:p-6">
       <UButton
         v-if="activeDashboardPreset"
         class="mb-4"
@@ -96,6 +97,7 @@
       :title="$t('workItems.loadError')"
     />
     <UTable
+      v-if="!repositoryId || !tableError"
       sticky
       v-model:column-pinning="columnPinning"
       class="min-h-0 flex-1 overflow-x-auto"
@@ -103,7 +105,12 @@
       :data="items"
       :empty="$t('workItems.empty')"
       :loading="loading"
-      :ui="{ th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20', td: 'first:pl-6 align-top' }"
+      :ui="{
+        tr: 'data-[selected]:cursor-pointer',
+        th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
+        td: 'first:pl-6 align-top',
+      }"
+      @select="selectRow"
     >
       <template #number-cell="{ row }">
         <span class="font-mono text-xs">#{{ row.original.number }}</span>
@@ -153,7 +160,7 @@
         <span v-else>—</span>
       </template>
       <template #actions-cell="{ row }">
-        <div class="flex justify-end">
+        <div class="flex justify-end" data-row-navigation-ignore>
           <UButton
             color="neutral"
             icon="i-tabler-external-link"
@@ -173,15 +180,16 @@
       :total-items="totalItems"
       shortcuts
     />
-  </LayoutPage>
+  </CommonTablePageFrame>
 </template>
 
 <script setup lang="ts">
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
-import { defineProps } from 'vue';
+import { defineProps, onScopeDispose } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
+import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
 import {
@@ -200,7 +208,7 @@ import {
 } from '~/utils/dashboard-table-presets';
 import { loadWorkflowRunRepositoryFilterOptions } from '~/utils/workflow-run-filtering';
 
-const props = defineProps<{ kind: 'issue' | 'pull-request' }>();
+const props = defineProps<{ kind: 'issue' | 'pull-request'; repositoryId?: string; embedded?: boolean }>();
 type WorkItemRow = (Issue | PullRequest) & Record<string, unknown>;
 type WorkItemTableColumn = ColumnDefinition<WorkItemRow> & { header: string; id: string };
 const { t } = useI18n();
@@ -214,7 +222,9 @@ const debouncedSearch = refDebounced(search, 250);
 const selectedLabels = ref<string[]>([]);
 const updatedFrom = ref('');
 const updatedTo = ref('');
-const initialDashboardPreset = resolveWorkItemDashboardPreset(props.kind, route.query.preset);
+const initialDashboardPreset = props.repositoryId
+  ? null
+  : resolveWorkItemDashboardPreset(props.kind, route.query.preset);
 const activeDashboardPreset = ref<WorkItemDashboardPresetName | null>(initialDashboardPreset?.name ?? null);
 const dashboardPresetStaticFilter = ref<Record<string, unknown> | undefined>(initialDashboardPreset?.staticFilter);
 const filterOptions = ref<WorkItemFilterOptions>({ assignees: [], authors: [], labels: [], milestones: [] });
@@ -222,6 +232,10 @@ const repositories = ref<Array<{ label: string; value: string }>>([]);
 const summary = ref<IssueSummary | PullRequestSummary | null>(null);
 const summaryLoading = ref(true);
 const summaryError = ref(false);
+const selectRow = useTableRowNavigation<{ id: string }>(
+  /** Open the existing Work Item detail for this resource family. */ (item) =>
+    `/${endpoint}/${encodeURIComponent(item.id)}`,
+);
 const endpoint: 'issues' | 'pull-requests' = props.kind === 'issue' ? 'issues' : 'pull-requests';
 const pageTitle = computed(
   /** Derives page title from the current reactive dependencies. */ () =>
@@ -337,6 +351,13 @@ const filterFields = computed<FilterField[]>(
         ]),
   ],
 );
+const visibleFilterFields = computed(
+  /** Scoped views cannot switch Repository or Provider through a filter control. */ () =>
+    filterFields.value.filter(
+      /** Preserve all other field metadata. */ (field) =>
+        !props.repositoryId || !['repositoryId', 'repository.providerAccount.providerType'].includes(field.value),
+    ),
+);
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => {
     const constraints: Record<string, unknown>[] = selectedLabels.value.map(
@@ -362,6 +383,7 @@ const table = useTable({
   defaultItemsPerPage: 25,
   endpoint,
   name: endpoint,
+  repositoryId: props.repositoryId,
   staticFields: ['id', 'repositoryOwner', 'url'],
   staticFilter,
 });
@@ -430,25 +452,40 @@ const summaryMetrics = computed(
         ),
 );
 
+let supportingGeneration = 0;
+onScopeDispose(
+  /** Invalidate supporting responses when leaving this table identity. */ () => {
+    supportingGeneration++;
+  },
+);
 /** Loads supporting data. */
 async function loadSupportingData(): Promise<void> {
+  const generation = ++supportingGeneration;
   summaryLoading.value = true;
   summaryError.value = false;
   const [optionsResult, repositoriesResult, summaryResult] = await Promise.allSettled([
     props.kind === 'issue' ? api.issues.filterOptions() : api.pullRequests.filterOptions(),
-    loadWorkflowRunRepositoryFilterOptions(
-      /** Evaluates `api.repositories.list(page).then((response) => response.data)` when loadWorkflowRunRepositoryFilterOptions invokes this callback. */ (
-        page,
-      ) =>
-        api.repositories
-          .list(page)
-          .then(
-            /** Evaluates `response.data` when api.repositories.list(page).then invokes this callback. */ (response) =>
-              response.data,
-          ),
-    ),
-    props.kind === 'issue' ? api.issues.summary() : api.pullRequests.summary(),
+    props.repositoryId
+      ? Promise.resolve([])
+      : loadWorkflowRunRepositoryFilterOptions(
+          /** Evaluates `api.repositories.list(page).then((response) => response.data)` when loadWorkflowRunRepositoryFilterOptions invokes this callback. */ (
+            page,
+          ) =>
+            api.repositories
+              .list(page)
+              .then(
+                /** Evaluates `response.data` when api.repositories.list(page).then invokes this callback. */ (
+                  response,
+                ) => response.data,
+              ),
+        ),
+    props.repositoryId
+      ? Promise.resolve({ data: null })
+      : props.kind === 'issue'
+        ? api.issues.summary()
+        : api.pullRequests.summary(),
   ]);
+  if (generation !== supportingGeneration) return;
   if (optionsResult.status === 'fulfilled') filterOptions.value = optionsResult.value.data;
   if (repositoriesResult.status === 'fulfilled') repositories.value = repositoriesResult.value;
   if (summaryResult.status === 'fulfilled') summary.value = summaryResult.value.data;

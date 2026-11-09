@@ -213,7 +213,7 @@ test('updates repository-specific retention overrides', /** Verifies updates rep
     /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
 
-  await page.goto('/repositories/repository-1');
+  await page.goto('/repositories/repository-1/settings');
   await expect(page.getByRole('heading', { name: 'Repository settings' })).toBeVisible();
   await expect(page.getByRole('spinbutton', { name: 'Workflow-run retention (days)' })).toHaveValue('30');
   await expect(page.getByRole('spinbutton', { name: 'Closed issue retention (days)' })).toHaveValue('14');

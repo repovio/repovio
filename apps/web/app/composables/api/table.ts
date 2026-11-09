@@ -16,6 +16,8 @@ export interface UseTableOptions<TEndpoint extends Endpoint> {
   defaultItemsPerPage?: number;
   endpoint: TEndpoint;
   name: string;
+  repositoryId?: string;
+  scopeKind?: string;
   staticFields?: string[];
   staticFilter?: Ref<Record<string, unknown> | undefined>;
 }
@@ -68,6 +70,25 @@ export function pinActionsColumnRight(
   return { ...columnPinning, left, right: [...right, 'actions'] };
 }
 
+/** Preserve global preferences while isolating Repository and category table identities. */
+export function repositoryTableName(name: string, repositoryId?: string, kind?: string): string {
+  return repositoryId ? `repository:${repositoryId}:${kind ? `security-alerts:${kind}` : name}` : name;
+}
+
+/** Keep fixed Repository scope outside all user-editable filtering constraints. */
+export function withRepositoryScope(
+  filter?: Record<string, unknown>,
+  repositoryId?: string,
+): Record<string, unknown> | undefined {
+  return repositoryId ? { AND: [{ repositoryId }, ...(filter ? [filter] : [])] } : filter;
+}
+
+/** Accept only positive integer pagination addresses, including copied string query values. */
+export function normalizeRepositoryPage(value: unknown): number {
+  const page = typeof value === 'string' || typeof value === 'number' ? Number(value) : NaN;
+  return Number.isSafeInteger(page) && page > 0 ? page : 1;
+}
+
 /**
  * Provide persistent, route-aware Query Kit table state for a Repovio resource endpoint.
  *
@@ -76,6 +97,16 @@ export function pinActionsColumnRight(
  */
 export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TEndpoint>) => {
   const routePage = useRouteQuery('page', 1, { transform: Number });
+  if (options.repositoryId) {
+    watch(
+      routePage,
+      /** Normalize invalid scoped addresses without changing global table behavior. */ (value) => {
+        const page = normalizeRepositoryPage(value);
+        if (page !== value) routePage.value = page;
+      },
+      { immediate: true, flush: 'sync' },
+    );
+  }
   const columns = computed<QueryKitTableColumn<TableRow<TEndpoint>>[]>(
     /** Derives columns from the current reactive dependencies. */ () =>
       toQueryKitColumns(options.columnDefinition.value),
@@ -85,10 +116,13 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     columns,
     defaultItemsPerPage: options.defaultItemsPerPage,
     endpoint: options.endpoint,
-    persistenceKey: options.name,
+    persistenceKey: repositoryTableName(options.name, options.repositoryId, options.scopeKind),
     routePage,
     staticFields: options.staticFields,
-    staticFilter: options.staticFilter,
+    staticFilter: computed(
+      /** Compose server-side fixed scope with existing search constraints. */ () =>
+        withRepositoryScope(options.staticFilter?.value, options.repositoryId),
+    ),
   });
 
   watch(
@@ -101,5 +135,18 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     { deep: true, immediate: true },
   );
 
-  return { ...table, filtering: table.filtering as Ref<Filtering> };
+  if (options.repositoryId) {
+    watch(
+      [table.loading, table.totalPages],
+      /** Recover stale addresses only after a successful response. */ () => {
+        if (!table.loading.value && !table.error.value && table.page.value > Math.max(1, table.totalPages.value))
+          table.page.value = Math.max(1, table.totalPages.value);
+      },
+    );
+  }
+  const items = computed(
+    /** Never present retained scoped rows as successful results after a failed query. */ () =>
+      options.repositoryId && table.error.value ? [] : table.items.value,
+  );
+  return { ...table, items, filtering: table.filtering as Ref<Filtering> };
 };

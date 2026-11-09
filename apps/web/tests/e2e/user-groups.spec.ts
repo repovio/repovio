@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 for (const locale of ['en', 'de']) {
   test(`manages local groups, members, and repository grants (${locale})`, /** Exercises the complete administrative group workflow with synthetic API fixtures. */ async ({
@@ -150,6 +151,7 @@ for (const locale of ['en', 'de']) {
     await dialog.getByRole('button', { name: de ? 'Neue Gruppe' : 'New group', exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByRole('cell', { name: 'Readers', exact: true })).toBeVisible();
+    await expectTableHover(page, page.getByRole('table'));
     await page.getByRole('button', { name: de ? 'Gruppe umbenennen' : 'Rename group' }).click();
     await dialog.getByLabel('Name', { exact: true }).fill('Maintainers');
     await dialog.getByRole('button', { name: de ? 'Gruppe umbenennen' : 'Rename group', exact: true }).click();
@@ -168,7 +170,7 @@ for (const locale of ['en', 'de']) {
       dialog.getByText(de ? 'Diese Gruppe hat keine Mitglieder.' : 'This group has no members.'),
     ).toBeVisible();
     await page.keyboard.press('Escape');
-    await page.goto('/repositories/repository-1');
+    await page.goto('/repositories/repository-1/settings');
     const card = page
       .locator('[data-slot="root"]')
       .filter({ has: page.getByRole('heading', { name: de ? 'Gruppenzugriff' : 'Group access', exact: true }) })

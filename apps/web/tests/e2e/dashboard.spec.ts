@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 const accessToken = 'playwright-access-token';
 const dashboardRun = {
@@ -275,6 +276,7 @@ test('renders dashboard values, reloads for range filters, and presents request 
   expect(stackedBars[2]?.y).toBeCloseTo((stackedBars[0]?.y ?? 0) - (stackedBars[2]?.height ?? 0));
   expect(stackedBars[3]?.y).toBeCloseTo((stackedBars[1]?.y ?? 0) - (stackedBars[3]?.height ?? 0));
   const latestRunsTable = page.locator('table');
+  await expectTableHover(page, latestRunsTable);
   await expect(latestRunsTable.getByRole('link', { name: 'CI', exact: true })).toHaveCount(0);
   const latestRunLink = latestRunsTable.getByRole('link', { name: 'Open in provider' });
   await expect(latestRunLink).toHaveAttribute('href', 'https://github.com/repovio/repovio/actions/runs/101');

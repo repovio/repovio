@@ -1,5 +1,5 @@
 <template>
-  <LayoutPage :breadcrumbs="breadcrumbs" :padded="false" :title="title">
+  <CommonTablePageFrame :embedded="embedded" :breadcrumbs="breadcrumbs" :padded="false" :title="title">
     <template #actions>
       <UInput
         v-if="searchable"
@@ -23,7 +23,7 @@
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
           </template>
         </QTableSorting>
-        <QTableFiltering v-model:filtering="filtering" :fields="filterFields" shortcuts>
+        <QTableFiltering v-model:filtering="filtering" :fields="visibleFilterFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
           </template>
@@ -62,6 +62,7 @@
       />
     </div>
     <UTable
+      v-if="!repositoryId || !tableError"
       sticky
       v-model:column-pinning="columnPinning"
       class="min-h-0 flex-1 overflow-x-auto"
@@ -129,7 +130,7 @@
       :total-items="totalItems"
       shortcuts
     />
-  </LayoutPage>
+  </CommonTablePageFrame>
 </template>
 
 <script setup lang="ts">
@@ -168,6 +169,8 @@ type WorkflowRunTableColumn = ColumnDefinition<WorkflowRunRow> & { header: strin
 
 const props = defineProps<{
   breadcrumbs: BreadcrumbItem[];
+  repositoryId?: string;
+  embedded?: boolean;
   detailedTimestamps?: boolean;
   empty: string;
   endpoint: 'workflow-runs' | 'workflow-runs/needs-attention';
@@ -187,7 +190,7 @@ const { snapshot: systemStatus } = useSystemStatusState();
 const { getLabel: getProviderTypeLabel } = useProviderType();
 const search = ref('');
 const debouncedSearch = refDebounced(search, 250);
-const initialDashboardPreset = resolveWorkflowRunDashboardPreset(route.query.preset);
+const initialDashboardPreset = props.repositoryId ? null : resolveWorkflowRunDashboardPreset(route.query.preset);
 const activeDashboardPreset = ref<WorkflowRunDashboardPresetName | null>(initialDashboardPreset?.name ?? null);
 const repositoryFilterLoading = ref(true);
 const repositoryFilterOptions = ref<WorkflowRunRepositoryFilterOption[]>([]);
@@ -270,6 +273,13 @@ const filterFields = computed<FilterField[]>(
     },
   ],
 );
+const visibleFilterFields = computed(
+  /** Scoped views cannot switch Repository or Provider through a filter control. */ () =>
+    filterFields.value.filter(
+      /** Preserve all other field metadata. */ (field) =>
+        !props.repositoryId || !['repositoryId', 'repository.providerAccount.providerType'].includes(field.value),
+    ),
+);
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => {
     const value = debouncedSearch.value.trim();
@@ -290,6 +300,7 @@ const workflowRunTable = useTable({
   defaultItemsPerPage: 25,
   endpoint: props.endpoint,
   name: props.name,
+  repositoryId: props.repositoryId,
   staticFields: ['id', 'repositoryOwner', 'url'],
   staticFilter,
 });
@@ -435,7 +446,7 @@ function statusColor(status: WorkflowRunStatus): 'error' | 'info' | 'neutral' | 
 onMounted(
   /** Initializes component subscriptions and data after mounting. */ () => {
     void workflowRunTable.initialize();
-    void loadRepositoryFilterOptions();
+    if (!props.repositoryId) void loadRepositoryFilterOptions();
   },
 );
 onBeforeUnmount(

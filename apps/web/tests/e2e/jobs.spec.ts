@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { expectTableHover } from './fixtures/table-hover';
 
 import { expect, test, type Page } from '@playwright/test';
 
@@ -151,6 +152,7 @@ test('shows available jobs, progress, start actions, and root navigation section
   await expect(page.getByRole('heading', { name: 'Jobs' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Repository synchronization' })).toBeVisible();
   await expect(page.getByText('tobiaswaelde/repovio')).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await expect(page.getByRole('columnheader', { name: 'Provider' })).toBeVisible();
   await expect(page.getByText('Processing workflows: 7/12')).toBeVisible();
   await expect(page.getByRole('progressbar', { name: '58%' })).toHaveAttribute('aria-valuenow', '7');

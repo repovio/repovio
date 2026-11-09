@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectTableHover } from './fixtures/table-hover';
 
 const alert = {
   description: 'Upgrade the affected dependency.',
@@ -137,6 +138,7 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
     ),
   ).toBeVisible();
   await expect(page.getByText('Vite path traversal')).toBeVisible();
+  await expectTableHover(page, page.getByRole('table'));
   await expect(
     page.getByRole('table').getByText(`${alert.repositoryOwner}/${alert.repositoryName}`, { exact: true }),
   ).toBeVisible();

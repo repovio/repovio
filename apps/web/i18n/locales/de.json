@@ -1043,7 +1043,9 @@
     "deleteRepository": "Repository löschen",
     "deleteDescription": "{name} und alle lokalen Workflows, Runs, Issues, Pull Requests, Sicherheitswarnungen, Einstellungen und Benachrichtigungsverläufe endgültig aus Repovio löschen? Dies kann nicht rückgängig gemacht werden. Das Repository und seine Daten beim Anbieter bleiben unverändert.",
     "deleteSyncConflict": "Eine Synchronisierung läuft. Warten Sie, bis sie abgeschlossen ist, und versuchen Sie es erneut.",
-    "deleteError": "Der Vorgang konnte nicht abgeschlossen werden. Versuchen Sie es erneut."
+    "deleteError": "Der Vorgang konnte nicht abgeschlossen werden. Versuchen Sie es erneut.",
+    "overview": "Übersicht",
+    "navigation": "Repository-Navigation"
   },
   "securityAlerts": {
     "code": "Code-Scanning",
@@ -1090,7 +1092,9 @@
     },
     "title": "Warnungen",
     "unavailable": "Nicht verfügbare Daten",
-    "unavailableDescription": "{count} Repositories stellen diesen Warnungstyp derzeit nicht bereit. Andere synchronisierte Daten bleiben verfügbar."
+    "unavailableDescription": "{count} Repositories stellen diesen Warnungstyp derzeit nicht bereit. Andere synchronisierte Daten bleiben verfügbar.",
+    "categoryNavigation": "Sicherheitskategorien",
+    "unknownAvailability": "Verfügbarkeit unbekannt oder Synchronisierung noch nicht abgeschlossen."
   },
   "sidebar": {
     "github": "GitHub-Repository öffnen",

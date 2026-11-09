@@ -1043,7 +1043,9 @@
     "title": "Impostazioni repository",
     "user": "Utente",
     "workflowFilters": "Filtri workflow",
-    "workflowFiltersDescription": "I filtri di esclusione hanno priorità su quelli di autorizzazione."
+    "workflowFiltersDescription": "I filtri di esclusione hanno priorità su quelli di autorizzazione.",
+    "overview": "Panoramica",
+    "navigation": "Navigazione del repository"
   },
   "securityAlerts": {
     "code": "Code scanning",
@@ -1090,7 +1092,9 @@
     },
     "title": "Alerts",
     "unavailable": "Unavailable data",
-    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
+    "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available.",
+    "categoryNavigation": "Categorie di sicurezza",
+    "unknownAvailability": "La disponibilità è sconosciuta o la sincronizzazione non è completa."
   },
   "sidebar": {
     "github": "Open GitHub repository",

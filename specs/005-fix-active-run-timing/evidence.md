@@ -88,3 +88,15 @@
 - Local screenshots: `apps/web/test-results/workflow-run-timing-terminal-timing-survives-refresh-de--chromium/terminal-timing-de.png`
   and `apps/web/test-results/workflow-run-timing-termin-011ea-es-refresh-en-workflow-runs-chromium/terminal-timing-en.png`.
 - Browser endpoints use synthetic intercepted responses; live-provider browser behavior is not claimed.
+
+- T008 commit: `14fd919`, pushed.
+
+## T009 Review Correction: Derived Intervals
+
+- Full baseline verification after T008: API 110 suites/788 tests, web 23 suites/97 tests, root lint/documentation,
+  root typecheck, root canonical formatting, and Changesets patch validation passed.
+- Review found that timestamp-derived duration must use validated endpoints; a sentinel start could otherwise
+  produce a large positive duration. Four regression assertions failed across GitHub/Gitea/GitLab before correction.
+- These adapters now validate endpoints before deriving duration. Independently supplied GitLab duration remains
+  available when valid. GitHub mapping changed only after this additional parity failure was reproduced.
+- Updated adapter suites: 97 tests passed; API typecheck passed. Final validation follows below.

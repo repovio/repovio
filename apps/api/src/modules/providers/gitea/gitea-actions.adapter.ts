@@ -512,14 +512,15 @@ export class GiteaActionsAdapter implements ProviderAdapter {
       status,
       startedAt,
       completedAt,
-      durationMs: startedAt && completedAt ? completedAt.getTime() - startedAt.getTime() : null,
+      durationMs: null,
     });
     return {
       awaitingApproval: isWorkflowRunAwaitingApproval('GITEA', run.status, run.conclusion ?? null),
       changeRequestNumber,
       completedAt: timing.completedAt,
       displayTitle: run.name ?? workflowName,
-      durationMs: timing.durationMs,
+      durationMs:
+        timing.startedAt && timing.completedAt ? timing.completedAt.getTime() - timing.startedAt.getTime() : null,
       event: run.event ?? null,
       headBranch,
       headSha: run.head_sha ?? null,

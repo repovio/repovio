@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { normalizeWorkflowRunTiming } from '../../workflow-runs/workflow-run-timing.js';
 import type {
   ProviderAccountContext,
   ProviderAccountValidation,
@@ -933,6 +934,8 @@ export class GitHubActionsAdapter implements ProviderAdapter {
     const workflowPath = run.path ?? null;
     const workflowKind = workflowPath === dependabotWorkflowPath ? 'DEPENDABOT_INTERNAL' : 'STANDARD';
     const workflowName = workflowKind === 'DEPENDABOT_INTERNAL' ? 'Dependabot Updates' : run.name;
+    const status = normalizeWorkflowRunStatus('GITHUB', run.status, run.conclusion);
+    const timing = normalizeWorkflowRunTiming({ status, startedAt, completedAt, durationMs: null });
     return {
       awaitingApproval: isWorkflowRunAwaitingApproval('GITHUB', run.status, run.conclusion),
       changeRequestNumber,
@@ -944,10 +947,11 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       providerWorkflowId: run.workflow_id ? String(run.workflow_id) : (workflowPath ?? `name:${workflowName}`),
       url: run.html_url,
       providerCreatedAt: new Date(run.created_at),
-      startedAt,
-      completedAt,
-      durationMs: startedAt && completedAt ? completedAt.getTime() - startedAt.getTime() : null,
-      status: normalizeWorkflowRunStatus('GITHUB', run.status, run.conclusion),
+      startedAt: timing.startedAt,
+      completedAt: timing.completedAt,
+      durationMs:
+        timing.startedAt && timing.completedAt ? timing.completedAt.getTime() - timing.startedAt.getTime() : null,
+      status,
       rawStatus: run.conclusion ?? run.status,
       reviewUrl: this.githubPullRequestUrl(run, repository),
       scopeKey: buildWorkflowRunScopeKey(changeRequestNumber, headBranch),

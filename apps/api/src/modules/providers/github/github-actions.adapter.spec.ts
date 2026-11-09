@@ -13,6 +13,44 @@ describe('GitHubActionsAdapter', /** Groups scenarios for GitHubActionsAdapter. 
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
 
   it.each([
+    ['1970-01-01T00:00:00Z', '2026-11-09T10:02:00Z', true],
+    ['2026-11-09T10:00:00Z', '1970-01-01T00:00:00Z', false],
+  ])(
+    'does not derive duration from sentinel interval %s to %s',
+    /** Keep valid independent completion while rejecting a duration calculated from a sentinel endpoint. */ async (
+      started,
+      stopped,
+      validCompletion,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 74,
+            status: 'completed',
+            conclusion: 'success',
+            created_at: '2026-11-09T09:59:00Z',
+            run_started_at: started,
+            updated_at: stopped,
+            completed_at: stopped,
+            html_url: 'https://example.test/runs/74',
+            name: 'CI',
+            event: 'push',
+          }),
+        ),
+      );
+      const run = await new GitHubActionsAdapter(fetchFn).getWorkflowRun(
+        context,
+        { providerRepositoryId: '1', owner: 'org', name: 'repo' },
+        '74',
+      );
+      expect(run).toMatchObject({
+        completedAt: validCompletion ? new Date(stopped as string) : null,
+        durationMs: null,
+      });
+    },
+  );
+
+  it.each([
     ['in_progress', 'RUNNING'],
     ['queued', 'QUEUED'],
     ['completed', 'SUCCESS'],

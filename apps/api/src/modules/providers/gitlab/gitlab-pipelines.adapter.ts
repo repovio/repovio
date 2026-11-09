@@ -856,12 +856,7 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       status,
       startedAt,
       completedAt,
-      durationMs:
-        pipeline.duration === null
-          ? startedAt && completedAt
-            ? completedAt.getTime() - startedAt.getTime()
-            : null
-          : pipeline.duration * 1000,
+      durationMs: pipeline.duration === null ? null : pipeline.duration * 1000,
     });
     return {
       awaitingApproval: isWorkflowRunAwaitingApproval('GITLAB', pipeline.status),
@@ -876,7 +871,12 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       providerCreatedAt: new Date(pipeline.created_at),
       startedAt: timing.startedAt,
       completedAt: timing.completedAt,
-      durationMs: timing.durationMs,
+      durationMs:
+        pipeline.duration === null
+          ? timing.startedAt && timing.completedAt
+            ? timing.completedAt.getTime() - timing.startedAt.getTime()
+            : null
+          : timing.durationMs,
       status,
       rawStatus: pipeline.status,
       reviewUrl: this.gitLabMergeRequestUrl(pipeline),

@@ -107,6 +107,8 @@ export const ApiRepositoryWebhookConfigurationSchema = z.strictObject({
   providerType: z.union([z.literal('GITHUB'), z.literal('GITLAB'), z.literal('FORGEJO'), z.literal('GITEA')]),
   callbackUrl: z.string(),
   configured: z.boolean(),
+  source: z.enum(['ORGANIZATION', 'REPOSITORY', 'NONE']),
+  organizationWebhook: z.object({ id: z.uuid(), providerAccountId: z.uuid(), scope: z.string() }).nullable(),
   lastDeliveryAt: z.union([z.null(), z.iso.datetime({ offset: true })]),
 });
 

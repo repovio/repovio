@@ -1,0 +1,22 @@
+meta {
+  name: create organization webhook
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/api/v1/provider-accounts/{{providerAccountId}}/organization-webhooks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "scope": "acme",
+    "webhookSecret": "{{webhookSecret}}"
+  }
+}

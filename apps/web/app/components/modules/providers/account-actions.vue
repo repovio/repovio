@@ -1,5 +1,15 @@
 <template>
   <div class="flex justify-end gap-1">
+    <UTooltip :text="$t('organizationWebhooks.title')">
+      <UButton
+        color="neutral"
+        icon="i-lucide-webhook"
+        variant="ghost"
+        :aria-label="$t('organizationWebhooks.title')"
+        :disabled="pending"
+        @click="emit('organizationWebhooks')"
+      />
+    </UTooltip>
     <UTooltip
       v-if="provider.providerType === 'GITLAB'"
       :text="oauthAvailable ? oauthLabel : $t('providers.oauthUnavailable')"
@@ -57,7 +67,7 @@ const props = defineProps<{
   togglePending: boolean;
   deletePending: boolean;
 }>();
-const emit = defineEmits<{ oauth: []; toggle: []; delete: [] }>();
+const emit = defineEmits<{ oauth: []; toggle: []; delete: []; organizationWebhooks: [] }>();
 const { t } = useI18n();
 const oauthLabel = computed(
   /** Choose conversion or reauthorization text from the explicit OAuth status. */ () =>

@@ -1,0 +1,15 @@
+meta {
+  name: list organization webhooks
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/provider-accounts/{{providerAccountId}}/organization-webhooks
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

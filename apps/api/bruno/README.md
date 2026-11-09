@@ -29,3 +29,10 @@ Start the API with the required values from `.env.example`, then run
 ```
 
 Add a request to the relevant module folder whenever an endpoint is introduced.
+
+## Organization webhooks
+
+Use the `organization-webhooks` requests as a System Administrator. Set `providerAccountId` and, for rotation/removal,
+`organizationWebhookId` from the API response. Store `webhookSecret` as a Bruno secret variable. Organization/group
+names are immutable; creating a configuration never registers a hook at the provider. See
+[organization webhook setup](../../../docs/organization-webhooks.md).

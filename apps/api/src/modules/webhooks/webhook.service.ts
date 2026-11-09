@@ -102,10 +102,7 @@ export class WebhookService {
    * @param headers - HTTP headers containing provider delivery or rate-limit metadata.
    * @returns The provider delivery ID, or null when no supported header is present.
    */
-  private getDeliveryId(
-    providerType: ProviderType,
-    headers: Record<string, string | string[] | undefined>,
-  ): string | null {
+  getDeliveryId(providerType: ProviderType, headers: Record<string, string | string[] | undefined>): string | null {
     const candidates =
       providerType === 'GITHUB'
         ? [headers['x-github-delivery']]

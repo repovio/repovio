@@ -1,0 +1,25 @@
+model OrganizationWebhook {
+  id                     String   @id @default(uuid()) @db.Uuid
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  scope                  String   @db.VarChar(255)
+  encryptedWebhookSecret String   @db.Text
+  providerAccountId      String   @db.Uuid
+  providerAccount        ProviderAccount @relation(fields: [providerAccountId], references: [id], onDelete: Cascade)
+  deliveries             OrganizationWebhookDelivery[]
+
+  @@unique([providerAccountId, scope])
+  @@map("organization_webhooks")
+}
+
+model OrganizationWebhookDelivery {
+  id                    String   @id @default(uuid()) @db.Uuid
+  createdAt             DateTime @default(now())
+  deliveryId            String   @db.VarChar(255)
+  organizationWebhookId String   @db.Uuid
+  organizationWebhook   OrganizationWebhook @relation(fields: [organizationWebhookId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationWebhookId, deliveryId])
+  @@index([organizationWebhookId, createdAt])
+  @@map("organization_webhook_deliveries")
+}

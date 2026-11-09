@@ -117,6 +117,7 @@
           :toggle-pending="isPending(providerActionKey('toggle', row.original.id))"
           :delete-pending="isPending(providerActionKey('delete', row.original.id))"
           @oauth="startOAuth(row.original)"
+          @organization-webhooks="openOrganizationWebhooks(row.original)"
           @toggle="toggle(row.original)"
           @delete="remove(row.original.id)"
         />
@@ -131,6 +132,12 @@
     />
     <ModulesProvidersGithubAppDialog v-model:open="githubAppOpen" :refresh-accounts="handleProviderCreated" />
     <ModulesProvidersAddDialog v-model:open="dialogOpen" @created="handleProviderCreated" />
+    <ModulesProvidersOrganizationWebhooksDialog
+      v-if="organizationProvider"
+      :key="organizationProvider.id"
+      v-model:open="organizationWebhooksOpen"
+      :provider="organizationProvider"
+    />
   </LayoutPage>
 </template>
 
@@ -151,7 +158,7 @@ import type { ColumnDefinition } from '~/types/table';
 type ProviderAccountRow = ProviderAccount & Record<string, unknown>;
 type ProviderTableColumn = ColumnDefinition<ProviderAccountRow> & { header: string; id: string };
 
-definePageMeta({ fullWidth: true });
+definePageMeta({ fullWidth: true, middleware: ['admin'] });
 
 const { confirmDestructiveAction } = useDestructiveAction();
 const { t } = useI18n();
@@ -160,6 +167,14 @@ const api = useRepovioApi();
 const route = useRoute();
 const dialogOpen = ref(false);
 const githubAppOpen = ref(false);
+const organizationProvider = ref<ProviderAccount>();
+const organizationWebhooksOpen = ref(false);
+
+/** Open organization configuration for exactly the selected provider connection. */
+function openOrganizationWebhooks(provider: ProviderAccount): void {
+  organizationProvider.value = provider;
+  organizationWebhooksOpen.value = true;
+}
 const gitlabOAuthAvailable = ref(false);
 const oauthActionError = ref(false);
 const { isPending, run: runPendingAction } = usePendingActions();

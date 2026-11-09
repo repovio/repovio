@@ -169,7 +169,11 @@
     "repository": "Repository",
     "search": "Cerca elementi",
     "searchPlaceholder": "Cerca numero o titolo",
-    "states": { "CLOSED": "Chiusa", "MERGED": "Unita", "OPEN": "Aperta" },
+    "states": {
+      "CLOSED": "Chiusa",
+      "MERGED": "Unita",
+      "OPEN": "Aperta"
+    },
     "summary": "Panoramica lavoro",
     "updatedFrom": "Aggiornato dal",
     "updatedTo": "Aggiornato al",
@@ -640,7 +644,10 @@
     "resetHint": "Imposta una password per {username}. Le sessioni esistenti saranno invalidate.",
     "usernameExists": "Nome utente già in uso.",
     "saveError": "Impossibile salvare l’account.",
-    "authProviders": { "LOCAL": "Locale", "OIDC": "OpenID Connect" },
+    "authProviders": {
+      "LOCAL": "Locale",
+      "OIDC": "OpenID Connect"
+    },
     "columns": {
       "actions": "Azioni",
       "authProvider": "Autenticazione",
@@ -830,17 +837,26 @@
     "loadError": "Impossibile caricare i dati delle notifiche.",
     "preview": {
       "action": "Preview matching runs",
-      "ERROR": { "description": "The preview could not be loaded.", "title": "Preview failed" },
+      "ERROR": {
+        "description": "The preview could not be loaded.",
+        "title": "Preview failed"
+      },
       "INSUFFICIENT_PERMISSION": {
         "description": "System administrator permission is required to preview notification rules.",
         "title": "Insufficient permission"
       },
-      "MATCHES": { "description": "{count} recent workflow runs match this rule.", "title": "Matching runs" },
+      "MATCHES": {
+        "description": "{count} recent workflow runs match this rule.",
+        "title": "Matching runs"
+      },
       "NEVER_SYNCHRONIZED": {
         "description": "The selected repositories have not been synchronized yet.",
         "title": "No synchronized data"
       },
-      "NO_RESULTS": { "description": "No recent workflow runs match this rule.", "title": "No results" },
+      "NO_RESULTS": {
+        "description": "No recent workflow runs match this rule.",
+        "title": "No results"
+      },
       "PARTIAL": {
         "description": "{count} matches are shown, but some repository data is unavailable or stale.",
         "title": "Partial data"
@@ -982,7 +998,12 @@
       "neverSynced": "This repository has never been synchronized.",
       "stale": "Repository data is stale",
       "staleDescription": "The last successful synchronization is older than the configured {interval}-minute polling interval.",
-      "status": { "FAILED": "Failed", "IDLE": "Idle", "PENDING": "Pending", "RUNNING": "Running" },
+      "status": {
+        "FAILED": "Failed",
+        "IDLE": "Idle",
+        "PENDING": "Pending",
+        "RUNNING": "Running"
+      },
       "title": "Synchronization"
     },
     "unauthorized": "This repository was not found or is not available to you.",
@@ -1062,7 +1083,11 @@
       "MEDIUM": "Medium",
       "UNKNOWN": "Unknown"
     },
-    "states": { "DISMISSED": "Dismissed", "OPEN": "Open", "RESOLVED": "Resolved" },
+    "states": {
+      "DISMISSED": "Dismissed",
+      "OPEN": "Open",
+      "RESOLVED": "Resolved"
+    },
     "title": "Alerts",
     "unavailable": "Unavailable data",
     "unavailableDescription": "{count} repositories do not currently expose this alert type. Other synchronized data remains available."
@@ -1133,5 +1158,32 @@
     "confirm": "Rimuovi",
     "error": "Rimozione non riuscita. Riprova.",
     "cancel": "Annulla"
+  },
+  "organizationWebhooks": {
+    "title": "Organization webhooks",
+    "description": "Configure shared webhooks for {provider}.",
+    "badge": "Organization",
+    "localConfiguration": "Configured locally only. Register this webhook manually at your provider. Existing repository secrets remain available as a fallback.",
+    "gitlabTier": "GitLab group webhooks require Premium or Ultimate and include subgroups.",
+    "empty": "No organization webhooks configured.",
+    "load": "Load organization webhooks",
+    "error": "Organization webhook request failed. Try again.",
+    "edit": "Manage webhook",
+    "add": "Add organization webhook",
+    "addAnother": "Add another organization",
+    "rotate": "Rotate secret",
+    "organization": "Organization",
+    "groupPath": "Full group path",
+    "secretHelp": "Use at least 16 characters. Copy this secret into the provider webhook settings. Stored secrets cannot be retrieved.",
+    "inherited": "Organization webhook: {scope}",
+    "manage": "Manage provider webhooks",
+    "instructions": {
+      "GITHUB": "Open organization Settings > Webhooks > Add webhook. Use the callback URL, JSON content type, and the same secret. Select the workflow, issue, pull request, and security events you want to monitor. Organization owner access is required.",
+      "FORGEJO": "Open organization Settings > Webhooks and add a Forgejo webhook with the callback URL, JSON content type, and the same secret. Select the supported repository events you want to monitor.",
+      "GITEA": "Open organization Settings > Webhooks and add a Gitea webhook with the callback URL, JSON content type, and the same secret. Select the supported repository events you want to monitor.",
+      "GITLAB": "Open group Settings > Webhooks. Use the callback URL and the same signing secret or secret token, depending on your GitLab version. Select pipeline, job, issue, and merge request events as needed. All tracked projects in this group and its subgroups are covered."
+    },
+    "rotationConfirm": "I will update the organization or group webhook at the provider with the new secret.",
+    "lastDelivery": "Last accepted delivery: {value}"
   }
 }

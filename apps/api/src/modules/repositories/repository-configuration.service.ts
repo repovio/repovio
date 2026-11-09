@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 
 import { ENV } from '../../config/env.js';
 import type {
+  OrganizationWebhook,
   ProviderType,
   Repository,
   RepositoryMembership,
@@ -12,6 +13,7 @@ import type {
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { CredentialEncryptionService } from '../../security/credential-encryption.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
+import { selectOrganizationWebhook } from '../organization-webhooks/organization-webhook-scope.js';
 import type { RepositoryWebhookConfigurationDto } from './dto/repository-webhook-configuration.dto.js';
 import { WorkflowFilterService, type WorkflowFilterMode } from './workflow-filter.service.js';
 
@@ -96,7 +98,13 @@ export class RepositoryConfigurationService {
       select: {
         encryptedWebhookSecret: true,
         id: true,
-        providerAccount: { select: { providerType: true } },
+        owner: true,
+        providerAccount: {
+          select: {
+            providerType: true,
+            organizationWebhooks: { select: { id: true, providerAccountId: true, scope: true } },
+          },
+        },
         webhookDeliveries: {
           orderBy: { createdAt: 'desc' },
           select: { createdAt: true },
@@ -111,6 +119,11 @@ export class RepositoryConfigurationService {
           repository.providerAccount.providerType,
           repository.encryptedWebhookSecret !== null,
           repository.webhookDeliveries[0]?.createdAt ?? null,
+          selectOrganizationWebhook(
+            repository.providerAccount.providerType,
+            repository.owner,
+            repository.providerAccount.organizationWebhooks ?? [],
+          ),
         ),
     );
   }
@@ -136,7 +149,12 @@ export class RepositoryConfigurationService {
       where: { id: repositoryId },
       data: { encryptedWebhookSecret: this.credentials.encrypt(webhookSecret) },
       include: {
-        providerAccount: { select: { providerType: true } },
+        providerAccount: {
+          select: {
+            providerType: true,
+            organizationWebhooks: { select: { id: true, providerAccountId: true, scope: true } },
+          },
+        },
         webhookDeliveries: { orderBy: { createdAt: 'desc' }, select: { createdAt: true }, take: 1 },
       },
     });
@@ -145,6 +163,11 @@ export class RepositoryConfigurationService {
       repository.providerAccount.providerType,
       true,
       repository.webhookDeliveries[0]?.createdAt ?? null,
+      selectOrganizationWebhook(
+        repository.providerAccount.providerType,
+        repository.owner,
+        repository.providerAccount.organizationWebhooks ?? [],
+      ),
     );
   }
 
@@ -352,6 +375,7 @@ export class RepositoryConfigurationService {
    * @param providerType - Provider implementation selected for the operation.
    * @param configured - Whether a webhook secret is currently stored for the repository.
    * @param lastDeliveryAt - Most recent accepted webhook time, or null when no delivery exists.
+   * @param organizationWebhook - Most specific matching organization configuration, if configured.
    * @returns Safe webhook URL, configuration status, and latest delivery timestamp.
    */
   private toWebhookConfiguration(
@@ -359,13 +383,18 @@ export class RepositoryConfigurationService {
     providerType: ProviderType,
     configured: boolean,
     lastDeliveryAt: Date | null,
+    organizationWebhook?: Pick<OrganizationWebhook, 'id' | 'providerAccountId' | 'scope'>,
   ): RepositoryWebhookConfigurationDto {
     return {
       callbackUrl: new URL(
-        `/api/webhooks/${providerType.toLocaleLowerCase('en-US')}/${repositoryId}`,
+        organizationWebhook
+          ? `/api/webhooks/organization/${organizationWebhook.id}`
+          : `/api/webhooks/${providerType.toLocaleLowerCase('en-US')}/${repositoryId}`,
         ENV.PUBLIC_URL,
       ).toString(),
-      configured,
+      configured: !!organizationWebhook || configured,
+      source: organizationWebhook ? 'ORGANIZATION' : configured ? 'REPOSITORY' : 'NONE',
+      organizationWebhook: organizationWebhook ?? null,
       lastDeliveryAt: lastDeliveryAt?.toISOString() ?? null,
       providerType,
       repositoryId,

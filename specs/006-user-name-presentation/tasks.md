@@ -98,7 +98,7 @@ but the approved app-wide feature still requires US2, US3, and final verificatio
 **Independent Test**: Compare the same User across navigation, administration, memberships, recipient summaries,
 requester history, dialogs, confirmations, and accessible descriptions, then refresh after a name change.
 
-- [ ] T007 [US2] Add the safe requester projection to
+- [x] T007 [US2] Add the safe requester projection to
       `apps/api/src/modules/notifications/notification-deliveries.controller.ts`,
       `apps/api/src/modules/notifications/notifications.service.ts`, and
       `apps/api/src/modules/notifications/dto/notification-delivery.dto.ts`; align

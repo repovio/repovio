@@ -26,3 +26,5 @@
 - T005: `c07c7c6` — show names in user selectors; focused verification passed before commit.
 
 - T006: `035103d` — paginate named browser notification recipients; focused verification passed before commit.
+
+- T007: `3dbae00` — show safe delivery requester identities; focused verification passed before commit.

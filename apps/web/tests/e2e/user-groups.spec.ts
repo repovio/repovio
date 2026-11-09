@@ -168,8 +168,12 @@ for (const locale of ['en', 'de']) {
     await page.getByRole('option', { name: 'Ada Lovelace (@ada)', exact: true }).click();
     await expect(dialog.getByRole('combobox')).toContainText('Ada Lovelace (@ada)');
     await dialog.getByRole('button', { name: de ? 'Mitglied hinzufügen' : 'Add member', exact: true }).click();
-    await expect(dialog.getByText('ada', { exact: true })).toBeVisible();
-    await dialog.getByRole('button', { name: de ? 'ada aus Gruppe entfernen' : 'Remove ada from group' }).click();
+    await expect(dialog.getByText('Ada Lovelace (@ada)', { exact: true })).toBeVisible();
+    await dialog
+      .getByRole('button', {
+        name: de ? 'Ada Lovelace (@ada) aus Gruppe entfernen' : 'Remove Ada Lovelace (@ada) from group',
+      })
+      .click();
     await page
       .getByRole('dialog', { name: de ? 'Entfernen bestätigen' : 'Confirm removal' })
       .getByRole('button', { name: de ? 'Entfernen' : 'Remove', exact: true })

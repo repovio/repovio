@@ -105,7 +105,7 @@
               v-if="getUserDisplayName(row.original.user) !== row.original.user.username"
               class="truncate text-xs text-muted"
             >
-              @{{ row.original.user.username }}
+              (@{{ row.original.user.username }})
             </p>
           </div>
         </div>
@@ -337,9 +337,9 @@ async function updateMemberRole(membership: RepositoryMembership, role: Reposito
 
 /** Revoke explicit repository access from one user. */
 async function removeMember(userId: string): Promise<void> {
+  const member = memberships.value.find(/** Find the affected member. */ (entry) => entry.userId === userId);
   await confirmDestructiveAction(
-    memberships.value.find(/** Find the affected member. */ (member) => member.userId === userId)?.user.username ??
-      userId,
+    member ? getUserIdentityLabel(member.user) : userId,
     /** Perform the confirmed action and await its dependent UI updates. */ async () => {
       await runPendingAction(
         memberActionKey('remove', userId),

@@ -9,8 +9,8 @@
 
 **Branch**: `codex/71-organization-webhook-callback`
 
-**Authorization**: Plan, tasks, issue creation, and planning commit/push are approved. Implementation and merge require
-separate approvals. Reuse this checkout; no new worktree is needed. The original organization-webhook specification remains
+**Authorization**: Plan, tasks, issue creation, planning commit/push, and implementation are approved. Merge requires
+separate approval. Reuse this checkout; no new worktree is needed. The original organization-webhook specification remains
 unchanged.
 
 **Tests**: Required by the specification's acceptance scenarios, approved plan, and repository constitution. The browser
@@ -25,13 +25,13 @@ implementation. Paths below are repository-relative. Only US1 is in scope; all l
 
 **Purpose**: Resolve feature context and prepare the existing workspace without changing the toolchain.
 
-- [ ] T001 Verify `specs/004-organization-webhook-callback/spec.md` and `plan.md` resolve through `.specify/feature.json` using `.specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks`; inspect Git status/diffs, read `AGENTS.md`, `GLOSSARY.md`, and `docs/coding-guidelines.md`, verify Node.js 26.13.0 and Corepack pnpm 11.28.9 against `package.json`, and install pinned workspace dependencies if absent without changing manifests or `pnpm-lock.yaml`.
+- [x] T001 Verify `specs/004-organization-webhook-callback/spec.md` and `plan.md` resolve through `.specify/feature.json` using `.specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks`; inspect Git status/diffs, read `AGENTS.md`, `GLOSSARY.md`, and `docs/coding-guidelines.md`, verify Node.js 26.13.0 and Corepack pnpm 11.28.9 against `package.json`, and install pinned workspace dependencies if absent without changing manifests or `pnpm-lock.yaml`.
 
 ## Phase 2: Foundational
 
 **Purpose**: Verify the existing callback lifecycle before changing presentation. No new infrastructure is needed.
 
-- [ ] T002 Confirm `specs/004-organization-webhook-callback/contracts/ui.md` against `apps/web/app/composables/api/organization-webhooks.ts`, `libs/schemas/src/api/organization-webhooks.ts`, and `apps/api/src/modules/organization-webhooks/organization-webhooks.service.ts`: the server supplies the public callback after persistence; preserve the data-model constraints "Strict input containing only `scope` and `webhookSecret`; no callback field" and "Existing write-only secret input; no callback field"; require no endpoint, schema, database, composable, or provider-write changes.
+- [x] T002 Confirm `specs/004-organization-webhook-callback/contracts/ui.md` against `apps/web/app/composables/api/organization-webhooks.ts`, `libs/schemas/src/api/organization-webhooks.ts`, and `apps/api/src/modules/organization-webhooks/organization-webhooks.service.ts`: the server supplies the public callback after persistence; preserve the data-model constraints "Strict input containing only `scope` and `webhookSecret`; no callback field" and "Existing write-only secret input; no callback field"; require no endpoint, schema, database, composable, or provider-write changes.
 
 **Checkpoint**: Approved issue/implementation authorization and verified existing contracts are required before T003.
 

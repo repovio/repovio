@@ -80,6 +80,7 @@ for (const { locale, width } of [
             return;
           }
           if (method === 'POST') {
+            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['scope', 'webhookSecret']);
             expect(route.request().postDataJSON().scope).toBe('acme');
             expect(route.request().postDataJSON().webhookSecret).toHaveLength(64);
             await createPending;
@@ -131,6 +132,27 @@ for (const { locale, width } of [
       .getByRole('button', { name: locale === 'de' ? 'Organisations-Webhooks laden' : 'Load organization webhooks' })
       .click();
     await expect(dialog.getByText(/Premium/)).toBeVisible();
+    const form = dialog.locator('form');
+    const callback = form.getByRole('textbox', {
+      name: locale === 'de' ? 'Callback-URL' : 'Callback URL',
+      exact: true,
+    });
+    await expect(callback).toHaveCount(1);
+    await expect(callback).toHaveAttribute('readonly');
+    await expect(callback).toHaveValue('');
+    await expect(callback).not.toHaveAttribute('required');
+    await expect(
+      form.getByRole('button', { name: locale === 'de' ? 'Callback-URL kopieren' : 'Copy callback URL' }),
+    ).toBeDisabled();
+    await expect(
+      form.getByText(
+        locale === 'de'
+          ? 'Speichere diese Konfiguration, um ihre Callback-URL zu erhalten.'
+          : 'Save this configuration to get its callback URL.',
+      ),
+    ).toBeVisible();
+    await callback.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath(`organization-callback-empty-${locale}.png`), fullPage: true });
     await dialog
       .getByRole('textbox', { name: locale === 'de' ? 'Vollständiger Gruppenpfad' : 'Full group path' })
       .fill('acme');
@@ -142,6 +164,7 @@ for (const { locale, width } of [
     await add.click();
     await expect(add).toBeDisabled();
     await expect(add.locator('[data-slot="leadingIcon"]')).toBeVisible();
+    await expect(callback).toHaveValue('');
     releaseCreate?.();
     const rotate = dialog.getByRole('button', {
       name: locale === 'de' ? 'Secret wechseln' : 'Rotate secret',
@@ -151,10 +174,17 @@ for (const { locale, width } of [
     await expect(
       dialog.getByRole('textbox', { name: locale === 'de' ? 'Vollständiger Gruppenpfad' : 'Full group path' }),
     ).toHaveAttribute('readonly');
-    await expect(dialog.locator('input[readonly]').first()).toHaveValue(hook.callbackUrl);
+    await expect(callback).toHaveValue(hook.callbackUrl);
+    await expect(
+      dialog
+        .locator('li')
+        .getByRole('textbox', { name: locale === 'de' ? 'Callback-URL' : 'Callback URL', exact: true }),
+    ).toHaveValue(hook.callbackUrl);
     await dialog.getByRole('checkbox').check();
     await rotate.click();
     await expect(rotate).toBeDisabled();
+    await expect(callback).toHaveValue(hook.callbackUrl);
+    await callback.scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath(`organization-dialog-${locale}.png`), fullPage: true });
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
@@ -217,6 +247,250 @@ for (const { locale, width } of [
       ),
     ).toBe(true);
     expect(errors).toEqual([]);
+  });
+}
+
+for (const { locale, width } of [
+  { locale: 'en', width: 1440 },
+  { locale: 'de', width: 390 },
+] as const) {
+  test(`organization callback selection, copying, and recovery (${locale}, ${width}px)`, /** Verify form callbacks across failures and selection changes without provider requests. */ async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
+    const copied: string[] = [];
+    await page.exposeFunction(
+      'recordCopiedCallback',
+      /** Record the actual clipboard write independently of displayed text. */ (value: string) => copied.push(value),
+    );
+    await page.addInitScript(
+      /** Authenticate a synthetic administrator and provide a deterministic clipboard. */ () => {
+        localStorage.setItem('repovio.access-token', 'synthetic-test-token');
+        Object.defineProperty(navigator, 'clipboard', {
+          configurable: true,
+          value: {
+            /** Forward browser clipboard writes to the test recorder. */
+            writeText: (value: string) =>
+              (window as unknown as { recordCopiedCallback: (text: string) => Promise<void> }).recordCopiedCallback(
+                value,
+              ),
+          },
+        });
+      },
+    );
+    const provider = {
+      id: '11111111-1111-4111-8111-111111111111',
+      providerType: 'GITLAB',
+      displayName: 'Synthetic GitLab',
+      enabled: true,
+      baseUrl: 'https://example.test',
+      lastSyncAt: null,
+    };
+    const first = {
+      id: '33333333-3333-4333-8333-333333333333',
+      providerAccountId: provider.id,
+      providerType: 'GITLAB',
+      scope: 'acme',
+      callbackUrl: 'https://public.example.test/api/webhooks/organization/33333333-3333-4333-8333-333333333333',
+      lastDeliveryAt: null,
+    };
+    const second = {
+      ...first,
+      id: '44444444-4444-4444-8444-444444444444',
+      scope: 'another-organization',
+      callbackUrl:
+        'https://organization-webhook-callback-with-a-long-public-hostname.example.test/api/webhooks/organization/44444444-4444-4444-8444-444444444444',
+    };
+    const created = {
+      ...first,
+      id: '55555555-5555-4555-8555-555555555555',
+      scope: 'new-organization',
+      callbackUrl: 'https://public.example.test/api/webhooks/organization/55555555-5555-4555-8555-555555555555',
+    };
+    let configurations = [first, second];
+    let failCreate = true;
+    let failRotation = true;
+    let mutations = 0;
+    const runtimeErrors: string[] = [];
+    page.on('pageerror', /** Retain unexpected client-side exceptions. */ (error) => runtimeErrors.push(error.message));
+    await page.route(
+      '**/api/v1/**',
+      /** Exercise existing typed client paths with synthetic success and failure responses. */ async (route) => {
+        const path = new URL(route.request().url()).pathname;
+        const method = route.request().method();
+        if (path.endsWith('/auth/me')) {
+          await route.fulfill({ json: { id: 'admin', username: 'playwright', role: 'SYSTEM_ADMIN' } });
+        } else if (path.endsWith('/authentication-options')) {
+          await route.fulfill({ json: { oauthProviderTypes: [] } });
+        } else if (path === '/api/v1/provider-accounts') {
+          await route.fulfill({ json: { items: [provider], meta: { itemCount: 1, pageCount: 1 } } });
+        } else if (path.includes('/organization-webhooks')) {
+          if (method === 'POST') {
+            mutations++;
+            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['scope', 'webhookSecret']);
+            expect(route.request().postDataJSON().scope).toBe(created.scope);
+            if (failCreate) {
+              failCreate = false;
+              await route.fulfill({ status: 503, json: {} });
+            } else {
+              configurations = [...configurations, created];
+              await route.fulfill({ json: created });
+            }
+          } else if (method === 'PATCH') {
+            mutations++;
+            expect(path.endsWith(`/${second.id}`)).toBe(true);
+            expect(Object.keys(route.request().postDataJSON())).toEqual(['webhookSecret']);
+            if (failRotation) {
+              failRotation = false;
+              await route.fulfill({ status: 503, json: {} });
+            } else await route.fulfill({ json: second });
+          } else if (method === 'DELETE') {
+            mutations++;
+            expect(path.endsWith(`/${created.id}`)).toBe(true);
+            configurations = configurations.filter(
+              /** Remove only the requested configuration. */ (hook) => hook.id !== created.id,
+            );
+            await route.fulfill({ status: 204 });
+          } else await route.fulfill({ json: configurations });
+        } else await route.abort();
+      },
+    );
+
+    await page.goto('/admin/providers');
+    const title = locale === 'de' ? 'Organisations-Webhooks' : 'Organization webhooks';
+    const trigger = page.getByRole('button', { name: title, exact: true });
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: title, exact: true });
+    const form = dialog.locator('form');
+    const callback = form.getByRole('textbox', {
+      name: locale === 'de' ? 'Callback-URL' : 'Callback URL',
+      exact: true,
+    });
+    const copy = form.getByRole('button', {
+      name: locale === 'de' ? 'Callback-URL kopieren' : 'Copy callback URL',
+      exact: true,
+    });
+    const scope = form.getByRole('textbox', {
+      name: locale === 'de' ? 'Vollständiger Gruppenpfad' : 'Full group path',
+    });
+    const secret = form.locator('input[autocomplete="new-password"]');
+    const help = form.getByText(
+      locale === 'de'
+        ? 'Speichere diese Konfiguration, um ihre Callback-URL zu erhalten.'
+        : 'Save this configuration to get its callback URL.',
+    );
+    await expect(callback).toHaveValue('');
+    await expect(copy).toBeDisabled();
+    await expect(help).toBeVisible();
+    await scope.fill(created.scope);
+    await secret.fill('synthetic-signing-secret-for-browser-tests');
+    const add = form.getByRole('button', {
+      name: locale === 'de' ? 'Organisations-Webhook hinzufügen' : 'Add organization webhook',
+      exact: true,
+    });
+    await add.click();
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(callback).toHaveValue('');
+    await expect(copy).toBeDisabled();
+    await expect(scope).toHaveValue(created.scope);
+    await expect(secret).toHaveValue('synthetic-signing-secret-for-browser-tests');
+    await add.click();
+    await expect(callback).toHaveValue(created.callbackUrl);
+    await expect(help).toHaveCount(0);
+    await expect(copy).toHaveAttribute('type', 'button');
+    await callback.focus();
+    await expect(callback).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(copy).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect.poll(/** Observe the actual clipboard side effect. */ () => copied).toEqual([created.callbackUrl]);
+    expect(mutations).toBe(2);
+
+    await form
+      .getByRole('button', { name: locale === 'de' ? 'Weitere Organisation hinzufügen' : 'Add another organization' })
+      .click();
+    await expect(callback).toHaveValue('');
+    await expect(copy).toBeDisabled();
+    await expect(help).toBeVisible();
+    const manageName = locale === 'de' ? 'Webhook verwalten' : 'Manage webhook';
+    await dialog
+      .locator('li')
+      .filter({ has: page.getByText(first.scope, { exact: true }) })
+      .getByRole('button', { name: manageName })
+      .click();
+    await expect(callback).toHaveValue(first.callbackUrl);
+    await copy.click();
+    await expect.poll(/** Check selection-specific clipboard output. */ () => copied.at(-1)).toBe(first.callbackUrl);
+    await dialog
+      .locator('li')
+      .filter({ has: page.getByText(second.scope, { exact: true }) })
+      .getByRole('button', { name: manageName })
+      .click();
+    await expect(callback).toHaveValue(second.callbackUrl);
+    await copy.click();
+    await expect
+      .poll(/** Check the second configuration's exact public address. */ () => copied.at(-1))
+      .toBe(second.callbackUrl);
+    expect(mutations).toBe(2);
+    await page.evaluate(
+      /** Simulate a denied clipboard write without changing server state. */ () => {
+        navigator.clipboard.writeText = /** Reject the attempted copy. */ async () => {
+          throw new Error('Synthetic clipboard denial');
+        };
+      },
+    );
+    await copy.click();
+    await expect(
+      page.getByText(locale === 'de' ? 'Der Wert konnte nicht kopiert werden.' : 'The value could not be copied.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(copied).toHaveLength(3);
+    await secret.fill('synthetic-replacement-signing-secret');
+    await form.getByRole('checkbox').check();
+    const rotate = form.getByRole('button', {
+      name: locale === 'de' ? 'Secret wechseln' : 'Rotate secret',
+      exact: true,
+    });
+    await rotate.click();
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(callback).toHaveValue(second.callbackUrl);
+    await expect(secret).toHaveValue('synthetic-replacement-signing-secret');
+    await rotate.click();
+    await expect(rotate).toBeDisabled();
+    await expect(callback).toHaveValue(second.callbackUrl);
+    await expect(callback).toHaveAttribute('readonly');
+    await callback.scrollIntoViewIfNeeded();
+    const overflows = await dialog.evaluate(
+      /** Inspect the dialog and each ancestor of the long input for horizontal overflow. */ (element) =>
+        [element, ...element.querySelectorAll('form, form input')].some(
+          /** Native inputs scroll their text internally; containers must remain within their bounds. */ (node) =>
+            !(node instanceof HTMLInputElement) && node.scrollWidth > node.clientWidth + 1,
+        ),
+    );
+    expect(overflows).toBe(false);
+    await page.screenshot({ path: testInfo.outputPath(`organization-callback-long-${locale}.png`), fullPage: true });
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await expect(callback).toHaveValue('');
+    await expect(copy).toBeDisabled();
+    await expect(help).toBeVisible();
+    await dialog
+      .locator('li')
+      .filter({ has: page.getByText(created.scope, { exact: true }) })
+      .getByRole('button', { name: manageName })
+      .click();
+    await form
+      .getByRole('button', { name: locale === 'de' ? 'Konfiguration entfernen' : 'Remove configuration' })
+      .click();
+    await page.getByRole('button', { name: locale === 'de' ? 'Entfernen' : 'Remove', exact: true }).click();
+    await expect(callback).toHaveValue('');
+    await expect(copy).toBeDisabled();
+    await expect(help).toBeVisible();
+    expect(mutations).toBe(5);
+    expect(runtimeErrors).toEqual([]);
   });
 }
 

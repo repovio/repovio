@@ -1205,6 +1205,7 @@
     "cancel": "Abbrechen"
   },
   "organizationWebhooks": {
+    "callbackAvailableAfterSave": "Speichere diese Konfiguration, um ihre Callback-URL zu erhalten.",
     "title": "Organisations-Webhooks",
     "description": "Gemeinsame Webhooks für {provider} konfigurieren.",
     "badge": "Organisation",

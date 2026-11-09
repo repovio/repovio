@@ -69,6 +69,25 @@
               <UInput v-model="form.scope" class="w-full" :disabled="pending" :readonly="!!editingId" />
             </UFormField>
             <UFormField
+              :help="callbackUrl ? undefined : $t('organizationWebhooks.callbackAvailableAfterSave')"
+              :label="$t('repositories.webhook.callbackUrl')"
+            >
+              <UInput class="w-full font-mono" readonly :model-value="callbackUrl" :ui="{ base: 'pe-10' }">
+                <template #trailing>
+                  <UButton
+                    type="button"
+                    color="neutral"
+                    size="xs"
+                    variant="ghost"
+                    icon="i-lucide-copy"
+                    :disabled="!callbackUrl"
+                    :aria-label="$t('repositories.webhook.copyUrl')"
+                    @click="copy(callbackUrl)"
+                  />
+                </template>
+              </UInput>
+            </UFormField>
+            <UFormField
               name="webhookSecret"
               :help="$t('organizationWebhooks.secretHelp')"
               :label="$t('repositories.webhook.secret')"
@@ -174,6 +193,11 @@ const scopeLabel = computed(
 );
 const form = reactive({ scope: '', webhookSecret: '' });
 const editingId = ref<string>();
+const callbackUrl = computed(
+  /** Resolve only the selected configuration's server-provided callback address. */ () =>
+    configurations.value.find(/** Match the active form selection. */ (hook) => hook.id === editingId.value)
+      ?.callbackUrl ?? '',
+);
 const revealSecret = ref(false);
 const rotationConfirmed = ref(false);
 const action = ref<'save' | 'remove'>();

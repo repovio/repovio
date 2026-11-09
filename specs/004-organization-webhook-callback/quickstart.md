@@ -94,3 +94,14 @@ manifest, lockfile, compiler alias, or version range changed.
 The staged-source graph hook passed; its existing SQL parser warning remains because `tree_sitter_sql` is unavailable.
 No SQL changed, and no full semantic rebuild was run. Live provider delivery, Docker behavior, and remote CI were not
 verified locally. No release, deployment, or merge was performed.
+
+## CI Follow-up: Complete Locale Messages
+
+The first PR CI run failed the existing locale-completeness test: the new callback guidance key existed in English and
+German but was missing in Spanish, French, Italian, Dutch, Polish, and Portuguese. This failure was reproduced locally.
+The correction adds that same guidance key in all six remaining shipped locales; no test or fallback rule was weakened.
+
+`PATH=/tmp/repovio-71-toolchain:$PATH corepack pnpm --dir apps/web test` then passed all 78 tests across 22 files, including
+locale parity. English/German browser acceptance remains covered by the five previously passing scenarios. Other locales
+received message-key coverage, not separate browser-layout certification. The follow-up includes its own focused patch
+Changeset as required for a substantive correction commit.

@@ -54,3 +54,16 @@ corepack pnpm branding:check
 `e2e:pwa` already includes the web production build. Broaden checks only if implementation touches additional projects.
 Inspect `git status`, relevant diffs, and `git diff --check` before checks and delivery. A substantive requested
 implementation commit needs exactly one focused `repovio` Changeset; planning documents alone do not change behavior.
+
+## Disposable Authentication Fixtures
+
+`tests/pwa/helpers.ts` supplies synthetic Alice/Bob sessions for deterministic browser coverage. These responses are
+explicit mocks and do not prove server authorization. For real integration, start a new disposable PostgreSQL database,
+apply committed migrations, and start the API with `SCHEDULER_ENABLED=false` and unique test JWT/encryption keys. Create
+fixture users and repository memberships only in that database. Point a separate web process at its API using
+`NUXT_PUBLIC_API_BASE_URL`; do not repoint a shared deployment. Observe sign-in, logout, permitted and denied reads,
+Cache Storage, and reconnection using the production service worker.
+
+For OIDC, configure a dedicated test issuer/client and exact callback URL, using a controlled HTTPS origin reachable by
+the test device. Verify the real redirect and callback in standalone mode. No device or issuer access means that evidence
+remains unverified; mocks and mobile viewport emulation cannot replace it.

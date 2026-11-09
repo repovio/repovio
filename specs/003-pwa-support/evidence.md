@@ -35,3 +35,6 @@
 
 - T003: One Playwright worker serializes shared build mutations; per-test restoration prevents failed scenarios from
   leaking a changed worker into the next test. All 7 production scenarios and scoped ESLint/documentation checks passed.
+
+- T004: Synthetic Alice/Bob fixtures, real sign-in form helper, controlled-worker readiness, and all-cache URL inspection
+  implemented. Disposable API/OIDC prerequisites documented. Mocked browser evidence remains separate from server proof.

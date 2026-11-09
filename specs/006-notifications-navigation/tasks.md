@@ -63,10 +63,10 @@ backend, persistence, or notification delivery changes are needed.
 
 **Purpose**: Verify the complete feature and record actual evidence without expanding scope.
 
-- [ ] T007 Run canonical formatting twice to prove byte stability for changed files, then `corepack pnpm format:check`, `corepack pnpm documentation:check`, and `corepack pnpm --dir apps/web lint` using the commands in `docs/coding-guidelines.md`; inspect changes in `apps/web/app/composables/app/navigation-items.ts` and `apps/web/app/components/modules/notifications/navbar-popover.vue`, fix introduced failures, and record preexisting failures separately in `specs/006-notifications-navigation/quickstart.md`.
-- [ ] T008 [P] Run `corepack pnpm --dir apps/web typecheck` and `corepack pnpm --dir apps/web test` from the repository root against `apps/web/package.json`; fix feature regressions without relaxing rules and record command results and limitations in `specs/006-notifications-navigation/quickstart.md` after concurrent checks finish.
-- [ ] T009 Run `graphify update .` after source edits; inspect node/edge summaries and a Notifications navigation query for `graphify-out/graph.json`, keep the graph with its source changes in any later authorized commit, and leave Graphify runtime metadata/reports untracked.
-- [ ] T010 Execute the full matrix in `specs/006-notifications-navigation/quickstart.md`, including `apps/web/tests/e2e/notifications.spec.ts`, `apps/web/tests/e2e/page-layout.spec.ts`, and `apps/web/tests/e2e/dashboard.spec.ts`; visually inspect or capture both locales at expanded/collapsed desktop and mobile sizes, check keyboard activation, clipping, missing expansion affordances, toolbar-only discovery, and all role gates. Record browser evidence and check outcomes in the quickstart, run `git diff --check`, review all scoped diffs and Changesets, and mark only verified tasks complete in `specs/006-notifications-navigation/tasks.md`. Report unverified remote CI/provider/Docker behavior honestly; do not commit, push, deploy, or merge without the applicable authorization.
+- [x] T007 Run canonical formatting twice to prove byte stability for changed files, then `corepack pnpm format:check`, `corepack pnpm documentation:check`, and `corepack pnpm --dir apps/web lint` using the commands in `docs/coding-guidelines.md`; inspect changes in `apps/web/app/composables/app/navigation-items.ts` and `apps/web/app/components/modules/notifications/navbar-popover.vue`, fix introduced failures, and record preexisting failures separately in `specs/006-notifications-navigation/quickstart.md`.
+- [x] T008 [P] Run `corepack pnpm --dir apps/web typecheck` and `corepack pnpm --dir apps/web test` from the repository root against `apps/web/package.json`; fix feature regressions without relaxing rules and record command results and limitations in `specs/006-notifications-navigation/quickstart.md` after concurrent checks finish.
+- [x] T009 Run `graphify update .` after source edits; inspect node/edge summaries and a Notifications navigation query for `graphify-out/graph.json`, keep the graph with its source changes in any later authorized commit, and leave Graphify runtime metadata/reports untracked.
+- [x] T010 Execute the full matrix in `specs/006-notifications-navigation/quickstart.md`, including `apps/web/tests/e2e/notifications.spec.ts`, `apps/web/tests/e2e/page-layout.spec.ts`, and `apps/web/tests/e2e/dashboard.spec.ts`; visually inspect or capture both locales at expanded/collapsed desktop and mobile sizes, check keyboard activation, clipping, missing expansion affordances, toolbar-only discovery, and all role gates. Record browser evidence and check outcomes in the quickstart, run `git diff --check`, review all scoped diffs and Changesets, and mark only verified tasks complete in `specs/006-notifications-navigation/tasks.md`. Report unverified remote CI/provider/Docker behavior honestly; do not commit, push, deploy, or merge without the applicable authorization.
 
 ## Dependencies & Execution Order
 
@@ -96,7 +96,7 @@ T003: Shared navigation and browser regression files.
 T004: English/German handbook navigation descriptions.
 ```
 
-These file sets are disjoint. Both wait for setup, issue association, and implementation approval.
+These file sets are disjoint. Both wait for setup, scope confirmation, and implementation approval.
 
 ## Parallel Example: User Story 2
 
@@ -144,3 +144,10 @@ when a commit is explicitly requested. Preserve user-controlled release PRs.
 
 10 tasks total: 2 shared prerequisites, 2 US1 tasks, 2 US2 tasks, and 4 cross-cutting tasks. Parallel opportunities:
 T003/T004, T005/T006, and read-only checks T007/T008. Suggested MVP: US1 after prerequisites. Implementation and PR creation are now authorized; no new issue, merge, or deployment is authorized.
+
+## Verified Delivery
+
+All ten tasks completed. The user authorized direct implementation and PR creation; no new issue was created.
+T003 and T005 each have a focused patch Changeset and separate implementation commit. T004 and T006 are separate
+documentation-only commits. See [quickstart.md](quickstart.md#execution-record-2026-11-09) for actual validation and
+remaining integration limits. Merge and deployment remain outside the request.

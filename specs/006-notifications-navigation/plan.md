@@ -69,7 +69,7 @@ specs/006-notifications-navigation/
 └── contracts/navigation.md
 ```
 
-`tasks.md` belongs to a separately requested task-generation phase.
+[tasks.md](tasks.md) contains the requested task breakdown and verified completion state.
 
 ### Source Code (repository root)
 

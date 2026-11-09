@@ -47,3 +47,32 @@ do not claim browser, provider, Docker, or remote CI behavior without running th
 
 For this planning-only change, validate Markdown formatting, internal references, specification completeness, and diffs;
 application tests and browser acceptance are not evidence of an unimplemented feature.
+
+## Execution Record: 2026-11-09
+
+- Environment: existing Codex task worktree; Node.js 26.13.0 and Corepack pnpm 11.28.9; frozen installation unchanged.
+  A temporary Corepack shim directory supplied pinned pnpm to nested package scripts because the host's bare pnpm is
+  10.33.0. No tracked toolchain configuration changed.
+- Browser: local Nuxt server at `http://[::1]:3064`, Chromium, synthetic users, Playwright API-route fixtures. No production
+  session or provider data was used.
+- Before implementation, the direct Notifications link assertion failed with zero matching links. Before removing the
+  bell shortcut, both locale tests found one administrative history link where zero were required.
+- Browser checks passed across focused runs covering all 37 current scenarios in the three scoped suites: 18 existing
+  dashboard/page-layout cases, two new EN/DE navigation-surface cases, and all 17 final notification cases. The broader
+  baseline run passed 30 cases; navigation-surface checks passed 2/2 and the final notification suite passed 17/17.
+- Navigation screenshots inspected for English/German expanded desktop, collapsed desktop, and mobile presentation;
+  personal-popover screenshots confirm the removed administrative shortcut. Generated filenames include
+  `notifications-expanded-en.png`, `notifications-collapsed-de.png`, `notifications-mobile-menu-de.png`,
+  `notifications-mobile-en.png`, and `notifications-personal-popover-de.png`; screenshots remain local test artifacts.
+- Browser coverage includes keyboard activation, palette navigation/search, mobile drawer dismissal, active history state,
+  direct bookmarks/reload, breadcrumbs, browser back/forward, channel empty/error states, administrator visibility, and
+  Viewer/Manager denial without a history query. Existing channel-creation, delivery-detail, and personal-history retry
+  scenarios remain passing.
+- Web unit tests: 23 files, 97 tests passed. Web typecheck, web lint, scoped browser-test ESLint, documentation coverage,
+  canonical formatting, and 21 guideline regression tests passed. Changed-file formatting converged across two passes.
+- `git diff --check` passed. Graphify AST refresh and pre-commit isolation hook passed; graph contains 13,691 nodes after
+  source changes. Existing missing SQL-parser warnings concern unchanged SQL files; this UI change needs no SQL graph
+  extraction. Graph runtime metadata and reports remain ignored.
+- Limits: mocked browser checks verify frontend route guards, not backend authorization or live notification delivery.
+  Real provider calls, Docker images, deployment, and remote GitHub Actions were not validated by these local runs.
+  Nuxt emitted its existing package-module warnings while checks still exited successfully.

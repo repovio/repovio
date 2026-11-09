@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-09
 
-**Status**: Plan and tasks approved; implementation and PR creation requested.
+**Status**: Implemented and locally verified; PR creation requested.
 
 **Input**: Keep only one Notifications menu item opening the channel page. Delivery history is reached through the
 channel page toolbar button.

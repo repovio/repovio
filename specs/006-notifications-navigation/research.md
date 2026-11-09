@@ -46,4 +46,5 @@ to history through that child. Those assertions must change while channel forms 
 ## Resolution
 
 All design questions resolved from repository code and the user's comment. No new library usage or external API facts
-required. Active GitHub Issue association is deferred to the issue workflow; it is not permission to create an issue.
+required. The subsequent explicit implementation and PR request authorizes this bounded delivery without creating a new issue.
+No matching active issue was found; closed notification redesign issue #65 provides context only.

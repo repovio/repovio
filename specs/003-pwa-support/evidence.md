@@ -84,3 +84,10 @@
 
 - T019: Documented online-only protected data, unsupported cold offline startup, stale rendered information, existing
   HTTP/session-storage boundaries, update retry/multi-tab behavior, and links to both fixture validation modes.
+
+- Integration fixture correction: rebuilding while the manually started third web process was still running left its
+  startup asset metadata stale and caused the subsequent login page to stall. The opt-in project now owns a fresh,
+  loopback-only web process with `reuseExistingServer: false`; the API remains separately disposable. Rebuilt and reran
+  the complete suite with this correction: all 18 production scenarios passed (19.5 seconds), including the real API.
+- Availability confirmed by the user: no Android/iOS devices or isolated OIDC test instance are available. T009 and the
+  OIDC portion of T018 cannot be completed in this environment and remain explicitly unverified.

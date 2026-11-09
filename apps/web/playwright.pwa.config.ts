@@ -2,6 +2,12 @@ import { resolve } from 'node:path';
 
 import { defineConfig } from '@playwright/test';
 
+const realWeb = process.env.PWA_REAL_WEB_URL ? new URL(process.env.PWA_REAL_WEB_URL) : undefined;
+const realApi = process.env.PWA_REAL_API_URL;
+if (realWeb && (!['127.0.0.1', 'localhost'].includes(realWeb.hostname) || !realWeb.port || !realApi)) {
+  throw new Error('The disposable PWA web fixture requires a loopback URL with an explicit port and PWA_REAL_API_URL.');
+}
+
 /** Production-only browser checks for generated PWA resources and service-worker lifecycle behavior. */
 export default defineConfig({
   testDir: './tests/pwa',
@@ -44,6 +50,17 @@ export default defineConfig({
       timeout: 30_000,
       url: 'http://127.0.0.1:3311',
     },
+    ...(realWeb
+      ? [
+          {
+            command: 'node .output/server/index.mjs',
+            env: { HOST: realWeb.hostname, PORT: realWeb.port, NUXT_PUBLIC_API_BASE_URL: realApi ?? '' },
+            reuseExistingServer: false,
+            timeout: 30_000,
+            url: realWeb.origin,
+          },
+        ]
+      : []),
   ],
   projects: [
     {

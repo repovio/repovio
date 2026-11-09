@@ -75,9 +75,10 @@ The `local-api` Playwright project is enabled only when `PWA_REAL_WEB_URL` is se
 repository named `alice-private`, owned by `fixture`; grant only Alice Viewer access. Keep its Provider Account disabled
 and scheduling disabled so the fixture never contacts a provider. Do not seed a shared database.
 
-Start a separate process from the existing production build with `HOST=127.0.0.1`, `PORT=3313`, and
-`NUXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3331/api/v1`; start the disposable API on port 3331 with its CORS origin set to
-`http://127.0.0.1:3313`. Supply these fixture variables from a private local environment:
+Start the disposable API on port 3331 with its CORS origin set to `http://127.0.0.1:3313`. Playwright starts and stops
+a fresh web process on port 3313 from the current production build and supplies its API URL. Do not start another web
+process on that port or retain a process across builds: Nitro asset metadata belongs to its startup build. Supply these
+fixture variables from a private local environment:
 
 | Variable                 | Value                                                    |
 | ------------------------ | -------------------------------------------------------- |

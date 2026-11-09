@@ -161,6 +161,47 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
     });
   });
 
+  it.each(['QUEUED', 'RUNNING'] as const)(
+    'hides stale final timing for stored %s runs',
+    /** Verifies excludes raw provider statuses from public workflow runs. */ (status) => {
+      const dto = WorkflowRunDto.fromModel({
+        id: 'run',
+        providerRunId: '1',
+        workflowName: 'Build',
+        workflow: { lifecycleState: 'REMOVED', lifecycleCheckedAt: new Date('2026-11-09T12:00:00Z') },
+        displayTitle: 'Build on main',
+        url: 'https://example.test/run',
+        providerCreatedAt: new Date(),
+        startedAt: null,
+        completedAt: new Date(0),
+        durationMs: 2_592_164_000n,
+        status,
+        rawStatus: 'in_progress',
+        repositoryId: 'repo',
+        repository: {
+          name: 'repovio',
+          owner: 'twaelde',
+          providerAccount: { providerType: 'GITHUB' },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as WorkflowRunResourceModel);
+
+      expect(dto).not.toHaveProperty('rawStatus');
+      expect(dto.status).toBe(status);
+      expect(dto.completedAt).toBeNull();
+      expect(dto).toMatchObject({
+        displayTitle: 'Build on main',
+        workflowLifecycleState: 'REMOVED',
+        workflowLifecycleCheckedAt: '2026-11-09T12:00:00.000Z',
+        durationMs: null,
+        providerType: 'GITHUB',
+        repositoryName: 'repovio',
+        repositoryOwner: 'twaelde',
+      });
+    },
+  );
+
   it('excludes raw provider statuses from public workflow runs', /** Verifies excludes raw provider statuses from public workflow runs. */ () => {
     const dto = WorkflowRunDto.fromModel({
       id: 'run',
@@ -191,7 +232,7 @@ describe('resource DTO mappings', /** Groups scenarios for resource DTO mappings
       displayTitle: 'Build on main',
       workflowLifecycleState: 'REMOVED',
       workflowLifecycleCheckedAt: '2026-11-09T12:00:00.000Z',
-      durationMs: 2_592_164_000,
+      durationMs: null,
       providerType: 'GITHUB',
       repositoryName: 'repovio',
       repositoryOwner: 'twaelde',

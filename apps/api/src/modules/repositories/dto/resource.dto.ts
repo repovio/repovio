@@ -10,6 +10,7 @@ import {
 } from '@repovio/schemas';
 import { createZodDto } from '../../../util/schema-dto.js';
 import { resolveAvatarMetadata } from '../../auth/avatar-metadata.js';
+import { normalizeWorkflowRunTiming } from '../../workflow-runs/workflow-run-timing.js';
 
 import { toWire } from '../../../util/to-wire.js';
 
@@ -187,6 +188,7 @@ export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
    * @returns The explicit public DTO projected from the supplied record.
    */
   static fromModel(model: WorkflowRunResourceModel, ability?: AppAbility): WorkflowRunDto {
+    const timing = normalizeWorkflowRunTiming(model);
     return toWire(
       filterCaslFields(
         WorkflowRunDto.schema.parse(
@@ -199,9 +201,9 @@ export class WorkflowRunDto extends createZodDto(ApiWorkflowRunSchema) {
             displayTitle: model.displayTitle,
             url: model.url,
             providerCreatedAt: model.providerCreatedAt,
-            startedAt: model.startedAt,
-            completedAt: model.completedAt,
-            durationMs: model.durationMs === null ? null : Number(model.durationMs),
+            startedAt: timing.startedAt,
+            completedAt: timing.completedAt,
+            durationMs: timing.durationMs === null ? null : Number(timing.durationMs),
             status: model.status,
             repositoryId: model.repositoryId,
             repositoryName: model.repository.name,

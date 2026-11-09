@@ -3,7 +3,9 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { TestDatabaseService } from '../../prisma/test-database.service.js';
 import type { AuthenticatedUser } from '../auth/types.js';
 import { DashboardService } from '../dashboard/dashboard.service.js';
+import { DashboardWorkflowRunDto } from '../dashboard/dto/dashboard-workflow-run.dto.js';
 import { WorkflowRunsQueryService } from './workflow-runs-query.service.js';
+import { WorkflowRunsController } from './workflow-runs.controller.js';
 
 /** Verify persisted CASL restrictions through real PostgreSQL queries and dashboard aggregates. */
 describe.each(['direct', 'group'] as const)(
@@ -204,6 +206,42 @@ describe.each(['direct', 'group'] as const)(
             to: '2026-08-26T23:59:59.999Z',
           }),
         ).resolves.toHaveLength(failures + successes);
+      },
+    );
+
+    it.each(['QUEUED', 'RUNNING'] as const)(
+      'projects stored %s timing safely without leaking status or inaccessible repositories',
+      /** Exercise actual PostgreSQL selection, repository restrictions, and the controller DTO boundary. */ async (
+        status,
+      ) => {
+        await prisma.workflowRun.update({
+          where: { id: visibleRunId },
+          data: { status, completedAt: new Date(0), durationMs: -1000n },
+        });
+        const controller = new WorkflowRunsController(runs);
+        const response = await controller.query(
+          { user: users.viewer },
+          {
+            fields: 'id,completedAt,durationMs',
+            where: {
+              repositoryId: {
+                equals: (await prisma.workflowRun.findUniqueOrThrow({ where: { id: visibleRunId } })).repositoryId,
+              },
+            },
+            page: 1,
+            perPage: 25,
+          },
+        );
+        expect(response.items).toEqual([{ id: visibleRunId, completedAt: null, durationMs: null }]);
+        const hidden = await controller.query(
+          { user: users.viewer },
+          { fields: 'id,completedAt,durationMs', where: { id: { equals: hiddenRunId } }, page: 1, perPage: 25 },
+        );
+        expect(hidden.items).toEqual([]);
+        const latest = await dashboard.getLatestRuns(users.viewer);
+        expect(latest.map(DashboardWorkflowRunDto.fromModel)).toEqual([
+          expect.objectContaining({ id: visibleRunId, completedAt: null, durationMs: null }),
+        ]);
       },
     );
 

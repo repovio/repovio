@@ -13,6 +13,81 @@ describe('GitLabPipelinesAdapter', /** Groups scenarios for GitLabPipelinesAdapt
   const context = { accessToken: 'token', baseUrl: 'https://gitlab.example.test', providerAccountId: 'account' };
 
   it.each([
+    ['1970-01-01T00:00:00Z', '2026-11-09T10:02:00Z', true],
+    ['2026-11-09T10:00:00Z', '1970-01-01T00:00:00Z', false],
+  ])(
+    'does not derive duration from sentinel interval %s to %s',
+    /** Keep valid independent completion while rejecting a duration calculated from a sentinel endpoint. */ async (
+      started,
+      stopped,
+      validCompletion,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 74,
+            status: 'success',
+            created_at: '2026-11-09T09:59:00Z',
+            started_at: started,
+            finished_at: stopped,
+            duration: null,
+            web_url: 'https://example.test/runs/74',
+            source: 'push',
+            ref: 'main',
+          }),
+        ),
+      );
+      const run = await new GitLabPipelinesAdapter(fetchFn).getWorkflowRun(
+        context,
+        { providerRepositoryId: '1', owner: 'org', name: 'repo' },
+        '74',
+      );
+      expect(run).toMatchObject({
+        completedAt: validCompletion ? new Date(stopped as string) : null,
+        durationMs: null,
+      });
+    },
+  );
+
+  it.each([
+    ['running', 'RUNNING'],
+    ['pending', 'QUEUED'],
+    ['success', 'SUCCESS'],
+  ])(
+    'keeps final timing consistent for %s',
+    /** Verify active timing is absent while valid terminal history remains intact. */ async (
+      status,
+      expectedStatus,
+    ) => {
+      const fetchFn = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 74,
+            status,
+            created_at: '2026-11-09T09:59:00Z',
+            started_at: '2026-11-09T10:00:00Z',
+            finished_at: '2026-11-09T10:02:00Z',
+            duration: 120,
+            web_url: 'https://example.test/runs/74',
+            source: 'push',
+            ref: 'main',
+          }),
+        ),
+      );
+      const run = await new GitLabPipelinesAdapter(fetchFn).getWorkflowRun(
+        context,
+        { providerRepositoryId: '1', owner: 'org', name: 'repo' },
+        '74',
+      );
+      expect(run).toMatchObject({
+        status: expectedStatus,
+        completedAt: expectedStatus === 'SUCCESS' ? new Date('2026-11-09T10:02:00Z') : null,
+        durationMs: expectedStatus === 'SUCCESS' ? 120_000 : null,
+      });
+    },
+  );
+
+  it.each([
     ['enabled', true, 'UNKNOWN'],
     ['private', true, 'UNKNOWN'],
     ['disabled', false, 'DISABLED'],

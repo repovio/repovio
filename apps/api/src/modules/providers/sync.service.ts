@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { WorkflowFilterService } from '../repositories/workflow-filter.service.js';
 import { SystemStatusService } from '../system-status/system-status.service.js';
+import { normalizeWorkflowRunTiming } from '../workflow-runs/workflow-run-timing.js';
 import type {
   ProviderAccountContext,
   ProviderAdapter,
@@ -556,8 +557,13 @@ export class ProviderSyncService {
     baseline: boolean,
     lifecycle?: ProviderWorkflowLifecycle,
   ): Promise<void> {
-    const { durationMs, providerWorkflowId, workflowKind, workflowPath, ...runData } = run;
-    const persistedRunData = { ...runData, durationMs: durationMs === null ? null : BigInt(durationMs) };
+    const { providerWorkflowId, workflowKind, workflowPath, ...runData } = run;
+    const timing = normalizeWorkflowRunTiming(run);
+    const persistedRunData = {
+      ...runData,
+      ...timing,
+      durationMs: timing.durationMs === null ? null : BigInt(Math.round(timing.durationMs)),
+    };
     const lastSeenAt = new Date();
     const workflow = await this.prisma.workflow.upsert({
       where: { repositoryId_providerWorkflowId: { repositoryId, providerWorkflowId } },

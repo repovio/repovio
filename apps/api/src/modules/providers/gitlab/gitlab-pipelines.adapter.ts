@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { normalizeWorkflowRunTiming } from '../../workflow-runs/workflow-run-timing.js';
 import type {
   ProviderAccountContext,
   ProviderAccountValidation,
@@ -850,6 +851,13 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
     const changeRequestNumber = this.gitLabMergeRequestNumber(pipeline)?.toString() ?? null;
     const headBranch = pipeline.ref ?? null;
     const workflowName = pipeline.name ?? 'Pipeline';
+    const status = normalizeWorkflowRunStatus('GITLAB', pipeline.status);
+    const timing = normalizeWorkflowRunTiming({
+      status,
+      startedAt,
+      completedAt,
+      durationMs: pipeline.duration === null ? null : pipeline.duration * 1000,
+    });
     return {
       awaitingApproval: isWorkflowRunAwaitingApproval('GITLAB', pipeline.status),
       changeRequestNumber,
@@ -861,15 +869,15 @@ export class GitLabPipelinesAdapter implements ProviderAdapter {
       providerWorkflowId: pipeline.name ? `name:${pipeline.name}` : 'pipeline',
       url: pipeline.web_url,
       providerCreatedAt: new Date(pipeline.created_at),
-      startedAt,
-      completedAt,
+      startedAt: timing.startedAt,
+      completedAt: timing.completedAt,
       durationMs:
         pipeline.duration === null
-          ? startedAt && completedAt
-            ? completedAt.getTime() - startedAt.getTime()
+          ? timing.startedAt && timing.completedAt
+            ? timing.completedAt.getTime() - timing.startedAt.getTime()
             : null
-          : pipeline.duration * 1000,
-      status: normalizeWorkflowRunStatus('GITLAB', pipeline.status),
+          : timing.durationMs,
+      status,
       rawStatus: pipeline.status,
       reviewUrl: this.gitLabMergeRequestUrl(pipeline),
       scopeKey: buildWorkflowRunScopeKey(changeRequestNumber, headBranch),

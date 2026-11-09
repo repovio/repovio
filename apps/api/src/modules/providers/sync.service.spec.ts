@@ -128,6 +128,61 @@ describe('ProviderSyncService', /** Groups scenarios for ProviderSyncService. */
     expect(mocks.status.finishProviderSync).toHaveBeenCalledTimes(2);
   });
 
+  it.each([
+    ['listed', 'RUNNING'],
+    ['listed', 'QUEUED'],
+    ['detail', 'RUNNING'],
+    ['detail', 'QUEUED'],
+    ['queued-webhook', 'RUNNING'],
+    ['queued-webhook', 'QUEUED'],
+  ])(
+    'overwrites stale active final timing through %s synchronization for %s',
+    /** Verify every repository sync entry path persists explicit null values without duplicating runs. */ async (
+      entry,
+      status,
+    ) => {
+      const { adapter, prisma, repository, service } = createLifecycleSyncFixture('ACTIVE');
+      const run = { ...createWorkflowRun(), status, completedAt: new Date(0), durationMs: -1000 };
+      adapter.listWorkflowRuns.mockResolvedValue(entry === 'detail' ? [] : [run]);
+      const getWorkflowRun = jest.fn().mockResolvedValue(run);
+      Object.assign(adapter, { getWorkflowRun });
+      prisma.workflowRun.findMany.mockResolvedValue([
+        { id: 'run-id', providerRunId: run.providerRunId, status: 'RUNNING' },
+      ]);
+      Object.assign(prisma.repository, { findFirst: jest.fn().mockResolvedValue(repository) });
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (entry === 'queued-webhook') await service.syncRepositoryById(repository.id, ['WORKFLOWS']);
+        else await service.syncEnabledRepositories();
+      }
+      expect(prisma.workflowRun.upsert).toHaveBeenCalledTimes(2);
+      expect(prisma.workflowRun.upsert).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          where: { repositoryId_providerRunId: { repositoryId: repository.id, providerRunId: run.providerRunId } },
+          create: expect.objectContaining({ completedAt: null, durationMs: null, status }),
+          update: expect.objectContaining({ completedAt: null, durationMs: null, status }),
+        }),
+      );
+      expect(getWorkflowRun).toHaveBeenCalledTimes(entry === 'detail' ? 2 : 0);
+    },
+  );
+
+  it('records terminal timing on the same active row and clears it again on a return to active', /** Verify stable identity and round fractional provider milliseconds at the BigInt persistence boundary. */ async () => {
+    const { adapter, prisma, service } = createLifecycleSyncFixture('ACTIVE');
+    const run = createWorkflowRun();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, status: 'RUNNING' }]);
+    await service.syncEnabledRepositories();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, durationMs: 3000.25 }]);
+    await service.syncEnabledRepositories();
+    adapter.listWorkflowRuns.mockResolvedValue([{ ...run, status: 'QUEUED' }]);
+    await service.syncEnabledRepositories();
+    const calls = prisma.workflowRun.upsert.mock.calls;
+    expect(calls[0][0].update).toMatchObject({ completedAt: null, durationMs: null, status: 'RUNNING' });
+    expect(calls[1][0].update).toMatchObject({ completedAt: run.completedAt, durationMs: 3000n, status: 'SUCCESS' });
+    expect(calls[2][0].update).toMatchObject({ completedAt: null, durationMs: null, status: 'QUEUED' });
+    expect(calls[1][0].where).toEqual(calls[0][0].where);
+    expect(calls[2][0].where).toEqual(calls[0][0].where);
+  });
+
   it('moves migrated name-based runs to their provider-native workflow on first observation', /** Verifies moves migrated name-based runs to their provider-native workflow on first observation. */ async () => {
     const repository = createRepository('repository');
     const run = createWorkflowRun();

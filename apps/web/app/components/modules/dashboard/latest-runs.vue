@@ -44,10 +44,10 @@
               <EnumsWorkflowRunStatusBadge :status="run.status" />
             </td>
             <td class="py-3">
-              {{ formatDuration(run.durationMs) }}
+              {{ formatDuration(workflowRunTiming(run).durationMs) }}
             </td>
             <td class="py-3 whitespace-nowrap">
-              {{ formatTimestamp(run.completedAt) }}
+              {{ formatTimestamp(workflowRunTiming(run).completedAt) }}
             </td>
             <td class="py-3 text-right">
               <UTooltip :text="$t('dashboard.openProvider')">
@@ -76,6 +76,7 @@
 import { defineProps } from 'vue';
 import { useDateTime } from '~/composables/use-date-time';
 import type { DashboardWorkflowRun } from '~/types/api/resources';
+import { workflowRunTiming } from '~/utils/workflow-run-timing';
 
 const { locale, t } = useI18n();
 const { formatDateTime } = useDateTime();

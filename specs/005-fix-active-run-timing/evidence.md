@@ -74,3 +74,17 @@
 - API typecheck and changed-file ESLint passed.
 
 - Final T007 affected run: 9 suites, 212 tests passed, including real PostgreSQL authorization.
+
+- T007 commit: `19ecc91`, pushed.
+
+## T008: Terminal Browser Acceptance
+
+- Timing utility: 19 tests passed; changed-file ESLint and web typecheck passed.
+- Playwright: 10/10 passed across dashboard, global history, and repository history, in English/German.
+- Refresh changes the existing active-row identity to terminal; zero duration remains visible; invalid completion,
+  epoch, reversed timing, negative duration, missing timing, and UNKNOWN preserve independent valid fields.
+- Desktop terminal screenshots visually inspected in English history and German dashboard; existing active screenshots
+  include desktop/mobile widths. No missing translation keys or changed date/rounding conventions observed.
+- Local screenshots: `apps/web/test-results/workflow-run-timing-terminal-timing-survives-refresh-de--chromium/terminal-timing-de.png`
+  and `apps/web/test-results/workflow-run-timing-termin-011ea-es-refresh-en-workflow-runs-chromium/terminal-timing-en.png`.
+- Browser endpoints use synthetic intercepted responses; live-provider browser behavior is not claimed.

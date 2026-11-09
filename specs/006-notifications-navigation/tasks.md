@@ -23,13 +23,13 @@ bounded request, with closed issue #65 as context. No new issue, merge, or deplo
 
 **Purpose**: Reuse the existing task worktree and pinned toolchain; no project initialization is needed.
 
-- [ ] T001 Verify the selected worktree, Node.js 26.13.0, pnpm 11.28.9, dependency availability, and local Chromium/server prerequisites using `package.json`, `apps/web/package.json`, `apps/web/playwright.config.ts`, and `specs/006-notifications-navigation/quickstart.md`; install pinned dependencies/browser only if missing and record baseline check failures without changing toolchain versions.
+- [x] T001 Verify the selected worktree, Node.js 26.13.0, pnpm 11.28.9, dependency availability, and local Chromium/server prerequisites using `package.json`, `apps/web/package.json`, `apps/web/playwright.config.ts`, and `specs/006-notifications-navigation/quickstart.md`; install pinned dependencies/browser only if missing and record baseline check failures without changing toolchain versions.
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
 **Purpose**: Confirm scope and authorization before product edits; no new database or API foundation is required.
 
-- [ ] T002 Record the user's explicit implementation and PR request in `specs/006-notifications-navigation/plan.md`, reuse branch `codex/notifications-navigation`, and verify the existing channel toolbar role gate in `apps/web/app/pages/notifications/index.vue` and history guard in `apps/web/app/pages/notifications/history.vue`; track this bounded request in the PR because no matching active issue exists. Do not create a new issue or merge/deploy.
+- [x] T002 Record the user's explicit implementation and PR request in `specs/006-notifications-navigation/plan.md`, reuse branch `codex/notifications-navigation`, and verify the existing channel toolbar role gate in `apps/web/app/pages/notifications/index.vue` and history guard in `apps/web/app/pages/notifications/history.vue`; track this bounded request in the PR because no matching active issue exists. Do not create a new issue or merge/deploy.
 
 **Checkpoint**: The user explicitly authorized implementation and PR creation; no new issue is required for this request.
 

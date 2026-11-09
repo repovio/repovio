@@ -107,7 +107,11 @@ test('hides system administration navigation from viewers', /** Verifies hides s
   await page.goto('/');
 
   await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Notifications' })).toBeVisible();
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Primary navigation' })
+      .getByRole('link', { name: 'Notifications', exact: true }),
+  ).toBeVisible();
   await expect(page.getByText('Administration', { exact: true })).not.toBeVisible();
   await expect(page.getByText('No workflow runs are available yet.')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Needs attention' })).toHaveCount(0);

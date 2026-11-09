@@ -173,15 +173,13 @@ test('shows global channel events and system-wide delivery history', /** Verifie
 
   await page.goto('/notifications');
   const primaryNavigation = page.getByRole('navigation', { name: 'Primary navigation' });
-  await expect(primaryNavigation.getByRole('button', { name: 'Notifications' })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  );
-  const notificationNavigation = primaryNavigation.getByRole('region', { name: 'Notifications' });
-  await expect(notificationNavigation.getByRole('link', { name: 'Channels', exact: true })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
+  const notifications = primaryNavigation.getByRole('link', { name: 'Notifications', exact: true });
+  await expect(notifications).toHaveCount(1);
+  await expect(notifications).toHaveAttribute('href', '/notifications');
+  await expect(notifications).toHaveAttribute('aria-current', 'page');
+  await expect(primaryNavigation.getByRole('button', { name: 'Notifications', exact: true })).toHaveCount(0);
+  await expect(primaryNavigation.getByRole('link', { name: 'Channels', exact: true })).toHaveCount(0);
+  await expect(primaryNavigation.getByRole('link', { name: 'Delivery history', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-page-navigation]')).toHaveCount(0);
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
@@ -225,7 +223,8 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await page.keyboard.press('Escape');
   await expect(addChannel).toBeFocused();
 
-  await notificationNavigation.getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await expect(notifications).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
   await expect(page.getByText('deploy-production')).toBeVisible();

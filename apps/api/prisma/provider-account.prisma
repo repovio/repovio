@@ -25,6 +25,7 @@ model ProviderAccount {
   rateLimitResetAt       DateTime?
   repositories           Repository[]
   actors                 ProviderActor[]
+  organizationWebhooks   OrganizationWebhook[]
 
   @@unique([providerType, displayName])
   @@map("provider_accounts")

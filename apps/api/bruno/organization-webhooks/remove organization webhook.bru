@@ -1,0 +1,15 @@
+meta {
+  name: remove organization webhook
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{host}}/api/v1/provider-accounts/{{providerAccountId}}/organization-webhooks/{{organizationWebhookId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

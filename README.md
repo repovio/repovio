@@ -94,9 +94,12 @@ The OIDC-avatar migration only adds a separate table and foreign key; existing u
 Operators must apply migrations before starting the updated API. Application rollback can retain the added table;
 dropping it would discard cached OIDC images. No production migration is performed by this change.
 
-Provider access tokens, repository webhook secrets, and notification credentials
+Provider access tokens, repository and organization webhook secrets, and notification credentials
 are not environment variables. Repovio stores them encrypted in PostgreSQL
 through its application configuration. See [notification configuration](https://repovio.de/docs/notifications) for Apprise URL handling and migration guidance.
+
+Configure shared organization/group webhooks once per Provider Account to cover matching tracked repositories. See
+[organization webhook setup](docs/organization-webhooks.md) for manual provider registration and GitLab group requirements.
 
 On a new installation, open Repovio in a browser and complete the one-time
 [first-run setup](https://repovio.de/docs/authentication) to create the first system administrator.

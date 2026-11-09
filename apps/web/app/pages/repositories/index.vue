@@ -68,19 +68,11 @@
       </template>
       <template #id-cell="{ row }">
         <USkeleton v-if="webhookConfigurationsLoading" class="h-5 w-24" />
-        <UBadge
+        <ModulesRepositoriesWebhookBadge
           v-else-if="!webhookConfigurationsError"
-          variant="subtle"
-          :color="webhookConfiguration(row.original.id)?.configured ? 'success' : 'warning'"
-        >
-          {{
-            $t(
-              webhookConfiguration(row.original.id)?.configured
-                ? 'repositories.webhook.configured'
-                : 'repositories.webhook.notConfigured',
-            )
-          }}
-        </UBadge>
+          :source="webhookConfiguration(row.original.id)?.source"
+          :configured="webhookConfiguration(row.original.id)?.configured"
+        />
         <UBadge v-else color="neutral" variant="subtle">
           {{ $t('repositories.webhook.unavailable') }}
         </UBadge>

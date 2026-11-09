@@ -9,6 +9,7 @@ import type {
   CreatedMcpAccessToken,
   CreateMcpAccessToken,
   CreateNotificationChannel,
+  CreateOrganizationWebhook,
   CreateProviderAccount,
   CreateUser,
   DashboardPeriodQuery,
@@ -24,6 +25,7 @@ import type {
   NotificationDelivery,
   NotificationEventSubscription,
   NotificationRulePreview,
+  OrganizationWebhook,
   PaginatedResource,
   ProviderAccount,
   ProviderAuthenticationOptions,
@@ -39,6 +41,7 @@ import type {
   RepositorySyncJobSummary,
   RepositoryWebhookConfiguration,
   ResetUserPassword,
+  RotateOrganizationWebhook,
   SaveGitHubApp,
   SaveUserGroup,
   SecurityAlert,
@@ -188,6 +191,25 @@ export function useRepovioApi() {
         api.put(apiEndpoints.auth.oidc.config, input),
     },
     providerAccounts: {
+      /** Lists safe organization and GitLab group webhook configurations for one connection. */
+      organizationWebhooks: (id: string): Promise<AxiosResponse<OrganizationWebhook[]>> =>
+        api.get(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks`),
+      /** Stores an immutable namespace and encrypted signing secret locally. */
+      createOrganizationWebhook: (
+        id: string,
+        input: CreateOrganizationWebhook,
+      ): Promise<AxiosResponse<OrganizationWebhook>> =>
+        api.post(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks`, input),
+      /** Rotates the write-only signing secret without changing namespace or callback URL. */
+      rotateOrganizationWebhook: (
+        id: string,
+        webhookId: string,
+        input: RotateOrganizationWebhook,
+      ): Promise<AxiosResponse<OrganizationWebhook>> =>
+        api.patch(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks/${webhookId}`, input),
+      /** Removes only local configuration, retaining existing repository webhook secrets. */
+      removeOrganizationWebhook: (id: string, webhookId: string): Promise<AxiosResponse<void>> =>
+        api.delete(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks/${webhookId}`),
       /** Starts in-place GitLab OAuth authorization using server-owned account metadata. */
       authorizeExisting: (id: string): Promise<AxiosResponse<ProviderOAuthAuthorization>> =>
         api.post(`${apiEndpoints.providerAccounts.base}/${id}/oauth`, {}),

@@ -49,11 +49,11 @@
           <p class="text-sm font-medium">
             {{ $t('repositories.webhook.status') }}
           </p>
-          <UBadge class="mt-1" variant="subtle" :color="configuration.configured ? 'success' : 'warning'">
-            {{
-              $t(configuration.configured ? 'repositories.webhook.configured' : 'repositories.webhook.notConfigured')
-            }}
-          </UBadge>
+          <ModulesRepositoriesWebhookBadge
+            class="mt-1"
+            :source="configuration.source"
+            :configured="configuration.configured"
+          />
         </div>
         <div>
           <p class="text-sm font-medium">
@@ -81,6 +81,18 @@
       </UFormField>
 
       <UAlert
+        v-if="configuration.source === 'ORGANIZATION'"
+        color="info"
+        :title="$t('organizationWebhooks.inherited', { scope: configuration.organizationWebhook?.scope })"
+        :description="$t('organizationWebhooks.localConfiguration')"
+      >
+        <template #actions>
+          <UButton color="neutral" to="/admin/providers" :label="$t('organizationWebhooks.manage')" />
+        </template>
+      </UAlert>
+
+      <UAlert
+        v-else
         color="neutral"
         icon="i-lucide-book-open"
         variant="subtle"
@@ -89,6 +101,7 @@
       />
 
       <UForm
+        v-if="configuration.source !== 'ORGANIZATION'"
         class="space-y-4"
         :schema="localizeFormSchema(webhookFormSchema, $t('forms.invalidValue'))"
         :state="form"
@@ -309,7 +322,7 @@ async function remove(): Promise<void> {
       try {
         await api.repositories.clearWebhookConfiguration(props.repositoryId);
         resetSensitiveState();
-        emit('updated', { ...props.configuration, configured: false });
+        emit('updated', { ...props.configuration, configured: false, source: 'NONE', organizationWebhook: null });
       } catch (cause) {
         saveError.value = true;
         throw cause;

@@ -136,6 +136,11 @@ It describes Repovio's refresh work, not a request to execute a provider workflo
 An incoming provider event notification received by Repovio for synchronization processing.
 It is distinct from an outgoing Notification Delivery.
 
+**Organization Webhook**:
+A locally configured incoming webhook for one provider organization and Provider Account.
+GitLab group webhooks use the same concept and include descendant groups. Matching tracked Repositories inherit its
+configuration automatically. Repovio does not register or modify the provider-side webhook.
+
 **Retention**:
 The policy controlling how long Repovio keeps local workflow-run or work-item history.
 Removing retained local history does not delete resources at the provider.

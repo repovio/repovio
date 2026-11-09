@@ -81,6 +81,8 @@ describe('RepositoryConfigurationService', /** Groups scenarios for RepositoryCo
       {
         callbackUrl: 'http://localhost:3000/api/webhooks/github/repository-id',
         configured: true,
+        source: 'REPOSITORY',
+        organizationWebhook: null,
         lastDeliveryAt: '2026-09-13T12:00:00.000Z',
         providerType: 'GITHUB',
         repositoryId: repository.id,

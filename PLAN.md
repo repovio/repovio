@@ -72,6 +72,7 @@ Provider integration must be read-only:
 - Never create, modify, start, stop, or rerun provider workflows.
 - Poll tracked repositories on a configurable schedule.
 - Accept manually configured, signature-validated provider webhooks to trigger targeted syncs.
+- Support shared organization webhooks and GitLab group webhooks, scoped to a Provider Account and tracked repositories.
 - Do not create or modify provider webhooks through Repovio credentials.
 - Support optional GitHub App installations with automatically renewed, read-only installation tokens and a central
   signed webhook. Token issuance is an authentication-only exception to outbound read requests; it must never mutate

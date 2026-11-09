@@ -23,7 +23,7 @@
           </UFormField>
         </template>
         <p v-else class="text-sm text-muted">
-          {{ $t('users.resetHint', { username: user.username }) }}
+          {{ $t('users.resetHint', { username: getUserIdentityLabel(user) }) }}
         </p>
         <UFormField
           name="password"
@@ -71,6 +71,7 @@ import { z } from 'zod';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useAuthStore } from '~/store/auth';
 import type { User } from '~/types/api/resources';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 
 const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{

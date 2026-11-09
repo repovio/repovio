@@ -70,7 +70,7 @@
               {{ getUserDisplayName(row.original) }}
             </p>
             <p v-if="getUserDisplayName(row.original) !== row.original.username" class="truncate text-xs text-muted">
-              @{{ row.original.username }}
+              (@{{ row.original.username }})
             </p>
           </div>
         </div>
@@ -155,7 +155,7 @@ import { usePendingActions } from '~/composables/use-pending-actions';
 import { useAuthStore } from '~/store/auth';
 import type { User } from '~/types/api/resources';
 import type { ColumnDefinition } from '~/types/table';
-import { getUserDisplayName } from '~/utils/user-identity';
+import { getUserDisplayName, getUserIdentityLabel } from '~/utils/user-identity';
 
 type UserRole = User['role'];
 type UserRow = User & Record<string, unknown>;
@@ -261,8 +261,9 @@ function formatTimestamp(timestamp: string): string {
 
 /** Delete a system user and refresh the current Query Kit page. */
 async function remove(id: string): Promise<void> {
+  const user = items.value.find(/** Find the affected account. */ (entry) => entry.id === id);
   await confirmDestructiveAction(
-    items.value.find(/** Find the affected account. */ (user) => user.id === id)?.username ?? id,
+    user ? getUserIdentityLabel(user) : id,
     /** Perform the confirmed action and await its dependent UI updates. */ async () => {
       await runPendingAction(
         id,

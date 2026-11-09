@@ -28,3 +28,5 @@
 - T006: `035103d` — paginate named browser notification recipients; focused verification passed before commit.
 
 - T007: `3dbae00` — show safe delivery requester identities; focused verification passed before commit.
+
+- T008: `97562a1` — use names in membership identities; focused verification passed before commit.

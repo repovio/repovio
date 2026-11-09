@@ -5,6 +5,11 @@ for (const locale of ['en', 'de']) {
     page,
   }) => {
     const de = locale === 'de';
+    await page.route(
+      '**/api/v1/**',
+      /** Keep shell metadata isolated from live development services. */ (route) =>
+        route.fulfill({ json: { items: [], meta: { itemCount: 0, pageCount: 1 } } }),
+    );
     await page.addInitScript(
       /** Seeds a synthetic administrator session. */ ({ locale }) => {
         localStorage.setItem('repovio.access-token', 'fixture-token');
@@ -16,7 +21,16 @@ for (const locale of ['en', 'de']) {
     await page.route(
       '**/api/v1/auth/me',
       /** Resolves the current synthetic administrator. */ (route) =>
-        route.fulfill({ json: { id: 'admin', username: 'admin', role: 'SYSTEM_ADMIN', authProvider: 'LOCAL' } }),
+        route.fulfill({
+          json: {
+            id: 'admin',
+            username: 'admin',
+            firstName: 'Admin',
+            lastName: 'Person',
+            role: 'SYSTEM_ADMIN',
+            authProvider: 'LOCAL',
+          },
+        }),
     );
     await page.route(
       '**/api/v1/settings',
@@ -29,8 +43,8 @@ for (const locale of ['en', 'de']) {
         username: 'local',
         role: 'VIEWER',
         authProvider: 'LOCAL',
-        firstName: null,
-        lastName: null,
+        firstName: 'Vera',
+        lastName: 'Viewer',
         avatarUpdatedAt: null,
         createdAt: '2026-11-06T10:00:00.000Z',
         updatedAt: '2026-11-06T10:00:00.000Z',
@@ -72,6 +86,8 @@ for (const locale of ['en', 'de']) {
     );
     await page.goto('/admin/users');
     const create = page.getByRole('button', { name: de ? 'Neuer Benutzer' : 'New user', exact: true });
+    await expect(page.getByRole('button', { name: 'Admin Person', exact: true })).toBeVisible();
+    await expect(page.getByText('(@local)', { exact: true })).toBeVisible();
     await create.click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(de ? 'Benutzername' : 'Username', { exact: true }).fill('ada');
@@ -82,6 +98,7 @@ for (const locale of ['en', 'de']) {
     const resetName = de ? 'Passwort zurücksetzen' : 'Reset password';
     await expect(page.getByRole('button', { name: resetName })).toHaveCount(1);
     await page.getByRole('button', { name: resetName }).click();
+    await expect(dialog).toContainText('Vera Viewer (@local)');
     await dialog.getByLabel(de ? 'Neues Passwort' : 'New password', { exact: true }).fill('replacement-password');
     await dialog
       .getByLabel(de ? 'Passwort bestätigen' : 'Confirm password', { exact: true })

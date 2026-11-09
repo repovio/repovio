@@ -110,7 +110,7 @@ requester history, dialogs, confirmations, and accessible descriptions, then ref
       `apps/api/src/modules/notifications/dto/notification-delivery.dto.spec.ts`, browser coverage in
       `apps/web/tests/e2e/notifications.spec.ts`, proposed safe example
       `apps/api/bruno/notifications/get delivery.bru`, and `.changeset/delivery-requester-names.md`.
-- [ ] T008 [P] [US2] Align membership rows, parenthesized secondary usernames, localized removal confirmations, and
+- [x] T008 [P] [US2] Align membership rows, parenthesized secondary usernames, localized removal confirmations, and
       accessible identity labels in `apps/web/app/components/modules/user-groups/members-dialog.vue` and
       `apps/web/app/components/modules/repositories/details/members-card.vue`; test stable assignments and actual target
       identity in `apps/web/tests/e2e/user-groups.spec.ts` and `apps/web/tests/e2e/repository-access.spec.ts`; update

@@ -26,6 +26,15 @@ yang sedang berjalan membuka [Tugas sinkronisasi](/docs/next/guide-jobs); aktivi
 item. Pemulihan koneksi menyegarkan status. Indikator yang terputus berarti pembaruan langsung mungkin sudah basi;
 periksa API dan coba lagi sebelum mengandalkan jumlah yang ditampilkan.
 
+<a id="personal-notifications"></a>
+
+## Notifikasi pribadi
+
+Lonceng membuka kontrol perangkat dan hingga lima pengiriman push terbaru yang ditujukan kepada Anda. Entri mengikuti
+izin repositori dan peringatan saat ini; daftar kosong tidak menampilkan riwayat pengguna lain. Status terkirim berarti
+layanan push menerima notifikasi, bukan seseorang membacanya. Administrator sistem dapat membuka riwayat pengiriman
+administratif dari panel yang sama.
+
 <a id="user-menu-and-footer"></a>
 
 ## Menu pengguna dan footer

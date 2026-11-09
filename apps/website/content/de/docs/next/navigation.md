@@ -29,6 +29,15 @@ Elementfortschritt umfassen. Verbindungswiederherstellung aktualisiert den Statu
 Verbindung bedeutet, dass Live-Updates möglicherweise veraltet sind. Überprüfen Sie die API und versuchen Sie es erneut,
 bevor Sie sich auf die angezeigten Zählungen verlassen.
 
+<a id="personal-notifications"></a>
+
+## Persönliche Benachrichtigungen
+
+Die Glocke in der App-Leiste öffnet Gerätesteuerung und bis zu fünf aktuelle, an Sie gerichtete Browser-Push-Zustellungen.
+Einträge berücksichtigen aktuelle Repository- und Sicherheitswarnungsrechte; eine leere Liste zeigt keine fremde
+Historie. Zugestellt bedeutet Annahme durch den Push-Dienst, nicht Lesen durch eine Person. Systemadministratoren
+können im selben Bereich den administrativen Zustellungsverlauf öffnen.
+
 <a id="user-menu-and-footer"></a>
 
 ## Benutzermenü und Fußzeile

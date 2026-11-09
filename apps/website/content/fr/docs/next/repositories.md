@@ -7,18 +7,15 @@ description: "Suivez les référentiels, inspectez l'activité et configurez la 
 
 ## Parcourir et ouvrir les détails
 
-Tous les utilisateurs connectés peuvent répertorier les référentiels qu'ils peuvent lire. Le tableau affiche le
-propriétaire/nom, l'état activé, les membres, le nombre d'exécutions conservées, la rétention et la dernière
-synchronisation. Utilisez le filtrage, le tri, les contrôles de colonnes et la pagination activés. Ouvrez le lien du
-fournisseur pour le référentiel externe, la page de détails pour l'activité synchronisée ou la boîte de dialogue des
-paramètres pour la configuration. Une adhésion manquante ou un référentiel supprimé peut produire un état détaillé
-inaccessible.
+Ouvrez un dépôt depuis le tableau pour accéder à la vue d’ensemble, aux exécutions de workflows, aux issues, aux pull
+requests, aux alertes de sécurité et aux paramètres. Les pages d’activité restent limitées au dépôt et proposent
+filtres, tri, pagination et navigation par ligne. Les alertes nécessitent des droits de gestion ; les paramètres sont
+réservés aux administrateurs système. Le lien du fournisseur ouvre le dépôt externe ; la boîte de paramètres reste
+accessible depuis la liste des dépôts.
 
-La page de détails combine les informations générales, la conservation, la dernière synchronisation/l'âge des données,
-l'intervalle configuré, la tâche en cours et les flux de travail, problèmes et demandes d'extraction récents. Les
-responsables disposant d'un accès à la gestion du référentiel et les administrateurs voient également l'activité des
-alertes de sécurité. Les tâches en attente/en cours d'exécution affichent la progression ; les avertissements et les
-échecs incluent des erreurs de sécurité catégorisées.
+La vue d’ensemble affiche les informations générales, la rétention, la dernière synchronisation, l’âge des données,
+l’intervalle, le job actuel et l’activité récente. Les jobs en attente ou en cours affichent leur progression et des
+erreurs classées sans données sensibles.
 
 <a id="add-and-maintain-tracking"></a>
 

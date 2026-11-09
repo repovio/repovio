@@ -7,16 +7,13 @@ description: 'Lacak repositori, periksa aktivitas, dan konfigurasikan sinkronisa
 
 ## Telusuri dan buka detailnya
 
-Semua pengguna yang masuk dapat membuat daftar repositori yang mungkin mereka baca. Tabel ini memperlihatkan
-pemilik/nama, status yang diaktifkan, anggota, jumlah proses yang dipertahankan, retensi, dan sinkronisasi terakhir.
-Gunakan pemfilteran, pengurutan, kontrol kolom, dan penomoran halaman yang diaktifkan. Buka tautan penyedia untuk
-repositori eksternal, halaman detail untuk aktivitas yang disinkronkan, atau dialog pengaturan untuk konfigurasi.
-Keanggotaan yang hilang atau repositori yang dihapus dapat menghasilkan status detail yang tidak dapat diakses.
+Buka repositori dari tabel untuk berpindah antara Ringkasan, Eksekusi workflow, Issue, Pull request, Peringatan
+keamanan, dan Pengaturan. Halaman aktivitas tetap dalam lingkup repositori dan menyediakan filter, pengurutan,
+paginasi, dan navigasi baris. Peringatan memerlukan izin pengelolaan; Pengaturan hanya tersedia bagi administrator
+sistem. Tautan penyedia membuka repositori eksternal; dialog pengaturan tetap tersedia dari daftar repositori.
 
-Halaman detail menggabungkan informasi umum, retensi, sinkronisasi terakhir/usia data, interval yang dikonfigurasi,
-pekerjaan saat ini, dan alur kerja terkini, masalah, dan permintaan penarikan. Manajer dengan akses manajemen repositori
-dan administrator juga melihat aktivitas peringatan keamanan. Pekerjaan yang tertunda/berjalan menunjukkan kemajuan;
-peringatan dan kegagalan termasuk kesalahan aman yang dikategorikan.
+Ringkasan menampilkan informasi umum, retensi, sinkronisasi terakhir, usia data, interval, pekerjaan saat ini, dan
+aktivitas terbaru. Pekerjaan tertunda atau berjalan menampilkan progres dan kesalahan terklasifikasi tanpa rahasia.
 
 <a id="add-and-maintain-tracking"></a>
 

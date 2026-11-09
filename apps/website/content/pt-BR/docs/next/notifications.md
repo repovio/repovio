@@ -17,6 +17,10 @@ tipo/habilitados, classificação, controles de coluna e paginação.
 
 ## Crie um destino
 
+O diálogo de criação e edição tem quatro etapas: **Nome e tipo**, **Destino**, **Eventos** e **Prévia e revisão**. Defina
+nome, tipo e ativação, configure o destino, escolha eventos e filtros e confira o resumo e a prévia opcional de
+workflows antes de salvar. Voltar/Avançar preserva o rascunho. As credenciais do destino ficam ocultas no resumo.
+
 Escolha **Adicionar canal**, insira um nome, selecione um tipo e configure o destino:
 
 - **E-mail:** Host/porta SMTP, segurança de transporte, remetente, autenticação opcional e destinatários.

@@ -9,18 +9,14 @@ description:
 
 ## Explorar y abrir detalles
 
-Todos los usuarios que hayan iniciado sesión pueden enumerar los repositorios que pueden leer. La tabla muestra el
-propietario/nombre, el estado habilitado, los miembros, el recuento de ejecuciones retenidas, la retención y la última
-sincronización. Utilice filtrado, clasificación, controles de columnas y paginación habilitados. Abra el enlace del
-proveedor para el repositorio externo, la página de detalles para la actividad sincronizada o el cuadro de diálogo de
-configuración para la configuración. Una membresía faltante o un repositorio eliminado pueden producir un estado de
-detalle inaccesible.
+Abra un repositorio desde la tabla para navegar por Resumen, Ejecuciones de workflows, Issues, Pull requests, Alertas
+de seguridad y Configuración. Las páginas de actividad conservan el ámbito del repositorio y ofrecen filtros,
+ordenación, paginación y navegación por filas. Las alertas requieren permisos de gestión; Configuración solo está
+disponible para administradores del sistema. El enlace del proveedor abre el repositorio externo; el diálogo de
+configuración sigue disponible desde la lista.
 
-La página de detalles combina información general, retención, última sincronización/antigüedad de los datos, intervalo
-configurado, trabajo actual y flujos de trabajo recientes, problemas y solicitudes de extracción. Los administradores
-con acceso a la administración del repositorio y los administradores también ven la actividad de alertas de seguridad.
-Los trabajos pendientes/en ejecución muestran el progreso; Las advertencias y fallas incluyen errores seguros
-categorizados.
+Resumen muestra información general, retención, última sincronización, antigüedad de los datos, intervalo, trabajo
+actual y actividad reciente. Los trabajos pendientes o en curso muestran progreso y errores clasificados sin secretos.
 
 <a id="add-and-maintain-tracking"></a>
 

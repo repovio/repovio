@@ -7,16 +7,14 @@ description: 'Rastreie repositórios, inspecione atividades e configure sincroni
 
 ## Navegue e abra detalhes
 
-Todos os usuários conectados podem listar os repositórios que podem ler. A tabela mostra proprietário/nome, estado
-ativado, membros, contagem de execuções retidas, retenção e última sincronização. Use filtragem, classificação,
-controles de coluna e paginação habilitados. Abra o link do provedor para o repositório externo, a página de detalhes da
-atividade sincronizada ou a caixa de diálogo de configurações. Uma associação ausente ou um repositório removido pode
-produzir um estado de detalhe inacessível.
+Abra um repositório na tabela para navegar por Visão geral, Execuções de workflows, Issues, Pull requests, Alertas
+de segurança e Configurações. As páginas de atividade mantêm o escopo do repositório e oferecem filtros, ordenação,
+paginação e navegação por linha. Alertas exigem permissão de gerenciamento; Configurações fica disponível apenas para
+administradores do sistema. O link do provedor abre o repositório externo; o diálogo de configurações continua
+acessível pela lista.
 
-A página de detalhes combina informações gerais, retenção, duração da última sincronização/dados, intervalo configurado,
-trabalho atual e fluxos de trabalho recentes, problemas e solicitações pull. Gerentes com acesso de gerenciamento de
-repositório e administradores também veem atividades de alerta de segurança. Os trabalhos pendentes/em execução mostram
-progresso; avisos e falhas incluem erros de segurança categorizados.
+A visão geral mostra informações gerais, retenção, última sincronização, idade dos dados, intervalo, trabalho atual e
+atividade recente. Trabalhos pendentes ou em execução mostram progresso e erros classificados sem dados sensíveis.
 
 <a id="add-and-maintain-tracking"></a>
 

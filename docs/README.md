@@ -1,6 +1,6 @@
 # Repovio documentation
 
-The user and operations handbook is maintained in [repovio/docs](https://github.com/repovio/docs) and rendered at
+The user and operations handbook is maintained in [apps/website/content](../apps/website/content) and rendered at
 [repovio.de/docs](https://repovio.de/docs). Choose the release matching your installation.
 
 ## User and operations handbook
@@ -11,12 +11,15 @@ The user and operations handbook is maintained in [repovio/docs](https://github.
 - [Runtime theming and branding](theming.md)
 - [MCP access](https://repovio.de/docs/mcp)
 
-The following links point to reviewed source files at a fixed documentation commit. They belong to the unpublished
-`next` handbook and are not available as website routes yet:
+The following links point to the editable `next` handbook sources. `next` is excluded from website routes, search, and
+bundled assets until a reviewed archive is published. Released versions retain their original content:
 
-- [Branding upgrade](https://github.com/repovio/docs/blob/75e5fd90af4384cb85259772d5bd0e92ab5aade7/en/docs/next/branding-upgrade.md)
-- [PostgreSQL 18 upgrade](https://github.com/repovio/docs/blob/75e5fd90af4384cb85259772d5bd0e92ab5aade7/en/docs/next/postgresql-18-upgrade.md)
-- [Interface localization](https://github.com/repovio/docs/blob/75e5fd90af4384cb85259772d5bd0e92ab5aade7/en/docs/next/localization.md)
+- [Branding upgrade](../apps/website/content/en/docs/next/branding-upgrade.md)
+- [PostgreSQL 18 upgrade](../apps/website/content/en/docs/next/postgresql-18-upgrade.md)
+- [Interface localization](../apps/website/content/en/docs/next/localization.md)
+
+See the [website package guide](../apps/website/README.md) for translation checks, archive promotion, and independent
+website releases. Edit all supported translations together; do not rewrite published archives to match newer behavior.
 
 ## Repository development and maintenance
 

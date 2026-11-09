@@ -32,6 +32,15 @@ travail en cours d'exécution. Son compteur de flux de travail en cours d'exécu
 l'élément. La récupération de connexion actualise l’état. Un indicateur déconnecté signifie que les mises à jour en
 direct peuvent être obsolètes ; inspectez l’API et réessayez avant de vous fier aux décomptes affichés.
 
+<a id="personal-notifications"></a>
+
+## Notifications personnelles
+
+La cloche ouvre les contrôles de l’appareil et jusqu’à cinq livraisons push récentes qui vous sont adressées.
+Les entrées respectent vos autorisations actuelles sur les dépôts et alertes ; une liste vide ne révèle pas l’historique
+d’autrui. Le statut livré indique l’acceptation par le service push, pas la lecture. Les administrateurs système peuvent
+ouvrir l’historique administratif des livraisons depuis ce panneau.
+
 <a id="user-menu-and-footer"></a>
 
 ## Menu utilisateur et pied de page

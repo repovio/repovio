@@ -7,14 +7,13 @@ description: 'Track repositories, inspect activity, and configure local synchron
 
 ## Browse and open details
 
-All signed-in users can list repositories they may read. The table shows owner/name, enabled state, members, retained
-run count, retention, and last synchronization. Use enabled filtering, sorting, column controls, and pagination. Open
-the provider link for the external repository, the detail page for synchronized activity, or the settings dialog for
-configuration. A missing membership or removed repository can produce an inaccessible detail state.
+Open a repository from the table to navigate between Overview, Workflow runs, Issues, Pull requests, Security alerts,
+and Settings. Activity pages keep the repository scope and offer filtering, sorting, pagination, and row navigation.
+Security alerts require management permission; Settings is available only to system administrators. The provider link
+opens the external repository, while the settings dialog remains available from the repository list.
 
-The detail page combines general information, retention, last sync/data age, configured interval, current job, and
-recent workflows, issues, and pull requests. Managers with repository management access and administrators also see
-security-alert activity. Pending/running jobs show progress; warnings and failures include categorized safe errors.
+Overview shows general information, retention, last synchronization/data age, interval, current job, and recent activity.
+Pending/running jobs show progress; warnings and failures include categorized safe errors.
 
 <a id="add-and-maintain-tracking"></a>
 

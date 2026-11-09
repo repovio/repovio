@@ -25,6 +25,12 @@ unterstützt.
 
 ## Dieses Gerät aktivieren oder deaktivieren
 
+Öffnen Sie die Glocke in der App-Leiste, um Browser-Push für dieses Gerät zu aktivieren oder zu deaktivieren.
+Die Steuerung prüft das Browser-Abonnement und seine Registrierung für das aktuelle Konto. Ein vorhandenes
+Browser-Abonnement allein bestätigt keine Anmeldung dieses Kontos. Wiederholen Sie die Anmeldung nach einem
+Registrierungsfehler. Beim Abmelden können Sie eine fehlgeschlagene Gerätebereinigung wiederholen oder die Abmeldung
+ausdrücklich fortsetzen.
+
 Verwenden Sie **Auf diesem Gerät aktivieren** und erteilen Sie dem Browser auf Anfrage die
 Benachrichtigungsberechtigung. Das Abonnement gehört dem aktuellen Benutzer und Browser. Ein Administrator wählt
 Empfängerbenutzer in einem Browser-Push-Kanal aus; Jeder Empfänger benötigt ein aktiviertes Gerät. Durch die

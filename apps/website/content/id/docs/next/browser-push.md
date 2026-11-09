@@ -23,6 +23,11 @@ konteks browser yang aman dan browser yang mendukung pekerja layanan dan Push AP
 
 ## Mengaktifkan atau menonaktifkan perangkat ini
 
+Buka lonceng di bilah aplikasi untuk mengaktifkan atau menonaktifkan push pada perangkat ini. Kontrol memeriksa
+langganan browser dan pendaftarannya untuk akun saat ini. Langganan yang sudah ada tidak membuktikan akun ini telah
+terdaftar. Coba lagi setelah pendaftaran server gagal. Saat keluar, ulangi pembersihan perangkat jika gagal atau
+pilih secara eksplisit untuk tetap keluar.
+
 Gunakan **Aktifkan di perangkat ini** dan berikan izin notifikasi browser bila diminta. Langganan adalah milik pengguna
 dan browser saat ini. Administrator memilih pengguna penerima di saluran browser-push; setiap penerima memerlukan
 perangkat yang diaktifkan. Menolak izin browser mencegah langganan; sesuaikan izin browser situs dan coba lagi jika

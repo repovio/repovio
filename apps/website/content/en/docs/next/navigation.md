@@ -25,6 +25,15 @@ API connectivity, synchronization activity, and running workflow counts. Its run
 [Jobs](/docs/next/guide-jobs); synchronization activity can include item progress. Connection recovery refreshes status.
 A disconnected indicator means live updates may be stale; inspect the API and retry before relying on displayed counts.
 
+<a id="personal-notifications"></a>
+
+## Personal notifications
+
+Open the bell in the app bar for device controls and up to five recent browser-push deliveries addressed to you.
+Entries respect current repository and security-alert permissions; an empty list does not expose other users' history.
+A delivered status means the push service accepted a notification, not that a person read it. System administrators
+can open Delivery history from the same panel for administrative details.
+
 <a id="user-menu-and-footer"></a>
 
 ## User menu and footer

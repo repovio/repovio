@@ -157,7 +157,6 @@
       :channel="selectedChannel"
       :browser-push-available="push.available.value"
       :repositories="manageableRepositories"
-      :users="users"
       @saved="handleSaved"
     />
   </LayoutPage>
@@ -191,7 +190,6 @@ const { isPending, run: runPendingAction } = usePendingActions();
 const dialogOpen = ref(false);
 const selectedChannel = ref<NotificationChannel | null>(null);
 const manageableRepositories = ref<Array<{ id: string; name: string; owner: string }>>([]);
-const users = ref<Array<{ id: string; username: string }>>([]);
 const channelTypes: NotificationChannelType[] = [
   'EMAIL',
   'GOTIFY',
@@ -342,13 +340,6 @@ onMounted(
         api.notificationChannels.manageableRepositories().then(
           /** Stores the repositories available to notification-channel rules. */ ({ data }) => {
             manageableRepositories.value = data;
-          },
-        ),
-        api.users.list().then(
-          /** Stores users available as browser-push recipients. */ ({ data }) => {
-            users.value = data.items.map(
-              /** Projects each entry using `({ id, username })`. */ ({ id, username }) => ({ id, username }),
-            );
           },
         ),
       );

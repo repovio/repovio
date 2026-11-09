@@ -62,7 +62,9 @@ async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'SYSTEM_A
     /** Supplies the mocked response for `/api/v1/users**`. */ (route) =>
       route.fulfill({
         json: {
-          items: [{ id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'admin' }],
+          items: [
+            { id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'admin', firstName: 'Vera', lastName: 'Viewer' },
+          ],
           meta: pageMeta,
         },
       }),
@@ -570,7 +572,7 @@ for (const transport of [
       await dialog.getByLabel('Apprise URL', { exact: false }).fill('jsons://synthetic-secret-token@example.com/topic');
     } else {
       await dialog.getByRole('button', { name: 'Browser recipients', exact: false }).click();
-      await page.getByRole('option', { name: '@admin', exact: true }).click();
+      await page.getByRole('option', { name: 'Vera Viewer (@admin)', exact: true }).click();
       await page.keyboard.press('Escape');
     }
     await dialog.getByRole('button', { name: 'Next', exact: true }).click();

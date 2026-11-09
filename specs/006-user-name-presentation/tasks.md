@@ -73,7 +73,7 @@ selected value/chip, duplicate-name disambiguation, later-page search, and uncha
       across firstName/lastName case-insensitively, omit empty predicates, preserve username/ID ordering and pagination;
       verify server permission composition in `apps/api/src/modules/user-groups/user-groups.integration.spec.ts` and browser
       name search in `apps/web/tests/e2e/user-groups.spec.ts`; include `.changeset/user-name-search.md`.
-- [ ] T005 [P] [US1] Apply `getUserIdentityLabel` to User options in
+- [x] T005 [P] [US1] Apply `getUserIdentityLabel` to User options in
       `apps/web/app/components/modules/user-groups/resource-picker.vue` while preserving the group-name branch, page reset,
       stale-response rejection, and disabled/loading/error states; verify open/selected labels and duplicate IDs in
       `apps/web/tests/e2e/user-groups.spec.ts`, and existing repository selection in

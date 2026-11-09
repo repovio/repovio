@@ -121,18 +121,25 @@
             </NuxtLink>
           </div>
         </div>
-        <div class="mt-10 border-t border-default pt-6 text-xs text-dimmed">
-          {{ t('builtWith') }}
-          <a href="https://tobiaswaelde.com" class="ms-3 text-muted hover:text-highlighted">
-            <span>{{ t('createdBy') }} Tobias Wälde</span>
-          </a>
-          <a
-            v-if="safeUrl(config.brandProductUrl)"
-            class="ms-3 text-muted hover:text-highlighted"
-            :href="safeUrl(config.brandProductUrl)"
-          >
-            {{ config.brandName }}
-          </a>
+        <div
+          class="mt-10 flex flex-col gap-3 border-t border-default pt-6 text-xs text-dimmed sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            {{ t('builtWith') }}
+            <a href="https://tobiaswaelde.com" class="ms-3 text-muted hover:text-highlighted">
+              <span>{{ t('createdBy') }} Tobias Wälde</span>
+            </a>
+            <a
+              v-if="safeUrl(config.brandProductUrl)"
+              class="ms-3 text-muted hover:text-highlighted"
+              :href="safeUrl(config.brandProductUrl)"
+            >
+              {{ config.brandName }}
+            </a>
+          </div>
+          <span class="shrink-0 self-end whitespace-nowrap sm:self-auto" data-testid="website-version">
+            v{{ appConfig.version }}
+          </span>
         </div>
       </div>
     </footer>
@@ -152,6 +159,7 @@ import ProductNavigation from '~/components/modules/product/navigation.vue';
 const { t } = useI18n();
 const localePath = useLocalePath();
 const config = useRuntimeConfig().public;
+const appConfig = useAppConfig();
 const searchOpen = ref(false);
 const hydrated = ref(false);
 onMounted(

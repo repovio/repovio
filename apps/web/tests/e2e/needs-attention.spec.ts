@@ -145,8 +145,9 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
   await expect(needsAttentionLink).toHaveAttribute('aria-current', 'page');
   await expect(needsAttentionLink.locator('[data-slot="linkTrailingBadge"]')).toHaveText('26');
   await expect(needsAttentionLink.locator('[data-slot="linkTrailingBadge"]')).toHaveClass(/text-error/);
-  await page.getByPlaceholder('Search Repovio').fill('approval');
-  await expect(page.getByRole('link', { name: 'Awaiting approval' }).last()).toHaveAttribute(
+  await page.getByRole('button', { name: 'Open search' }).click();
+  await page.getByPlaceholder('Search or type a command').fill('approval');
+  await expect(page.getByRole('option', { name: 'Awaiting approval' })).toHaveAttribute(
     'href',
     '/workflows/awaiting-approval',
   );
@@ -270,5 +271,53 @@ for (const theme of ['light', 'dark'] as const) {
       )
       .toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`needs-attention-${theme}-mobile.png`), fullPage: true });
+  });
+}
+
+for (const locale of ['en', 'de'] as const) {
+  test(`preserves workflow history with lifecycle badges in ${locale}`, /** Verifies lifecycle badges without changing historical run outcomes. */ async ({
+    page,
+  }) => {
+    await mockApplication(page);
+    await page.context().addCookies([
+      {
+        name: 'repovio-locale',
+        value: locale,
+        url: new URL(test.info().project.use.baseURL ?? 'http://localhost:3057').origin,
+      },
+    ]);
+    let requestedFields = '';
+    await page.route(
+      /\/api\/v1\/workflow-runs(?:\?.*)?$/,
+      /** Returns retained historical runs, including inactive workflows. */ (route) => {
+        requestedFields = new URL(route.request().url()).searchParams.get('fields') ?? '';
+        return route.fulfill({
+          json: {
+            items: ['REMOVED', 'DISABLED', 'ACTIVE', 'UNKNOWN'].map(
+              /** Builds independent historical workflow rows. */ (state, index) => ({
+                ...workflowRun,
+                id: `lifecycle-${index}`,
+                displayTitle: index === 0 ? 'Version Packages (#247)' : `Historical ${state}`,
+                workflowName: index === 0 ? 'Documentation' : `Workflow ${state}`,
+                workflowLifecycleState: state,
+                workflowLifecycleCheckedAt: '2026-11-09T12:00:00.000Z',
+              }),
+            ),
+            meta: { hasNextPage: false, hasPrevPage: false, itemCount: 4, page: 1, pageCount: 1, perPage: 25 },
+          },
+        });
+      },
+    );
+    await page.goto('/workflow-runs');
+    await expect(page.getByText('Version Packages (#247)', { exact: true })).toBeVisible();
+    const removed = page.getByText(locale === 'en' ? 'Removed' : 'Entfernt', { exact: true });
+    await expect(removed).toBeVisible();
+    await expect(page.getByText(locale === 'en' ? 'Disabled' : 'Deaktiviert', { exact: true })).toBeVisible();
+    await expect(page.getByText(locale === 'en' ? 'Failed' : 'Fehlgeschlagen', { exact: true })).toHaveCount(4);
+    expect(requestedFields).toContain('workflowLifecycleState');
+    expect(requestedFields).toContain('workflowLifecycleCheckedAt');
+    await removed.focus();
+    await expect(page.getByRole('tooltip')).toContainText(locale === 'en' ? 'Last checked:' : 'Zuletzt geprüft:');
+    await page.screenshot({ path: `/tmp/repovio-workflow-lifecycle-${locale}.png` });
   });
 }

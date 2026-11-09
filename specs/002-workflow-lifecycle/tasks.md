@@ -23,7 +23,7 @@ track validated task commits, not the earlier editing chronology.
 
 ## Phase 4: User Story 2 - Preserved History
 
-- [ ] T005 [US2] Extend shared schemas, DTOs, context loading, and API/MCP/OpenAPI contract tests in libs/schemas and apps/api.
+- [x] T005 [US2] Extend shared schemas, DTOs, context loading, and API/MCP/OpenAPI contract tests in libs/schemas and apps/api.
 - [ ] T006 [US2] Add the lifecycle badge, complete locales, and browser regressions in apps/web.
 
 ## Phase 5: Documentation and Verification
@@ -49,9 +49,10 @@ because its code was edited or tested before issue #61 was created.
 
 ## Completed Task Commits
 
-| Task | Commit    | Validation                                                                                  |
-| ---- | --------- | ------------------------------------------------------------------------------------------- |
-| T001 | `96780ff` | Staged schema validation, clean migrations, and API typecheck passed.                       |
-| T002 | `f68e97b` | Staged four-adapter test suites and API typecheck passed.                                   |
-| T003 | `e15f607` | Staged synchronization/metadata tests and API typecheck passed.                             |
-| T004 | `466aa4d` | Staged query/counter tests, PostgreSQL authorization integration, and API typecheck passed. |
+| Task | Commit    | Validation                                                                                   |
+| ---- | --------- | -------------------------------------------------------------------------------------------- |
+| T001 | `96780ff` | Staged schema validation, clean migrations, and API typecheck passed.                        |
+| T002 | `f68e97b` | Staged four-adapter test suites and API typecheck passed.                                    |
+| T003 | `e15f607` | Staged synchronization/metadata tests and API typecheck passed.                              |
+| T004 | `466aa4d` | Staged query/counter tests, PostgreSQL authorization integration, and API typecheck passed.  |
+| T005 | `a381e10` | Staged contract tests, API typecheck/build, and deterministic offline OpenAPI export passed. |

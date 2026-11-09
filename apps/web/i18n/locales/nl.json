@@ -696,7 +696,12 @@
     "notAvailable": "—",
     "repositoryFilterLoadError": "Repositoryfilteropties konden niet worden geladen.",
     "search": "Workflowuitvoeringen zoeken",
-    "searchPlaceholder": "Workflows of repositories zoeken"
+    "searchPlaceholder": "Workflows of repositories zoeken",
+    "lifecycle": {
+      "REMOVED": "Verwijderd",
+      "DISABLED": "Uitgeschakeld",
+      "checkedAt": "Laatst gecontroleerd: {time}"
+    }
   },
   "notifications": {
     "attempts": "{count} pogingen",

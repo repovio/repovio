@@ -1,0 +1,16 @@
+meta {
+  name: get delivery
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/v1/notification-deliveries
+  body: none
+  auth: inherit
+}
+
+docs {
+  Administrator-only delivery history retains requestedByUsername and includes safe nullable requestedBy with id,
+  username, firstName and lastName. Deleted requesters are null. No private authentication fields are returned.
+}

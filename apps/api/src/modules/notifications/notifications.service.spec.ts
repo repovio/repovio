@@ -68,7 +68,12 @@ describe('NotificationsService', /** Groups scenarios for NotificationsService. 
     await service.listChannels();
 
     expect(prisma.notificationChannel.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ orderBy: [{ name: 'asc' }, { id: 'asc' }] }),
+      expect.objectContaining({
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        include: expect.objectContaining({
+          recipients: { include: { user: { select: { id: true, username: true, firstName: true, lastName: true } } } },
+        }),
+      }),
     );
   });
 

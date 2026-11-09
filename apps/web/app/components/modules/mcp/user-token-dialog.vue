@@ -1,7 +1,7 @@
 <template>
   <UModal
     v-model:open="open"
-    :description="$t('mcp.adminDescription', { username: user?.username ?? '' })"
+    :description="$t('mcp.adminDescription', { username: user ? getUserIdentityLabel(user) : '' })"
     :title="$t('mcp.adminTitle')"
   >
     <template #body>
@@ -63,6 +63,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useDestructiveAction } from '~/composables/app/destructive-action';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 
 import { defineModel, defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';

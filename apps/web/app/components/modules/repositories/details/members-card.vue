@@ -27,9 +27,12 @@
       <UFormField name="userId" class="flex-1" :label="$t('repositoryDetails.user')" :ui="{ label: 'sr-only' }">
         <USelectMenu
           v-model="form.userId"
+          v-model:search-term="userSearch"
           class="w-full"
           value-key="value"
           :items="availableUserOptions"
+          :loading="userLoading"
+          ignore-filter
           :placeholder="$t('repositoryDetails.memberPlaceholder')"
           searchable
         >
@@ -43,6 +46,23 @@
               :user-id="item.userId"
               :username="item.username"
             />
+          </template>
+          <template #content-bottom>
+            <div class="flex items-center justify-between p-2">
+              <UButton
+                icon="i-lucide-chevron-left"
+                :aria-label="$t('userGroups.previous')"
+                :disabled="userPage <= 1 || userLoading"
+                @click.stop="userPage--"
+              />
+              <span>{{ $t('userGroups.page', { page: userPage }) }}</span>
+              <UButton
+                icon="i-lucide-chevron-right"
+                :aria-label="$t('userGroups.next')"
+                :disabled="userPage >= userPageCount || userLoading"
+                @click.stop="userPage++"
+              />
+            </div>
           </template>
         </USelectMenu>
       </UFormField>
@@ -85,7 +105,7 @@
               v-if="getUserDisplayName(row.original.user) !== row.original.user.username"
               class="truncate text-xs text-muted"
             >
-              @{{ row.original.user.username }}
+              (@{{ row.original.user.username }})
             </p>
           </div>
         </div>
@@ -152,6 +172,42 @@ const api = useRepovioApi();
 const { isPending, run: runPendingAction } = usePendingActions();
 const memberships = ref<RepositoryMembership[]>([]);
 const users = ref<User[]>([]);
+const userSearch = ref('');
+const userPage = ref(1);
+const userPageCount = ref(1);
+const userLoading = ref(false);
+let userGeneration = 0;
+watch(
+  userSearch,
+  /** Restart personal-name discovery on its first page. */ () => {
+    userPage.value = 1;
+  },
+);
+watch([userSearch, userPage], loadUserChoices);
+
+/** Load an authorized page while keeping the selected User identifiable and discarding stale results. */
+async function loadUserChoices(): Promise<void> {
+  const generation = ++userGeneration;
+  userLoading.value = true;
+  try {
+    const { data } = await api.users.search(userSearch.value, userPage.value);
+    if (generation !== userGeneration) return;
+    const selected = users.value.find(
+      /** Retain the selected identity outside this page. */ (user) => user.id === form.userId,
+    );
+    users.value = data.items;
+    if (selected && !users.value.some(/** Avoid duplicate selected choices. */ (user) => user.id === selected.id))
+      users.value.push(selected);
+    userPageCount.value = data.meta.pageCount;
+  } catch {
+    if (generation === userGeneration) {
+      error.value = true;
+      users.value = [];
+    }
+  } finally {
+    if (generation === userGeneration) userLoading.value = false;
+  }
+}
 const loading = ref(true);
 const adding = ref(false);
 const error = ref(false);
@@ -221,10 +277,11 @@ async function load(): Promise<void> {
   try {
     const [membershipsResponse, usersResponse] = await Promise.all([
       api.repositories.listMemberships(props.repositoryId),
-      api.users.list(),
+      api.users.search(userSearch.value, userPage.value),
     ]);
     memberships.value = membershipsResponse.data;
     users.value = usersResponse.data.items;
+    userPageCount.value = usersResponse.data.meta.pageCount;
   } catch {
     error.value = true;
   } finally {
@@ -280,9 +337,9 @@ async function updateMemberRole(membership: RepositoryMembership, role: Reposito
 
 /** Revoke explicit repository access from one user. */
 async function removeMember(userId: string): Promise<void> {
+  const member = memberships.value.find(/** Find the affected member. */ (entry) => entry.userId === userId);
   await confirmDestructiveAction(
-    memberships.value.find(/** Find the affected member. */ (member) => member.userId === userId)?.user.username ??
-      userId,
+    member ? getUserIdentityLabel(member.user) : userId,
     /** Perform the confirmed action and await its dependent UI updates. */ async () => {
       await runPendingAction(
         memberActionKey('remove', userId),

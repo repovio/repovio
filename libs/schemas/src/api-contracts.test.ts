@@ -8,6 +8,8 @@ import {
   ApiCreateUserSchema,
   ApiDashboardPeriodQuerySchema,
   ApiListMcpAccessTokensQuerySchema,
+  ApiNotificationChannelSchema,
+  ApiNotificationDeliverySchema,
   ApiNotificationEventSubscriptionInputSchema,
   ApiNotificationRulePreviewInputSchema,
   ApiRemoteAvatarSchema,
@@ -242,4 +244,29 @@ describe('notification personal boundaries', /** Groups private notification con
     assert.equal(ApiRecentNotificationsSchema.safeParse({ items: [{ ...item, endpoint: 'secret' }] }).success, false);
     assert.equal(ApiRecentNotificationsSchema.safeParse({ items: [{ ...item, status: 'READ' }] }).success, false);
   });
+});
+
+it('preserves safe recipient names and accepts older identities', /** Checks additive public names without admitting private fields. */ () => {
+  const identity = ApiNotificationChannelSchema.shape.browserRecipients.element;
+  assert.deepEqual(identity.parse({ id: 'u', username: 'viewer', firstName: 'Vera', lastName: null }), {
+    id: 'u',
+    username: 'viewer',
+    firstName: 'Vera',
+    lastName: null,
+  });
+  assert.deepEqual(identity.parse({ id: 'u', username: 'viewer' }), { id: 'u', username: 'viewer' });
+  assert.equal(identity.safeParse({ id: 'u', username: 'viewer', passwordHash: 'secret' }).success, false);
+});
+
+it('accepts optional nullable safe delivery requester identities', /** Keeps older deliveries readable while rejecting private identity fields. */ () => {
+  const requester = ApiNotificationDeliverySchema.shape.requestedBy;
+  assert.equal(requester.parse(undefined), undefined);
+  assert.equal(requester.parse(null), null);
+  assert.deepEqual(requester.parse({ id: 'u', username: 'viewer', firstName: 'Vera', lastName: null }), {
+    id: 'u',
+    username: 'viewer',
+    firstName: 'Vera',
+    lastName: null,
+  });
+  assert.equal(requester.safeParse({ id: 'u', username: 'viewer', token: 'secret' }).success, false);
 });

@@ -93,3 +93,30 @@ test('the sync button remains loading throughout its queued request', /** Verify
   await expect(button).toBeEnabled();
   await expect(page.getByText('Pending', { exact: true })).toBeVisible();
 });
+
+test('repository User discovery preserves full names and later pages', /** Exercises remote name search through the real membership selector. */ async ({
+  page,
+}) => {
+  await mockRepositoryApplication(page);
+  await page.route(
+    '**/api/v1/users**',
+    /** Supplies later-page named candidates without provider access. */ (route) => {
+      const url = new URL(route.request().url());
+      const where = JSON.parse(url.searchParams.get('where') ?? '{}');
+      if (where.OR) expect(where.OR[0].username.mode).toBe('insensitive');
+      return route.fulfill({
+        json: {
+          items: [{ id: 'viewer', username: 'viewer', firstName: 'Vera', lastName: 'Viewer', role: 'VIEWER' }],
+          meta: { pageCount: 2, itemCount: 11 },
+        },
+      });
+    },
+  );
+  await page.goto('/repositories/repository-1/settings');
+  await page.getByRole('button', { name: 'User', exact: true }).click();
+  await expect(page.getByRole('option', { name: 'Vera Viewer (@viewer)' })).toBeVisible();
+  await page.getByRole('button', { name: 'Next page', exact: true }).last().click();
+  await expect(page.getByText('Page 2', { exact: true })).toBeVisible();
+  await page.getByRole('option', { name: 'Vera Viewer (@viewer)' }).click();
+  await expect(page.getByRole('button', { name: 'User', exact: true })).toContainText('Vera Viewer (@viewer)');
+});

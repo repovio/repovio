@@ -188,3 +188,28 @@ it('preserves stored credentials when editing without explicit replacement', /**
     expect.objectContaining({ configuration: undefined }),
   );
 });
+
+it('uses personal names for recipient options without dropping older fallback identities', /** Verifies labels and stable selection IDs in channel drafts. */ () => {
+  const { draft } = fixture();
+  const open = ref(false);
+  const props = {
+    channel: null,
+    browserPushAvailable: true,
+    repositories: [],
+    users: [
+      { id: 'viewer', username: 'viewer', firstName: 'Vera', lastName: 'Viewer' },
+      { id: 'legacy', username: 'legacy' },
+    ],
+  };
+  const state = useNotificationChannelDraft(
+    props,
+    open,
+    /** Keep test translations stable. */ (key) => key,
+    {} as never,
+  );
+  expect(state.userOptions.value).toEqual([
+    { value: 'viewer', label: 'Vera Viewer (@viewer)' },
+    { value: 'legacy', label: 'legacy' },
+  ]);
+  expect(draft.form.value.browserRecipientUserIds).toEqual([]);
+});

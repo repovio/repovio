@@ -76,3 +76,15 @@ application tests and browser acceptance are not evidence of an unimplemented fe
 - Limits: mocked browser checks verify frontend route guards, not backend authorization or live notification delivery.
   Real provider calls, Docker images, deployment, and remote GitHub Actions were not validated by these local runs.
   Nuxt emitted its existing package-module warnings while checks still exited successfully.
+
+## Main Integration: 2026-11-10
+
+PR #77 was green but conflicted with the merged User name presentation changes. Merged `origin/main` at `a3128bb`
+without discarding either feature: `mockShell` retains Manager coverage and the new catch-all API fixture isolation;
+name-first recipient fixtures, assertions, and pagination regressions remain intact.
+
+Verification after resolution: 22 notification/User-identity Chromium scenarios and two EN/DE navigation-surface
+scenarios passed; all 106 web unit tests passed. Web typecheck, canonical formatting with stable scoped output,
+browser-test ESLint, documentation coverage, and whitespace checks passed. Graphify union merge validated and its AST
+refresh succeeded. This integration introduces no new product behavior and needs no additional release entry.
+Remote checks must pass on the new head before the user-authorized merge.

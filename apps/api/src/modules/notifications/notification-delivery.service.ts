@@ -17,7 +17,9 @@ const deliveryInclude = {
   attempts: { orderBy: { createdAt: 'desc' } },
   issue: true,
   notificationChannel: {
-    include: { recipients: { include: { user: { select: { id: true, username: true } } } } },
+    include: {
+      recipients: { include: { user: { select: { id: true, username: true, firstName: true, lastName: true } } } },
+    },
   },
   pullRequest: true,
   repository: { include: { providerAccount: true } },

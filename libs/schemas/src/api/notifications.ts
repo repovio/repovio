@@ -170,7 +170,14 @@ export const ApiNotificationChannelSchema = z.strictObject({
       workflowPatterns: z.array(z.string()),
     }),
   ),
-  browserRecipients: z.array(z.strictObject({ id: z.string(), username: z.string() })),
+  browserRecipients: z.array(
+    z.strictObject({
+      id: z.string(),
+      username: z.string(),
+      firstName: z.string().nullable().optional(),
+      lastName: z.string().nullable().optional(),
+    }),
+  ),
   canManage: z.boolean(),
   requiresReconfiguration: z.boolean(),
   createdAt: z.iso.datetime({ offset: true }),
@@ -347,6 +354,15 @@ export const ApiNotificationDeliverySchema = z.strictObject({
   ]),
   subjectTitle: z.union([z.null(), z.string()]),
   subjectUrl: z.union([z.null(), z.string()]),
+  requestedBy: z
+    .strictObject({
+      id: z.string(),
+      username: z.string(),
+      firstName: z.string().nullable().optional(),
+      lastName: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   requestedByUsername: z.union([z.null(), z.string()]),
   status: z.union([z.literal('PENDING'), z.literal('FAILED'), z.literal('DELIVERED')]),
   finalError: z.union([z.null(), z.string()]),

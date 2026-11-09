@@ -112,13 +112,7 @@
       :label="$t('notifications.fields.browserRecipients')"
       required
     >
-      <USelectMenu
-        v-model="form.browserRecipientUserIds"
-        multiple
-        class="w-full"
-        value-key="value"
-        :items="userOptions"
-      />
+      <CommonUserMultiselect v-model="form.browserRecipientUserIds" :initial-options="userOptions" />
     </UFormField>
   </div>
 </template>

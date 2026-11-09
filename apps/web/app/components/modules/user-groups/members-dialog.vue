@@ -24,12 +24,12 @@
         </p>
         <ul v-else class="divide-y divide-default">
           <li v-for="member in members" :key="member.id" class="flex items-center justify-between gap-3 py-2">
-            <span class="truncate">{{ member.username }}</span>
+            <span class="truncate">{{ getUserIdentityLabel(member) }}</span>
             <UButton
               color="error"
               icon="i-lucide-user-minus"
               variant="ghost"
-              :aria-label="$t('userGroups.removeMember', { username: member.username })"
+              :aria-label="$t('userGroups.removeMember', { username: getUserIdentityLabel(member) })"
               :disabled="!!pending"
               :loading="pending === member.id"
               @click="remove(member.id)"
@@ -65,6 +65,7 @@ import { ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDestructiveAction } from '~/composables/app/destructive-action';
 import type { User, UserGroup } from '~/types/api/resources';
+import { getUserIdentityLabel } from '~/utils/user-identity';
 const { confirmDestructiveAction } = useDestructiveAction();
 const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{ group: UserGroup | null }>();
@@ -131,8 +132,9 @@ async function add(): Promise<void> {
 
 /** Removes a member while preserving their direct and other-group assignments. */
 async function remove(id: string): Promise<void> {
+  const member = members.value.find(/** Find the affected member. */ (entry) => entry.id === id);
   await confirmDestructiveAction(
-    members.value.find(/** Find the affected member. */ (member) => member.id === id)?.username ?? id,
+    member ? getUserIdentityLabel(member) : id,
     /** Perform the confirmed action and await its dependent UI updates. */ async () => {
       if (!props.group || pending.value) return;
       pending.value = id;

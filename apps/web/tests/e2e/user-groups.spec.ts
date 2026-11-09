@@ -12,7 +12,14 @@ for (const locale of ['en', 'de']) {
       createdAt: '2026-11-06T10:00:00.000Z',
       updatedAt: '2026-11-06T10:00:00.000Z',
     };
-    const user = { id: '00000000-0000-4000-8000-000000000002', username: 'ada', role: 'VIEWER', authProvider: 'LOCAL' };
+    const user = {
+      id: '00000000-0000-4000-8000-000000000002',
+      username: 'ada',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      role: 'VIEWER',
+      authProvider: 'LOCAL',
+    };
     let created = false;
     let member = false;
     let grant = false;
@@ -158,10 +165,15 @@ for (const locale of ['en', 'de']) {
     await expect(dialog).toBeHidden();
     await page.getByRole('button', { name: de ? 'Mitglieder verwalten' : 'Manage members' }).click();
     await dialog.getByRole('combobox').click();
-    await page.getByRole('option', { name: 'ada' }).click();
+    await page.getByRole('option', { name: 'Ada Lovelace (@ada)', exact: true }).click();
+    await expect(dialog.getByRole('combobox')).toContainText('Ada Lovelace (@ada)');
     await dialog.getByRole('button', { name: de ? 'Mitglied hinzufügen' : 'Add member', exact: true }).click();
-    await expect(dialog.getByText('ada', { exact: true })).toBeVisible();
-    await dialog.getByRole('button', { name: de ? 'ada aus Gruppe entfernen' : 'Remove ada from group' }).click();
+    await expect(dialog.getByText('Ada Lovelace (@ada)', { exact: true })).toBeVisible();
+    await dialog
+      .getByRole('button', {
+        name: de ? 'Ada Lovelace (@ada) aus Gruppe entfernen' : 'Remove Ada Lovelace (@ada) from group',
+      })
+      .click();
     await page
       .getByRole('dialog', { name: de ? 'Entfernen bestätigen' : 'Confirm removal' })
       .getByRole('button', { name: de ? 'Entfernen' : 'Remove', exact: true })

@@ -83,7 +83,7 @@ as a differently authorized user, inspect all caches and response sources, then 
 ### Tests and Evidence
 
 - [x] T015 [P] [US3] Add `apps/web/tests/pwa/cache-isolation.spec.ts` deterministic authenticated scenarios covering API/authentication, realtime traffic, manifest, and runtime-branding exclusion from every Cache Storage entry; verify user A logout/user B login in one context and prove user B cannot receive A-only data from network or worker responses. Observe representative requests actually occurring, not just empty caches.
-- [ ] T016 [P] [US3] Add `apps/web/tests/pwa/connectivity.spec.ts` tests for an already-open screen losing connectivity, unsupported cold offline navigation, and fresh authorized requests after reconnection. Preserve `navigateFallback: null`; assertions must not require cached HTML, offline repository data, or fabricated fresh status.
+- [x] T016 [P] [US3] Add `apps/web/tests/pwa/connectivity.spec.ts` tests for an already-open screen losing connectivity, unsupported cold offline navigation, and fresh authorized requests after reconnection. Preserve `navigateFallback: null`; assertions must not require cached HTML, offline repository data, or fabricated fresh status.
 
 ### Implementation and Acceptance
 

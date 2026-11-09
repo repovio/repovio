@@ -67,3 +67,7 @@
 - T015/T017: Authenticated synthetic API traffic, sign-out and Bob sign-in, manifest/branding/realtime requests, and
   all-cache inspection passed in one worker-controlled context. Both allowed and denied API responses were observed and
   were not worker responses. No protected URLs entered caches; no cache configuration repair was necessary.
+
+- T016: A fully mounted page survives network loss; real uncached manifest requests fail offline, a new document cannot
+  cold-start offline, and reconnection obtains a fresh network response. The test does not use mocked API responses as
+  offline evidence. `navigateFallback: null` and `runtimeCaching: []` remain unchanged.

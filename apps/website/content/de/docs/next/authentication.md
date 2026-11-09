@@ -53,11 +53,11 @@ die ungültige Konfiguration und speichern Sie sie erneut, bevor Sie die Verbind
 
 ### Gruppen, Rollen und Identitäten
 
-Der Gruppenanspruch kann ein exakter Anspruchsname oder ein durch Punkte getrennter Pfad sein, z. B.
-`realm_access.groups`. Konfigurieren Sie genaue Gruppenwerte unter Berücksichtigung der Groß- und Kleinschreibung für
-die drei Repovio-Rollen. Wenn mehrere Gruppen übereinstimmen, gilt Repovio, `SYSTEM_ADMIN`, dann `MANAGER`, dann
-`VIEWER`. Nicht übereinstimmende, fehlerhafte, fehlende oder übermäßig große Gruppenansprüche werden abgelehnt, es sei
-denn, **Nicht übereinstimmende Benutzer als Betrachter zulassen** ist ausdrücklich aktiviert.
+Der Gruppen-Claim kann ein exakter Name oder ein durch Punkte getrennter Pfad wie `realm_access.groups` sein. Ordnen Sie
+exakte, groß-/kleinschreibungssensitive Gruppenwerte den drei Repovio-Rollen zu. Bei mehreren Treffern gilt
+`SYSTEM_ADMIN` vor `MANAGER` vor `VIEWER`. Fehlende oder nicht zugeordnete Gruppen werden abgewiesen, sofern die
+Viewer-Freigabe für nicht zugeordnete Benutzer nicht ausdrücklich aktiviert ist. Fehlerhafte Claims und Gruppenüberläufe
+werden immer abgewiesen.
 
 Ein OIDC-Konto ist nur durch das verifizierte Emittenten- und Betreffpaar verknüpft. Repovio verknüpft niemals ein
 OIDC-Login mit einem lokalen Konto per E-Mail-Adresse oder Benutzername. Bei jeder erfolgreichen Anmeldung werden Vor-
@@ -74,6 +74,8 @@ seine bisherigen Sitzungen ungültig.
 
 ### Anbieterbeispiele
 
+Provider-Anleitungen: [Keycloak](#oidc-keycloak) · [Microsoft Entra ID](#oidc-entra-id) · [Auth0](#oidc-auth0)
+
 Erstellen Sie für Authentik einen OAuth2/OpenID-Anbieter mit Autorisierungscodefluss, der genauen Rückruf-URL oben und
 den Bereichen `openid`, `profile` und `email`. Fügen Sie eine Bereichszuordnung hinzu, die den ausgewählten
 Gruppenanspruch als Array von Gruppennamen zurückgibt, hängen Sie den Anbieter an eine Anwendung an und kopieren Sie
@@ -83,6 +85,122 @@ Aktivieren Sie für einen anderen standardkonformen Anbieter den Autorisierungsc
 registrieren Sie die genaue Rückruf-URL und fügen Sie einen stabilen `sub` sowie den konfigurierten Gruppenanspruch in
 das ID-Token oder die UserInfo-Antwort ein. Repovio akzeptiert nur asymmetrische ID-Token-Signaturen und lehnt nicht
 signierte und HMAC-signierte Token ab.
+
+<a id="oidc-keycloak"></a>
+
+#### Keycloak
+
+Erstellen Sie in der Keycloak-Administrationskonsole den Realm repovio und einen OpenID-Connect-Client namens repovio.
+Aktivieren Sie Client authentication und Standard flow; deaktivieren Sie Implicit flow und Direct access grants. Tragen
+Sie die exakte Callback-URL unten unter Valid redirect URIs ein und verlangen Sie S256 unter Proof Key for Code
+Exchange. Behalten Sie RS256 bei. Kopieren Sie das Client-Geheimnis aus Credentials.
+
+Erstellen Sie im dedizierten Client-Scope einen Group-Membership-Mapper: Token Claim Name groups, Full group path aus,
+Add to ID token an. Erstellen Sie repovio-admins, repovio-managers und repovio-viewers und weisen Sie Benutzer zu.
+Binden Sie profile und email als Standard-Client-Scopes ein. Speichern Sie in Repovio die Werte unten und ordnen Sie
+jeden vollständigen Gruppennamen der passenden Rolle zu. Realm-Rollen sind keine Gruppenmitgliedschaften.
+
+```text
+Issuer: https://auth.example.com/realms/repovio
+Discovery: https://auth.example.com/realms/repovio/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Client ID: repovio
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+Referenzen: [Keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc_clients)
+
+<a id="oidc-entra-id"></a>
+
+#### Microsoft Entra ID
+
+Registrieren Sie unter Entra ID → App registrations eine Single-Tenant-Anwendung. Fügen Sie eine Web-Plattform mit der
+exakten Callback-URL unten hinzu; aktivieren Sie keine implizite ID-Token-Ausgabe. Kopieren Sie Application (client) ID
+und Directory (tenant) ID. Erstellen Sie ein Client-Geheimnis und kopieren Sie dessen Value, nicht die Secret-ID.
+Verwenden Sie die Tenant-ID im v2-Issuer; nicht common oder organizations.
+
+Fügen Sie unter Token configuration einen groups-Claim für Sicherheitsgruppen zu ID-Token hinzu und wählen Sie Group ID.
+Erstellen Sie drei Sicherheitsgruppen, weisen Sie Benutzer zu und ordnen Sie deren Objekt-IDs in Repovio SYSTEM_ADMIN,
+MANAGER und VIEWER zu. Anzeigenamen passen nicht zu GUID-Claims. Das Filtern nach zugewiesenen Gruppen kann eine
+entsprechende Entra-Lizenz erfordern. Entra unterstützt S256 PKCE und asymmetrisch signierte ID-Token. Erneuern Sie das
+Client-Geheimnis vor Ablauf.
+
+Lässt Entra Gruppen wegen Token-Grenzen aus, lehnt Repovio die Überlaufmarker auch bei aktivierter Viewer-Freigabe für
+nicht zugeordnete Benutzer ab. Es folgt keinen externen Claim-Quellen und fragt Microsoft Graph nicht ab. Reduzieren Sie
+die ausgegebenen Mitgliedschaften oder konfigurieren Sie unterstützte Gruppenfilter; Graph-Berechtigungen sind keine
+Lösung.
+
+```text
+Issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+Discovery: https://login.microsoftonline.com/TENANT_ID/v2.0/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: ADMIN_GROUP_OBJECT_ID
+MANAGER: MANAGER_GROUP_OBJECT_ID
+VIEWER: VIEWER_GROUP_OBJECT_ID
+```
+
+Referenzen:
+[Microsoft Entra ID](https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles)
+
+<a id="oidc-auth0"></a>
+
+#### Auth0
+
+Erstellen Sie eine Regular Web Application. Setzen Sie Allowed Callback URLs auf die exakte Callback-URL unten,
+aktivieren Sie Authorization Code, verwenden Sie S256 PKCE und wählen Sie RS256 für ID-Token-Signaturen. Setzen Sie
+Token Endpoint Authentication Method auf Basic. Kopieren Sie Client-ID und Client-Geheimnis. Übernehmen Sie den Issuer
+aus der Discovery des gewählten Tenants oder der eigenen Domain einschließlich abschließendem Schrägstrich; mischen Sie
+keine Domains.
+
+Erstellen Sie eine Login / Post Login Action mit dem Beispiel unten. Ersetzen Sie REPLACE_WITH_REPOVIO_CLIENT_ID,
+veröffentlichen Sie die Action und binden Sie sie in den Login-Flow ein. Pflegen Sie administrativ für jeden Benutzer
+app_metadata.repovio_groups als Array mit repovio-admins, repovio-managers oder repovio-viewers. Verwenden Sie keine
+benutzerveränderbaren user_metadata zur Autorisierung. Auth0 gibt diese Gruppen nicht automatisch aus; ein Claim nur im
+Access-Token reicht nicht. Tragen Sie in Repovio den gesamten namespaced Claim als exakten Gruppen-Claim-Namen ein und
+ordnen Sie die drei Werte ihren Rollen zu.
+
+```text
+Issuer: https://YOUR_TENANT.REGION.auth0.com/
+Discovery: https://YOUR_TENANT.REGION.auth0.com/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: https://repovio.example.com/groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+```javascript
+/** Add administratively managed Repovio groups to this application's ID token. */
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.client.client_id !== 'REPLACE_WITH_REPOVIO_CLIENT_ID') return;
+  const groups = event.user.app_metadata?.repovio_groups;
+  api.idToken.setCustomClaim('https://repovio.example.com/groups', Array.isArray(groups) ? groups : []);
+};
+```
+
+Referenzen: [Auth0](https://auth0.com/docs/secure/tokens/json-web-tokens/create-custom-claims)
+
+<a id="verify-oidc-providers"></a>
+
+#### Prüfung und Fehlerdiagnose
+
+Registrieren Sie bei jedem Provider OIDC_CALLBACK_URL exakt, fordern Sie openid profile email an und verwenden Sie
+Authorization Code mit S256 PKCE und asymmetrischer Signatur. Speichern Sie Issuer, Client-ID, Client-Geheimnis, Scopes
+und Gruppen-Claim unter Einstellungen → Authentifizierung und führen Sie Verbindung prüfen aus. Erfolgreiche Discovery
+prüft keine Gruppen-Claims eines Benutzers.
+
+Testen Sie getrennte Benutzer für SYSTEM_ADMIN, MANAGER und VIEWER sowie einen nicht zugeordneten Benutzer, der bei
+deaktivierter Viewer-Freigabe abgewiesen werden muss. Prüfen Sie bei Fehlern die exakte Gruppenschreibweise,
+Keycloak-Pfadeinstellungen, Entra-Objekt-IDs und den namespaced Auth0-Claim im ID-Token. Behalten Sie einen lokalen
+Administrator zur Wiederherstellung. OIDC-Gruppen vergeben nur globale Rollen; Repository-Zugriff benötigt eigene
+Repovio-Zuweisungen. Konfigurieren Sie jeweils nur einen Identitätsanbieter.
 
 <a id="oidc-api-contract"></a>
 

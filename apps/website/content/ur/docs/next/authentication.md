@@ -49,10 +49,9 @@ OIDC_CALLBACK_URL=https://repovio.example.com/api/v1/auth/oidc/callback
 
 ### گروپس، کردار اور شناخت
 
-گروپ کا دعوی ایک عین دعوی کا نام یا ڈاٹ سے الگ کردہ راستہ جیسا کہ `realm_access.groups` ہو سکتا ہے۔ تین Repovio کرداروں
-کے لیے قطعی، کیس کے لحاظ سے حساس گروپ اقدار کو ترتیب دیں۔ اگر کئی گروپس آپس میں ملتے ہیں، تو Repovio `SYSTEM_ADMIN`، پھر
-`MANAGER`، پھر `VIEWER` لاگو ہوتا ہے۔ غیر مماثل، خراب، گمشدہ، یا حد سے زیادہ بڑے گروپ کے دعووں کو مسترد کر دیا جاتا ہے
-جب تک کہ **غیر مماثل صارفین کو بطور ناظر کی اجازت دیں** واضح طور پر فعال نہ ہو۔
+Group claim عین نام یا `realm_access.groups` جیسا dot-separated path ہو سکتا ہے۔ حروف کی بڑی چھوٹی صورت کے مطابق درست
+اقدار دیں۔ کئی گروپ ملیں تو ترجیح `SYSTEM_ADMIN`، پھر `MANAGER`، پھر `VIEWER` ہے۔ Missing یا unmatched گروپ مسترد ہوتے
+ہیں، جب تک unmatched-viewer واضح طور پر فعال نہ ہو۔ Malformed claims اور group-overage ہمیشہ مسترد ہوتے ہیں۔
 
 ایک OIDC اکاؤنٹ صرف تصدیق شدہ جاری کنندہ اور سبجیکٹ جوڑی کے ذریعے منسلک ہوتا ہے۔ Repovio کبھی بھی کسی مقامی اکاؤنٹ سے
 OIDC لاگ ان کو ای میل ایڈریس یا صارف نام کے ذریعے لنک نہیں کرتا ہے۔ پہلے اور آخری نام ہر کامیاب لاگ ان پر تصدیق شدہ
@@ -67,6 +66,8 @@ OIDC لاگ ان کو ای میل ایڈریس یا صارف نام کے ذری�
 
 ### فراہم کنندگان کی مثالیں۔
 
+فراہم کنندہ گائیڈز: [Keycloak](#oidc-keycloak) · [Microsoft Entra ID](#oidc-entra-id) · [Auth0](#oidc-auth0)
+
 Authentik کے لیے، اجازت کوڈ کے بہاؤ کے ساتھ ایک OAuth2/OpenID فراہم کنندہ بنائیں، اوپر دی گئی عین مطابق کال بیک URL، اور
 `openid`، `profile`، اور `email` اسکوپس۔ اسکوپ میپنگ شامل کریں جو گروپ کے ناموں کی ایک صف کے طور پر منتخب کردہ گروپ کلیم
 کو واپس کرتا ہے، فراہم کنندہ کو کسی ایپلیکیشن کے ساتھ منسلک کریں، پھر ایپلیکیشن کے جاری کنندہ، کلائنٹ ID، اور کلائنٹ کے
@@ -75,6 +76,111 @@ Authentik کے لیے، اجازت کوڈ کے بہاؤ کے ساتھ ایک OAu
 دوسرے معیارات کے مطابق فراہم کنندہ کے لیے، اتھارٹی کوڈ فلو کو فعال کریں، S256 PKCE کی ضرورت ہے، درست کال بیک یو آر ایل
 کو رجسٹر کریں، اور ID ٹوکن یا UserInfo کے جواب میں ایک مستحکم `sub` کے علاوہ کنفیگر کردہ گروپ کلیم شامل کریں۔ Repovio
 صرف غیر متناسب ID-ٹوکن دستخطوں کو قبول کرتا ہے اور غیر دستخط شدہ اور HMAC کے دستخط شدہ ٹوکنز کو مسترد کرتا ہے۔
+
+<a id="oidc-keycloak"></a>
+
+#### Keycloak
+
+Keycloak انتظامی کنسول میں repovio realm اور repovio نام کا OpenID Connect کلائنٹ بنائیں۔ Client authentication اور
+Standard flow فعال کریں؛ Implicit flow اور Direct access grants بند کریں۔ نیچے والا عین callback، Valid redirect URIs
+میں درج کریں، S256 لازم کریں اور RS256 برقرار رکھیں۔ Credentials سے client secret نقل کریں۔
+
+کلائنٹ کے dedicated scope میں Group Membership mapper شامل کریں: Token Claim Name groups، Full group path بند اور Add to
+ID token فعال۔ profile اور email کو default scopes بنائیں۔ repovio-admins، repovio-managers اور repovio-viewers بنائیں،
+صارفین مقرر کریں اور مکمل گروپ نام متعلقہ Repovio کرداروں سے ملائیں۔ Realm کردار گروپ کی رکنیت نہیں ہیں۔
+
+```text
+Issuer: https://auth.example.com/realms/repovio
+Discovery: https://auth.example.com/realms/repovio/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Client ID: repovio
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+حوالے: [Keycloak](https://www.keycloak.org/docs/latest/server_admin/index.html#_oidc_clients)
+
+<a id="oidc-entra-id"></a>
+
+#### Microsoft Entra ID
+
+Entra ID → App registrations میں single-tenant ایپ رجسٹر کریں، Web platform اور نیچے والا عین callback شامل کریں؛
+implicit token issuance فعال نہ کریں۔ Application (client) ID اور Directory (tenant) ID نقل کریں۔ Client secret بنا کر
+Value نقل کریں، secret ID نہیں۔ v2 issuer میں tenant ID استعمال کریں، common یا organizations نہیں۔
+
+Token configuration میں حفاظتی گروپوں کے groups claim کو ID tokens میں شامل کریں اور Group ID منتخب کریں۔ تین گروپ بنا
+کر صارفین مقرر کریں اور group object IDs کو SYSTEM_ADMIN، MANAGER اور VIEWER سے ملائیں۔ Display names، GUID سے مطابقت
+نہیں رکھتے۔ Assigned-group filtering کے لیے مناسب Entra لائسنس درکار ہو سکتا ہے۔ S256 PKCE اور غیر متناسب دستخط استعمال
+کریں؛ مدت ختم ہونے سے پہلے secret بدلیں۔
+
+Repovio گروپوں کی حد تجاوز کرنے والے markers مسترد کرتا ہے، چاہے unmatched-viewer رسائی فعال ہو۔ یہ بیرونی claim sources
+یا Microsoft Graph سے معلومات نہیں لیتا۔ جاری رکنیتیں کم کریں یا معاون group filtering ترتیب دیں؛ Graph permissions دینا
+حل نہیں ہے۔
+
+```text
+Issuer: https://login.microsoftonline.com/TENANT_ID/v2.0
+Discovery: https://login.microsoftonline.com/TENANT_ID/v2.0/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: groups
+SYSTEM_ADMIN: ADMIN_GROUP_OBJECT_ID
+MANAGER: MANAGER_GROUP_OBJECT_ID
+VIEWER: VIEWER_GROUP_OBJECT_ID
+```
+
+حوالے:
+[Microsoft Entra ID](https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles)
+
+<a id="oidc-auth0"></a>
+
+#### Auth0
+
+Regular Web Application بنائیں، Allowed Callback URLs میں عین callback درج کریں، Authorization Code کے ساتھ S256 PKCE
+استعمال کریں اور RS256 منتخب کریں۔ Token Endpoint Authentication Method کو Basic کریں۔ Client ID اور secret نقل کریں۔
+منتخب tenant یا custom domain کی discovery سے issuer لیں اور آخری slash برقرار رکھیں؛ domains نہ ملائیں۔
+
+نیچے کی مثال سے Login / Post Login Action بنائیں، REPLACE_WITH_REPOVIO_CLIENT_ID بدلیں، deploy کرکے Login flow میں شامل
+کریں۔ منتظم ہر صارف کا app_metadata.repovio_groups، repovio-admins، repovio-managers یا repovio-viewers والی array
+بنائے۔ صارف کے قابلِ ترمیم user_metadata سے اجازت مت دیں۔ Auth0 یہ گروپ خود جاری نہیں کرتا؛ صرف access token کا claim
+کافی نہیں۔ Repovio میں مکمل namespaced claim نام دیں اور تینوں اقدار متعلقہ کرداروں سے ملائیں۔
+
+```text
+Issuer: https://YOUR_TENANT.REGION.auth0.com/
+Discovery: https://YOUR_TENANT.REGION.auth0.com/.well-known/openid-configuration
+Redirect URI: https://repovio.example.com/api/v1/auth/oidc/callback
+Scopes: openid profile email
+Groups claim: https://repovio.example.com/groups
+SYSTEM_ADMIN: repovio-admins
+MANAGER: repovio-managers
+VIEWER: repovio-viewers
+```
+
+```javascript
+/** Add administratively managed Repovio groups to this application's ID token. */
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.client.client_id !== 'REPLACE_WITH_REPOVIO_CLIENT_ID') return;
+  const groups = event.user.app_metadata?.repovio_groups;
+  api.idToken.setCustomClaim('https://repovio.example.com/groups', Array.isArray(groups) ? groups : []);
+};
+```
+
+حوالے: [Auth0](https://auth0.com/docs/secure/tokens/json-web-tokens/create-custom-claims)
+
+<a id="verify-oidc-providers"></a>
+
+#### تصدیق اور خرابیوں کی تشخیص
+
+ہر فراہم کنندہ میں عین OIDC_CALLBACK_URL رجسٹر کریں، openid profile email طلب کریں اور Authorization Code کے ساتھ S256
+PKCE اور غیر متناسب دستخط استعمال کریں۔ ترتیبات → توثیق میں issuer، client ID، secret، scopes اور group claim محفوظ کرکے
+رابطہ جانچیں۔ Discovery صارف کے گروپوں کی تصدیق نہیں کرتی۔
+
+الگ صارفین سے SYSTEM_ADMIN، MANAGER، VIEWER اور غیر مقرر صارف آزمائیں؛ unmatched-viewer بند ہو تو آخری صارف مسترد ہونا
+چاہیے۔ گروپ کے عین نام، Keycloak paths، Entra object IDs اور Auth0 کا namespaced ID-token claim دیکھیں۔ بحالی کے لیے
+مقامی منتظم رکھیں۔ OIDC گروپ صرف عالمی کردار دیتے ہیں؛ repository access کے لیے الگ Repovio اجازتیں درکار ہیں۔ ایک وقت
+میں صرف ایک فراہم کنندہ ترتیب دیں۔
 
 <a id="oidc-api-contract"></a>
 

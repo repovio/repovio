@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-09
 
-**Status**: Approved; implementation awaiting task commits
+**Status**: Implemented and verified; task commits recorded in issue #61
 
 **Issue**: [#61](https://github.com/repovio/repovio/issues/61)
 

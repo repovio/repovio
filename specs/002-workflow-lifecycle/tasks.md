@@ -28,8 +28,8 @@ track validated task commits, not the earlier editing chronology.
 
 ## Phase 5: Documentation and Verification
 
-- [ ] T007 Document lifecycle and rollout in GLOSSARY.md and the current handbook; include scoped .changeset notes.
-- [ ] T008 Verify migration preservation and affected checks; record task commits and keep graphify-out/graph.json aligned.
+- [x] T007 Document lifecycle and rollout in GLOSSARY.md and the current handbook; include scoped .changeset notes.
+- [x] T008 Verify migration preservation and affected checks; record task commits and keep graphify-out/graph.json aligned.
 
 ## Dependencies and Execution Order
 
@@ -57,3 +57,19 @@ because its code was edited or tested before issue #61 was created.
 | T004 | `466aa4d` | Staged query/counter tests, PostgreSQL authorization integration, and API typecheck passed.  |
 | T005 | `a381e10` | Staged contract tests, API typecheck/build, and deterministic offline OpenAPI export passed. |
 | T006 | `1033138` | 47 web unit tests, 5 Chromium scenarios, and web typecheck passed.                           |
+| T007 | `a301b09` | Handbook documentation checks, canonical formatting, and diff checks passed.                 |
+
+## Final Validation (T008)
+
+- All five workspace test targets passed; API coverage includes 678 tests, web 47, and shared schemas 15.
+- All five lint targets and five typecheck targets passed; all four build targets passed.
+- Five Chromium scenarios passed, including English/German lifecycle badges, check-time tooltips, and responsive tables.
+- Task checks passed before their commits and pushes; T001-T005 also used isolated staged-source snapshots.
+- T001 validated the additive schema and clean migration on a task-created PostgreSQL 18 database. The earlier upgrade
+  check preserved FAILED run 42027893756, its duration, and the new UNKNOWN/null lifecycle defaults.
+- T004 PostgreSQL checks cover current filtering, pagination, reactivation, historical metrics, and repository isolation.
+- T005 verified DTO/API/MCP projections and deterministic offline OpenAPI export from its staged build.
+- Canonical formatting, documentation coverage, Spec Kit prerequisites, diff checks, and the staged Graphify hook passed.
+- T001-T007 each contain exactly one focused repovio Changeset; T008 records verification without an empty code commit.
+- The final verification commit is linked from issue #61; its own hash is not embedded in this file.
+- No merge, release, deployment, or production migration was performed.

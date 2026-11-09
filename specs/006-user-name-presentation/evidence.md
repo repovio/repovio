@@ -14,3 +14,5 @@
 - Fixture matrix: full/partial/null/blank/padded/Unicode/duplicate/long names, older responses, later pages, denied Users.
 
 ## Task Commits and Validation
+
+- T001: `3d48a22` — record user identity validation baseline; focused verification passed before commit.

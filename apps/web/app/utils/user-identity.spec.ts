@@ -19,3 +19,16 @@ describe('user identity presentation', /** Groups scenarios for user identity pr
     expect(getUserInitials(user)).toBe('RM');
   });
 });
+
+for (const [firstName, lastName, expected] of [
+  [' Vera ', ' Viewer ', 'Vera Viewer (@viewer)'],
+  ['Vera', null, 'Vera (@viewer)'],
+  [null, 'Viewer', 'Viewer (@viewer)'],
+  ['  ', '\t', 'viewer'],
+  ['Jörg', 'Wälde', 'Jörg Wälde (@viewer)'],
+  ['viewer', null, 'viewer'],
+] as const) {
+  it(`formats identity ${expected}`, /** Verifies complete, partial and whitespace-normalized names. */ () => {
+    expect(getUserIdentityLabel({ firstName, lastName, username: 'viewer' })).toBe(expected);
+  });
+}

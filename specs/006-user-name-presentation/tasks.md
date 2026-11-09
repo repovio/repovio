@@ -30,7 +30,7 @@ same task. Do not create separate incomplete test-only commits.
 
 **Purpose**: Verify implementation prerequisites without creating new infrastructure.
 
-- [ ] T001 Recheck the approved issue/commit/implementation permissions and selected worktree; verify Node.js 26.13.0,
+- [x] T001 Recheck the approved issue/commit/implementation permissions and selected worktree; verify Node.js 26.13.0,
       pnpm 11.28.9, existing local test/database setup, and baseline affected checks; record baseline and synthetic fixture
       strategy in `specs/006-user-name-presentation/evidence.md`, using `quickstart.md` for the required commands.
 

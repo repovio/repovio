@@ -7,6 +7,9 @@ model Workflow {
   name               String       @db.VarChar(1024)
   path               String?      @db.VarChar(2048)
   kind               WorkflowKind @default(STANDARD)
+  lifecycleState     WorkflowLifecycleState @default(UNKNOWN)
+  lifecycleCheckedAt DateTime?
+  lifecycleRawState  String? @db.VarChar(1024)
   lastSeenAt         DateTime
 
   repositoryId String        @db.Uuid

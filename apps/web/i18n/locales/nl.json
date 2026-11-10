@@ -554,7 +554,8 @@
     "reauthorize": "Opnieuw autoriseren",
     "reauthorizationRequired": "Opnieuw autoriseren vereist",
     "oauthCancelled": "GitLab-autorisatie geannuleerd. Bestaande verbinding behouden.",
-    "oauthUnavailable": "Configureer GitLab OAuth in de API-omgeving om deze verbinding te autoriseren."
+    "oauthUnavailable": "Configureer GitLab OAuth in de API-omgeving om deze verbinding te autoriseren.",
+    "actionsFor": "Acties voor {name}"
   },
   "querrykit": {
     "table": {
@@ -1236,6 +1237,11 @@
       "GITLAB": "Open Settings > Webhooks van de groep. Gebruik de callback-URL en hetzelfde ondertekeningsgeheim of geheime token, afhankelijk van je GitLab-versie. Selecteer naar behoefte pipeline-, taak-, issue- en merge-requestgebeurtenissen. Alle gevolgde projecten in deze groep en de subgroepen vallen hieronder."
     },
     "rotationConfirm": "Ik werk de organisatie- of groepswebhook bij de provider bij met het nieuwe geheim.",
-    "lastDelivery": "Laatst geaccepteerde bezorging: {value}"
+    "lastDelivery": "Laatst geaccepteerde bezorging: {value}",
+    "unsavedCallback": "Sla deze configuratie op voordat de provider gebeurtenissen naar deze URL kan sturen.",
+    "loadingCallback": "Callback-URL laden…",
+    "draftError": "De callback-URL kon niet worden geladen. Probeer opnieuw.",
+    "retryDraft": "Callback-URL laden",
+    "savedConfigurations": "Opgeslagen configuraties"
   }
 }

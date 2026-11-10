@@ -554,7 +554,8 @@
     "reauthorize": "Autoryzuj ponownie",
     "reauthorizationRequired": "Wymagana ponowna autoryzacja",
     "oauthCancelled": "Anulowano autoryzację GitLab. Istniejące połączenie zostało zachowane.",
-    "oauthUnavailable": "Skonfiguruj GitLab OAuth w środowisku API, aby autoryzować to połączenie."
+    "oauthUnavailable": "Skonfiguruj GitLab OAuth w środowisku API, aby autoryzować to połączenie.",
+    "actionsFor": "Działania dla {name}"
   },
   "querrykit": {
     "table": {
@@ -1236,6 +1237,11 @@
       "GITLAB": "Otwórz Settings > Webhooks grupy. Użyj adresu URL wywołania zwrotnego i tego samego sekretu podpisującego lub tajnego tokenu, zależnie od wersji GitLab. Wybierz odpowiednie zdarzenia potoków, zadań, zgłoszeń i merge requestów. Konfiguracja obejmuje wszystkie śledzone projekty w tej grupie i jej podgrupach."
     },
     "rotationConfirm": "Zaktualizuję webhook organizacji lub grupy u dostawcy, używając nowego sekretu.",
-    "lastDelivery": "Ostatnie zaakceptowane dostarczenie: {value}"
+    "lastDelivery": "Ostatnie zaakceptowane dostarczenie: {value}",
+    "unsavedCallback": "Zapisz konfigurację, zanim dostawca będzie mógł wysyłać zdarzenia na ten adres URL.",
+    "loadingCallback": "Ładowanie adresu URL wywołania zwrotnego…",
+    "draftError": "Nie udało się załadować adresu URL. Spróbuj ponownie.",
+    "retryDraft": "Załaduj adres URL",
+    "savedConfigurations": "Zapisane konfiguracje"
   }
 }

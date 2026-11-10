@@ -107,3 +107,15 @@ push-service acceptance, native OS notification display, and OS click navigation
 mocks API responses and one device-inspection/permission boundary; it does not establish live Web Push delivery or server
 authorization enforcement. Existing server guards and permission restrictions were retained. These are explicit evidence
 limits, not claims of live verification. No external environment is required to prove the scoped state/layout corrections.
+
+## Approved merge preparation (2026-11-10)
+
+- User approved merging PR #93 after successful current-head CI and required review/branch checks.
+- The original head `4d546b4` passed both CI and CodeQL workflows. Main advanced to `7349aae` through PR #92,
+  producing a hosted graph merge conflict. The configured local union driver merged it without manual conflict edits.
+- Merged current main into the feature branch without rewriting completed task commits. Verified every changed locale
+  leaf from both branches survived; no unmerged paths or absolute graph source paths remain.
+- Revalidation on the combined tree passed: 141 web tests in 26 files, web lint/typecheck, production build,
+  26 notification browser cases against that build, canonical formatting, documentation coverage, and whitespace checks.
+- This integration commit imports already-merged base work and records verification; it adds no package Changeset.
+  Fresh CI must pass for the updated head before the approved squash merge.

@@ -20,3 +20,8 @@ body:json {
     "webhookSecret": "{{webhookSecret}}"
   }
 }
+
+docs {
+  Optional: include the UUID returned by the draft endpoint as `id` to preserve a previewed callback URL.
+  Without `id`, creation retains server-generated identity. `webhookSecret` must remain a secret variable.
+}

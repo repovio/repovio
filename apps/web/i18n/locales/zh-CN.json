@@ -554,7 +554,8 @@
     "reauthorize": "重新授权",
     "reauthorizationRequired": "需要重新授权",
     "oauthCancelled": "已取消 GitLab 授权。现有连接已保留。",
-    "oauthUnavailable": "请在 API 环境中配置 GitLab OAuth，以授权此连接。"
+    "oauthUnavailable": "请在 API 环境中配置 GitLab OAuth，以授权此连接。",
+    "actionsFor": "{name} 的操作"
   },
   "querrykit": {
     "table": {
@@ -1236,6 +1237,11 @@
       "GITLAB": "打开群组的 Settings > Webhooks。根据您的 GitLab 版本，使用此回调 URL 和相同的签名密钥或密钥令牌。按需选择流水线、作业、议题和合并请求事件。此群组及其子群组中所有已跟踪的项目均在覆盖范围内。"
     },
     "rotationConfirm": "我会使用新密钥更新提供商上的组织或群组 Webhook。",
-    "lastDelivery": "上次接受的投递：{value}"
+    "lastDelivery": "上次接受的投递：{value}",
+    "unsavedCallback": "保存此配置后，提供商才能向此 URL 发送事件。",
+    "loadingCallback": "正在加载回调 URL…",
+    "draftError": "无法加载回调 URL，请重试。",
+    "retryDraft": "加载回调 URL",
+    "savedConfigurations": "已保存的配置"
   }
 }

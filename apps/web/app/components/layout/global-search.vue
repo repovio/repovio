@@ -10,7 +10,7 @@
     :aria-expanded="open"
     :aria-label="$t('commandPalette.open')"
     :label="$t('commandPalette.searchPlaceholder')"
-    :ui="{ label: 'min-w-0 flex-1 truncate text-left text-muted' }"
+    :ui="{ label: 'min-w-0 flex-1 truncate text-start text-muted' }"
     @click="show"
   >
     <template #trailing>

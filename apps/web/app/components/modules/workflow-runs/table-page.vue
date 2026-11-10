@@ -71,22 +71,28 @@
       :empty="empty"
       :loading="loading"
       :ui="{
-        th: 'first:pl-6 whitespace-nowrap bg-neutral-100 data-[pinned=right]:bg-neutral-100 dark:bg-neutral-950/20 dark:data-[pinned=right]:bg-neutral-950',
-        td: 'first:pl-6 whitespace-nowrap',
+        th: 'first:ps-6 whitespace-nowrap bg-neutral-100 data-[pinned=right]:bg-neutral-100 dark:bg-neutral-950/20 dark:data-[pinned=right]:bg-neutral-950',
+        td: 'first:ps-6 whitespace-nowrap',
       }"
     >
       <template #displayTitle-cell="{ row }">
-        <span class="font-medium">{{ row.original.displayTitle }}</span>
+        <bdi class="font-medium" dir="auto">
+          {{ row.original.displayTitle }}
+        </bdi>
       </template>
       <template #workflowName-cell="{ row }">
-        <span class="text-sm text-muted">{{ row.original.workflowName }}</span>
+        <bdi class="text-sm text-muted" dir="auto">
+          {{ row.original.workflowName }}
+        </bdi>
         <ModulesWorkflowRunsLifecycleBadge
           :checked-at="row.original.workflowLifecycleCheckedAt"
           :state="row.original.workflowLifecycleState"
         />
       </template>
       <template #repositoryName-cell="{ row }">
-        <span>{{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}</span>
+        <bdi dir="ltr">
+          {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
+        </bdi>
       </template>
       <template #providerType-cell="{ row }">
         <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />

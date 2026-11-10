@@ -38,7 +38,7 @@ corepack pnpm --dir apps/web dev
 ```
 
 ```sh
-corepack pnpm --dir apps/web exec playwright test tests/e2e/localization.spec.ts tests/e2e/auth-preferences.spec.ts
+corepack pnpm --dir apps/web exec playwright test tests/e2e/localization.spec.ts tests/e2e/auth-preferences.spec.ts tests/e2e/localization-rtl.spec.ts
 ```
 
 Existing Playwright configuration uses `http://[::1]:3000`; set `PLAYWRIGHT_BASE_URL` if the local server differs.

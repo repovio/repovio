@@ -20,7 +20,7 @@
       {{ t('systemStatus.runningWorkflows', { count: snapshot.runningWorkflowCount }) }}
     </NuxtLink>
 
-    <span class="ml-auto flex min-w-0 items-center gap-2">
+    <span class="ms-auto flex min-w-0 items-center gap-2">
       <UIcon
         v-if="snapshot.activity"
         class="size-3.5 shrink-0 animate-spin text-primary"

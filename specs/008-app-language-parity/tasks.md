@@ -122,8 +122,8 @@ Arabic/Urdu layout acceptance remains mandatory P1 work; this checkpoint does no
 **Goal**: Arabic/Urdu layouts and mixed technical text remain usable; switching to English restores LTR everywhere.
 **Independent Test**: Exercise Arabic and Urdu auth/shell/forms/tables/menus/dialogs, then switch to English at both widths.
 
-- [ ] T005 [US2] Extend `apps/web/tests/e2e/localization.spec.ts` and
-      `apps/web/tests/e2e/auth-preferences.spec.ts` with Arabic/Urdu direction, overlay, keyboard, and mixed-text assertions;
+- [x] T005 [US2] Add focused RTL/visual coverage in `apps/web/tests/e2e/localization-rtl.spec.ts` alongside
+      `apps/web/tests/e2e/{localization,auth-preferences}.spec.ts` with Arabic/Urdu direction, overlay, keyboard, and mixed-text assertions;
       inspect and repair only demonstrated direction defects in `apps/web/app/app.vue`,
       `apps/web/app/components/layout/*.vue`, and affected feature components under `apps/web/app/components/modules/`;
       use logical alignment utilities and scoped bidirectional isolation for URLs, identifiers, and code without rewriting

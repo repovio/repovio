@@ -63,3 +63,20 @@ Implementation and separate per-task commits/pushes approved on 2026-11-10. No m
 - The existing development-only delayed-load scenario remains explicitly assigned to T006; it was not counted as passed
   against production. T002 already established it on dev. No live-provider/server authorization claim follows from fixtures.
 - Focused test ESLint, repository documentation coverage, canonical stable formatting, and whitespace checks passed.
+
+## T005: RTL layout, technical data, and visual acceptance
+
+- T004 committed/pushed as `667eae8` before this task.
+- Failing-first Arabic/Urdu browser tests demonstrated missing technical identifier isolation.
+- Workflow titles/names now use native auto-direction isolation; composite owner/name identifiers remain isolated LTR.
+  Source provider values are unchanged. Logical search alignment, status-bar spacing, and table leading gutters replace
+  the corresponding physical properties, preserving LTR behavior and table-owned horizontal scrolling.
+- Both RTL technical/alignment regressions pass. Twenty-four visual cases cover English, Arabic, Urdu, Simplified Chinese,
+  Hindi, and Bengali at 390px/1440px in light/dark. Actual UI locale switching back to English restores LTR without reload;
+  menus use directional keyboard interaction, and dialog dismissal restores focus.
+- All 26 browser cases passed. The 24 visual cases were recaptured with animations disabled to avoid transition frames.
+  Seventy-two auth/menu, workflow-table, and dialog captures were retained outside Git; six matrix sheets inspected for
+  script glyphs, logical layout, contrast, clipping, and control reachability. No page horizontal overflow or new font
+  dependency was needed. Long tables retain their own accessible horizontal scroll container.
+- Responsive menu accessible names correctly account for the hidden mobile shortcut hint.
+- Web lint/build, focused test lint, repository documentation, canonical formatting, and whitespace checks passed.

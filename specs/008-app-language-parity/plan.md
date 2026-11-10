@@ -4,7 +4,7 @@
 **Date**: 2026-11-10 | **Spec**: [spec.md](spec.md)
 **Input**: `specs/008-app-language-parity/spec.md`
 **Tracking**: [Issue #84](https://github.com/repovio/repovio/issues/84). Planning, tasks, issue creation, and the
-planning-only commit/push approved on 2026-11-10. Implementation remains separately gated.
+planning-only commit/push approved on 2026-11-10. Implementation and per-task commit/push approved on 2026-11-10.
 
 ## Summary
 
@@ -41,8 +41,7 @@ not a frozen implementation target: use the current English catalog when impleme
 | Delivery gates                            | Pass: planning authorized                   | Pass: issue and planning commit approved; implementation and merge gated |
 
 The constitution requires English/German messages; this feature extends that minimum without changing its governance.
-No constitutional waiver is needed. Issue #84 records this bounded scope. Implementation is not approved; verify issue
-priority before starting it. Do not modify constitution, templates, or unrelated guidelines.
+No constitutional waiver is needed. Issue #84 records this bounded scope. Implementation and task commits are approved; merge remains gated. Do not modify constitution, templates, or unrelated guidelines.
 
 ## Project Structure
 
@@ -60,7 +59,7 @@ specs/008-app-language-parity/
 └── contracts/localization.md
 ```
 
-[tasks.md](tasks.md) records the separately approved task-generation phase. No implementation has started.
+[tasks.md](tasks.md) records the separately approved task-generation phase. Implementation is in progress with per-task verification and commits.
 
 ### Source Code (repository root)
 

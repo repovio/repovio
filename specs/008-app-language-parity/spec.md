@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/84-app-language-parity`
 **Feature Directory**: `specs/008-app-language-parity`
 **Created**: 2026-11-10
-**Status**: Planning, tasks, issue creation, and planning commit/push approved; implementation not authorized
+**Status**: Planning, tasks, issue creation, and planning commit/push approved; implementation and per-task commit/push approved
 **Issue**: [#84](https://github.com/repovio/repovio/issues/84)
 **Input**: User description: "die app sollte in den gleichen sprachen übersetzt sein wie die website"
 
@@ -125,5 +125,4 @@ As a returning user, I retain my language through reloads and navigation with pr
 - English is the canonical source for translation completeness; legitimate unchanged product names and technical terms
   are allowed and must not be mistaken for untranslated prose.
 - No new provider request, database migration, translation service, dependency upgrade, release, or deployment is needed.
-- Planning, task generation, issue creation, and the planning-only commit/push are authorized. Implementation, its commits,
-  and merge remain separate decisions.
+- Planning, task generation, issue creation, and the planning-only commit/push are authorized. Implementation and per-task commits are also approved; merge remains separately gated.

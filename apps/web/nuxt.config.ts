@@ -1,5 +1,6 @@
 import { version as appVersion } from '../../package.json';
 import { brandingDefaults, brandingFileDefaults } from './shared/branding';
+import { appLocales } from './shared/locales';
 
 /** Nuxt configuration for the Repovio single-page dashboard. */
 export default defineNuxtConfig({
@@ -72,16 +73,10 @@ export default defineNuxtConfig({
       useCookie: true,
     },
     defaultLocale: 'en',
-    locales: [
-      { code: 'en', file: 'en.json', name: 'English' },
-      { code: 'de', file: 'de.json', name: 'Deutsch' },
-      { code: 'es', file: 'es.json', name: 'Español' },
-      { code: 'fr', file: 'fr.json', name: 'Français' },
-      { code: 'it', file: 'it.json', name: 'Italiano' },
-      { code: 'nl', file: 'nl.json', name: 'Nederlands' },
-      { code: 'pl', file: 'pl.json', name: 'Polski' },
-      { code: 'pt', file: 'pt.json', name: 'Português' },
-    ],
+    locales: appLocales.map(
+      /** Register catalog loading and document metadata without exposing presentation-only fields. */
+      ({ code, file, name, language, dir }) => ({ code, file, name, language, dir }),
+    ),
     strategy: 'no_prefix',
     vueI18n: './i18n.config.ts',
   },

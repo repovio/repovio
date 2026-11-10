@@ -3,9 +3,9 @@
 **Input**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md), [data-model.md](data-model.md),
 [localization contract](contracts/localization.md), and [validation guide](quickstart.md).
 **Approval**: Planning, task generation, issue creation, and planning-only commit/push approved on 2026-11-10.
-Product implementation remains unapproved.
+Implementation and per-task commit/push approved on 2026-11-10.
 **Tracking**: [Issue #84](https://github.com/repovio/repovio/issues/84), branch `codex/84-app-language-parity`, reusing the
-current Codex worktree. Planning commit will be recorded in the issue after push.
+current Codex worktree. Planning commit `7910243` is pushed and recorded in the issue.
 **Tests**: Required by the specification and repository rules; included with each behavior increment.
 **Organization**: Eight tasks, grouped by user story; all remain unchecked until approved work is verified and recorded.
 
@@ -31,7 +31,7 @@ current Codex worktree. Planning commit will be recorded in the issue after push
 
 **Purpose**: Establish the approved feature context and a usable baseline before any product changes.
 
-- [ ] T001 Verify `specs/008-app-language-parity/{spec,plan,tasks}.md` resolve through `.specify/feature.json`; after separate
+- [x] T001 Verify `specs/008-app-language-parity/{spec,plan,tasks}.md` resolve through `.specify/feature.json`; after separate
       issue/planning-commit and implementation approvals, confirm the selected task branch, issue checklist, current base,
       existing worktree, toolchain pins, and actual test/CI commands; inspect `apps/web/package.json`,
       `docs/coding-guidelines.md`, and existing localization tests; run the smallest locale/date-time baseline checks and
@@ -44,7 +44,7 @@ Do not change product code, install new dependencies, or create another worktree
 
 **Purpose**: Establish reusable locale metadata and UI integration while preserving the existing eight languages.
 
-- [ ] T002 Create the typed app-owned registry in `apps/web/shared/locales.ts` for the existing eight locales; consume it
+- [x] T002 Create the typed app-owned registry in `apps/web/shared/locales.ts` for the existing eight locales; consume it
       from `apps/web/nuxt.config.ts` and `apps/web/app/composables/app/locales.ts`; add the explicit Nuxt UI locale resolver
       in `apps/web/app/utils/locales.ts` and bind it with reactive document language/direction in `apps/web/app/app.vue`;
       extend `apps/web/app/i18n/locales.spec.ts` for metadata, UI-export, and current asset coverage; preserve all existing

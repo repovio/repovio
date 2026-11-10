@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import { appLocales, getAppLocale } from '../../shared/locales';
+import { getUiLocale } from '../utils/locales';
+
 const localeCodes = ['de', 'es', 'fr', 'it', 'nl', 'pl', 'pt'] as const;
 
 /** Return all dot-separated leaf paths in a locale message tree. */
@@ -31,6 +34,37 @@ describe('locale messages', /** Groups scenarios for locale messages. */ () => {
 
     for (const localeCode of localeCodes) {
       expect(messageKeys(loadLocale(localeCode)).sort(), localeCode).toEqual(englishKeys);
+    }
+  });
+});
+
+describe('locale metadata', /** Validate registration, UI mapping, and local assets together. */ () => {
+  it('preserves the original language identifiers and regional flags', /** Protect saved preferences and native labels. */ () => {
+    expect(appLocales.map(/** Read each configured identifier. */ (entry) => entry.code)).toEqual([
+      'en',
+      'de',
+      'es',
+      'fr',
+      'it',
+      'nl',
+      'pl',
+      'pt',
+    ]);
+    expect(getAppLocale('en').flagCountry).toBe('gb');
+    expect(getAppLocale('pt').flagCountry).toBe('pt');
+    expect(getAppLocale('unsupported').code).toBe('en');
+  });
+
+  it('resolves every UI locale and its licensed local flag', /** Check integration inputs before Nuxt builds. */ () => {
+    for (const entry of appLocales) {
+      expect(entry.language).toMatch(/^[a-z]{2}(?:-[A-Z]{2})?$/);
+      expect(entry.name.trim()).not.toBe('');
+      expect(entry.file).toBe(`${entry.code}.json`);
+      expect(entry.dir).toBe('ltr');
+      expect(getUiLocale(entry.code).code).toBe(entry.ui.replace('_', '-'));
+      expect(readFileSync(new URL(`../../public/flags/${entry.flagCountry}.svg`, import.meta.url), 'utf8')).toContain(
+        '<svg',
+      );
     }
   });
 });

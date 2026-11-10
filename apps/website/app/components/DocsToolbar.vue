@@ -1,5 +1,8 @@
 <template>
-  <div class="docs-toolbar sticky top-20 z-30 border-b border-default bg-default/95 backdrop-blur-xl">
+  <div
+    data-testid="docs-toolbar"
+    class="docs-toolbar sticky top-20 z-30 border-b border-default bg-default/95 backdrop-blur-xl"
+  >
     <div class="page-width flex min-h-10 flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <UNavigationMenu
         variant="link"
@@ -15,14 +18,15 @@
           linkLabel: 'whitespace-nowrap',
         }"
       />
-      <DocsVersionSwitch class="ms-auto" />
+      <DocsVersionSwitch v-if="showVersion" class="ms-auto" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ section: string }>();
+withDefaults(defineProps<{ section: string; showVersion?: boolean }>(), { showVersion: true });
 const { t } = useI18n();
+const localePath = useLocalePath();
 const { entries } = useDocs();
 const items = computed(
   /** Return `[ { label: t('getStarted'), icon: 'i-lucide-rocket', to: entries.value.find((entry) => entry.tab === 'get-started')?.to, section: 'get-start` when invoked. */ () => [
@@ -53,6 +57,12 @@ const items = computed(
           },
         ]
       : []),
+    {
+      label: t('releaseNotes'),
+      icon: 'i-lucide-scroll-text',
+      to: localePath('/docs/release-notes'),
+      section: 'release-notes',
+    },
   ],
 );
 </script>

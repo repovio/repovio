@@ -22,3 +22,14 @@
 - Valid-empty, missing/directory input, invalid headings, duplicate versions, and numeric semantic order covered in isolated inputs.
 - Website lint, typecheck, production build, and repository documentation check passed (687 source files).
 - Production build completed in 38.7 seconds. Docker image `repovio-website:83` built successfully; existing unprivileged/read-only runtime checks passed.
+
+## T003 fourth tab and public page
+
+- Commit for T002: `057d980` (pushed); T001/T002 synchronized in task checklist and issue.
+- Four production browser tests passed: current and archived EN/DE navigation, active tab, direct reload, retained
+  handbook selectors, complete migration paragraph, no duplicate source H1, and zero external release-service requests.
+- Sixteen focused unit checks passed, including real interface keys for all 13 supported locales.
+- Website lint/typecheck, repository declaration coverage, and production build passed.
+- Rebuilt Docker image and enhanced read-only/unprivileged runtime checks passed for EN/DE release-history routes.
+- Interactive browser and screenshot inspection confirmed active fourth tab and readable complete Markdown in dark mode.
+- Deliberate empty-source presentation will also be exercised with an isolated fixture during final acceptance.

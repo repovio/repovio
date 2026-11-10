@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "Use local accounts or OpenID Connect for sign-in. Assign roles and repository memberships so each user sees the data their work requires.",
   "product_details_access-control_limit": "Provider OAuth connects repository data; it is separate from user sign-in. Alert access requires management permissions, and system administrators have broader access.",
   "product_details_mcp_useCase": "Ask a compatible client for visible repositories, failed workflows, approval queues, summaries, or trends through a personal MCP token.",
-  "product_details_mcp_limit": "Clients must support custom HTTP authorization headers. MCP OAuth discovery, provider actions, configuration changes, and synchronization triggers are not available."
+  "product_details_mcp_limit": "Clients must support custom HTTP authorization headers. MCP OAuth discovery, provider actions, configuration changes, and synchronization triggers are not available.",
+  "releaseNotes": "Release Notes",
+  "releaseNotesDescription": "Changes across published Repovio application releases.",
+  "releaseNotesEnglish": "Release descriptions are available in English.",
+  "releaseNotesEmpty": "No releases have been published yet.",
+  "releaseNotesVersions": "Releases"
 }

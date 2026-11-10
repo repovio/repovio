@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "Inicia sesión con cuentas locales u OpenID Connect. Asigna roles y membresías de repositorios para limitar los datos visibles.",
   "product_details_access-control_limit": "OAuth del proveedor conecta datos de repositorios y es independiente del inicio de sesión. Las alertas requieren gestión; los administradores tienen mayor acceso.",
   "product_details_mcp_useCase": "Consulta repositorios visibles, fallos, aprobaciones, resúmenes y tendencias con un cliente compatible y un token MCP personal.",
-  "product_details_mcp_limit": "El cliente debe admitir encabezados HTTP de autorización personalizados. No hay descubrimiento OAuth MCP, acciones del proveedor, cambios de configuración ni inicio de sincronizaciones."
+  "product_details_mcp_limit": "El cliente debe admitir encabezados HTTP de autorización personalizados. No hay descubrimiento OAuth MCP, acciones del proveedor, cambios de configuración ni inicio de sincronizaciones.",
+  "releaseNotes": "Notas de la versión",
+  "releaseNotesDescription": "Cambios en las versiones publicadas de la aplicación Repovio.",
+  "releaseNotesEnglish": "Las descripciones de las versiones están disponibles en inglés.",
+  "releaseNotesEmpty": "Todavía no se ha publicado ninguna versión.",
+  "releaseNotesVersions": "Versiones"
 }

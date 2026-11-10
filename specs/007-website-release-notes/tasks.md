@@ -40,7 +40,7 @@ and usable website checks or concrete baseline limitations documented. No new wo
 
 **Purpose**: Make canonical release content available to every story and to production builds.
 
-- [ ] T002 Add the exact root `CHANGELOG.md` source as a dedicated page collection in `apps/website/content.config.ts`,
+- [x] T002 Add the exact root `CHANGELOG.md` source as a dedicated page collection in `apps/website/content.config.ts`,
       resolving `source.cwd` relative to the configuration file; add narrowly scoped build validation in
       `apps/website/scripts/check-release-notes.mjs` and wire it into `apps/website/package.json` development/build paths;
       include that root source and required checker inputs in `apps/website/Dockerfile`; add isolated input fixtures and

@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "ローカルアカウントまたはOpenID Connectでログインします。ロールとリポジトリ所属を割り当て、表示データを制限します。",
   "product_details_access-control_limit": "プロバイダーOAuthはデータ接続用で、ユーザーログインとは別です。アラートには管理権限が必要で、システム管理者は広い範囲にアクセスできます。",
   "product_details_mcp_useCase": "対応クライアントと個人MCPトークンで、表示可能なリポジトリ、失敗、承認待ち、集計、傾向を問い合わせます。",
-  "product_details_mcp_limit": "カスタムHTTP認証ヘッダーが必要です。MCP OAuthディスカバリー、プロバイダー操作、設定変更、同期開始は利用できません。"
+  "product_details_mcp_limit": "カスタムHTTP認証ヘッダーが必要です。MCP OAuthディスカバリー、プロバイダー操作、設定変更、同期開始は利用できません。",
+  "releaseNotes": "リリースノート",
+  "releaseNotesDescription": "公開されたRepovioアプリケーションの各バージョンの変更内容。",
+  "releaseNotesEnglish": "リリースの説明は英語で提供されます。",
+  "releaseNotesEmpty": "リリースはまだ公開されていません。",
+  "releaseNotesVersions": "リリース"
 }

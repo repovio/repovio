@@ -36,3 +36,15 @@ Application/API acceptance results and task commits are recorded below as implem
 - Cross-account UUID collision returns 409 without changing original secret/owner. Existing create without ID still works.
 - Transport inspection corrected the design example: wire JSON is unwrapped; Axios supplies the client response.data.
 - T003 published as cf55ace; T001/T002 evidence and T003 accepted before advancing.
+
+## T005: Pre-save URL and session lifecycle
+
+- Six asynchronous composable tests cover independent load failures/retry, stale responses, late mutations, exact-ID
+  recovery, explicit collision rejection, full recovery pending state and duplicate blocking. All passed.
+- All 135 web tests passed, including locale key/message validation for all 17 catalogs.
+- Seven provider/webhook Playwright scenarios passed, including pre-save clipboard output, create/retry/rotate/remove,
+  English desktop and German mobile, stable canonical hostname, denied clipboard and plaintext reset.
+- Web typecheck, focused ESLint and documentation coverage passed.
+- Browser rerun after source generation passed; do not run Nuxt/schema preparation concurrently with live browser tests
+  because HMR can detach active controls.
+- T004 published as 6b34d36; wire JSON is unwrapped consistently with current API clients.

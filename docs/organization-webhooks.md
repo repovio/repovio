@@ -8,8 +8,10 @@ GitLab group webhooks also cover projects in descendant groups. Repovio never re
 1. Sign in as a System Administrator and open **Provider accounts**.
 2. Open the connection’s three-dot action menu and select **Organization webhooks**. The same menu contains
    Enable/Disable, Delete, and applicable GitLab OAuth actions.
-3. Enter the organization login, or the full GitLab group path such as `acme/platform`. Generate a signing secret.
-4. Save the configuration. Copy its callback URL and signing secret into the provider's organization/group webhook settings.
+3. Copy the displayed callback URL, then enter the organization login or full GitLab group path such as `acme/platform`.
+   Generate a signing secret. The URL is available before saving; preview creates no configuration.
+4. Save the configuration to activate the same callback URL. Copy the URL and signing secret into the provider’s
+   organization/group webhook settings. Unsaved callbacks cannot accept deliveries.
 5. Select the repository events you want to monitor. Send a provider test delivery and check **Last accepted delivery**.
 
 The public callback must be reachable from the provider. Configure Repovio's `PUBLIC_URL` with its public HTTPS origin;

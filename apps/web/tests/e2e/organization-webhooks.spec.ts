@@ -73,14 +73,15 @@ for (const { locale, width } of [
         else if (path.endsWith('/authentication-options')) json = { oauthProviderTypes: [] };
         else if (path === '/api/v1/provider-accounts')
           json = { items: [provider], meta: { itemCount: 1, pageCount: 1 } };
+        else if (path.endsWith('/organization-webhooks/draft')) json = { id: webhookId, callbackUrl: hook.callbackUrl };
         else if (path.includes('/organization-webhooks')) {
-          if (method === 'GET' && firstLoad) {
+          if (method === 'GET' && !path.endsWith('/draft') && firstLoad) {
             firstLoad = false;
             await route.fulfill({ status: 503, json: {} });
             return;
           }
           if (method === 'POST') {
-            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['scope', 'webhookSecret']);
+            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['id', 'scope', 'webhookSecret']);
             expect(route.request().postDataJSON().scope).toBe('acme');
             expect(route.request().postDataJSON().webhookSecret).toHaveLength(64);
             await createPending;
@@ -143,16 +144,16 @@ for (const { locale, width } of [
     });
     await expect(callback).toHaveCount(1);
     await expect(callback).toHaveAttribute('readonly');
-    await expect(callback).toHaveValue('');
+    await expect(callback).toHaveValue(hook.callbackUrl);
     await expect(callback).not.toHaveAttribute('required');
     await expect(
       form.getByRole('button', { name: locale === 'de' ? 'Callback-URL kopieren' : 'Copy callback URL' }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     await expect(
       form.getByText(
         locale === 'de'
-          ? 'Speichere diese Konfiguration, um ihre Callback-URL zu erhalten.'
-          : 'Save this configuration to get its callback URL.',
+          ? 'Speichere diese Konfiguration, bevor der Anbieter Ereignisse an diese URL senden kann.'
+          : 'Save this configuration before the provider can deliver events to this URL.',
       ),
     ).toBeVisible();
     await callback.scrollIntoViewIfNeeded();
@@ -168,7 +169,7 @@ for (const { locale, width } of [
     await add.click();
     await expect(add).toBeDisabled();
     await expect(add.locator('[data-slot="leadingIcon"]')).toBeVisible();
-    await expect(callback).toHaveValue('');
+    await expect(callback).toHaveValue(hook.callbackUrl);
     releaseCreate?.();
     const rotate = dialog.getByRole('button', {
       name: locale === 'de' ? 'Secret wechseln' : 'Rotate secret',
@@ -314,6 +315,7 @@ for (const { locale, width } of [
       callbackUrl: 'https://public.example.test/api/webhooks/organization/55555555-5555-4555-8555-555555555555',
     };
     let configurations = [first, second];
+    let draftCount = 0;
     let failCreate = true;
     let failRotation = true;
     let mutations = 0;
@@ -330,10 +332,19 @@ for (const { locale, width } of [
           await route.fulfill({ json: { oauthProviderTypes: [] } });
         } else if (path === '/api/v1/provider-accounts') {
           await route.fulfill({ json: { items: [provider], meta: { itemCount: 1, pageCount: 1 } } });
+        } else if (path.endsWith('/organization-webhooks/draft')) {
+          const digit = String(5 + draftCount++);
+          const id =
+            draftCount === 1
+              ? created.id
+              : `${digit.repeat(8)}-${digit.repeat(4)}-4${digit.repeat(3)}-8${digit.repeat(3)}-${digit.repeat(12)}`;
+          await route.fulfill({
+            json: { id, callbackUrl: `https://public.example.test/api/webhooks/organization/${id}` },
+          });
         } else if (path.includes('/organization-webhooks')) {
           if (method === 'POST') {
             mutations++;
-            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['scope', 'webhookSecret']);
+            expect(Object.keys(route.request().postDataJSON()).sort()).toEqual(['id', 'scope', 'webhookSecret']);
             expect(route.request().postDataJSON().scope).toBe(created.scope);
             if (failCreate) {
               failCreate = false;
@@ -386,12 +397,17 @@ for (const { locale, width } of [
     const secret = form.locator('input[autocomplete="new-password"]');
     const help = form.getByText(
       locale === 'de'
-        ? 'Speichere diese Konfiguration, um ihre Callback-URL zu erhalten.'
-        : 'Save this configuration to get its callback URL.',
+        ? 'Speichere diese Konfiguration, bevor der Anbieter Ereignisse an diese URL senden kann.'
+        : 'Save this configuration before the provider can deliver events to this URL.',
     );
-    await expect(callback).toHaveValue('');
-    await expect(copy).toBeDisabled();
+    await expect(callback).not.toHaveValue('');
+    await expect(copy).toBeEnabled();
     await expect(help).toBeVisible();
+    await expect(callback).toHaveValue(created.callbackUrl);
+    await copy.click();
+    await expect
+      .poll(/** Verify copying before any configuration save. */ () => copied.at(-1))
+      .toBe(created.callbackUrl);
     await scope.fill(created.scope);
     await secret.fill('synthetic-signing-secret-for-browser-tests');
     const add = form.getByRole('button', {
@@ -400,8 +416,8 @@ for (const { locale, width } of [
     });
     await add.click();
     await expect(dialog.getByRole('alert')).toBeVisible();
-    await expect(callback).toHaveValue('');
-    await expect(copy).toBeDisabled();
+    await expect(callback).not.toHaveValue('');
+    await expect(copy).toBeEnabled();
     await expect(scope).toHaveValue(created.scope);
     await expect(secret).toHaveValue('synthetic-signing-secret-for-browser-tests');
     await add.click();
@@ -413,14 +429,16 @@ for (const { locale, width } of [
     await page.keyboard.press('Tab');
     await expect(copy).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect.poll(/** Observe the actual clipboard side effect. */ () => copied).toEqual([created.callbackUrl]);
+    await expect
+      .poll(/** Observe the actual clipboard side effect. */ () => copied)
+      .toEqual([created.callbackUrl, created.callbackUrl]);
     expect(mutations).toBe(2);
 
     await form
       .getByRole('button', { name: locale === 'de' ? 'Weitere Organisation hinzufügen' : 'Add another organization' })
       .click();
-    await expect(callback).toHaveValue('');
-    await expect(copy).toBeDisabled();
+    await expect(callback).not.toHaveValue('');
+    await expect(copy).toBeEnabled();
     await expect(help).toBeVisible();
     const manageName = locale === 'de' ? 'Webhook verwalten' : 'Manage webhook';
     await dialog
@@ -455,7 +473,7 @@ for (const { locale, width } of [
         exact: true,
       }),
     ).toBeVisible();
-    expect(copied).toHaveLength(3);
+    expect(copied).toHaveLength(4);
     await secret.fill('synthetic-replacement-signing-secret');
     await form.getByRole('checkbox').check();
     const rotate = form.getByRole('button', {
@@ -484,8 +502,8 @@ for (const { locale, width } of [
     await expect(trigger).toBeFocused();
     await trigger.click();
     await page.getByRole('menuitem', { name: title, exact: true }).click();
-    await expect(callback).toHaveValue('');
-    await expect(copy).toBeDisabled();
+    await expect(callback).not.toHaveValue('');
+    await expect(copy).toBeEnabled();
     await expect(help).toBeVisible();
     await dialog
       .locator('li')
@@ -496,8 +514,8 @@ for (const { locale, width } of [
       .getByRole('button', { name: locale === 'de' ? 'Konfiguration entfernen' : 'Remove configuration' })
       .click();
     await page.getByRole('button', { name: locale === 'de' ? 'Entfernen' : 'Remove', exact: true }).click();
-    await expect(callback).toHaveValue('');
-    await expect(copy).toBeDisabled();
+    await expect(callback).not.toHaveValue('');
+    await expect(copy).toBeEnabled();
     await expect(help).toBeVisible();
     expect(mutations).toBe(5);
     expect(runtimeErrors).toEqual([]);

@@ -70,7 +70,7 @@ types, unavailable OAuth, delayed OAuth/toggle/delete, Escape, focus restoration
 **Independent Test**: Draft GET performs no write; POST with draft ID preserves URL; old POST without ID still works.
 Browser pre-save copy, retry, rotation, and close/reopen scenarios never expose a stale or wrong-account callback.
 
-- [ ] T004 [P] [US2] Add schema and API regressions in `libs/schemas/src/api-contracts.test.ts` and
+- [x] T004 [P] [US2] Add schema and API regressions in `libs/schemas/src/api-contracts.test.ts` and
       `apps/api/src/modules/organization-webhooks/organization-webhooks.integration.spec.ts`, then implement the administrator-
       only, account-authorized GET draft endpoint and shared canonical callback helper in
       `apps/api/src/modules/organization-webhooks/organization-webhooks.controller.ts` and

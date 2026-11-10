@@ -5,7 +5,7 @@
 
 **Authorization**: Task generation and issue/planning-commit creation approved on 2026-11-10. Scope belongs to
 [#88](https://github.com/repovio/repovio/issues/88), branch `codex/88-repository-settings-navigation`. Product implementation
-and merge remain separate approval gates. No task below has been executed.
+and merge remain separate approval gates. Implementation was separately approved on 2026-11-10; merge remains gated.
 
 **Tests**: Required by the specification and constitution. Each behavior task includes its focused tests and evidence;
 write/update the relevant regressions before its implementation, then make the complete increment green before commit.
@@ -29,7 +29,7 @@ Never commit intentionally failing test-only increments.
 
 **Purpose**: Confirm the already-selected checkout and toolchain before approved implementation.
 
-- [ ] T001 Verify the existing issue worktree/branch, active feature selection in `.specify/feature.json`, issue/branch and
+- [x] T001 Verify the existing issue worktree/branch, active feature selection in `.specify/feature.json`, issue/branch and
       approvals, clean scope, Node.js 26.13.0, and pnpm 11.28.9 against `package.json`; install frozen workspace dependencies
       if missing after implementation approval, without changing `pnpm-lock.yaml`. Record baseline availability and existing
       failures in `specs/009-remove-repository-details-dialog/quickstart.md` when evidence is collected.
@@ -38,7 +38,7 @@ Never commit intentionally failing test-only increments.
 
 **Purpose**: Validate integration assumptions; no new framework, schema, fixture platform, or API is needed.
 
-- [ ] T002 Confirm the existing Repository parent key, administrator guard, route middleware, and reusable fixture in
+- [x] T002 Confirm the existing Repository parent key, administrator guard, route middleware, and reusable fixture in
       `apps/web/app/pages/repositories/[id].vue`, `apps/web/app/pages/repositories/[id]/settings.vue`,
       `apps/web/app/middleware/repository-paths.global.ts`, and `apps/web/tests/e2e/fixtures/repository-detail.ts` support the
       contract in `specs/009-remove-repository-details-dialog/contracts/ui.md`; record focused baseline test results before
@@ -53,7 +53,7 @@ Never commit intentionally failing test-only increments.
 **Independent test**: Viewer/Manager/administrator list and search journeys, legacy URLs, reload and browser history;
 zero Repository details modals, unchanged embedded actions and access restrictions.
 
-- [ ] T003 [US1] Remove `apps/web/app/components/modules/repositories/details-dialog.vue` and modal-only state/handlers
+- [x] T003 [US1] Remove `apps/web/app/components/modules/repositories/details-dialog.vue` and modal-only state/handlers
       from `apps/web/app/pages/repositories/index.vue`; retain add dialog, list webhook badges and refresh initialization,
       enable/disable, and explicit role-aware real links. Point Repository search results in
       `apps/web/app/components/layout/command-palette.vue` directly to Overview. Extend

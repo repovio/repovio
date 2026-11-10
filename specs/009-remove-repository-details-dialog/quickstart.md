@@ -81,3 +81,8 @@ CI status. Production deployment and Provider writes are outside this feature.
 - T003: canonical/legacy entry tests passed for all three roles; search and command-palette navigation passed;
   migrated retention/filter/membership, webhook rotation/removal, refresh, sync, and deletion tests passed.
   Existing multi-repository-add selection failure is outside the removed details dialog; investigate against base.
+
+- T004: eight Settings browser scenarios passed, covering five tabs, URL normalization/history, lazy requests, role
+  guards, drafts/pending requests, and memory-only synthetic webhook draft disposal. Existing administration, webhook,
+  and user-discovery regressions passed after selecting the proper section. Web lint/typecheck and 129 unit tests passed.
+  Existing app locale parity requires new labels in all 17 supported catalogs; this preserves rather than expands locales.

@@ -1087,7 +1087,10 @@
     "workflowFilters": "Filtres de flux",
     "workflowFiltersDescription": "Les filtres d’exclusion ont priorité sur les filtres d’autorisation.",
     "overview": "Vue d’ensemble",
-    "navigation": "Navigation du dépôt"
+    "navigation": "Navigation du dépôt",
+    "general": "Général",
+    "webhook": "Webhook",
+    "settingsNavigation": "Sections des paramètres du dépôt"
   },
   "securityAlerts": {
     "code": "Analyse de code",

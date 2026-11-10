@@ -379,6 +379,10 @@ test('administrator configures a webhook for one repository', /** Verifies admin
   await expect(page.getByText('Not configured', { exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Edit repository', exact: true }).click();
 
+  await page
+    .getByRole('navigation', { name: 'Repository settings sections', exact: true })
+    .getByRole('link', { name: 'Webhook', exact: true })
+    .click();
   const dialog = page.locator('#main-content');
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toBeVisible();
   await expect(

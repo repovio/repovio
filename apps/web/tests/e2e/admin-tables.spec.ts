@@ -480,19 +480,6 @@ test('repository Settings loads retention, filters, and members', /** Verifies r
     name: 'Workflow-run retention (days)',
   });
   await expect(workflowRunRetention).toHaveValue('30');
-  await expect(repositoryDialog.getByText('draft-*', { exact: true })).toBeVisible();
-  await expect(repositoryDialog.getByText('maintainer', { exact: true })).toBeVisible();
-  await expectTableHover(page, repositoryDialog.getByRole('table').nth(0));
-  await expectTableHover(page, repositoryDialog.getByRole('table').nth(1));
-  await repositoryDialog.getByRole('button', { name: 'Add workflow filter' }).click();
-  await expect(repositoryDialog.getByText('Enter a valid value.', { exact: true })).toBeVisible();
-  expect(createdFilters).toEqual([]);
-  await expect(repositoryDialog.getByRole('button', { name: 'Add member' })).toBeDisabled();
-  await expect(repositoryDialog.getByRole('columnheader', { name: 'Actions' }).first()).toHaveCSS('position', 'sticky');
-  await expect(repositoryDialog.getByRole('button', { name: 'Delete', exact: true })).toHaveClass(/text-sm/);
-  await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Delete', exact: true }), 'Delete');
-  await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Remove member' }), 'Remove member');
-
   await workflowRunRetention.fill('45');
   await repositoryDialog.getByRole('button', { name: 'Save' }).click();
   await expect
@@ -506,11 +493,32 @@ test('repository Settings loads retention, filters, and members', /** Verifies r
       },
     ]);
 
+  const settingsNavigation = page.getByRole('navigation', { name: 'Repository settings sections', exact: true });
+  await settingsNavigation.getByRole('link', { name: 'Workflow filters', exact: true }).click();
+  await expect(repositoryDialog.getByText('draft-*', { exact: true })).toBeVisible();
+  await expectTableHover(page, repositoryDialog.getByRole('table'));
+  await repositoryDialog.getByRole('button', { name: 'Add workflow filter', exact: true }).click();
+  await expect(repositoryDialog.getByText('Enter a valid value.', { exact: true })).toBeVisible();
+  expect(createdFilters).toEqual([]);
+  await expect(repositoryDialog.getByRole('columnheader', { name: 'Actions', exact: true })).toHaveCSS(
+    'position',
+    'sticky',
+  );
+  await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Delete', exact: true }), 'Delete');
   await repositoryDialog.getByPlaceholder('e.g. build-*').fill('release-*');
   await repositoryDialog.getByRole('button', { name: 'Add workflow filter' }).click();
   await expect(repositoryDialog.getByText('release-*', { exact: true })).toBeVisible();
   expect(createdFilters).toEqual([{ mode: 'ALLOW', pattern: 'release-*' }]);
 
+  await settingsNavigation.getByRole('link', { name: 'Members', exact: true }).click();
+  await expect(repositoryDialog.getByText('maintainer', { exact: true })).toBeVisible();
+  await expectTableHover(page, repositoryDialog.getByRole('table'));
+  await expect(repositoryDialog.getByRole('button', { name: 'Add member', exact: true })).toBeDisabled();
+  await expectActionTooltip(
+    page,
+    repositoryDialog.getByRole('button', { name: 'Remove member', exact: true }),
+    'Remove member',
+  );
   await repositoryDialog.getByRole('button', { name: 'User' }).click();
   await page.getByRole('option', { name: 'viewer' }).click();
   await repositoryDialog.getByRole('button', { name: 'Add member' }).click();

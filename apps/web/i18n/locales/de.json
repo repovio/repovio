@@ -1087,7 +1087,10 @@
     "deleteSyncConflict": "Eine Synchronisierung läuft. Warten Sie, bis sie abgeschlossen ist, und versuchen Sie es erneut.",
     "deleteError": "Der Vorgang konnte nicht abgeschlossen werden. Versuchen Sie es erneut.",
     "overview": "Übersicht",
-    "navigation": "Repository-Navigation"
+    "navigation": "Repository-Navigation",
+    "general": "Allgemein",
+    "webhook": "Webhook",
+    "settingsNavigation": "Bereiche der Repository-Einstellungen"
   },
   "securityAlerts": {
     "code": "Code-Scanning",

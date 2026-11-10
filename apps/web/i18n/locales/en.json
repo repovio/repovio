@@ -1087,7 +1087,10 @@
     "deleteSyncConflict": "Synchronization is running. Wait until it finishes, then try again.",
     "deleteError": "The operation could not be completed. Try again.",
     "overview": "Overview",
-    "navigation": "Repository navigation"
+    "navigation": "Repository navigation",
+    "general": "General",
+    "webhook": "Webhook",
+    "settingsNavigation": "Repository settings sections"
   },
   "securityAlerts": {
     "code": "Code scanning",

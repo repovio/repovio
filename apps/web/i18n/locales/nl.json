@@ -1087,7 +1087,10 @@
     "workflowFilters": "Workflowfilters",
     "workflowFiltersDescription": "Uitsluitfilters hebben voorrang op toestaanfilters.",
     "overview": "Overzicht",
-    "navigation": "Repositorynavigatie"
+    "navigation": "Repositorynavigatie",
+    "general": "Algemeen",
+    "webhook": "Webhook",
+    "settingsNavigation": "Onderdelen van repository-instellingen"
   },
   "securityAlerts": {
     "code": "Codescans",

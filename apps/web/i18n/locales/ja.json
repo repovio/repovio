@@ -1087,7 +1087,10 @@
     "deleteSyncConflict": "同期中です。完了するまで待ってから再試行してください。",
     "deleteError": "操作を完了できませんでした。再試行してください。",
     "overview": "概要",
-    "navigation": "リポジトリナビゲーション"
+    "navigation": "リポジトリナビゲーション",
+    "general": "一般",
+    "webhook": "Webhook",
+    "settingsNavigation": "リポジトリ設定のセクション"
   },
   "securityAlerts": {
     "code": "コードスキャン",

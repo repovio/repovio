@@ -1087,7 +1087,10 @@
     "deleteSyncConflict": "ہم آہنگی چل رہی ہے۔ مکمل ہونے کا انتظار کریں، پھر دوبارہ کوشش کریں۔",
     "deleteError": "کارروائی مکمل نہیں ہو سکی۔ دوبارہ کوشش کریں۔",
     "overview": "جائزہ",
-    "navigation": "ریپوزٹری نیویگیشن"
+    "navigation": "ریپوزٹری نیویگیشن",
+    "general": "عمومی",
+    "webhook": "Webhook",
+    "settingsNavigation": "ریپوزٹری کی ترتیبات کے حصے"
   },
   "securityAlerts": {
     "code": "کوڈ اسکیننگ",

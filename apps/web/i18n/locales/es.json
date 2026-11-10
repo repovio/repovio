@@ -1087,7 +1087,10 @@
     "workflowFilters": "Filtros de flujo",
     "workflowFiltersDescription": "Los filtros de exclusión tienen prioridad sobre los filtros de permiso.",
     "overview": "Resumen",
-    "navigation": "Navegación del repositorio"
+    "navigation": "Navegación del repositorio",
+    "general": "General",
+    "webhook": "Webhook",
+    "settingsNavigation": "Secciones de configuración del repositorio"
   },
   "securityAlerts": {
     "code": "Análisis de código",

@@ -1087,7 +1087,10 @@
     "deleteSyncConflict": "正在同步。请等待同步完成后重试。",
     "deleteError": "无法完成操作。请重试。",
     "overview": "概览",
-    "navigation": "仓库导航"
+    "navigation": "仓库导航",
+    "general": "常规",
+    "webhook": "Webhook",
+    "settingsNavigation": "仓库设置分区"
   },
   "securityAlerts": {
     "code": "代码扫描",

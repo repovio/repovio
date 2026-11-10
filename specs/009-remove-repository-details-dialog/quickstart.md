@@ -91,3 +91,7 @@ CI status. Production deployment and Provider writes are outside this feature.
   keyboard and capturing their layouts. Screenshot review confirms full-width retention inputs and no duplicate Settings
   identity; Overview retains its existing card header. Four Repository detail/retention/access scenarios passed.
   Existing translated Alerts labels and action/field keys are reused; no new label keys are needed for T006-T008.
+
+- T006: 12 populated long-pattern layout cases passed in both locales/themes and all three widths. Focused regression
+  verifies empty-pattern validation, failed create, full-lifetime pending state, successful create, cancellation, and
+  confirmed removal. Invalid-field recovery waits for real validation completion. Web lint/typecheck passed.

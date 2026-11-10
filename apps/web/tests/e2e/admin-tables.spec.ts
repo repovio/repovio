@@ -506,6 +506,8 @@ test('repository Settings loads retention, filters, and members', /** Verifies r
   );
   await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Delete', exact: true }), 'Delete');
   await repositoryDialog.getByPlaceholder('e.g. build-*').fill('release-*');
+  await repositoryDialog.getByPlaceholder('e.g. build-*').blur();
+  await expect(repositoryDialog.getByText('Enter a valid value.', { exact: true })).toHaveCount(0);
   await repositoryDialog.getByRole('button', { name: 'Add workflow filter' }).click();
   await expect(repositoryDialog.getByText('release-*', { exact: true })).toBeVisible();
   expect(createdFilters).toEqual([{ mode: 'ALLOW', pattern: 'release-*' }]);

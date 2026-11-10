@@ -101,7 +101,7 @@ Settings/change Repository; directly visit tabs as Viewer/Manager.
 **Independent test**: English/German, light/dark, 390/1102/1440 px; keyboard focus, long input/labels, empty/populated
 and error/pending states. Navigation/tables may scroll within their containers; document-level overflow fails.
 
-- [ ] T005 [US3] Shorten only the Repository navigation label to Alerts/Warnungen in
+- [x] T005 [US3] Shorten only the Repository navigation label to Alerts/Warnungen in
       `apps/web/app/components/modules/repositories/details/page-shell.vue`, preserving `/security-alerts`, category labels,
       domain terms, and Manager/administrator restrictions. Add an explicit header-presentation option in
       `apps/web/app/components/modules/repositories/details/general-card.vue` and apply it in `settings-page.vue` to avoid

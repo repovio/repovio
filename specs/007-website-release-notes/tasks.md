@@ -87,7 +87,7 @@ production Playwright checks. Verify valid-empty UI using an isolated fixture, n
 **Independent test**: Compare actual history and multiline upgrade guidance with canonical source; follow and reload a
 release fragment in English and German.
 
-- [ ] T004 [US2] Add desktop `UContentToc`, mobile release anchor navigation, and accessible heading permalinks in
+- [x] T004 [US2] Add desktop `UContentToc`, mobile release anchor navigation, and accessible heading permalinks in
       `apps/website/app/components/modules/docs/release-history.vue`; derive links from the actual ContentRenderer H2 TOC;
       extend `apps/website/tests/unit/release-notes.test.ts` with real renderer-generated heading IDs and nested Markdown
       preservation fixtures, and `apps/website/tests/e2e/release-notes.spec.ts` with first/last release, complete multiline

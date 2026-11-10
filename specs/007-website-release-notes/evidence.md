@@ -42,3 +42,14 @@
 - Ten focused unit tests pass; heading adaptation preserves original objects, metadata, IDs, and source order.
 - Complete multiline upgrade guidance and first/last canonical releases remain visible; no duplicate heading IDs.
 - Website lint/typecheck, production build, documentation coverage, and stable canonical formatting passed.
+
+## T005 responsive and accessibility acceptance
+
+- Commit for T004: `f439bec` (pushed).
+- Red checks exposed six mobile targets below 44 px; desktop baseline remained green.
+- Twelve production cases now pass: EN/DE/Arabic, 375/1440 px, light/dark.
+- Keyboard disclosure/Tab navigation, visible focus outlines, 44 px mobile links, language/direction markup, zero page
+  overflow, and original handbook toolbar overflow checks passed. No captured page errors.
+- All 12 screenshots visually inspected in a contact sheet; localized chrome and isolated left-to-right English prose
+  remain readable. Review screenshots are local artifacts outside Git; test paths use `test-results/release-notes-*.png`.
+- Website lint/typecheck/build, declaration coverage, and canonical formatting stability passed.

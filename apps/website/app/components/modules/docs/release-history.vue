@@ -14,7 +14,9 @@
         class="mt-6 rounded-lg border border-default p-4 xl:hidden"
         data-testid="release-mobile-toc"
       >
-        <summary class="cursor-pointer text-sm font-medium">
+        <summary
+          class="cursor-pointer rounded py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid"
+        >
           {{ t('releaseNotesVersions') }}
         </summary>
         <nav
@@ -24,14 +26,20 @@
           <a
             v-for="heading in headings"
             :key="heading.id"
-            class="rounded px-2 py-1 text-muted hover:text-primary"
+            class="flex min-h-11 items-center justify-center rounded px-2 py-2 text-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid"
             :href="`#${heading.id}`"
           >
             {{ heading.text }}
           </a>
         </nav>
       </details>
-      <UPageBody v-if="headings.length" lang="en" dir="ltr" data-testid="release-notes-body">
+      <UPageBody
+        v-if="headings.length"
+        lang="en"
+        dir="ltr"
+        class="text-left [unicode-bidi:isolate]"
+        data-testid="release-notes-body"
+      >
         <ContentRenderer :value="document" :components="{ h1: omitSourceTitle }" />
       </UPageBody>
       <p v-else class="mt-8 text-muted" role="status">
@@ -53,7 +61,7 @@
 import type { ReleaseNotesCollectionItem } from '@nuxt/content';
 import { getReleaseHeadings } from '~/util/release-notes';
 
-/** Canonical parsed Markdown; callers own loading and unavailable-source errors. */
+/** Canonical parsed Markdown; callers own loading and unavailable-source errors. English source direction is isolated from localized page chrome. */
 const props = defineProps<{ document: ReleaseNotesCollectionItem }>();
 const headings = computed(
   /** Reuse the same rendered release identifiers for desktop and mobile navigation. */ () =>

@@ -862,7 +862,7 @@ for (const locale of ['en', 'de'] as const) {
   test(`explains and retries server push availability (${locale})`, /** Verify global setup without device support or passive enrollment. */ async ({
     page,
     baseURL,
-  }) => {
+  }, testInfo) => {
     await mockShell(page);
     await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
     await page.addInitScript(
@@ -910,10 +910,15 @@ for (const locale of ['en', 'de'] as const) {
         });
       },
     );
+    await page.setViewportSize({ width: locale === 'de' ? 390 : 1102, height: locale === 'de' ? 844 : 1134 });
     await page.goto('/notifications');
     await page.getByRole('button', { name: labels.add, exact: true }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText(labels.unconfigured, { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-push-unconfigured-${locale}.png`),
+      animations: 'disabled',
+    });
     await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
     await expect(
       page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }),
@@ -922,6 +927,10 @@ for (const locale of ['en', 'de'] as const) {
     outcome = 'pending';
     await dialog.getByRole('button', { name: labels.retry, exact: true }).click();
     await expect(dialog.getByText(labels.loading, { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-push-checking-${locale}.png`),
+      animations: 'disabled',
+    });
     await expect(dialog.getByRole('button', { name: labels.retry, exact: true })).toBeDisabled();
     release();
     await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
@@ -1062,3 +1071,55 @@ for (const locale of ['en', 'de'] as const) {
     expect(refreshes).toBe(2);
   });
 }
+
+test('keeps push retry loading until passive device inspection completes', /** The initiating control must remain pending for the entire operation. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.addInitScript(
+    /** Hold passive device inspection after server readiness succeeds. */ () => {
+      Object.defineProperty(Notification, 'permission', {
+        get: /** Model granted permission without a real prompt. */ () => 'granted',
+      });
+      navigator.serviceWorker.getRegistration = /** Return only after the test releases the device read. */ () =>
+        new Promise<ServiceWorkerRegistration | undefined>(
+          /** Bind release without registering or enrolling a device. */ (resolve) => {
+            document.documentElement.dataset.pushInspecting = 'true';
+            window.addEventListener(
+              'release-push-inspection',
+              /** Complete the held local lookup. */ () => resolve(undefined),
+              { once: true },
+            );
+          },
+        );
+    },
+  );
+  let reads = 0;
+  await page.route(
+    '**/api/v1/browser-push',
+    /** First report unconfigured, then configured readiness. */ (route) => {
+      reads++;
+      return route.fulfill({
+        json: { available: reads > 1, publicKey: reads > 1 ? 'AQID' : null, subscriptionCount: 0 },
+      });
+    },
+  );
+  await page.goto('/notifications');
+  await page.getByRole('button', { name: 'Add channel', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const retry = dialog.getByRole('button', { name: 'Retry', exact: true });
+  await expect(retry).toBeEnabled();
+  await page.evaluate(
+    /** Clear any earlier inspection marker. */ () => document.documentElement.removeAttribute('data-push-inspecting'),
+  );
+  await retry.click();
+  await expect(page.locator('html')).toHaveAttribute('data-push-inspecting', 'true');
+  await expect.poll(/** Observe successful server readiness before releasing device inspection. */ () => reads).toBe(2);
+  await expect(retry).toBeVisible();
+  await expect(retry).toBeDisabled();
+  await page.evaluate(
+    /** Release the passive browser operation without enrolling. */ () =>
+      window.dispatchEvent(new Event('release-push-inspection')),
+  );
+  await expect(retry).toHaveCount(0);
+});

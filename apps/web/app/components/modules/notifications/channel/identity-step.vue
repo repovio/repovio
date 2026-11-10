@@ -11,11 +11,15 @@
         <USwitch v-model="form.enabled" />
       </UFormField>
     </div>
-    <div v-if="pushAvailability && pushAvailability !== 'available'" class="space-y-2" aria-live="polite">
+    <div
+      v-if="pushAvailability && (pushAvailability !== 'available' || pushRefreshing)"
+      class="space-y-2"
+      aria-live="polite"
+    >
       <p class="text-sm text-muted">
         {{
           $t(
-            `notifications.pushAvailability.${pushAvailability === 'idle' || pushAvailability === 'loading' ? 'checking' : pushAvailability === 'server-unconfigured' ? 'unconfigured' : 'failed'}`,
+            `notifications.pushAvailability.${pushRefreshing || pushAvailability === 'idle' || pushAvailability === 'loading' ? 'checking' : pushAvailability === 'server-unconfigured' ? 'unconfigured' : 'failed'}`,
           )
         }}
       </p>

@@ -10,7 +10,7 @@ The existing selected Codex worktree is reused. Implementation and per-task comm
 **Tests**: Required by the specification and repository rules. Each behavior increment includes focused regression tests,
 relevant documentation, and its own verification. Write the focused regression first and establish failure before fixing.
 
-**Format**: `- [ ] TNNN [P?] [US?] Description with file paths`. No task is marked complete by this generation step.
+**Format**: `- [ ] TNNN [P?] [US?] Description with file paths`. All seven tasks are complete; see [evidence.md](evidence.md) for verification and external evidence limits.
 
 ## Phase 1: Setup
 
@@ -68,7 +68,7 @@ name; Manager/Viewer access remains restricted, including direct navigation.
 
 ## Phase 6: Polish and Cross-Cutting Verification
 
-- [ ] T007 Run the acceptance matrix and commands in `specs/009-notification-setup-polish/quickstart.md`; record exact outcomes, mocked boundaries, screenshot locations, and remaining live-browser/device gaps in `specs/009-notification-setup-polish/evidence.md`. Run focused push/draft tests, affected web lint/typecheck/test targets, canonical formatting/documentation/guideline checks, `git diff --check`, and the English/German notification browser suite; inspect screenshots at 390x844 and 1102x1134. Verify read-only provider behavior, permissions, absence of secret output, and no migrations/toolchain drift. Run `graphify update .` after source changes and review graph summaries. If a defect requires code edits, apply focused regression proof and its own substantive task Changeset/commit rather than claiming completion; do not create empty commits. Real enrollment, service acceptance, OS display, and click behavior require separate actual evidence or an explicit unverified record. Depends on T003, T005, and T006.
+- [x] T007 Run the acceptance matrix and commands in `specs/009-notification-setup-polish/quickstart.md`; record exact outcomes, mocked boundaries, screenshot locations, and remaining live-browser/device gaps in `specs/009-notification-setup-polish/evidence.md`. Run focused push/draft tests, affected web lint/typecheck/test targets, canonical formatting/documentation/guideline checks, `git diff --check`, and the English/German notification browser suite; inspect screenshots at 390x844 and 1102x1134. Verify read-only provider behavior, permissions, absence of secret output, and no migrations/toolchain drift. Run `graphify update .` after source changes and review graph summaries. If a defect requires code edits, apply focused regression proof and its own substantive task Changeset/commit rather than claiming completion; do not create empty commits. Real enrollment, service acceptance, OS display, and click behavior require separate actual evidence or an explicit unverified record. Depends on T003, T005, and T006.
 
 **Acceptance**: All deterministic acceptance checks pass. Missing physical-device or production evidence is named explicitly;
 CI, deployment, and service acceptance are never conflated with local test success.

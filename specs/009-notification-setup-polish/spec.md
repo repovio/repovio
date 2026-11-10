@@ -6,7 +6,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Planning and tasks approved; issue created; implementation approved
+**Status**: Implemented and locally verified; review and merge pending
 
 **Input**: Four browser comments on `/notifications`: use an icon-only Delivery history action; resolve unavailable
 Browser push; use the Nuxt UI stepper; place wizard navigation in the modal footer.

@@ -68,3 +68,42 @@
   Empty/error tables keep the action available; Manager and Viewer history restrictions remain covered.
 - Focused ESLint, documentation coverage, and web typecheck passed. Inspected the German toolbar screenshot: compact
   history icon is visible beside Add channel, without a text label. Existing translations were reused.
+
+## Final acceptance and pending-control correction (T007)
+
+- Scope review found a remaining retry lifetime defect: successful server status hid the control before passive device
+  inspection finished. A deterministic production-browser regression failed before correction and passed afterward.
+  The control now remains visible/loading through the entire awaited operation. This scoped correction has one focused
+  `repovio` Changeset, `.changeset/notification-push-pending.md`.
+- Complete web suite: **135 tests passed in 25 files**. Web lint and typecheck passed.
+- Production Nuxt build passed; the complete notification Chromium suite passed **26/26** against that build in 37.2 s.
+  No Nuxt preparation/typecheck ran concurrently with the production-browser suite.
+- Canonical formatting, documentation coverage (699 handwritten files), 21 guideline regression tests, focused browser
+  test ESLint, Changesets status, and whitespace checks passed. No version/release commands ran.
+- Two additional English/German screenshot scenarios passed after adding captures, without changing application code.
+- Inspected production screenshots for Stepper/footer at 390x844 and 1102x1134, English/German, and unconfigured push
+  guidance on German mobile. Controls and labels fit; no horizontal clipping observed. History remains icon-only.
+- Final browser fixtures cover configured/unconfigured/checking/failure/retry; unsupported devices; mocked granted
+  permission with delayed inspection; existing channel recipients; all six transports; invalid input; keyboard/focus;
+  deferred persistence/refresh; refresh-only recovery; and administrator/Manager/Viewer route guards.
+- Main remains `01dd05c` at final fetch. No API/schema/database/toolchain source changes, provider writes, secret output,
+  production configuration changes, merge, release, or deployment occurred.
+- Graph updates use AST extraction only. Existing SQL-extractor warnings remain: `tree_sitter_sql` is unavailable.
+  This does not affect the changed Vue/TypeScript tests; no dependency installation was added to silence the warning.
+
+### Local screenshot outputs
+
+- Footer: `apps/web/test-results/notifications-keeps-valida-{case}-chromium/notification-footer-{locale}-{width}.png`
+  (runner-generated case directory names; four English/German and mobile/desktop captures).
+- Validation/review: `notification-validation-{locale}.png` and `notification-review-{locale}.png` under the matching
+  notification validation test output directory.
+- Push guidance/checking: `apps/web/test-results/push-review/` contains `notification-push-unconfigured-{locale}.png`
+  and `notification-push-checking-{locale}.png`. All screenshots use synthetic mocked data and remain untracked.
+
+### Remaining external evidence
+
+Production VAPID configuration and the original deployed availability response were not inspected. Actual device enrollment,
+push-service acceptance, native OS notification display, and OS click navigation were not exercised. The browser suite
+mocks API responses and one device-inspection/permission boundary; it does not establish live Web Push delivery or server
+authorization enforcement. Existing server guards and permission restrictions were retained. These are explicit evidence
+limits, not claims of live verification. No external environment is required to prove the scoped state/layout corrections.

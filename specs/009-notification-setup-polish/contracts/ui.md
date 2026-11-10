@@ -20,8 +20,8 @@ No new endpoint or response fields are planned. Client view state carries read l
 Only a successful available result enables new Browser push selection. An unsupported browser or denied permission does
 not disable global channel configuration. Existing channel type and recipient data remain visible when server push is off.
 
-The dialog boundary supplies availability state and a retry action instead of only an ambiguous boolean. Exact prop/event
-names should follow repository conventions during task generation. A visible explanation is adjacent to the type control,
+The dialog receives `browserPushAvailability`, `browserPushRefreshing`, and `onRefreshBrowserPush` alongside the
+selection guard `browserPushAvailable`. A visible explanation is adjacent to the type control,
 so disabled options are not the only source of information. Retry exposes pending state for its entire awaited operation.
 
 ## Wizard

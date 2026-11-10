@@ -30,15 +30,15 @@ transports, and English/German localization. No dependency or toolchain changes.
 
 Pre-research and post-design gate results:
 
-| Principle                       | Result            | Design evidence                                                                        |
-| ------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
-| Bounded approved architecture   | PASS for planning | Only four comments and direct push diagnosis; issue #90                                |
-| Read-only providers             | PASS              | No outbound forge mutations or new provider integration                                |
-| Authorization/secrets           | PASS              | Existing role/query rules and encrypted records retained; no credential output         |
-| Durable notifications           | PASS              | Reuse current persistence and delivery; no new retry/delivery design                   |
-| Verification/localization       | PASS for design   | Focused lifecycle/browser matrix; English and German text                              |
-| Existing architecture/toolchain | PASS              | Existing composables, components, API and pinned dependencies                          |
-| Delivery permissions            | PASS for planning | Tasks, issue, branch, planning commit/push approved; implementation/deployment pending |
+| Principle                       | Result            | Design evidence                                                                |
+| ------------------------------- | ----------------- | ------------------------------------------------------------------------------ |
+| Bounded approved architecture   | PASS for planning | Only four comments and direct push diagnosis; issue #90                        |
+| Read-only providers             | PASS              | No outbound forge mutations or new provider integration                        |
+| Authorization/secrets           | PASS              | Existing role/query rules and encrypted records retained; no credential output |
+| Durable notifications           | PASS              | Reuse current persistence and delivery; no new retry/delivery design           |
+| Verification/localization       | PASS for design   | Focused lifecycle/browser matrix; English and German text                      |
+| Existing architecture/toolchain | PASS              | Existing composables, components, API and pinned dependencies                  |
+| Delivery permissions            | PASS for planning | Implementation and local acceptance complete; merge/deployment pending         |
 
 Issue #90 records this scope. Current open issue #64 concerns PWA support; do not absorb it or
 expand into installation/offline work. PR #68 is merged. No duplicate redesign issue is needed.
@@ -63,7 +63,7 @@ specs/009-notification-setup-polish/
   checklists/requirements.md
 ```
 
-Task generation approved on 2026-11-10; see [tasks.md](tasks.md). Issue creation and planning commit/push approved; implementation remains a separate gate.
+Task generation approved on 2026-11-10; see [tasks.md](tasks.md). Issue creation, implementation, and task commits/pushes are approved and completed. Merge remains a separate gate.
 
 ### Source Code (repository root)
 

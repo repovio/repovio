@@ -33,3 +33,5 @@ version their responses. All grouped refreshes must await every sibling before r
 
 No live provider, production synchronization, deployment, or feature browser behavior verified during setup.
 Graphify warns SQL extraction lacks tree_sitter_sql; existing graph remains usable.
+
+- T002: Scheduler and real Pinia preference store complete. Twelve focused tests pass after the missing-module red run; web lint/typecheck, declaration documentation, scoped canonical formatting and stable second pass pass. One focused patch Changeset included.

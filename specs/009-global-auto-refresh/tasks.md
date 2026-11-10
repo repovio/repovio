@@ -37,7 +37,7 @@ requirement requires a material dependency change, stop for a scoped design revi
 
 **Purpose**: Provide one tested scheduling/registration foundation for all stories.
 
-- [ ] T002 Implement `apps/web/app/store/auto-refresh.ts`,
+- [x] T002 Implement `apps/web/app/store/auto-refresh.ts`,
       `apps/web/app/composables/app/auto-refresh-state.ts`, and `apps/web/app/composables/app/auto-refresh.ts` with focused
       tests in `apps/web/app/store/auto-refresh.test.ts` and
       `apps/web/app/composables/app/auto-refresh-state.test.ts`; use storage key `repovio:auto-refresh:interval-ms`,

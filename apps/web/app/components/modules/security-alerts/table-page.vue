@@ -19,14 +19,7 @@
         :placeholder="$t('securityAlerts.search')"
       />
       <div class="flex flex-wrap items-center gap-2">
-        <UButton
-          color="neutral"
-          icon="i-lucide-refresh-cw"
-          variant="soft"
-          :aria-label="$t('dashboard.refresh')"
-          :loading="refreshLoading"
-          @click="refreshView"
-        />
+        <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />

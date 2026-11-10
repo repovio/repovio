@@ -13,3 +13,6 @@ page, columns, search, and dashboard period remain in place. A slow refresh fini
 This updates Repovio's stored data. It does not trigger provider synchronization or change server Polling. Jobs and
 notification popovers retain their separate behavior. Manual refresh and workflow sync-completion updates still work
 when automatic refresh is Off. If browser storage is blocked, the current choice remains usable until reload.
+
+Manual refresh uses the same icon-only button in each monitoring toolbar. Hover or keyboard focus reveals its translated
+Refresh tooltip. The button stays disabled and announces busy state until all table, summary, and widget reads settle.

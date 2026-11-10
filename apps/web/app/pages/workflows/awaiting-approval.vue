@@ -17,15 +17,7 @@
         :aria-label="$t('awaitingApproval.searchPlaceholder')"
         :placeholder="$t('awaitingApproval.searchPlaceholder')"
       />
-      <UButton
-        color="neutral"
-        icon="i-lucide-refresh-cw"
-        variant="soft"
-        :aria-label="$t('dashboard.refresh')"
-        :label="$t('dashboard.refresh')"
-        :loading="refreshLoading"
-        @click="refreshView"
-      />
+      <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
     </template>
 
     <UAlert

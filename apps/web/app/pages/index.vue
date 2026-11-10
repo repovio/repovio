@@ -16,14 +16,7 @@
           :aria-label="$t('dashboard.period')"
           @update:model-value="loadHistoricalDashboard"
         />
-        <UButton
-          color="neutral"
-          icon="i-lucide-refresh-cw"
-          variant="soft"
-          :label="$t('dashboard.refresh')"
-          :loading="refreshLoading"
-          @click="refreshView"
-        />
+        <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
       </div>
     </template>
 

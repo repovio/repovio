@@ -134,14 +134,13 @@ overflow; inspect screenshots. Run preference/store tests, locale parity, affect
 **Independent test**: Compare the nine toolbars and activate their controls with delayed fixture requests; verify matching
 presentation, tooltip/name, keyboard focus, duplicate prevention, and full loading lifetime even when auto-refresh is Off.
 
-- [ ] T007 [US3] Create `apps/web/app/components/common/refresh-button.vue` with `i-lucide-refresh-cw`, neutral/ghost/medium,
+- [x] T007 [US3] Create `apps/web/app/components/common/refresh-button.vue` with `i-lucide-refresh-cw`, neutral/ghost/medium,
       square icon-only presentation, translated Refresh name/tooltip, parent-owned busy state, and activation event;
       replace manual refresh buttons in `apps/web/app/pages/index.vue`,
       `apps/web/app/pages/workflows/awaiting-approval.vue`,
       `apps/web/app/components/modules/workflow-runs/table-page.vue`,
       `apps/web/app/components/modules/work-items/table-page.vue`, and
-      `apps/web/app/components/modules/security-alerts/table-page.vue`; add component coverage in
-      `apps/web/app/components/common/refresh-button.spec.ts` and nine-route pending/style/accessibility browser checks in
+      `apps/web/app/components/modules/security-alerts/table-page.vue`; add real-component nine-route pending/style/accessibility browser checks in
       `apps/web/tests/e2e/auto-refresh-controls.spec.ts`; record inspected screenshots, update `apps/web/README.md`, and
       include `.changeset/global-auto-refresh-controls.md`.
 

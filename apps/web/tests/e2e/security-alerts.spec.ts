@@ -267,7 +267,7 @@ test('shows empty and request-error states', /** Verifies shows empty and reques
   await expect(page.getByText('No security alerts match the current filters.')).toBeVisible();
 
   failList = true;
-  await page.getByRole('button', { name: 'Refresh' }).click();
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await expect(page.getByText('Security alerts could not be loaded.')).toBeVisible();
 });
 

@@ -1,9 +1,9 @@
 # Implementation Plan: Website Release Notes
 
-**Branch**: `codex/83-website-release-notes` (base `5f568b0`, verified against `origin/main`) | **Date**: 2026-11-10 | **Spec**: [spec.md](spec.md)
+**Branch**: `codex/83-website-release-notes` (initial base `5f568b0`; integrated main `aa0fa7e`) | **Date**: 2026-11-10 | **Spec**: [spec.md](spec.md)
 **Input**: `specs/007-website-release-notes/spec.md`
-**Tracking**: [Issue #83](https://github.com/repovio/repovio/issues/83); task generation and planning commit/push approved.
-Implementation, release, and deployment require separate approval.
+**Tracking**: [Issue #83](https://github.com/repovio/repovio/issues/83); implementation and task commits/pushes approved.
+Local acceptance completed; merge, release, and deployment remain separately gated.
 
 ## Summary
 
@@ -125,3 +125,11 @@ Nuxt Content's local collection `source.cwd`, resolved from `content.config.ts` 
 ## Complexity Tracking
 
 No violations or additional infrastructure. Reuse the content pipeline rather than creating a parser or release service.
+
+## Implementation Reconciliation
+
+All acceptance is recorded in [evidence.md](evidence.md). Three bounded follow-ups preserve the approved source contract:
+T008 includes root changelog in Nx inputs and CI validation selection; T009 preserves that input in the existing isolated
+API-reference fixture; T010 compares the complete current version list after integrating already-merged main releases.
+No dependency pins, immutable handbook archives, production integration APIs, or release-publication triggers changed.
+The current base was integrated through merge commit `0cabe3f`; task commits were preserved.

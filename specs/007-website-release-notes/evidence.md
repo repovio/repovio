@@ -93,3 +93,33 @@
   (54 passed, one optional externally supplied real-schema scenario skipped).
 - Current-source Docker image rebuilt; read-only/unprivileged EN/DE documentation and release-history checks passed.
 - Twelve current-source screenshots were refreshed, preserving local review artifacts outside Git.
+
+## T007 final acceptance
+
+- All ten task IDs completed, including the three bounded dependency/regression follow-ups.
+- Current-source Docker image and EN/DE release routes passed unprivileged/read-only runtime checks.
+- Isolated actual Nuxt builds/browser checks: valid-empty history passed twice (EN/DE); rich Markdown history passed
+  twice (EN/DE), including nested lists, links, code, multiline migration prose, ordered versions, and fragment targets.
+- Isolated direct `nuxt build` with missing canonical source failed specifically with CHANGELOG.md ENOENT.
+- Current-source website unit tests: 60 passed. Documentation source tests: 11 passed. CI helper tests: 11 passed.
+- Guideline regression tests: 21 passed. Website lint/typecheck, docs verification, declaration coverage, canonical
+  formatting stability, Changesets status, and diff whitespace checks passed.
+- Full production browser suite on integrated main: 146 passed; 54 API-reference-only cases skipped in that command.
+  Dedicated isolated API-reference command: 54 passed, one optional externally supplied real-schema test skipped.
+- Twelve EN/DE/Arabic mobile/desktop light/dark screenshots captured; current-source captures refreshed and inspected.
+- Immutable content archives, lockfile, compiler aliases, toolchain ranges, and provider integration source are unchanged
+  relative to integrated main. All source reads remain local; no release-service credentials required.
+- No configured Spec Kit implementation hooks. No release, publish, merge, or deployment performed.
+- Remote GitHub Actions results will be reported from the feature PR; local checks are not remote-CI proof.
+
+### Requirement evidence
+
+| Requirements                   | Evidence                                                                                               | Result |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ | ------ |
+| FR-001, FR-002, FR-007, SC-001 | EN/DE current/archive toolbar, active state, reload and version-selector browser cases                 | Pass   |
+| FR-003, FR-008, SC-002         | Full renderer version list versus canonical source; multiline/rich fixtures; Nx/CI input tests         | Pass   |
+| FR-004                         | Desktop/mobile TOC, real generated IDs, fragment reloads in EN/DE                                      | Pass   |
+| FR-005, FR-006, SC-004         | 12 layout cases, keyboard focus, 44 px targets, RTL language isolation, locale-key coverage            | Pass   |
+| FR-009                         | Valid-empty real builds and UI, missing-source build failure, invalid/duplicate/order fixtures         | Pass   |
+| FR-010, SC-003                 | All 13 SSR routes and metadata, unique sitemap entries, live EN/DE language-switch hashes              | Pass   |
+| SC-005                         | Browser request assertions and local-only content design; no credentials or application API dependency | Pass   |

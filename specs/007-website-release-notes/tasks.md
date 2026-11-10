@@ -19,7 +19,7 @@
   Changesets with the pinned workspace CLI; include `repovio` and the independently affected `@repovio/website` in the
   same file as appropriate. Never version or publish packages during task work. Push each authorized commit.
 - T001 and T007 are verification-only: record evidence without an empty implementation commit or fabricated Changeset.
-- Task checkboxes represent completed and verified implementation, including required commits; leave all unchecked now.
+- Task checkboxes represent completed and verified implementation, including required commits.
 - Canonical function/type documentation and Vue layout apply to new code. Resolve the recorded documentation-tag conflict
   against current explicit instructions before source edits; do not modify repository standards as part of this feature.
 
@@ -161,7 +161,7 @@ without changing real archives, real release notes, dependency pins, or applicat
 changelog invalidates a browser test's hardcoded latest version. Merge current main without rewriting task commits and
 compare every rendered release heading with the canonical source instead of fixed version literals.
 
-- [ ] T010 Update `apps/website/tests/e2e/release-notes.spec.ts` to compare the complete rendered release order against
+- [x] T010 Update `apps/website/tests/e2e/release-notes.spec.ts` to compare the complete rendered release order against
       validated current `CHANGELOG.md`; rebuild and run affected website/browser/container acceptance on the integrated base;
       record base integration evidence and include `.changeset/website-release-current-source.md` in this test follow-up commit.
 
@@ -172,7 +172,7 @@ not only first/last literals. No generated release output is rewritten and task 
 
 **Purpose**: Prove all stories and packaging without extending product scope.
 
-- [ ] T007 Execute `specs/007-website-release-notes/quickstart.md`; run the history assertions in
+- [x] T007 Execute `specs/007-website-release-notes/quickstart.md`; run the history assertions in
       `apps/website/scripts/check-container.mjs` added by T003; verify production history under the existing
       read-only container setup, original-tab regression suite, documentation checks, canonical formatting stability, sitemap,
       metadata, zero external release requests, and screenshot evidence; record commands/results, commit SHAs, screenshots,
@@ -238,7 +238,7 @@ T001
 
 ## Implementation Strategy
 
-1. Issue/planning-commit approval received; obtain separate implementation approval. Confirm selected branch and feature context.
+1. Implementation approval received on 2026-11-10. Preserve the separate merge and publication gates.
 2. Complete T001–T003 for the MVP: fourth tab, direct route, full canonical history, basic locales, and production source input.
 3. Complete T004 for desktop/mobile release navigation and stable deep links.
 4. Complete T005 and T006 for responsive/accessibility evidence and localized discoverability.

@@ -2,10 +2,10 @@
 
 **Feature Branch**: `codex/83-website-release-notes`
 **Created**: 2026-11-10
-**Status**: Plan accepted for task generation on 2026-11-10; implementation not authorized
+**Status**: Implemented and locally verified on 2026-11-10; awaiting PR review and merge approval
 **Input**: Add a fourth "Release Notes" tab to website documentation, inspired by ezSWM.
-**Tracking**: [Issue #83](https://github.com/repovio/repovio/issues/83). Planning commit/push approved; implementation
-requires separate approval.
+**Tracking**: [Issue #83](https://github.com/repovio/repovio/issues/83). Implementation and task commits/pushes approved and completed.
+Merge and publication remain separately gated.
 
 ## User Scenarios & Testing
 

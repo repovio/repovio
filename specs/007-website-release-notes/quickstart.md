@@ -1,6 +1,6 @@
 # Validation Guide: Website Release Notes
 
-This guide defines implementation acceptance. Product implementation is not part of the current planning phase.
+This guide defines implementation acceptance. Completed implementation results are recorded in [evidence.md](evidence.md).
 
 ## Prerequisites
 
@@ -21,6 +21,7 @@ corepack pnpm --filter @repovio/website test
 corepack pnpm --filter @repovio/website build
 corepack pnpm --filter @repovio/website exec playwright install chromium
 corepack pnpm --filter @repovio/website test:e2e
+corepack pnpm --filter @repovio/website test:api-reference
 ```
 
 The release-notes unit test path is a planned artifact. It must cover exact canonical source inclusion, full multiline
@@ -46,7 +47,7 @@ history behavior, missing-source validation, and localized navigation. Existing 
 
 ```sh
 docker build -f apps/website/Dockerfile -t repovio-website:local .
-corepack pnpm --filter @repovio/website test:container
+CONTAINER_IMAGE=repovio-website:local corepack pnpm --filter @repovio/website test:container
 ```
 
 The image must build from a clean checkout with root changelog available, serve history from its immutable content dump,

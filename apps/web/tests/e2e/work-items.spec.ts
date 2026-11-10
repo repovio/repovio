@@ -120,6 +120,8 @@ test('filters issues by every selected label and updated range, then renders san
   await expect(page.getByRole('heading', { name: 'Issues' })).toBeVisible();
   await expect(page.getByText('Track provider issues')).toBeVisible();
   await expectTableHover(page, page.getByRole('table'));
+  await expect(issueBreadcrumbs.getByRole('button', { name: 'Labels' })).toHaveCount(0);
+  await issueBreadcrumbs.getByRole('button', { name: 'Filter', exact: true }).click();
   await page.getByRole('button', { name: 'Labels' }).click();
   await page.getByRole('option', { name: 'Bug' }).click();
   await page.getByRole('option', { name: 'Priority: High' }).click();
@@ -138,6 +140,23 @@ test('filters issues by every selected label and updated range, then renders san
   expect(where).toContain('2026-09-01T00:00:00.000Z');
   expect(where).toContain('2026-09-13T23:59:59.999Z');
 
+  const filterTrigger = issueBreadcrumbs.getByRole('button', { name: 'Filter', exact: true });
+  await page.keyboard.press('Escape');
+  await expect(filterTrigger).toBeFocused();
+  await expect(filterTrigger).toHaveClass(/text-primary/);
+  await filterTrigger.click();
+  await expect(page.getByLabel('Updated from')).toHaveValue('2026-09-01');
+  await expect(page.getByLabel('Updated to')).toHaveValue('2026-09-13');
+  await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+  await expect(page.getByLabel('Updated from')).toHaveValue('');
+  await expect(page.getByLabel('Updated to')).toHaveValue('');
+  await expect
+    .poll(
+      /** Reads the latest encoded list constraints after Clear. */ () =>
+        new URL(requestedUrls.at(-1)!).searchParams.get('where') ?? '',
+    )
+    .not.toContain('normalizedName');
+  await page.keyboard.press('Escape');
   await page.getByRole('link', { name: 'Track provider issues' }).click();
   await expectFullPageShell(page);
   const issueDetailBreadcrumbs = page.locator('[data-page-toolbar]').first();

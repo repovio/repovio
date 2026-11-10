@@ -3,17 +3,17 @@
 **Input**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md), [data-model.md](data-model.md),
 [UI contract](contracts/ui.md), and [quickstart.md](quickstart.md).
 **Feature**: `006-unify-table-toolbars`
-**Status**: Task generation and issue/planning-commit creation approved on 2026-11-09; implementation has not started.
+**Status**: Task generation and issue/planning-commit creation approved on 2026-11-09; implementation approved on 2026-11-10; execution in progress.
 **Issue**: [#79](https://github.com/repovio/repovio/issues/79)
-**Branch**: `codex/79-unify-table-toolbars`
+**Branch**: `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls`
 **Organization**: Seven executable tasks grouped by user story. Tests are included as required by the feature spec
 and constitution. Each implementation task includes its own code, focused tests, documentation, and Changeset.
 
 ## Delivery Boundaries
 
-- Reuse the existing Codex worktree and `codex/79-unify-table-toolbars` branch for issue #79.
+- Reuse the existing Codex worktree and `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls` branch for issue #79.
   Issue creation and committing/pushing the planning artifacts are approved.
-- Obtain separate implementation approval after the issue and planning commit are reviewable.
+- Implementation approved on 2026-11-10 after planning PR #80 merged. PR merge still requires separate approval.
 - Once implementation is authorized, complete, verify, commit, and push each substantive task separately before
   dependent work. Include exactly one focused `repovio` patch Changeset per implementation commit.
 - Read-only setup/verification tasks do not require empty commits or artificial Changesets. Metadata-only evidence
@@ -25,7 +25,7 @@ and constitution. Each implementation task includes its own code, focused tests,
 
 **Goal**: Verify the approved feature context and prepare the existing toolchain without changing project configuration.
 
-- [ ] T001 Verify `specs/006-unify-table-toolbars/{spec,plan,tasks}.md` and `.specify/feature.json` resolve to this feature; confirm issue/branch/implementation approvals before product work, check Node.js 26.13.0 and Corepack pnpm 11.28.9 against `package.json`, and install the unchanged `pnpm-lock.yaml` dependencies and Chromium if missing. Record prerequisites and any preexisting failures in `specs/006-unify-table-toolbars/evidence.md`.
+- [x] T001 Verify `specs/006-unify-table-toolbars/{spec,plan,tasks}.md` and `.specify/feature.json` resolve to this feature; confirm issue/branch/implementation approvals before product work, check Node.js 26.13.0 and Corepack pnpm 11.28.9 against `package.json`, and install the unchanged `pnpm-lock.yaml` dependencies and Chromium if missing. Record prerequisites and any preexisting failures in `specs/006-unify-table-toolbars/evidence.md`.
 
 **Acceptance**: This worktree can run the existing web checks and mocked browser suites with pinned dependencies.
 Do not copy writable Graphify caches or change shared Git hooks as setup work.
@@ -34,7 +34,7 @@ Do not copy writable Graphify caches or change shared Git hooks as setup work.
 
 **Goal**: Establish the behavioral baseline and supported public filtering interface before moving controls.
 
-- [ ] T002 Inspect the installed `@querry-kit/nuxt-ui` public header/trigger slots against `pnpm-lock.yaml` and `specs/006-unify-table-toolbars/research.md`; run baseline `apps/web/tests/e2e/{work-items,security-alerts,user-groups,page-layout}.spec.ts`, capture existing label/path/date request predicates and toolbar screenshots, and record results in `specs/006-unify-table-toolbars/evidence.md`. Confirm no native Date field is required and identify existing locale keys in `apps/web/i18n/locales/{en,de}.json` for the wrapper header, mode, and Clear controls.
+- [x] T002 Inspect the installed `@querry-kit/nuxt-ui` public header/trigger slots against `pnpm-lock.yaml` and `specs/006-unify-table-toolbars/research.md`; run baseline `apps/web/tests/e2e/{work-items,security-alerts,user-groups,page-layout}.spec.ts`, capture existing label/path/date request predicates and toolbar screenshots, and record results in `specs/006-unify-table-toolbars/evidence.md`. Confirm no native Date field is required and identify existing locale keys in `apps/web/i18n/locales/{en,de}.json` for the wrapper header, mode, and Clear controls.
 
 **Acceptance**: Baseline results and public-slot compatibility are recorded. Existing failures are classified before edits.
 No product-code changes belong in this task. This phase blocks all implementation tasks.

@@ -1,9 +1,9 @@
 # Feature Specification: Consistent Table Toolbars
 
-**Feature Branch**: `codex/79-unify-table-toolbars`
+**Feature Branch**: `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls`
 **Feature Identifier**: `006-unify-table-toolbars`
 **Created**: 2026-11-09
-**Status**: Plan and tasks approved; implementation pending separate approval
+**Status**: Implementation approved on 2026-11-10
 **Input**: Browser comments 1–5 request toolbars like Workflow runs on Issues, Pull requests, Dependency alerts,
 Code scanning alerts, and Secret scanning alerts. Comment 6 requests merging User groups controls into the toolbar above.
 **Tracking**: [GitHub issue #79](https://github.com/repovio/repovio/issues/79). Planning commit/push approved.

@@ -573,11 +573,12 @@ test('operates wrapped filters and preserves refresh loading until every request
   const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
   await expect(refresh).toBeEnabled();
   await toolbar.getByRole('textbox', { name: 'Search work items' }).fill('mobile');
-  await toolbar.getByRole('button', { name: 'Labels', exact: true }).click();
+  await toolbar.getByRole('button', { name: 'Filter', exact: true }).click();
+  await page.getByRole('button', { name: 'Labels', exact: true }).click();
   await page.getByRole('option', { name: 'Bug', exact: true }).click();
   await page.keyboard.press('Escape');
-  await toolbar.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
-  await toolbar.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
+  await page.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
+  await page.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
   await expect
     .poll(
       /** Evaluates `requestedUrls.at(-1) ?? ''` when expect.poll invokes this callback. */ () =>
@@ -592,6 +593,10 @@ test('operates wrapped filters and preserves refresh loading until every request
     .toContain('2026-09-13T23:59:59.999Z');
   expect(decodeURIComponent(requestedUrls.at(-1)!)).toContain('bug');
 
+  await page.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Filter', exact: true })).toBeHidden();
+  await expect(toolbar.getByRole('button', { name: 'Filter', exact: true })).toBeFocused();
   for (const name of ['Sort', 'Filter', 'Table options']) {
     const trigger = toolbar.getByRole('button', { name, exact: true });
     await trigger.focus();

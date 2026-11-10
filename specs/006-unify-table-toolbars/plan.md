@@ -1,12 +1,12 @@
 # Implementation Plan: Consistent Table Toolbars
 
-**Branch**: `codex/79-unify-table-toolbars`
-**Base**: `origin/main` at `779265ee3544e40b8717367d03725dfe6bc00751`.
+**Branch**: `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls`
+**Base**: `origin/main` at `5f568b0a4dd92aa3dd4f5b17c9098e1289dc6f76`.
 **Feature Identifier**: `006-unify-table-toolbars` | **Date**: 2026-11-09 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/006-unify-table-toolbars/spec.md`.
 **Workspace**: Existing Codex worktree `/mnt/projects/.codex-worktrees/51ac/repovio`; initially clean.
 **Tracking**: [GitHub issue #79](https://github.com/repovio/repovio/issues/79). Issue creation and the planning
-commit/push are approved; product implementation requires separate approval.
+commit/push and implementation are approved. PR merge requires separate approval.
 
 ## Summary
 

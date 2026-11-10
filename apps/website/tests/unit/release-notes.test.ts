@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getReleaseHeadings } from '../../app/util/release-notes';
 import { readReleaseNotes, validateReleaseNotes } from '../../scripts/check-release-notes.mjs';
 
 /** Exercise source validation without changing the canonical repository changelog. */
@@ -47,5 +48,23 @@ describe('canonical application release source', /** Verify the canonical source
   /** Canonical source must satisfy the same contract as isolated fixtures. */
   it('validates the actual application history', /** Verify the canonical source contract. */ () => {
     expect(validateReleaseNotes(readReleaseNotes()).length).toBeGreaterThan(1);
+  });
+});
+
+/** Keep release navigation in sync with renderer output and preserve all provided metadata. */
+describe('rendered release navigation', /** Verify heading adaptation rather than recreating Markdown parsing. */ () => {
+  it('retains renderer identifiers, source order, and metadata', /** Keep actual numeric-heading normalization intact. */ () => {
+    const release = {
+      id: '_230',
+      text: '2.3.0',
+      depth: 2,
+      children: [{ id: 'minor-changes', text: 'Minor Changes', depth: 3 }],
+    };
+    const old = { id: '_020', text: '0.2.0', depth: 2, children: [] };
+    expect(
+      getReleaseHeadings([release, { id: 'category', text: 'Patch Changes', depth: 3, children: [] }, old]),
+    ).toEqual([release, old]);
+    expect(getReleaseHeadings([])).toEqual([]);
+    expect(getReleaseHeadings([release])[0]).toBe(release);
   });
 });

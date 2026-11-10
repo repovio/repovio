@@ -67,3 +67,37 @@ for (const [code, messages] of [
     await expect(page.getByTestId('release-history')).toBeVisible();
   });
 }
+
+for (const prefix of ['', '/de']) {
+  test(`${prefix || 'en'}: release TOC follows actual rendered headings`, /** Verify stable release links, complete history, and actual browser fragments. */ async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(`${prefix}/docs/release-notes`);
+    const headings = page.getByTestId('release-notes-body').locator('h2');
+    const versions = await headings.allTextContents();
+    expect(versions[0]).toBe('2.3.0');
+    expect(versions.at(-1)).toBe('0.2.0');
+    const ids = await headings.evaluateAll(
+      /** Read IDs emitted by the real Markdown renderer. */ (elements) =>
+        elements.map(/** Preserve each DOM heading identifier. */ (element) => element.id),
+    );
+    expect(new Set(ids).size).toBe(ids.length);
+    const toc = page.getByTestId('release-desktop-toc');
+    const href = `#${ids[1]}`;
+    await toc.locator(`a[href="${href}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await page.reload();
+    await expect(headings.nth(1)).toBeInViewport();
+    await expect(page.getByTestId('release-notes-body')).toContainText(
+      'Apply the additive notification-attempt migrations before starting the updated API.',
+    );
+    await page.setViewportSize({ width: 375, height: 900 });
+    await page.goto(`${prefix}/docs/release-notes`);
+    const mobile = page.getByTestId('release-mobile-toc');
+    await mobile.locator('summary').click();
+    await mobile.locator(`a[href="${href}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect(headings.nth(1)).toBeInViewport();
+  });
+}

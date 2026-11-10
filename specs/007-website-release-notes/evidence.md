@@ -33,3 +33,12 @@
 - Rebuilt Docker image and enhanced read-only/unprivileged runtime checks passed for EN/DE release-history routes.
 - Interactive browser and screenshot inspection confirmed active fourth tab and readable complete Markdown in dark mode.
 - Deliberate empty-source presentation will also be exercised with an isolated fixture during final acceptance.
+
+## T004 release navigation
+
+- Commit for T003: `e5619f5` (pushed).
+- Red browser check failed on absent TOC before implementation. Six production browser scenarios now pass.
+- Desktop/mobile release navigation uses the real renderer IDs (`_230`, `_220`, etc.); fragment reloads work in EN/DE.
+- Ten focused unit tests pass; heading adaptation preserves original objects, metadata, IDs, and source order.
+- Complete multiline upgrade guidance and first/last canonical releases remain visible; no duplicate heading IDs.
+- Website lint/typecheck, production build, documentation coverage, and stable canonical formatting passed.

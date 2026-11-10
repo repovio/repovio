@@ -62,7 +62,7 @@ website container. Confirm source prose remains canonical, no archive edits occu
 **Goal**: Reach readable release history from the fourth documentation tab.
 **Independent test**: Navigate from current and archived handbook pages, then directly reload the history destination.
 
-- [ ] T003 [US1] Create `apps/website/app/pages/docs/release-notes.vue` with SSR collection loading and a thin page shell;
+- [x] T003 [US1] Create `apps/website/app/pages/docs/release-notes.vue` with SSR collection loading and a thin page shell;
       compose `apps/website/app/components/modules/docs/release-history.vue` for the complete ContentRenderer body and valid
       empty state; append the localized fourth destination and optional version-selector visibility prop in
       `apps/website/app/components/DocsToolbar.vue`; add initial interface translations in

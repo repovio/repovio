@@ -101,3 +101,15 @@ Implementation and separate per-task commits/pushes approved on 2026-11-10. No m
   24-hour output, and invariant ISO Latin digits/order. Formatter implementation remains unchanged.
 - Final checks: 25 unit files / 129 tests, all 70 production-browser cases, web lint/typecheck/build, focused test lint,
   repository documentation, stable formatting, and whitespace checks passed. API responses are fixtures.
+
+## T007: Current handbook maintenance
+
+- T006 committed/pushed as `7290b51`. Parallel handbook drafts were reconciled against its verified final behavior.
+- All 13 current handbook translations now describe the 17 app languages, separate pt/pt-BR options, exact local flag
+  mappings, RTL and technical data, preference/fallback behavior, loading, error/reload retry, and maintenance commands.
+- Guidance points to the shared app registry and explicit Nuxt UI mapping, complete current catalogs, validation gates,
+  licensed assets, supported script/theme/width checks, and pinned toolchain.
+- Website documentation check passed. All localized frontmatter and stable anchors were preserved; the complete flag
+  mapping, identifiers, commands, and pins were checked. Canonical formatting is stable. Published archives are unchanged.
+- No website runtime/routing/publishing or dependency change. This source update does not claim deployment or native-speaker
+  certification; agent translations and source consistency checks were used.

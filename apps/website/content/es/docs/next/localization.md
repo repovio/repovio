@@ -3,43 +3,65 @@ title: 'Localización de interfaz'
 description: 'Idiomas de interfaz admitidos, comportamiento alternativo y proceso para mantener las traducciones Repovio.'
 ---
 
-Repovio incluye su interfaz web en inglés (`en`), alemán (`de`), español (`es`), francés (`fr`), italiano (`it`),
-holandés (`nl`), polaco (`pl`) y portugués. (`pt`). El menú de idioma en el encabezado de la aplicación está disponible
-para todos los usuarios que hayan iniciado sesión. La elección de un idioma guarda la preferencia en la cookie del
-navegador `repovio-locale` y la aplica en futuras visitas.
+Repovio admite los 13 idiomas del sitio web y conserva italiano, neerlandés, polaco y portugués: 17 idiomas en la app.
+Portugués (`pt`) y portugués de Brasil (`pt-BR`) siguen siendo opciones independientes. La tabla incluye todos los códigos.
 
-El inglés es el valor predeterminado y alternativo determinista. Cuando una preferencia del navegador o una cookie
-guardada no identifica una configuración regional compatible, Repovio se muestra en inglés. El formato de fecha, hora y
-número utiliza la configuración regional seleccionada.
+El inglés es el idioma predeterminado y de reserva. La cookie `repovio-locale` tiene prioridad sobre un idioma del navegador
+compatible; las preferencias no compatibles usan inglés. Cambiar de idioma conserva la ruta y los parámetros de consulta.
+Fechas, horas y números siguen el idioma elegido sin alterar las políticas configuradas de 24 horas e ISO. Árabe y urdu
+usan disposición de derecha a izquierda; los demás idiomas, de izquierda a derecha. Los nombres, identificadores de
+repositorio, URL y código procedentes del proveedor conservan sus valores y un orden legible.
 
 <a id="sign-in-controls-and-language-flags"></a>
 
 ## Controles de acceso y banderas
 
-Las páginas de acceso y configuración del primer administrador ofrecen bajo el formulario un selector con idioma activo
-y bandera. Permanece ocupado mientras carga el idioma. Un botón separado alterna entre Sistema, Claro y Oscuro y guarda
-la preferencia. Su icono muestra la selección actual; la descripción emergente y el nombre accesible describen la
-selección y la siguiente acción.
+Inicio de sesión, configuración inicial y menú de usuario ofrecen los mismos nombres nativos y banderas SVG locales
+decorativas. Los nombres siguen siendo las etiquetas accesibles. Los menús largos permiten desplazamiento y teclado.
+El control permanece ocupado durante toda la descarga y bloquea nuevas selecciones. Si falla, Repovio restaura el idioma
+anterior y muestra un error traducido. Recarga la página y selecciona de nuevo el idioma para reintentar la descarga.
 
-El menú muestra banderas SVG locales decorativas junto a los nombres nativos. Los nombres siguen siendo las etiquetas
-accesibles; las banderas no los reemplazan. La correspondencia entre idioma y país es: `en` → GB, `de` → DE, `es` → ES,
-`fr` → FR, `it` → IT, `nl` → NL, `pl` → PL, `pt` → PT.
+Las páginas públicas de autenticación incluyen un botón de tema que alterna Sistema, Claro y Oscuro. Su icono muestra
+la preferencia; el texto emergente y el nombre accesible explican la preferencia actual y la siguiente acción.
 
-Los archivos de `apps/web/public/flags` proceden de
-[flag-icons v7.5.0](https://github.com/lipis/flag-icons/tree/v7.5.0), bajo la licencia MIT incluida. No necesitan
-solicitudes externas de imágenes. Al añadir un idioma, incluir su bandera y correspondencia en `useLocales`.
+Correspondencia entre idioma y país de la bandera:
+
+| Idioma | País | Idioma  | País |
+| ------ | ---- | ------- | ---- |
+| `en`   | GB   | `zh-CN` | CN   |
+| `de`   | DE   | `hi`    | IN   |
+| `es`   | ES   | `ar`    | SA   |
+| `fr`   | FR   | `bn`    | BD   |
+| `it`   | IT   | `pt-BR` | BR   |
+| `nl`   | NL   | `id`    | ID   |
+| `pl`   | PL   | `ur`    | PK   |
+| `pt`   | PT   | `ru`    | RU   |
+| `ja`   | JP   |         |      |
+
+Los recursos de `apps/web/public/flags` proceden de [flag-icons v7.5.0](https://github.com/lipis/flag-icons/tree/v7.5.0), con la licencia MIT incluida. No requieren servicios externos de imágenes ni traducción.
 
 <a id="adding-or-updating-a-locale"></a>
 
-## Agregar o actualizar una configuración regional
+## Añadir o actualizar un idioma
 
-1. Agregue o actualice `apps/web/i18n/locales/<locale>.json` utilizando `en.json` como referencia clave completa.
-2. Registre su código local, nombre de archivo y nombre para mostrar nativo en `apps/web/nuxt.config.ts`.
-3. Mantenga todas las claves de mensajes presentes en `en.json`; el conjunto de pruebas web comprueba esta paridad para
-   cada configuración regional enviada.
-4. Agregue mensajes en inglés y alemán para cada nueva cadena de interfaz visible para el usuario, luego agregue la
-   traducción correspondiente a cada configuración regional enviada.
-5. Ejecute `pnpm --filter @repovio/web test`, `pnpm --filter @repovio/web typecheck` y la prueba de Dramaturgo afectada.
+1. Usa `apps/web/i18n/locales/en.json` como referencia completa actual. Traduce todos los catálogos distribuidos,
+   incluidas etiquetas accesibles, validación, estados, parámetros y significado de los plurales.
+2. Registra código, etiqueta de idioma, nombre nativo, archivo, dirección, país y código de Nuxt UI en
+   `apps/web/shared/locales.ts`. Conserva los códigos existentes y distingue `pt` de `pt-BR`.
+3. Asocia el export de Nuxt UI instalado en `apps/web/app/utils/locales.ts`, por ejemplo `zh_cn` o `pt_br`.
+4. Añade la bandera local con su licencia y atribución. No importes la implementación del sitio web en la app.
+5. Ejecuta las comprobaciones y los escenarios de navegador. Los tests comparan idiomas del sitio y de la app y rechazan
+   mensajes ausentes, parámetros incompatibles, sintaxis inválida, asignaciones UI y banderas ausentes. El inglés de
+   reserva no sustituye una traducción completa; los nombres de producto y literales técnicos pueden permanecer iguales.
 
-Los nombres de los proveedores, los nombres de los repositorios, los nombres de los flujos de trabajo y otros datos
-proporcionados por los proveedores permanecen sin cambios porque no son una copia de la interfaz Repovio.
+Activa Node.js 26.13.0 y pnpm 11.28.9, inicia la app local y ejecuta:
+
+```sh
+corepack pnpm --dir apps/web test
+corepack pnpm --dir apps/web lint
+corepack pnpm --dir apps/web typecheck
+corepack pnpm --dir apps/web exec playwright test tests/e2e/localization.spec.ts \
+  tests/e2e/auth-preferences.spec.ts tests/e2e/localization-rtl.spec.ts
+```
+
+Inspecciona capturas claras/oscuras y estrechas/amplias, especialmente RTL y escrituras CJK e índicas. Actualiza de forma coherente todas las traducciones actuales de `next`; los archivos de versiones publicadas no se modifican.

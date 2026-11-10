@@ -172,7 +172,7 @@ examples. Run focused unit/browser tests, then web test/lint/typecheck/build as 
 
 **Purpose**: Publish accurate current guidance and verify the complete bounded feature before review.
 
-- [ ] T007 [P] Update `apps/website/content/{ar,bn,de,en,es,fr,hi,id,ja,pt-BR,ru,ur,zh-CN}/docs/next/localization.md` to
+- [x] T007 [P] Update `apps/website/content/{ar,bn,de,en,es,fr,hi,id,ja,pt-BR,ru,ur,zh-CN}/docs/next/localization.md` to
       describe all 17 app options, the app registry, nine added flag mappings, Arabic/Urdu direction, distinct Portuguese
       variants, preference/fallback/loading behavior, and actual maintenance commands; preserve localized prose and every
       published `apps/website/content/*/docs/v*/` archive byte; run `corepack pnpm --dir apps/website docs:check` and

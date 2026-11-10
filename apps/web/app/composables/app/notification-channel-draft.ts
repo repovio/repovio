@@ -485,6 +485,7 @@ export function useNotificationChannelDraft(
 
   /** Validate only the visible step before advancing; full validation still runs on save. */
   function nextStep(): boolean {
+    if (!open.value || submitting.value || persisted.value || previewing.value || step.value >= 3) return false;
     const result = channelFormSchema.value.safeParse(form.value);
     const identity = ['name', 'type', 'enabled'];
     const errors = result.success
@@ -514,7 +515,18 @@ export function useNotificationChannelDraft(
 
   /** Return to the previous step without clearing valid draft values. */
   function back(): void {
+    if (!open.value || submitting.value || persisted.value || previewing.value) return;
     step.value = Math.max(0, step.value - 1);
+  }
+
+  /** Validate controlled stepper requests without skipping future steps or pending operations. */
+  function requestStep(value: unknown): boolean {
+    if (!open.value || submitting.value || persisted.value || previewing.value) return false;
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 3 || value > step.value + 1)
+      return false;
+    if (value > step.value) return nextStep();
+    step.value = value;
+    return true;
   }
 
   /** Handle Enter without allowing early persistence or duplicate submissions. */
@@ -534,6 +546,7 @@ export function useNotificationChannelDraft(
     channelFormSchema,
     step,
     nextStep,
+    requestStep,
     back,
     submit,
     preview,

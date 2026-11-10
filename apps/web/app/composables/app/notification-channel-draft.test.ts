@@ -237,3 +237,29 @@ it('blocks new unavailable push selection without clearing an existing channel',
   expect(draft.nextStep()).toBe(true);
   expect(draft.nextStep()).toBe(true);
 });
+
+it('guards stepper clicks, jumps, and every pending navigation path', /** All controls must share step-local validation. */ async () => {
+  const { draft, open } = fixture();
+  open.value = true;
+  await nextTick();
+  expect(draft.requestStep(3)).toBe(false);
+  expect(draft.requestStep(1)).toBe(false);
+  draft.form.value.name = 'Operations';
+  expect(draft.requestStep(1)).toBe(true);
+  expect(draft.requestStep(2)).toBe(false);
+  expect(draft.requestStep(0)).toBe(true);
+  expect(draft.form.value.name).toBe('Operations');
+  draft.submitting.value = true;
+  expect(draft.nextStep()).toBe(false);
+  expect(draft.requestStep(1)).toBe(false);
+  draft.step.value = 1;
+  draft.back();
+  expect(draft.step.value).toBe(1);
+  draft.submitting.value = false;
+  draft.persisted.value = true;
+  expect(draft.requestStep(0)).toBe(false);
+  draft.persisted.value = false;
+  draft.previewing.value = true;
+  expect(draft.requestStep(0)).toBe(false);
+  expect(draft.requestStep('invalid')).toBe(false);
+});

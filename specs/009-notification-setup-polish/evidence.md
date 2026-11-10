@@ -36,3 +36,13 @@
 - Each dialog open checks readiness; retry shows loading for its full request; close invalidates pending results.
 - After extending imported Vue prop types, the local development server needed a restart to refresh compiled props.
   A fixture used an invalid recipient UUID initially; corrected to the existing synthetic UUID convention.
+
+## Controlled Stepper (T004)
+
+- New navigation regression failed before implementation; 21 push/draft tests pass afterward.
+- Four focused browser scenarios passed: full channel journey, English/German field validation, and pointer/keyboard
+  Stepper requests. Web typecheck, focused ESLint, and documentation check passed.
+- Inspected the German 390x844 review screenshot: four labeled indicators fit without horizontal overflow.
+  Screenshot: `apps/web/test-results/notifications-validates-no-3eac9-before-save-and-preview-de--chromium/notification-review-de.png`.
+- Explicit values 0–3 use a controlled Stepper with application validation; future jumps and all pending navigation
+  paths are guarded. Back preserves draft values. Footer relocation follows in T005.

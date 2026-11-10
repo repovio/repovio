@@ -6,16 +6,17 @@
     :title="$t(channel ? 'notifications.channels.editTitle' : 'notifications.channels.createTitle')"
   >
     <template #body>
-      <ol class="mb-5 flex flex-wrap gap-3" :aria-label="$t('notifications.wizard.steps')">
-        <li
-          v-for="(name, index) in ['identity', 'destination', 'events', 'review']"
-          :key="name"
-          :aria-current="step === index ? 'step' : undefined"
-          :class="step === index ? 'font-semibold text-primary' : 'text-muted'"
-        >
-          {{ index + 1 }}. {{ $t(`notifications.wizard.${name}`) }}
-        </li>
-      </ol>
+      <UStepper
+        class="mb-5 w-full"
+        data-channel-stepper
+        :aria-label="$t('notifications.wizard.steps')"
+        :items="stepItems"
+        :model-value="step"
+        :linear="false"
+        :disabled="submitting || persisted || previewing"
+        :ui="{ item: 'min-w-0', title: 'text-xs whitespace-normal text-center' }"
+        @update:model-value="requestStep"
+      />
       <UAlert
         v-if="saveError"
         class="mb-4"
@@ -74,11 +75,17 @@
             color="neutral"
             variant="soft"
             :label="$t('notifications.wizard.back')"
-            :disabled="submitting || persisted"
+            :disabled="submitting || persisted || previewing"
             @click="back"
           />
           <span v-else />
-          <UButton v-if="step < 3" type="button" :label="$t('notifications.wizard.next')" @click="nextStep" />
+          <UButton
+            v-if="step < 3"
+            type="button"
+            :label="$t('notifications.wizard.next')"
+            :disabled="submitting || persisted || previewing"
+            @click="nextStep"
+          />
           <UButton
             v-else
             type="submit"
@@ -93,8 +100,9 @@
 </template>
 
 <script setup lang="ts">
+import type { StepperItem } from '@nuxt/ui';
 import { localizeFormSchema } from '@repovio/schemas';
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useNotificationChannelDraft, type ChannelDraftProps } from '~/composables/app/notification-channel-draft';
 const props = defineProps<ChannelDraftProps>();
@@ -107,6 +115,7 @@ const {
   channelFormSchema,
   step,
   nextStep,
+  requestStep,
   back,
   submit,
   preview,
@@ -126,6 +135,16 @@ const {
   ntfyPriorityOptions,
   showConfiguration,
 } = useNotificationChannelDraft(props, open, t, useRepovioApi());
+const stepItems = computed<StepperItem[]>(
+  /** Keep explicit step values and localized titles in the same order as draft validation. */ () =>
+    ['identity', 'destination', 'events', 'review'].map(
+      /** Disable jumps past the next validated transition. */ (name, value) => ({
+        title: t(`notifications.wizard.${name}`),
+        value,
+        disabled: value > step.value + 1,
+      }),
+    ),
+);
 const stepContent = ref<HTMLElement | null>(null);
 watch(
   step,

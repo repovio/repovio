@@ -41,3 +41,6 @@ Step changes move focus into visible content. Invalid navigation retains useful 
 remain reachable with keyboard and at narrow widths; modal focus trapping and close behavior remain intact.
 Existing role guards and API authorization remain the enforcement boundaries. No foreign User enrollment details or
 credential values appear in diagnostics, rendered errors, fixtures, screenshots, or logs.
+
+The draft exposes `requestStep(value)` for controlled stepper transitions. Next, Back, and indicator requests reject
+changes while submitting, recovering a persisted save, or previewing. A forward request validates exactly the current step.

@@ -214,7 +214,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await dialog.getByRole('textbox', { name: 'From address' }).fill('repovio@example.com');
   await dialog.getByRole('textbox', { name: 'Recipients' }).fill('operations@example.com');
   await dialog.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(dialog.getByText('Events', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: 'Dependency alert opened' })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: 'Secret scanning alert resolved' })).toBeVisible();
   await dialog.getByRole('checkbox', { name: 'Workflow failed' }).check();
@@ -930,3 +930,25 @@ for (const locale of ['en', 'de'] as const) {
     await page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }).click();
   });
 }
+
+test('validates controlled stepper clicks and keyboard navigation', /** Future steps cannot skip validation or erase draft fields. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.goto('/notifications');
+  await page.getByRole('button', { name: 'Add channel', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const steps = dialog.locator('[data-channel-stepper] button');
+  await expect(steps).toHaveCount(4);
+  await expect(steps.nth(3)).toBeDisabled();
+  await steps.nth(1).click();
+  await expect(dialog.getByRole('textbox', { name: /^Name/ })).toBeVisible();
+  await dialog.getByRole('textbox', { name: /^Name/ }).fill('Operations');
+  await steps.nth(1).focus();
+  await page.keyboard.press('Enter');
+  await expect(dialog.getByRole('textbox', { name: 'SMTP server' })).toBeFocused();
+  await steps.nth(2).click();
+  await expect(dialog.getByRole('textbox', { name: 'SMTP server' })).toBeVisible();
+  await steps.nth(0).click();
+  await expect(dialog.getByRole('textbox', { name: /^Name/ })).toHaveValue('Operations');
+});

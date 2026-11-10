@@ -6,7 +6,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Planning and tasks approved; issue created; implementation approval pending
+**Status**: Planning and tasks approved; issue created; implementation approved
 
 **Input**: Four browser comments on `/notifications`: use an icon-only Delivery history action; resolve unavailable
 Browser push; use the Nuxt UI stepper; place wizard navigation in the modal footer.
@@ -122,7 +122,7 @@ System Administrators open Delivery history through a compact icon action with a
 
 - This is a follow-up to merged notifications PR #68, not a continuation of its completed task checklist.
 - Issue [#90](https://github.com/repovio/repovio/issues/90) records the approved planning scope. Planning commit/push is
-  authorized; product implementation requires separate approval.
+  authorized; product implementation and per-task commits are approved. Merge and deployment remain separate.
 - Production's disabled option is evidence of a symptom, not proof that VAPID configuration is missing.
 - Existing Web Push transport and deployment environment loading are reused. No new transport, automatic key generation,
   database migration, dependency upgrade, or production configuration mutation is included.

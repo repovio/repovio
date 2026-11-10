@@ -5,7 +5,7 @@
 
 **Authorization**: Task generation, issue creation, branch setup, and planning commit/push approved on 2026-11-10.
 **Issue**: [#90](https://github.com/repovio/repovio/issues/90). **Branch**: `codex/90-notification-setup-polish`.
-The existing selected Codex worktree is reused. Implementation and merge remain unapproved.
+The existing selected Codex worktree is reused. Implementation and per-task commit/push approved on 2026-11-10. Merge and deployment remain unapproved.
 
 **Tests**: Required by the specification and repository rules. Each behavior increment includes focused regression tests,
 relevant documentation, and its own verification. Write the focused regression first and establish failure before fixing.
@@ -16,7 +16,7 @@ relevant documentation, and its own verification. Write the focused regression f
 
 **Purpose**: Establish reviewable baseline and preserve the approved scope before product changes.
 
-- [ ] T001 Record baseline and non-secret push diagnosis in `specs/009-notification-setup-polish/evidence.md`: after issue/implementation approval, confirm task association, current branch/base, clean or explicitly preserved changes, pinned Node.js/pnpm, and existing test configuration; run current push and draft unit tests plus notification browser scenarios when the existing test server is available. Distinguish preexisting failures from introduced failures. Inspect `apps/api/src/modules/notifications/browser-push.service.ts`, `.env.example`, and `compose.yml` only as needed to trace readiness; never print secrets or infer production configuration from the screenshot. Record production diagnosis as unverified unless an authorized status read supplies evidence. No production mutations, dependency upgrades, or new infrastructure.
+- [x] T001 Record baseline and non-secret push diagnosis in `specs/009-notification-setup-polish/evidence.md`: after issue/implementation approval, confirm task association, current branch/base, clean or explicitly preserved changes, pinned Node.js/pnpm, and existing test configuration; run current push and draft unit tests plus notification browser scenarios when the existing test server is available. Distinguish preexisting failures from introduced failures. Inspect `apps/api/src/modules/notifications/browser-push.service.ts`, `.env.example`, and `compose.yml` only as needed to trace readiness; never print secrets or infer production configuration from the screenshot. Record production diagnosis as unverified unless an authorized status read supplies evidence. No production mutations, dependency upgrades, or new infrastructure.
 
 **Acceptance**: Baseline identifies actual check results and evidence gaps without claiming live push success. Any confirmed
 source defect is bounded to its existing owning layer; a materially different solution returns to plan review.

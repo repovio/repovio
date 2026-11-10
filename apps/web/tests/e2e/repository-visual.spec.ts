@@ -49,6 +49,30 @@ for (const locale of ['en', 'de']) {
         });
         await settings.click();
         await expect(settings).toHaveAttribute('aria-current', 'page');
+        await expect(navigation.locator('a[aria-current="page"]')).toHaveCount(1);
+        expect(
+          await page.locator('[data-page-toolbar]').evaluate(
+            /** Keep long Repository breadcrumb text separate from the action controls. */ (toolbar) => {
+              const links = toolbar.querySelectorAll('nav a');
+              const crumb = links[links.length - 1]?.getBoundingClientRect();
+              if (!crumb) return false;
+              for (const control of toolbar.querySelectorAll(
+                ':scope > [data-slot="right"] button, :scope > [data-slot="right"] a',
+              )) {
+                const bounds = control.getBoundingClientRect();
+                if (
+                  bounds.width &&
+                  crumb.left < bounds.right &&
+                  crumb.right > bounds.left &&
+                  crumb.top < bounds.bottom &&
+                  crumb.bottom > bounds.top
+                )
+                  return false;
+              }
+              return true;
+            },
+          ),
+        ).toBe(true);
         const sections = page.getByRole('navigation', {
           name: locale === 'de' ? 'Bereiche der Repository-Einstellungen' : 'Repository settings sections',
           exact: true,

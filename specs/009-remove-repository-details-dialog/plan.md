@@ -112,6 +112,8 @@ navigation state in a small feature helper/composable only if needed. No shared 
 - Workflow Filter and membership forms use visible labels and a consistent field/action row on wide screens, stacking
   below the existing medium breakpoint. Flexible fields use `min-w-0`; selects fill their allocated width; primary add
   actions show localized text beside icons. Group assignment/search/pagination follow the same spacing and action style.
+- Constrain long Repository breadcrumb labels through the existing item class contract so they cannot overlap page
+  actions at the reported desktop width; retain full accessible identity.
 - Keep tables in their own overflow containers, preserve pinned action columns, and make empty/error/pending states
   legible. Retain all existing validation and destructive confirmation behavior. Avoid application-wide card restyling.
 - Change only the primary Repository navigation label to the existing Alerts/Warnungen translation where available,

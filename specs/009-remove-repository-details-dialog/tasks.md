@@ -150,12 +150,20 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       behavior; no deployment or merge is authorized by this task. Any required fixes are scoped follow-up implementation
       commits with their own Changeset, followed by affected rechecks; do not mark this gate complete until evidence passes.
 
+- [ ] T011 Bound long Repository breadcrumb labels in
+      `apps/web/app/components/modules/repositories/details/page-shell.vue` through the existing breadcrumb item class
+      contract, represented explicitly in `apps/web/app/components/layout/page.vue`. Preserve full accessible identity
+      and other page layouts. Extend `apps/web/tests/e2e/repository-visual.spec.ts` to verify one active primary section
+      and nonoverlapping breadcrumb/action bounds at every target viewport/locale/theme. This acceptance-driven follow-up
+      addresses the visual overlap found during T010 screenshot review; complete it before T010's final gate. Include one
+      focused Changeset, screenshot review, and its own verified commit.
+
 ## Dependencies and execution order
 
 ```text
 T001 then T002 then T003 (US1/MVP) then T004 (US2) then T005 (US3 shared labels/presentation)
 T006, T007, T008 after T005; independent source/test files
-T009 after T003-T008; T010 after T009
+T009 after T003-T008; T011 follows T009; T010 final acceptance follows T011
 ```
 
 All three stories are P1; execute in the order above. US1 delivers a working independently testable MVP. US2 depends on

@@ -121,3 +121,36 @@ CI status. Production deployment and Provider writes are outside this feature.
   semantics. Search acceptance now supplies complete Repository detail fixtures and checks the visible Synchronization
   card; all three focused follow-up scenarios passed against the production build. Retention label rows receive a shared
   minimum height on the three-column desktop layout so wrapped labels keep inputs aligned.
+
+## Final acceptance (2026-11-10)
+
+Validated runtime revision: `de8160fd58fff541ae38db82bb4d3f8e0661ff59`, including current main
+`c666f9a9f5ae0665a47019af312987bb301949ec` through a non-rewriting merge. Later evidence-only changes do not modify runtime
+code. Task implementation commits: T003 `9c39b11`, T004 `44960bf`, T005 `fd5e5a6`, T006 `4843982`, T007 `92a2070`,
+T008 `132353a`, T009 `3e82441`; T010 scoped validation fixes `d9f2e16`.
+
+- Production-build Chromium run: 158 passed, 1 failed, 0 skipped, 0 flaky across 159 affected scenarios. The only failure
+  is the unchanged multi-repository enrollment scenario described above and reproduced with pre-feature list/dialog
+  sources. All #88 feature scenarios pass. No tests were disabled or assertions relaxed to hide that baseline failure.
+- All 12 viewport/locale/theme combinations passed for full Settings navigation, long Workflow Filter patterns, long
+  member identities, and long group names. Keyboard actions, direct links/history, role guards, draft lifetime, pending
+  mutations, and cancellation/retry paths passed. Synthetic screenshots were inspected.
+- Merged-base web unit tests: 26 files / 141 tests passed. Web lint/typecheck and merged production build passed.
+- Root lint (five Nx targets), canonical formatting, declaration documentation, and 21 guideline regressions passed.
+  Current handbook validation, 11 handbook tests, and website production build passed. Published archives are unchanged.
+- The final graph has no nodes sourced from the removed dialog, and no current-worktree absolute paths. All 17 merged
+  application locale catalogs parse and retain the new labels. The feature diff contains no API, schema, dependency,
+  lockfile, workflow, or production configuration changes.
+- Local reports: `/tmp/repovio88-merged-e2e.json`, `/tmp/repovio88-merged-e2e.log`, and
+  `/tmp/repovio88-merged-e2e/`. The run used the built SPA at `http://127.0.0.1:3102` with synthetic API fixtures.
+- API persistence/live Provider behavior, Docker deployment, and remote Actions are not established by mocked browser
+  checks. No deployment occurred. Remote CI status must be checked for the final PR head; merge still needs approval.
+
+The independently reproduced pre-existing add-wizard failure remains an explicit broader-suite limitation rather than
+a passing full suite. Final screenshot review additionally found long-breadcrumb/action overlap at 1102 px; T011
+records the bounded correction and adds geometry assertions before T010 final acceptance.
+
+- T011: geometry regression reproduced long-breadcrumb/action overlap at 1102 px before the fix. Bounding only the
+  Repository breadcrumb label through the existing item class contract resolved it; all 12 viewport/locale/theme cases
+  pass with exactly one active primary section and nonoverlapping action bounds. Full accessible identity is retained.
+  Web lint/typecheck, declaration documentation, stable formatting, and screenshot review passed.

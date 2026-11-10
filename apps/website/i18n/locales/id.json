@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "Masuk dengan akun lokal atau OpenID Connect. Tetapkan peran dan keanggotaan repositori untuk membatasi data yang terlihat.",
   "product_details_access-control_limit": "OAuth penyedia menghubungkan data dan terpisah dari login pengguna. Peringatan memerlukan izin pengelolaan; administrator memiliki akses lebih luas.",
   "product_details_mcp_useCase": "Tanyakan repositori terlihat, kegagalan, persetujuan, ringkasan, dan tren melalui klien kompatibel dengan token MCP pribadi.",
-  "product_details_mcp_limit": "Klien harus mendukung header otorisasi HTTP khusus. Penemuan OAuth MCP, tindakan penyedia, perubahan konfigurasi, dan pemicu sinkronisasi tidak tersedia."
+  "product_details_mcp_limit": "Klien harus mendukung header otorisasi HTTP khusus. Penemuan OAuth MCP, tindakan penyedia, perubahan konfigurasi, dan pemicu sinkronisasi tidak tersedia.",
+  "releaseNotes": "Catatan Rilis",
+  "releaseNotesDescription": "Perubahan pada rilis aplikasi Repovio yang telah diterbitkan.",
+  "releaseNotesEnglish": "Deskripsi rilis tersedia dalam bahasa Inggris.",
+  "releaseNotesEmpty": "Belum ada rilis yang diterbitkan.",
+  "releaseNotesVersions": "Rilis"
 }

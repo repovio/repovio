@@ -150,3 +150,23 @@ describe('explicit documentation hierarchy', /** Verify explicit documentation h
     expect(resolveDocRedirect('guide-administration', '#%')).toEqual({ slug: 'provider-accounts', hash: '#%' });
   });
 });
+
+/** Public release navigation must remain localized without modifying archived manifests. */
+describe('release history interface locales', /** Check every declared website language. */ () => {
+  it('provides all release interface keys for every supported locale', /** Verify real locale files rather than allowing fallback masking. */ async () => {
+    const { readFile } = await import('node:fs/promises');
+    const registry = JSON.parse(await readFile(new URL('../../content/locales.json', import.meta.url), 'utf8'));
+    for (const code of Object.keys(registry)) {
+      const messages = JSON.parse(await readFile(new URL(`../../i18n/locales/${code}.json`, import.meta.url), 'utf8'));
+      for (const key of [
+        'releaseNotes',
+        'releaseNotesDescription',
+        'releaseNotesEnglish',
+        'releaseNotesEmpty',
+        'releaseNotesVersions',
+      ]) {
+        expect(messages[key], `${code}: ${key}`).toBeTruthy();
+      }
+    }
+  });
+});

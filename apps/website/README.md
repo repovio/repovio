@@ -71,3 +71,23 @@ Edit `content/<locale>/docs/<version>/<slug>.md`; update every supported transla
 technical identifiers, and heading anchors. The canonical terminology is in the root `GLOSSARY.md`. Run root formatting
 and documentation checks as well as package checks. Released handbook archives are excluded from reformatting because
 their bytes form part of the publication identity. New source follows `docs/coding-guidelines.md`.
+
+## Application release notes
+
+Root `CHANGELOG.md` is the canonical application history. A dedicated Nuxt Content collection reads it at build time,
+without copying prose into locale folders or querying GitHub. The source checker rejects unavailable files, duplicate
+versions, invalid headings, and incorrect semantic ordering; a valid empty changelog is supported. Docker builds include
+the same source. Website publication stays independent: new application entries appear with the next website build
+containing that changelog revision. Pending Changesets and the website package changelog are not application releases.
+
+The public release-history route is `/docs/release-notes`, with normal non-English locale prefixes. Interface labels
+and metadata are translated into all website languages; the canonical release descriptions remain English and are
+marked accordingly. The page spans application versions, so it has no handbook version selector. Release heading links
+use the content renderer's IDs and remain valid across language switches. Sitemap discovery is independent of handbook
+archive versions. There is no browser-time GitHub request or need for application/provider credentials.
+
+The root changelog is an explicit external input to website Nx build, container, test, and typecheck targets. Its changes
+invalidate those caches and select website CI validation, without changing independently approved publication triggers.
+
+Isolated API-reference validation preserves the website's repository-relative root changelog input in its disposable
+fixture. It continues to create synthetic API archives only in that fixture and never modifies real release content.

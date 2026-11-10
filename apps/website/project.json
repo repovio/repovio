@@ -10,7 +10,8 @@
         "command": "pnpm build",
         "cwd": "apps/website"
       },
-      "outputs": ["{projectRoot}/.output"]
+      "outputs": ["{projectRoot}/.output"],
+      "inputs": ["production", "^production", "{workspaceRoot}/CHANGELOG.md"]
     },
     "dev": {
       "executor": "nx:run-commands",
@@ -31,21 +32,24 @@
       "options": {
         "command": "pnpm test",
         "cwd": "apps/website"
-      }
+      },
+      "inputs": ["default", "^default", "{workspaceRoot}/CHANGELOG.md"]
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm typecheck",
         "cwd": "apps/website"
-      }
+      },
+      "inputs": ["default", "^default", "{workspaceRoot}/CHANGELOG.md"]
     },
     "docker:build": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm docker:build",
         "cwd": "apps/website"
-      }
+      },
+      "inputs": ["production", "^production", "{workspaceRoot}/CHANGELOG.md"]
     }
   }
 }

@@ -48,6 +48,8 @@ try {
   for (const [path, marker] of [
     ['/', 'Your repositories.'],
     ['/de', 'Deine Repositories.'],
+    ['/docs/release-notes', 'release-history'],
+    ['/de/docs/release-notes', 'release-history'],
     [`/docs/${manifest.stable}/installation`, '<article'],
     [`/de/docs/${manifest.stable}/installation`, '<article'],
   ]) {

@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "Connectez-vous avec des comptes locaux ou OpenID Connect. Attribuez des rôles et des appartenances aux dépôts pour limiter les données visibles.",
   "product_details_access-control_limit": "OAuth fournisseur relie les données des dépôts, indépendamment de la connexion utilisateur. Les alertes nécessitent des droits de gestion ; les administrateurs ont un accès élargi.",
   "product_details_mcp_useCase": "Interrogez les dépôts visibles, échecs, approbations, résumés et tendances avec un client compatible et un jeton MCP personnel.",
-  "product_details_mcp_limit": "Le client doit accepter des en-têtes HTTP d’autorisation personnalisés. La découverte OAuth MCP, les actions fournisseur, les changements de configuration et le lancement de synchronisation sont indisponibles."
+  "product_details_mcp_limit": "Le client doit accepter des en-têtes HTTP d’autorisation personnalisés. La découverte OAuth MCP, les actions fournisseur, les changements de configuration et le lancement de synchronisation sont indisponibles.",
+  "releaseNotes": "Notes de version",
+  "releaseNotesDescription": "Modifications des versions publiées de l’application Repovio.",
+  "releaseNotesEnglish": "Les descriptions des versions sont disponibles en anglais.",
+  "releaseNotesEmpty": "Aucune version n’a encore été publiée.",
+  "releaseNotesVersions": "Versions"
 }

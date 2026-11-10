@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "通过本地账户或 OpenID Connect 登录。分配角色和仓库成员身份以限制可见数据。",
   "product_details_access-control_limit": "提供商 OAuth 用于连接仓库数据，与用户登录分开。警报需要管理权限；系统管理员有更广的访问范围。",
   "product_details_mcp_useCase": "使用兼容客户端和个人 MCP 令牌查询可见仓库、失败、待审批队列、汇总和趋势。",
-  "product_details_mcp_limit": "客户端须支持自定义 HTTP 授权头。不提供 MCP OAuth 发现、提供商操作、配置更改或触发同步。"
+  "product_details_mcp_limit": "客户端须支持自定义 HTTP 授权头。不提供 MCP OAuth 发现、提供商操作、配置更改或触发同步。",
+  "releaseNotes": "发行说明",
+  "releaseNotesDescription": "已发布的 Repovio 应用程序版本中的更改。",
+  "releaseNotesEnglish": "发行说明以英语提供。",
+  "releaseNotesEmpty": "尚未发布任何版本。",
+  "releaseNotesVersions": "版本"
 }

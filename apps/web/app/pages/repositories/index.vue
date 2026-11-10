@@ -127,7 +127,7 @@
               icon="i-lucide-settings-2"
               variant="ghost"
               :aria-label="isAdmin ? $t('repositoryDetails.edit') : $t('repositoryDetails.open')"
-              @click="openDetailsDialog(row.original.id)"
+              :to="`/repositories/${encodeURIComponent(row.original.id)}${isAdmin ? '/settings' : ''}`"
             />
           </UTooltip>
           <UTooltip
@@ -157,21 +157,11 @@
       shortcuts
     />
     <ModulesRepositoriesAddDialog v-if="isAdmin" v-model:open="dialogOpen" @created="handleRepositoryCreated" />
-    <ModulesRepositoriesDetailsDialog
-      v-model:open="detailsDialogOpen"
-      :repository-id="selectedRepositoryId"
-      :after-delete="handleRepositoryDeleted"
-      :webhook-configuration="selectedRepositoryWebhookConfiguration"
-      :webhook-configuration-error="webhookConfigurationsError"
-      :webhook-configuration-loading="webhookConfigurationsLoading"
-      @updated="handleRepositoryUpdated"
-      @webhook-updated="handleWebhookUpdated"
-    />
   </LayoutPage>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
@@ -196,8 +186,6 @@ const { t } = useI18n();
 const { formatDateTime } = useDateTime();
 const api = useRepovioApi();
 const auth = useAuthStore();
-const route = useRoute();
-const router = useRouter();
 const isAdmin = computed(
   /** Derives is admin from the current reactive dependencies. */ () => auth.user?.role === 'SYSTEM_ADMIN',
 );
@@ -205,23 +193,6 @@ const dialogOpen = ref(false);
 const webhookConfigurations = ref<RepositoryWebhookConfiguration[]>([]);
 const webhookConfigurationsLoading = ref(false);
 const webhookConfigurationsError = ref(false);
-const openedFromList = ref(false);
-const selectedRepositoryId = computed(
-  /** Derives selected repository id from the current reactive dependencies. */ () =>
-    typeof route.query.repository === 'string' && route.query.repository ? route.query.repository : undefined,
-);
-const selectedRepositoryWebhookConfiguration = computed(
-  /** Derives selected repository webhook configuration from the current reactive dependencies. */ () =>
-    selectedRepositoryId.value ? webhookConfiguration(selectedRepositoryId.value) : undefined,
-);
-const detailsDialogOpen = computed({
-  /** Reads the details dialog open binding. */
-  get: () => Boolean(selectedRepositoryId.value),
-  /** Writes the details dialog open binding. */
-  set: (isOpen: boolean) => {
-    if (!isOpen) closeDetailsDialog();
-  },
-});
 const { isPending, run: runPendingAction } = usePendingActions();
 const columnDefinition = computed<RepositoryTableColumn[]>(
   /** Derives column definition from the current reactive dependencies. */ () => {
@@ -291,13 +262,6 @@ useHead({
   title: computed(/** Derives title from the current reactive dependencies. */ () => t('repositories.title')),
 });
 
-watch(
-  selectedRepositoryId,
-  /** Synchronizes index when the observed state changes. */ (repositoryId) => {
-    if (!repositoryId) openedFromList.value = false;
-  },
-);
-
 /** Format a repository's last successful synchronization in the active interface locale. */
 function formatLastSync(lastSyncAt: string | null): string {
   if (!lastSyncAt) return t('repositories.neverSynced');
@@ -332,25 +296,6 @@ function openAddDialog(): void {
   dialogOpen.value = true;
 }
 
-/** Open a repository dialog while adding a browser-history entry. */
-async function openDetailsDialog(repositoryId: string): Promise<void> {
-  openedFromList.value = true;
-  await router.push({ hash: route.hash, query: { ...route.query, repository: repositoryId } });
-}
-
-/** Close a repository dialog without discarding unrelated URL state. */
-function closeDetailsDialog(): void {
-  if (openedFromList.value) {
-    openedFromList.value = false;
-    router.back();
-    return;
-  }
-
-  const query = { ...route.query };
-  delete query.repository;
-  void router.replace({ hash: route.hash, query });
-}
-
 defineShortcuts({
   /** Opens the create dialog when its keyboard shortcut is allowed. */
   shift_n: () => {
@@ -362,35 +307,6 @@ defineShortcuts({
 async function handleRepositoryCreated(): Promise<void> {
   page.value = 1;
   await Promise.all([repositoryTable.refresh(), loadWebhookConfigurations()]);
-}
-
-/** Refresh repository choices and remove the deleted selection from browser history. */
-async function handleRepositoryDeleted(): Promise<void> {
-  await handleRepositoryCreated();
-  if (repositoryTable.error.value) throw repositoryTable.error.value;
-  openedFromList.value = false;
-  const query = { ...route.query };
-  delete query.repository;
-  await router.replace({ hash: route.hash, query });
-}
-
-/** Replace a changed repository row without reloading the complete table. */
-function handleRepositoryUpdated(repository: Repository): void {
-  const existingRepository = items.value.find(
-    /** Finds the first entry matching `item.id === repository.id`. */ (item) => item.id === repository.id,
-  );
-  repositoryTable.updateRow({ ...existingRepository, ...repository } as RepositoryRow);
-}
-
-/** Replace webhook metadata changed in the repository detail card. */
-function handleWebhookUpdated(configuration: RepositoryWebhookConfiguration): void {
-  webhookConfigurations.value = [
-    ...webhookConfigurations.value.filter(
-      /** Keeps entries matching `item.repositoryId !== configuration.repositoryId`. */ (item) =>
-        item.repositoryId !== configuration.repositoryId,
-    ),
-    configuration,
-  ];
 }
 
 /** Enable or disable a repository without changing its retention configuration. */

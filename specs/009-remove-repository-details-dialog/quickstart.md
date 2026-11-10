@@ -71,3 +71,13 @@ adds a new focused test file, include it in this command before marking acceptan
 
 Record executed checks and screenshot locations. Mocked browser tests do not establish live Provider behavior or remote
 CI status. Production deployment and Provider writes are outside this feature.
+
+## Implementation evidence
+
+- T001: frozen offline dependency install passed on Node.js 26.13.0 / pnpm 11.28.9 without manifest or lockfile changes.
+  A temporary PATH shim keeps nested package scripts on the pinned Corepack pnpm; no repository toolchain edits.
+- T002: parent child keys preserve ordinary query changes; administrator guard and list-state initialization confirmed.
+  Baseline: 129 web unit tests passed; initial browser cold-start failures passed unchanged on immediate focused rerun.
+- T003: canonical/legacy entry tests passed for all three roles; search and command-palette navigation passed;
+  migrated retention/filter/membership, webhook rotation/removal, refresh, sync, and deletion tests passed.
+  Existing multi-repository-add selection failure is outside the removed details dialog; investigate against base.

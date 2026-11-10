@@ -108,7 +108,7 @@ async function fixture(page: Page, role = 'SYSTEM_ADMIN', failRefreshOnce = fals
 }
 
 for (const locale of ['en', 'de']) {
-  for (const surface of ['page', 'dialog']) {
+  for (const surface of ['page', 'legacy']) {
     for (const width of [390, 1440]) {
       test(`deletes local repository with cancellation, errors and retry (${locale}, ${surface}, ${width})`, /** Verify the real shared action and its parent refresh/navigation. */ async ({
         page,
@@ -189,7 +189,7 @@ for (const role of ['VIEWER', 'MANAGER']) {
   });
 }
 
-test('retries a dependent refresh without deleting the repository twice', /** Keep the full action pending and retain successful deletion across refresh failures. */ async ({
+test('a failed destination list load never repeats successful deletion', /** Keep the full action pending and retain successful deletion across refresh failures. */ async ({
   page,
 }) => {
   const state = await fixture(page, 'SYSTEM_ADMIN', true);
@@ -204,16 +204,12 @@ test('retries a dependent refresh without deleting the repository twice', /** Ke
   await confirm.click();
   await expect.poll(state.requests).toBe(3);
   await state.complete();
-  await expect.poll(state.refreshRequests).toBe(1);
-  await expect(confirm).toBeDisabled();
-  await expect(
-    page.getByRole('button', { name: 'Delete repository', exact: true, includeHidden: true }),
-  ).toBeDisabled();
-  await state.completeRefresh();
-  await expect(dialog.getByRole('alert')).toContainText('could not be completed');
-  await confirm.click();
-  await expect(dialog).toBeHidden();
   await expect(page).toHaveURL(/\/repositories$/);
+  await expect.poll(state.refreshRequests).toBe(1);
+  await state.completeRefresh();
+  await expect(page.getByText('Repositories could not be loaded.', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('link', { name: 'disposable', exact: true })).toHaveCount(0);
   expect(state.requests()).toBe(3);
-  expect(state.refreshRequests()).toBe(2);
+  await expect.poll(state.refreshRequests).toBe(2);
 });

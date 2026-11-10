@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { testRepository } from './fixtures/repository-detail';
 
 const emptyPage = {
   items: [],
@@ -92,6 +93,7 @@ async function mockApplication(page: Page): Promise<void> {
     /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
       route.fulfill({
         json: {
+          ...testRepository(),
           enabled: true,
           id: 'repository-1',
           lastSyncAt: null,
@@ -360,7 +362,7 @@ test('refreshes and hides attention badges after navigation', /** Verifies refre
   await expect(workflowRuns.locator('[data-slot="linkTrailingBadge"]')).toHaveCount(0);
 });
 
-test('queues workflow retrieval from the repository details dialog', /** Verifies queues workflow retrieval from the repository details dialog. */ async ({
+test('queues workflow retrieval from the repository detail page', /** Verifies queues workflow retrieval from the repository detail page. */ async ({
   page,
 }) => {
   await mockApplication(page);
@@ -373,7 +375,7 @@ test('queues workflow retrieval from the repository details dialog', /** Verifie
     },
   );
 
-  await page.goto('/repositories?repository=repository-1');
+  await page.goto('/repositories/repository-1');
 
   const syncButton = page.getByRole('button', { name: 'Fetch workflow runs' });
   await expect(syncButton).toBeVisible();
@@ -381,7 +383,7 @@ test('queues workflow retrieval from the repository details dialog', /** Verifie
   await expect
     .poll(/** Evaluates `syncRequested` when expect.poll invokes this callback. */ () => syncRequested)
     .toBe(true);
-  await expect(page.getByText('Workflow runs were queued for retrieval.')).toBeVisible();
+  await expect(page.getByText('Workflow runs were queued for retrieval.', { exact: true })).toBeVisible();
 });
 
 /** Supply deterministic resources for the toolbar layout matrix. */

@@ -160,7 +160,7 @@ test('repository and user administration render full-page Query Kit tables', /**
   await expect(repositoryActionsHeader).toHaveCSS('position', 'sticky');
   await expect(repositoryActionsHeader.getByText('Actions', { exact: true })).toHaveClass(/justify-end/);
   await expect(page.locator('tbody td').first()).toHaveCSS('padding-top', '8px');
-  const openRepositoryButton = page.getByRole('button', { name: 'Edit repository' });
+  const openRepositoryButton = page.getByRole('link', { name: 'Edit repository', exact: true });
   await expect(openRepositoryButton).toHaveClass(/text-sm/);
   await expectActionTooltip(page, openRepositoryButton, 'Edit repository');
   const toggleRepositoryButton = page.getByRole('button', { name: 'Disable' });
@@ -181,7 +181,7 @@ test('repository and user administration render full-page Query Kit tables', /**
   await expect(userBreadcrumb).toContainText('Users');
   await expect(page.getByText('System administrator', { exact: true })).toBeVisible();
   await expectTableHover(page, page.getByRole('table').first());
-  const deleteUserButton = page.getByRole('button', { name: 'Delete' });
+  const deleteUserButton = page.getByRole('button', { name: 'Delete', exact: true });
   await expect(deleteUserButton).toBeDisabled();
   await expectActionTooltip(page, deleteUserButton, 'Delete');
   await page.keyboard.press('Shift+O');
@@ -350,7 +350,7 @@ test('adds multiple repositories selected from an enabled provider account', /**
 });
 
 /** Verify the repository dialog exposes retention, workflow filters, and memberships. */
-test('repository dialog loads retention, filters, and members', /** Verifies repository dialog loads retention, filters, and members. */ async ({
+test('repository Settings loads retention, filters, and members', /** Verifies repository Settings loads retention, filters, and members. */ async ({
   page,
 }) => {
   const repositoryUpdates: unknown[] = [];
@@ -472,9 +472,9 @@ test('repository dialog loads retention, filters, and members', /** Verifies rep
     },
   );
 
-  await page.goto('/repositories?repository=repository-1');
+  await page.goto('/repositories/repository-1/settings');
 
-  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
+  const repositoryDialog = page.locator('#main-content');
   await expect(repositoryDialog).toBeVisible();
   const workflowRunRetention = repositoryDialog.getByRole('spinbutton', {
     name: 'Workflow-run retention (days)',
@@ -484,11 +484,13 @@ test('repository dialog loads retention, filters, and members', /** Verifies rep
   await expect(repositoryDialog.getByText('maintainer', { exact: true })).toBeVisible();
   await expectTableHover(page, repositoryDialog.getByRole('table').nth(0));
   await expectTableHover(page, repositoryDialog.getByRole('table').nth(1));
-  await expect(repositoryDialog.getByRole('button', { name: 'Add workflow filter' })).toBeDisabled();
+  await repositoryDialog.getByRole('button', { name: 'Add workflow filter' }).click();
+  await expect(repositoryDialog.getByText('Enter a valid value.', { exact: true })).toBeVisible();
+  expect(createdFilters).toEqual([]);
   await expect(repositoryDialog.getByRole('button', { name: 'Add member' })).toBeDisabled();
   await expect(repositoryDialog.getByRole('columnheader', { name: 'Actions' }).first()).toHaveCSS('position', 'sticky');
-  await expect(repositoryDialog.getByRole('button', { name: 'Delete' })).toHaveClass(/text-sm/);
-  await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Delete' }), 'Delete');
+  await expect(repositoryDialog.getByRole('button', { name: 'Delete', exact: true })).toHaveClass(/text-sm/);
+  await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Delete', exact: true }), 'Delete');
   await expectActionTooltip(page, repositoryDialog.getByRole('button', { name: 'Remove member' }), 'Remove member');
 
   await workflowRunRetention.fill('45');

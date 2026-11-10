@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Planned; task generation and issue/planning-commit publication approved; implementation pending.
+**Status**: Implemented and locally verified on 2026-11-10; remote CI, review and separate merge decision pending.
 
 **Issue**: [#89](https://github.com/repovio/repovio/issues/89)
 

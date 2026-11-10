@@ -92,3 +92,7 @@ Nine synthetic screenshots were copied outside the checkout under
 `/home/tobiaswaelde/.codex/visualizations/2026/11/10/01a1c52e-c71a-7471-a4c1-dec46f51a06f/provider-actions-webhooks/`:
 `provider-account-actions.png`, and `webhook-{setup,saved}-{en,de}-{1102,390}.png`.
 These are local review artifacts, not published provider screenshots.
+
+T007 follow-up browser coverage published as `0332d1a`. All seven tasks complete locally. Five substantive task/follow-up
+commits each include one focused `repovio` patch Changeset; planning/evidence-only commits do not fabricate package changes.
+Remote GitHub Actions, merge approval and deployment remain separate from local verification.

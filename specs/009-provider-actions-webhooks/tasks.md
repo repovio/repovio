@@ -5,8 +5,8 @@
 
 **Approval**: Task generation and issue/planning-commit publication approved on 2026-11-10.
 **Issue**: [#89](https://github.com/repovio/repovio/issues/89). **Branch**: `codex/89-provider-actions-webhooks`.
-Reuse `/mnt/projects/.codex-worktrees/17ad/repovio`; do not create another worktree. Implementation and merge require
-separate decisions.
+Reuse `/mnt/projects/.codex-worktrees/17ad/repovio`; do not create another worktree. Implementation approved on
+2026-11-10. All seven tasks are locally verified; merge requires a separate decision.
 
 **Tests**: Focused tests are required by the specification, plan, and constitution. Each behavior task includes code,
 regression tests, relevant documentation/localization, and its own validation before committing. Do not create a separate
@@ -140,7 +140,7 @@ Standalone visual validation is required; lint and types alone do not complete t
 
 **Purpose**: Prove the combined result meets the complete approved scope without adding features.
 
-- [ ] T007 Run the full acceptance matrix in `specs/009-provider-actions-webhooks/quickstart.md`, check runtime/schema/Nest
+- [x] T007 Run the full acceptance matrix in `specs/009-provider-actions-webhooks/quickstart.md`, check runtime/schema/Nest
       DTO/Swagger/Bruno/web-client agreement across the files in
       `specs/009-provider-actions-webhooks/contracts/ui-and-api.md`, run canonical formatting with two-pass stability,
       documentation checks, affected lint/typecheck/tests and integrated browser checks, and record exact command results,
@@ -202,6 +202,6 @@ production migration, or provider webhook registration is authorized by this tas
 
 ## Completion Rules
 
-All seven tasks remain unchecked until implementation authorization and their acceptance evidence exist. T003–T006
+Task completion is recorded only after implementation authorization and acceptance evidence exist. T003–T006
 require separate working commits; T001, T002, and T007 are verification/evidence tasks. Task-generation completion does
 not establish product correctness or authorize the next workflow gate.

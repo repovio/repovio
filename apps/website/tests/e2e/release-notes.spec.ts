@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import manifest from '../../content/versions.json' with { type: 'json' };
 import de from '../../i18n/locales/de.json' with { type: 'json' };
 import en from '../../i18n/locales/en.json' with { type: 'json' };
+import { readReleaseNotes, validateReleaseNotes } from '../../scripts/check-release-notes.mjs';
 
 for (const [code, messages] of [
   ['en', en],
@@ -76,8 +77,8 @@ for (const prefix of ['', '/de']) {
     await page.goto(`${prefix}/docs/release-notes`);
     const headings = page.getByTestId('release-notes-body').locator('h2');
     const versions = await headings.allTextContents();
-    expect(versions[0]).toBe('2.3.0');
-    expect(versions.at(-1)).toBe('0.2.0');
+    const expectedVersions = validateReleaseNotes(readReleaseNotes());
+    expect(versions).toEqual(expectedVersions);
     const ids = await headings.evaluateAll(
       /** Read IDs emitted by the real Markdown renderer. */ (elements) =>
         elements.map(/** Preserve each DOM heading identifier. */ (element) => element.id),

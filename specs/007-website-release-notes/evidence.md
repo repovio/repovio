@@ -80,3 +80,16 @@
 - Real isolated API-reference build and browser acceptance passed: 54 tests, one optional real-schema case skipped.
 - Existing schema, archive, browser, and cleanup assertions were preserved. Website ESLint, declaration coverage, and
   stable canonical formatting passed after the fixture change.
+
+## T010 current base release integration
+
+- Commit for T009: `94e617b` (pushed).
+- Current main `aa0fa7e` integrated through merge commit `0cabe3f`; existing task commits preserved.
+- Main's already-published app version is 2.3.1 and website version is 0.2.2. No release or version command executed here.
+- Browser assertions now compare every rendered release heading against the current validated canonical source.
+- After base integration: production build, 60 unit tests, 11 documentation tests, docs verification, website
+  lint/typecheck, 11 CI-helper tests, declaration coverage (694 sources), and full production browser acceptance passed.
+- Full browser result: 146 passed, 54 dedicated API-reference cases skipped; those cases passed in their isolated command
+  (54 passed, one optional externally supplied real-schema scenario skipped).
+- Current-source Docker image rebuilt; read-only/unprivileged EN/DE documentation and release-history checks passed.
+- Twelve current-source screenshots were refreshed, preserving local review artifacts outside Git.

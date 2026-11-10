@@ -1236,6 +1236,7 @@
     "unsavedCallback": "プロバイダーがこの URL にイベントを送信する前に、この設定を保存してください。",
     "loadingCallback": "コールバック URL を読み込み中…",
     "draftError": "コールバック URL を読み込めませんでした。再試行してください。",
-    "retryDraft": "コールバック URL を読み込む"
+    "retryDraft": "コールバック URL を読み込む",
+    "savedConfigurations": "保存済みの設定"
   }
 }

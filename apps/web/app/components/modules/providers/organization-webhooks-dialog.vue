@@ -5,59 +5,14 @@
     :dismissible="!pending"
     :close="!pending"
     :title="$t('organizationWebhooks.title')"
+    :ui="{ content: 'sm:max-w-2xl max-h-[calc(100dvh-2rem)]', body: 'min-h-0 overflow-y-auto' }"
   >
     <template #body>
-      <div class="space-y-5" :aria-busy="pending">
-        <UAlert v-if="error || listError" color="error" role="alert" :title="$t('organizationWebhooks.error')" />
-        <UButton v-if="!loaded" :loading="listPending" @click="load">
-          {{ $t('organizationWebhooks.load') }}
-        </UButton>
+      <div class="min-w-0 space-y-6" :aria-busy="pending">
+        <UAlert v-if="error" color="error" role="alert" :title="$t('organizationWebhooks.error')" />
 
-        <UAlert
-          color="info"
-          :description="$t(`organizationWebhooks.instructions.${provider.providerType}`)"
-          :title="$t('repositories.webhook.providerSetup')"
-        />
-        <UAlert
-          v-if="provider.providerType === 'GITLAB'"
-          color="warning"
-          :title="$t('organizationWebhooks.gitlabTier')"
-        />
-        <p class="text-sm text-muted">
-          {{ $t('organizationWebhooks.localConfiguration') }}
-        </p>
-        <p v-if="loaded && !configurations.length" class="text-sm text-muted">
-          {{ $t('organizationWebhooks.empty') }}
-        </p>
-        <ul v-if="configurations.length" class="space-y-3">
-          <li v-for="hook in configurations" :key="hook.id" class="space-y-2 rounded-lg border border-default p-3">
-            <div class="flex items-center justify-between gap-3">
-              <span class="min-w-0 truncate font-medium">{{ hook.scope }}</span>
-              <UButton color="neutral" size="sm" variant="soft" :disabled="pending" @click="edit(hook)">
-                {{ $t('organizationWebhooks.edit') }}
-              </UButton>
-            </div>
-            <UFormField :label="$t('repositories.webhook.callbackUrl')">
-              <UInput class="w-full font-mono" readonly :model-value="hook.callbackUrl">
-                <template #trailing>
-                  <UButton
-                    color="neutral"
-                    size="xs"
-                    variant="ghost"
-                    icon="i-lucide-copy"
-                    :aria-label="$t('repositories.webhook.copyUrl')"
-                    @click="copy(hook.callbackUrl)"
-                  />
-                </template>
-              </UInput>
-            </UFormField>
-            <p class="text-sm text-muted">
-              {{ deliveryLabel(hook) }}
-            </p>
-          </li>
-        </ul>
         <UForm
-          class="space-y-4 border-t border-default pt-4"
+          class="min-w-0 space-y-4"
           :schema="localizeFormSchema(ApiCreateOrganizationWebhookSchema, $t('forms.invalidValue'))"
           :state="form"
           @submit="save"
@@ -80,9 +35,6 @@
           <h3 class="font-semibold">
             {{ $t(editingId ? 'organizationWebhooks.rotate' : 'organizationWebhooks.add') }}
           </h3>
-          <UFormField name="scope" :label="scopeLabel" required>
-            <UInput v-model="form.scope" class="w-full" :disabled="pending" :readonly="!!editingId" />
-          </UFormField>
           <UFormField :help="callbackHelp" :label="$t('repositories.webhook.callbackUrl')">
             <UInput class="w-full font-mono" readonly :model-value="callbackUrl" :ui="{ base: 'pe-10' }">
               <template #trailing>
@@ -98,6 +50,9 @@
                 />
               </template>
             </UInput>
+          </UFormField>
+          <UFormField name="scope" :label="scopeLabel" required>
+            <UInput v-model="form.scope" class="w-full" :disabled="pending" :readonly="!!editingId" />
           </UFormField>
           <UFormField
             name="webhookSecret"
@@ -137,6 +92,23 @@
           <UButton color="neutral" variant="soft" :disabled="pending" @click="generateSecret">
             {{ $t('repositories.webhook.generateSecret') }}
           </UButton>
+          <div class="space-y-2 rounded-lg bg-elevated/50 p-3 text-sm">
+            <h4 class="font-medium">
+              {{ $t('repositories.webhook.providerSetup') }}
+            </h4>
+            <p class="text-muted">
+              {{ $t(`organizationWebhooks.instructions.${provider.providerType}`) }}
+            </p>
+            <p class="text-muted">
+              {{ $t('organizationWebhooks.localConfiguration') }}
+            </p>
+          </div>
+          <UAlert
+            v-if="provider.providerType === 'GITLAB'"
+            color="warning"
+            variant="subtle"
+            :title="$t('organizationWebhooks.gitlabTier')"
+          />
           <UCheckbox
             v-if="editingId"
             v-model="rotationConfirmed"
@@ -166,6 +138,17 @@
             </UButton>
           </div>
         </UForm>
+        <UAlert v-if="listError" color="error" role="alert" :title="$t('organizationWebhooks.error')" />
+        <UButton v-if="!loaded" :loading="listPending" @click="load">
+          {{ $t('organizationWebhooks.load') }}
+        </UButton>
+        <ModulesProvidersOrganizationWebhookConfigurations
+          v-if="loaded"
+          :configurations="configurations"
+          :pending="pending"
+          @edit="edit"
+          @copy="copy"
+        />
       </div>
     </template>
   </UModal>
@@ -176,7 +159,6 @@ import { ApiCreateOrganizationWebhookSchema, localizeFormSchema } from '@repovio
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { useOrganizationWebhooks } from '~/composables/api/organization-webhooks';
 import { useDestructiveAction } from '~/composables/app/destructive-action';
-import { useDateTime } from '~/composables/use-date-time';
 import type { OrganizationWebhook, ProviderAccount } from '~/types/api/resources';
 
 const props = defineProps<{ provider: ProviderAccount }>();
@@ -198,7 +180,6 @@ const {
   remove: deleteConfiguration,
 } = useOrganizationWebhooks(props.provider.id);
 const { confirmDestructiveAction } = useDestructiveAction();
-const { formatDateTime } = useDateTime();
 const { t } = useI18n();
 const toast = useToast();
 const scopeLabel = computed(
@@ -224,13 +205,6 @@ const revealSecret = ref(false);
 const rotationConfirmed = ref(false);
 const action = ref<'save' | 'remove'>();
 
-/** Format receipt metadata without implying that provider registration has been verified. */
-function deliveryLabel(hook: OrganizationWebhook): string {
-  return t('organizationWebhooks.lastDelivery', {
-    value: hook.lastDeliveryAt ? formatDateTime(hook.lastDeliveryAt) : t('repositories.webhook.neverDelivered'),
-  });
-}
-
 watch(
   /** Load on entry and discard plaintext on dismissal. */ () => open.value,
   /** Synchronize dialog lifecycle. */ (value) => {
@@ -241,10 +215,15 @@ watch(
       void loadDraft();
     }
   },
-  { immediate: true },
+  { immediate: true, flush: 'sync' },
 );
 
-onBeforeUnmount(discard);
+onBeforeUnmount(
+  /** Discard transient plaintext and invalidate requests when switching provider accounts. */ () => {
+    reset();
+    discard();
+  },
+);
 
 /** Start another unsaved setup with a fresh identity, clearing previous plaintext first. */
 function startDraft(): void {

@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Sla deze configuratie op voordat de provider gebeurtenissen naar deze URL kan sturen.",
     "loadingCallback": "Callback-URL laden…",
     "draftError": "De callback-URL kon niet worden geladen. Probeer opnieuw.",
-    "retryDraft": "Callback-URL laden"
+    "retryDraft": "Callback-URL laden",
+    "savedConfigurations": "Opgeslagen configuraties"
   }
 }

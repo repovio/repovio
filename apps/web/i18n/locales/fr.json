@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Enregistrez cette configuration avant que le fournisseur puisse envoyer des événements à cette URL.",
     "loadingCallback": "Chargement de l’URL de rappel…",
     "draftError": "Impossible de charger l’URL de rappel. Réessayez.",
-    "retryDraft": "Charger l’URL de rappel"
+    "retryDraft": "Charger l’URL de rappel",
+    "savedConfigurations": "Configurations enregistrées"
   }
 }

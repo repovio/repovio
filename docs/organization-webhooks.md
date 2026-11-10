@@ -44,6 +44,9 @@ Provider delivery IDs are deduplicated durably. Deliveries with the same reposit
 work even when received through both organization and repository endpoints. Separate provider IDs can still represent the
 same underlying event; the synchronization queue coalesces those requests.
 
+Setup shows the callback before namespace and signing secret. Saved configurations appear in a separate section below
+the form with their callback and last accepted delivery. The dialog scrolls within the viewport on smaller screens.
+
 ## Rotation and removal
 
 Select **Manage webhook**, enter or generate a new secret, confirm the provider update, and select **Rotate secret**.

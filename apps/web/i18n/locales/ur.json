@@ -1236,6 +1236,7 @@
     "unsavedCallback": "فراہم کنندہ اس URL پر واقعات بھیج سکے اس سے پہلے یہ ترتیب محفوظ کریں۔",
     "loadingCallback": "کال بیک URL لوڈ ہو رہا ہے…",
     "draftError": "کال بیک URL لوڈ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
-    "retryDraft": "کال بیک URL لوڈ کریں"
+    "retryDraft": "کال بیک URL لوڈ کریں",
+    "savedConfigurations": "محفوظ کردہ ترتیبات"
   }
 }

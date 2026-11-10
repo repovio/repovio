@@ -1236,6 +1236,7 @@
     "unsavedCallback": "प्रदाता इस URL पर ईवेंट भेज सके, उससे पहले यह कॉन्फ़िगरेशन सहेजें।",
     "loadingCallback": "कॉलबैक URL लोड हो रहा है…",
     "draftError": "कॉलबैक URL लोड नहीं हो सका। फिर प्रयास करें।",
-    "retryDraft": "कॉलबैक URL लोड करें"
+    "retryDraft": "कॉलबैक URL लोड करें",
+    "savedConfigurations": "सहेजे गए कॉन्फ़िगरेशन"
   }
 }

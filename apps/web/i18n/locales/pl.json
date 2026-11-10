@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Zapisz konfigurację, zanim dostawca będzie mógł wysyłać zdarzenia na ten adres URL.",
     "loadingCallback": "Ładowanie adresu URL wywołania zwrotnego…",
     "draftError": "Nie udało się załadować adresu URL. Spróbuj ponownie.",
-    "retryDraft": "Załaduj adres URL"
+    "retryDraft": "Załaduj adres URL",
+    "savedConfigurations": "Zapisane konfiguracje"
   }
 }

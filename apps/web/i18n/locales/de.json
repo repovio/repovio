@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Speichere diese Konfiguration, bevor der Anbieter Ereignisse an diese URL senden kann.",
     "loadingCallback": "Callback-URL wird geladen…",
     "draftError": "Die Callback-URL konnte nicht geladen werden. Einrichtung erneut versuchen.",
-    "retryDraft": "Callback-URL laden"
+    "retryDraft": "Callback-URL laden",
+    "savedConfigurations": "Gespeicherte Konfigurationen"
   }
 }

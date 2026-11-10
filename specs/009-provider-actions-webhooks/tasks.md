@@ -92,7 +92,7 @@ ID/scope conflict without overwrite; unchanged stored URLs, scoped rotate/delete
 callback rejected. Document actual envelope, generated OpenAPI evidence, and backward compatibility. Preserve published
 OpenAPI snapshots; update current generated artifacts only through their existing owning command when applicable.
 
-- [ ] T005 [US2] After T003 and T004, add focused request-state tests at
+- [x] T005 [US2] After T003 and T004, add focused request-state tests at
       `apps/web/app/composables/api/organization-webhooks.test.ts` and browser regressions in
       `apps/web/tests/e2e/organization-webhooks.spec.ts`, then extend typed resources/client in
       `apps/web/app/types/api/resources.ts` and `apps/web/app/composables/api/repovio-api.ts` and implement independent draft/list

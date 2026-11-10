@@ -48,3 +48,15 @@ Application/API acceptance results and task commits are recorded below as implem
 - Browser rerun after source generation passed; do not run Nuxt/schema preparation concurrently with live browser tests
   because HMR can detach active controls.
 - T004 published as 6b34d36; wire JSON is unwrapped consistently with current API clients.
+
+## T006: Setup and saved-configuration layout
+
+- Red layout assertion confirmed callback previously appeared below namespace. New order places callback first.
+- Extracted the saved list into organization-webhook-configurations.vue; setup and saved metadata have distinct sections.
+- Eleven provider/webhook browser tests passed across EN/DE at 1102×1134 and 390×844.
+- Four additional recovery/selection scenarios passed with ten saved hooks, long callbacks, viewport bounds and no
+  horizontal dialog overflow; rotation/removal, copy denial and keyboard focus still work.
+- Inspected English desktop and German mobile screenshots: setup URL immediately visible, compact neutral instructions,
+  saved configuration section below the form, bounded vertical scrolling.
+- All 135 web tests and 21 guideline regression tests passed; web typecheck, focused ESLint and documentation checks passed.
+- T005 published as 64ebf08. All shipped locales have the saved-section label.

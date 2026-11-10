@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Salve esta configuração antes que o provedor possa enviar eventos para esta URL.",
     "loadingCallback": "Carregando URL de retorno…",
     "draftError": "Não foi possível carregar a URL de retorno. Tente novamente.",
-    "retryDraft": "Carregar URL de retorno"
+    "retryDraft": "Carregar URL de retorno",
+    "savedConfigurations": "Configurações salvas"
   }
 }

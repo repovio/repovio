@@ -1,13 +1,15 @@
 import { expect, test } from '@playwright/test';
 
 for (const { locale, width } of [
-  { locale: 'en', width: 1440 },
+  { locale: 'en', width: 1102 },
+  { locale: 'en', width: 390 },
+  { locale: 'de', width: 1102 },
   { locale: 'de', width: 390 },
 ] as const) {
   test(`organization webhook setup and repository badge (${locale}, ${width}px)`, /** Verify localized configuration, pending/error states, and repository inheritance. */ async ({
     page,
   }, testInfo) => {
-    await page.setViewportSize({ width, height: 1000 });
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 1134 });
     await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
     await page.addInitScript(
       /** Supply synthetic authentication without real credentials. */ () => {
@@ -144,6 +146,15 @@ for (const { locale, width } of [
     });
     await expect(callback).toHaveCount(1);
     await expect(callback).toHaveAttribute('readonly');
+    const scopePosition = await form
+      .getByRole('textbox', { name: locale === 'de' ? 'Vollständiger Gruppenpfad' : 'Full group path' })
+      .boundingBox();
+    const callbackPosition = await callback.boundingBox();
+    expect(callbackPosition!.y).toBeLessThan(scopePosition!.y);
+    await expect(
+      dialog.getByRole('heading', { name: locale === 'de' ? 'Gespeicherte Konfigurationen' : 'Saved configurations' }),
+    ).toBeVisible();
+
     await expect(callback).toHaveValue(hook.callbackUrl);
     await expect(callback).not.toHaveAttribute('required');
     await expect(
@@ -257,13 +268,15 @@ for (const { locale, width } of [
 }
 
 for (const { locale, width } of [
-  { locale: 'en', width: 1440 },
+  { locale: 'en', width: 1102 },
+  { locale: 'en', width: 390 },
+  { locale: 'de', width: 1102 },
   { locale: 'de', width: 390 },
 ] as const) {
   test(`organization callback selection, copying, and recovery (${locale}, ${width}px)`, /** Verify form callbacks across failures and selection changes without provider requests. */ async ({
     page,
   }, testInfo) => {
-    await page.setViewportSize({ width, height: 1000 });
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 1134 });
     await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
     const copied: string[] = [];
     await page.exposeFunction(
@@ -314,7 +327,18 @@ for (const { locale, width } of [
       scope: 'new-organization',
       callbackUrl: 'https://public.example.test/api/webhooks/organization/55555555-5555-4555-8555-555555555555',
     };
-    let configurations = [first, second];
+    let configurations = [
+      first,
+      second,
+      ...Array.from(
+        { length: 8 },
+        /** Exercise saved-list scrolling with unrelated configurations. */ (_, index) => ({
+          ...first,
+          id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index).padStart(12, '0')}`,
+          scope: `existing-organization-${index}`,
+        }),
+      ),
+    ];
     let draftCount = 0;
     let failCreate = true;
     let failRotation = true;
@@ -497,6 +521,10 @@ for (const { locale, width } of [
         ),
     );
     expect(overflows).toBe(false);
+    const bounds = await dialog.boundingBox();
+    expect(bounds!.width).toBeLessThanOrEqual(width);
+    expect(bounds!.height).toBeLessThanOrEqual(width === 390 ? 844 : 1134);
+
     await page.screenshot({ path: testInfo.outputPath(`organization-callback-long-${locale}.png`), fullPage: true });
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();

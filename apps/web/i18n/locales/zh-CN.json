@@ -1236,6 +1236,7 @@
     "unsavedCallback": "保存此配置后，提供商才能向此 URL 发送事件。",
     "loadingCallback": "正在加载回调 URL…",
     "draftError": "无法加载回调 URL，请重试。",
-    "retryDraft": "加载回调 URL"
+    "retryDraft": "加载回调 URL",
+    "savedConfigurations": "已保存的配置"
   }
 }

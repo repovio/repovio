@@ -1236,6 +1236,7 @@
     "unsavedCallback": "Simpan konfigurasi ini sebelum penyedia dapat mengirim peristiwa ke URL ini.",
     "loadingCallback": "Memuat URL callback…",
     "draftError": "URL callback tidak dapat dimuat. Coba lagi.",
-    "retryDraft": "Muat URL callback"
+    "retryDraft": "Muat URL callback",
+    "savedConfigurations": "Konfigurasi tersimpan"
   }
 }

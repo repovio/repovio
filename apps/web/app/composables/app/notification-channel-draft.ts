@@ -5,6 +5,8 @@ import { computed, ref, watch, type Ref } from 'vue';
 import { z } from 'zod';
 import { getUserIdentityLabel, type UserIdentity } from '../../utils/user-identity';
 
+import type { BrowserPushAvailability } from './browser-push-state';
+
 import type { useRepovioApi } from '~/composables/api/repovio-api';
 import type {
   NotificationChannel,
@@ -18,6 +20,9 @@ import type {
 /** Reactive input for a channel draft; stored credentials are never read back. */
 export interface ChannelDraftProps {
   browserPushAvailable: boolean;
+  browserPushAvailability?: BrowserPushAvailability;
+  browserPushRefreshing?: boolean;
+  onRefreshBrowserPush?: () => Promise<void>;
   channel: NotificationChannel | null;
   repositories: Array<{ id: string; name: string; owner: string }>;
   users?: Array<UserIdentity & { id: string }>;

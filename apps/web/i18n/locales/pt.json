@@ -914,6 +914,11 @@
         "FAILED": "Falhou"
       },
       "open": "Abrir painel de notificações"
+    },
+    "pushAvailability": {
+      "checking": "A verificar a disponibilidade das notificações push…",
+      "unconfigured": "Configure o Web Push (VAPID) no servidor antes de selecionar este tipo.",
+      "failed": "Não foi possível verificar a disponibilidade das notificações push."
     }
   },
   "notificationDeliveryStatus": {

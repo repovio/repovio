@@ -11,7 +11,7 @@ This guide describes future implementation acceptance. Planning alone does not e
 ## Focused checks
 
 ```sh
-corepack pnpm --dir apps/web exec vitest run app/composables/app/browser-push.test.ts
+corepack pnpm --dir apps/web exec vitest run app/composables/app/browser-push.test.ts app/composables/app/notification-channel-draft.test.ts
 corepack pnpm --dir apps/web e2e tests/e2e/notifications.spec.ts
 corepack pnpm --dir apps/web lint
 corepack pnpm --dir apps/web typecheck
@@ -58,3 +58,5 @@ worker/OS display, and click navigation as separate outcomes. Never infer OS dis
 API response. Physical browser/OS checks may require user interaction; report gaps explicitly.
 
 No production configuration, restart, deployment, provider mutation, issue creation, or commit is authorized by this guide.
+
+Availability copy is supplied for all 17 shipped catalogs; English/German browser acceptance remains mandatory.

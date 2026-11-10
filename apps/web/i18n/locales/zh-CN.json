@@ -914,6 +914,11 @@
         "FAILED": "失败"
       },
       "open": "打开通知面板"
+    },
+    "pushAvailability": {
+      "checking": "正在检查浏览器推送可用性…",
+      "unconfigured": "选择此类型前，请在服务器上配置 Web Push（VAPID）。",
+      "failed": "无法检查浏览器推送可用性。"
     }
   },
   "notificationDeliveryStatus": {

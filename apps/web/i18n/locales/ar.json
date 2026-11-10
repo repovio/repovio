@@ -914,6 +914,11 @@
         "FAILED": "فاشل"
       },
       "open": "فتح لوحة الإشعارات"
+    },
+    "pushAvailability": {
+      "checking": "جارٍ التحقق من توفر إشعارات المتصفح…",
+      "unconfigured": "قم بإعداد Web Push (VAPID) على الخادم قبل تحديد هذا النوع.",
+      "failed": "تعذر التحقق من توفر إشعارات المتصفح."
     }
   },
   "notificationDeliveryStatus": {

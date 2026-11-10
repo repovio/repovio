@@ -914,6 +914,11 @@
         "FAILED": "विफल"
       },
       "open": "सूचना पैनल खोलें"
+    },
+    "pushAvailability": {
+      "checking": "ब्राउज़र पुश की उपलब्धता जाँची जा रही है…",
+      "unconfigured": "इस प्रकार को चुनने से पहले सर्वर पर Web Push (VAPID) कॉन्फ़िगर करें।",
+      "failed": "ब्राउज़र पुश की उपलब्धता जाँची नहीं जा सकी।"
     }
   },
   "notificationDeliveryStatus": {

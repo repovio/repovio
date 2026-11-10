@@ -853,3 +853,80 @@ for (const locale of ['en', 'de']) {
     await page.screenshot({ path: `/tmp/repovio76-recipients-narrow-${locale}.png` });
   });
 }
+
+for (const locale of ['en', 'de'] as const) {
+  test(`explains and retries server push availability (${locale})`, /** Verify global setup without device support or passive enrollment. */ async ({
+    page,
+    baseURL,
+  }) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    await page.addInitScript(
+      /** Simulate a browser without device push support. */ () => {
+        Reflect.deleteProperty(window, 'PushManager');
+      },
+    );
+    const labels =
+      locale === 'de'
+        ? {
+            add: 'Kanal hinzufügen',
+            loading: 'Browser-Push-Verfügbarkeit wird geprüft…',
+            unconfigured: 'Konfiguriere Web Push (VAPID) auf dem Server, bevor du diesen Typ auswählst.',
+            error: 'Die Browser-Push-Verfügbarkeit konnte nicht geprüft werden.',
+            retry: 'Erneut versuchen',
+            type: 'Typ',
+          }
+        : {
+            add: 'Add channel',
+            loading: 'Checking Browser push availability…',
+            unconfigured: 'Configure Web Push (VAPID) on the server before selecting this type.',
+            error: 'Could not check Browser push availability.',
+            retry: 'Retry',
+            type: 'Type',
+          };
+    let outcome: 'unconfigured' | 'pending' | 'available' = 'unconfigured';
+    let release!: () => void;
+    await page.route(
+      '**/api/v1/browser-push',
+      /** Control readiness independently of browser capability. */ async (route) => {
+        if (outcome === 'pending') {
+          await new Promise<void>(
+            /** Hold the request until the checking state is inspected. */ (resolve) => {
+              release = resolve;
+            },
+          );
+          return route.fulfill({ status: 503, json: { message: 'Unavailable' } });
+        }
+        return route.fulfill({
+          json: {
+            available: outcome === 'available',
+            publicKey: outcome === 'available' ? 'AQID' : null,
+            subscriptionCount: 0,
+          },
+        });
+      },
+    );
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: labels.add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(labels.unconfigured, { exact: true })).toBeVisible();
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await expect(
+      page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('Escape');
+    outcome = 'pending';
+    await dialog.getByRole('button', { name: labels.retry, exact: true }).click();
+    await expect(dialog.getByText(labels.loading, { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: labels.retry, exact: true })).toBeDisabled();
+    release();
+    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
+    outcome = 'available';
+    await dialog.getByRole('button', { name: labels.retry, exact: true }).click();
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await expect(
+      page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }),
+    ).not.toHaveAttribute('aria-disabled', 'true');
+    await page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }).click();
+  });
+}

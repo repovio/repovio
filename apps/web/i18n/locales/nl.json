@@ -914,6 +914,11 @@
         "FAILED": "Mislukt"
       },
       "open": "Meldingenpaneel openen"
+    },
+    "pushAvailability": {
+      "checking": "Beschikbaarheid van browserpush controleren…",
+      "unconfigured": "Configureer Web Push (VAPID) op de server voordat je dit type selecteert.",
+      "failed": "De beschikbaarheid van browserpush kon niet worden gecontroleerd."
     }
   },
   "notificationDeliveryStatus": {

@@ -914,6 +914,11 @@
         "FAILED": "失敗"
       },
       "open": "通知パネルを開く"
+    },
+    "pushAvailability": {
+      "checking": "ブラウザープッシュの利用可否を確認中…",
+      "unconfigured": "この種類を選択する前に、サーバーで Web Push（VAPID）を設定してください。",
+      "failed": "ブラウザープッシュの利用可否を確認できませんでした。"
     }
   },
   "notificationDeliveryStatus": {

@@ -155,7 +155,10 @@
     <ModulesNotificationsChannelDialog
       v-model:open="dialogOpen"
       :channel="selectedChannel"
-      :browser-push-available="push.available.value"
+      :browser-push-available="push.availability.value === 'available'"
+      :browser-push-availability="push.availability.value"
+      :browser-push-refreshing="push.refreshing.value"
+      :on-refresh-browser-push="push.refresh"
       :repositories="manageableRepositories"
       @saved="handleSaved"
     />
@@ -333,9 +336,17 @@ async function testChannel(channel: NotificationChannel): Promise<void> {
   );
 }
 
+watch(
+  dialogOpen,
+  /** Refresh readiness for each draft and invalidate results when its dialog closes. */ (shown) => {
+    if (shown) void push.refresh();
+    else push.cancelRefresh();
+  },
+);
+
 onMounted(
   /** Initializes component subscriptions and data after mounting. */ async () => {
-    const requests: Promise<unknown>[] = [channelTable.initialize(), push.refresh()];
+    const requests: Promise<unknown>[] = [channelTable.initialize()];
     if (auth.user?.role === 'SYSTEM_ADMIN') {
       requests.push(
         api.notificationChannels.manageableRepositories().then(

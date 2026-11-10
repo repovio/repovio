@@ -213,3 +213,27 @@ it('uses personal names for recipient options without dropping older fallback id
   ]);
   expect(draft.form.value.browserRecipientUserIds).toEqual([]);
 });
+
+it('blocks new unavailable push selection without clearing an existing channel', /** Preserve server guards and existing recipients. */ async () => {
+  const { draft, open, props } = fixture();
+  props.browserPushAvailable = false;
+  expect(
+    draft.typeOptions.value.find(/** Find the native push option. */ (option) => option.value === 'BROWSER_PUSH')
+      ?.disabled,
+  ).toBe(true);
+  props.channel = {
+    id: 'push-channel',
+    name: 'Operations',
+    type: 'BROWSER_PUSH',
+    enabled: true,
+    browserRecipients: [{ id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'viewer' }],
+    eventSubscriptions: [{ eventType: 'ISSUE_OPENED', repositoryIds: [], workflowPatterns: [] }],
+  } as never;
+  open.value = true;
+  await nextTick();
+  expect(draft.form.value.type).toBe('BROWSER_PUSH');
+  expect(draft.form.value.browserRecipientUserIds).toEqual(['30b7b20a-159a-42c7-a283-0246848d5ab4']);
+  expect(draft.nextStep()).toBe(true);
+  expect(draft.nextStep()).toBe(true);
+  expect(draft.nextStep()).toBe(true);
+});

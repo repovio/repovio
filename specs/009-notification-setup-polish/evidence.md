@@ -25,3 +25,14 @@
 - Focused ESLint and repository documentation checks passed. Web typecheck caught a narrowed local stage type;
   an explicit union corrected it before commit.
 - Final web typecheck passed.
+
+## Availability explanation and retry (T003)
+
+- Added English/German browser regressions failed before the change; after implementation 3 focused browser scenarios
+  pass, including Browser push setup without local push support and the existing channel-creation journey.
+- 29 push/draft/catalog unit tests passed; web typecheck, focused ESLint, and documentation coverage passed.
+- All 17 shipped catalogs include the three new messages, preserving required catalog parity. English/German are
+  explicitly covered by browser tests. Existing Browser push channel recipients survive unavailable server state.
+- Each dialog open checks readiness; retry shows loading for its full request; close invalidates pending results.
+- After extending imported Vue prop types, the local development server needed a restart to refresh compiled props.
+  A fixture used an invalid recipient UUID initially; corrected to the existing synthetic UUID convention.

@@ -37,6 +37,9 @@
             v-model:form="form"
             :channel="channel"
             :type-options="typeOptions"
+            :push-availability="browserPushAvailability"
+            :push-refreshing="browserPushRefreshing"
+            @retry="props.onRefreshBrowserPush?.()"
           />
           <ModulesNotificationsChannelDestinationStep
             v-else-if="step === 1"

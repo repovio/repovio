@@ -914,6 +914,11 @@
         "FAILED": "Failed"
       },
       "open": "Open notification panel"
+    },
+    "pushAvailability": {
+      "checking": "Checking Browser push availability…",
+      "unconfigured": "Configure Web Push (VAPID) on the server before selecting this type.",
+      "failed": "Could not check Browser push availability."
     }
   },
   "notificationDeliveryStatus": {

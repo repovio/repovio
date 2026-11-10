@@ -295,7 +295,8 @@
     "themeSystem": "सिस्टम",
     "themeToggle": "थीम: {current}। {next} पर बदलें।",
     "users": "उपयोगकर्ता",
-    "workflowRuns": "वर्कफ़्लो रन"
+    "workflowRuns": "वर्कफ़्लो रन",
+    "localeChangeError": "भाषा बदली नहीं जा सकी। दोबारा कोशिश करें।"
   },
   "mcp": {
     "adminDescription": "{username} के MCP टोकन देखें और रद्द करें।",

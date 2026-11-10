@@ -295,7 +295,8 @@
     "themeSystem": "Sistem",
     "themeToggle": "Tema: {current}. Beralih ke {next}.",
     "users": "Pengguna",
-    "workflowRuns": "Eksekusi alur kerja"
+    "workflowRuns": "Eksekusi alur kerja",
+    "localeChangeError": "Bahasa tidak dapat diubah. Coba lagi."
   },
   "mcp": {
     "adminDescription": "Tinjau dan cabut token MCP milik {username}.",

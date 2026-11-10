@@ -295,7 +295,8 @@
     "themeSystem": "Sistema",
     "themeToggle": "Tema: {current}. Passa a {next}.",
     "users": "Utenti",
-    "workflowRuns": "Esecuzioni workflow"
+    "workflowRuns": "Esecuzioni workflow",
+    "localeChangeError": "Impossibile cambiare lingua. Riprova."
   },
   "mcp": {
     "adminDescription": "Controlla e revoca i token MCP di {username}.",

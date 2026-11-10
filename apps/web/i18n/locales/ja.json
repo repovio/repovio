@@ -295,7 +295,8 @@
     "themeSystem": "システム設定",
     "themeToggle": "テーマ：{current}。{next} に切り替えます。",
     "users": "ユーザー",
-    "workflowRuns": "ワークフロー実行"
+    "workflowRuns": "ワークフロー実行",
+    "localeChangeError": "言語を変更できませんでした。もう一度お試しください。"
   },
   "mcp": {
     "adminDescription": "{username} が所有する MCP トークンを確認、失効できます。",

@@ -1,10 +1,19 @@
 import type { DropdownMenuItem } from '#ui/types';
+import { h } from 'vue';
 
 import { getAppLocale } from '../../../shared/locales';
 
-/** Expose the configured interface locales in the format used by layout controls. */
-export const useLocales = () => {
-  const { locale, locales, setLocale } = useI18n();
+/**
+ * Expose the configured interface locales in the format used by layout controls.
+ * @param onError Close the initiating overlay before presenting accessible failure feedback.
+ */
+export const useLocales = (onError?: () => void) => {
+  const { getLocaleMessage, locale, locales, setLocale, setLocaleCookie, t } = useI18n();
+  const isChangingLocale = useState<boolean>(
+    'repovio-changing-locale',
+    /** Initialize the shared selection transaction as idle. */ () => false,
+  );
+  const toast = useToast();
 
   const availableLocales = computed(
     /** Derives available locales from the current reactive dependencies. */ () =>
@@ -13,7 +22,31 @@ export const useLocales = () => {
 
   /** Persist and activate the selected interface locale. */
   const handleSelectLocale = async (code: typeof locale.value): Promise<void> => {
-    await setLocale(code);
+    if (isChangingLocale.value || code === locale.value) return;
+    const previous = locale.value;
+    isChangingLocale.value = true;
+    try {
+      await setLocale(code);
+      // Nuxt i18n logs download errors internally instead of rejecting its locale setter.
+      if (!Object.keys(getLocaleMessage(code)).length) throw new Error('Locale messages are unavailable.');
+    } catch {
+      try {
+        await setLocale(previous);
+      } catch {
+        // Retain a usable UI and cookie even if a navigation or locale hook also rejects rollback.
+        locale.value = previous;
+        setLocaleCookie(previous);
+      }
+      onError?.();
+      toast.add({
+        color: 'error',
+        // Keep this error accessible even when the toast library's transient announcer is hidden.
+        title: /** Render a persistent live message inside the visible error toast. */ () =>
+          h('span', { role: 'alert' }, t('layout.localeChangeError')),
+      });
+    } finally {
+      isChangingLocale.value = false;
+    }
   };
 
   const selectItems = computed(
@@ -42,6 +75,7 @@ export const useLocales = () => {
         }) => ({
           avatar,
           checked: locale.value === value,
+          disabled: isChangingLocale.value,
           label,
           /** Runs the selected menu action. */
           onSelect: (event: Event) => {
@@ -57,6 +91,7 @@ export const useLocales = () => {
     availableLocales,
     dropdownMenuItems,
     handleSelectLocale,
+    isChangingLocale,
     locale,
     selectItems,
   };

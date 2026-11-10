@@ -295,7 +295,8 @@
     "themeSystem": "النظام",
     "themeToggle": "المظهر: {current}. التبديل إلى {next}.",
     "users": "المستخدمون",
-    "workflowRuns": "عمليات تشغيل سير العمل"
+    "workflowRuns": "عمليات تشغيل سير العمل",
+    "localeChangeError": "تعذر تغيير اللغة. حاول مرة أخرى."
   },
   "mcp": {
     "adminDescription": "راجع رموز MCP التي يملكها {username} وألغها.",

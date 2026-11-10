@@ -295,7 +295,8 @@
     "themeSystem": "Системная",
     "themeToggle": "Тема: {current}. Переключить на {next}.",
     "users": "Пользователи",
-    "workflowRuns": "Запуски рабочих процессов"
+    "workflowRuns": "Запуски рабочих процессов",
+    "localeChangeError": "Не удалось изменить язык. Повторите попытку."
   },
   "mcp": {
     "adminDescription": "Просматривайте и отзывайте токены MCP пользователя {username}.",

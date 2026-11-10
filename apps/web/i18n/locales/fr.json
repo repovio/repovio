@@ -295,7 +295,8 @@
     "themeSystem": "Système",
     "themeToggle": "Thème : {current}. Passer à {next}.",
     "users": "Utilisateurs",
-    "workflowRuns": "Exécutions de flux"
+    "workflowRuns": "Exécutions de flux",
+    "localeChangeError": "Impossible de changer de langue. Réessayez."
   },
   "mcp": {
     "adminDescription": "Consultez et révoquez les jetons MCP de {username}.",

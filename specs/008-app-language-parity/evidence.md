@@ -80,3 +80,24 @@ Implementation and separate per-task commits/pushes approved on 2026-11-10. No m
   dependency was needed. Long tables retain their own accessible horizontal scroll container.
 - Responsive menu accessible names correctly account for the hidden mobile shortcut hint.
 - Web lint/build, focused test lint, repository documentation, canonical formatting, and whitespace checks passed.
+
+## T006: Preferences, full loading lifetime, failure recovery, and formatting
+
+- T005 committed/pushed as `e6b1c1e` before this task. All 17 catalogs now contain 1,030 messages, including localized
+  language-change failure feedback.
+- Shared busy state gates both public and signed-in initiators and blocks overlapping changes until completion.
+- Nuxt i18n catches asset errors internally. An empty target catalog is detected after its setter, then the public setter
+  restores the previous language/cookie. Rejected setters also release loading and provide accessible feedback.
+- Failed public selection closes its overlay; signed-in errors close the user menu. The error toast renders an explicit
+  visible alert because the pinned Reka implementation marks its transient announcement node aria-hidden.
+- Escape during a pending signed-in change defers focus until the trigger is enabled. An explicit focus change to another
+  control is respected. Public selectors likewise avoid moving focus away from another active control.
+- Real locale assets are intercepted by message content rather than development-only filenames. Public German/Brazilian
+  Portuguese and signed-in download holds prove full-duration loading; real failed imports verify rollback, live error
+  feedback, retained cookies, and successful reload/retry. The old dev-only test limitation is resolved.
+- Every public/signed-in language selection survives navigation/reload and preserves query parameters. Browser detection
+  passes zh-CN, pt-BR, pt-PT, ar-SA, ur-PK; unsupported sv-SE falls back to English. Existing unsupported-cookie coverage passes.
+- Added twelve fixed-UTC date/time regressions for Chinese, Brazilian Portuguese, Arabic, and Urdu, including midnight,
+  24-hour output, and invariant ISO Latin digits/order. Formatter implementation remains unchanged.
+- Final checks: 25 unit files / 129 tests, all 70 production-browser cases, web lint/typecheck/build, focused test lint,
+  repository documentation, stable formatting, and whitespace checks passed. API responses are fixtures.

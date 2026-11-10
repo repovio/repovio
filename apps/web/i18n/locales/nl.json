@@ -295,7 +295,8 @@
     "themeSystem": "Systeem",
     "themeToggle": "Thema: {current}. Overschakelen naar {next}.",
     "users": "Gebruikers",
-    "workflowRuns": "Workflowuitvoeringen"
+    "workflowRuns": "Workflowuitvoeringen",
+    "localeChangeError": "De taal kon niet worden gewijzigd. Probeer het opnieuw."
   },
   "mcp": {
     "adminDescription": "Bekijk en trek MCP-tokens van {username} in.",

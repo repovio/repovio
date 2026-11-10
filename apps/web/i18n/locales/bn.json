@@ -295,7 +295,8 @@
     "themeSystem": "সিস্টেম",
     "themeToggle": "থিম: {current}। {next}-এ পরিবর্তন করুন।",
     "users": "ব্যবহারকারী",
-    "workflowRuns": "ওয়ার্কফ্লো রান"
+    "workflowRuns": "ওয়ার্কফ্লো রান",
+    "localeChangeError": "ভাষা পরিবর্তন করা যায়নি। আবার চেষ্টা করুন।"
   },
   "mcp": {
     "adminDescription": "{username}-এর মালিকানাধীন MCP টোকেন পর্যালোচনা ও প্রত্যাহার করুন।",

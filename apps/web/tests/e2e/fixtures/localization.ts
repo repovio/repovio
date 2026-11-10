@@ -98,3 +98,46 @@ export function uiCloseLabel(code: string): string {
   );
   return JSON.parse(literal) as string;
 }
+
+/** Intercept a real locale module or JSON response by its messages, independent of dev/production filenames. */
+export async function interceptLocaleAsset(
+  page: Page,
+  marker: string,
+): Promise<{
+  started: Promise<void>;
+  release: () => void;
+  reject: () => void;
+}> {
+  let notify!: () => void;
+  let settle!: (failed: boolean) => void;
+  let intercepted = false;
+  const started = new Promise<void>(
+    /** Signal the actual target message download. */ (resolve) => {
+      notify = resolve;
+    },
+  );
+  const released = new Promise<boolean>(
+    /** Expose deterministic success/failure without arbitrary timers. */ (resolve) => {
+      settle = resolve;
+    },
+  );
+  await page.route(
+    /(?:\.js|\.json)(?:\?|$)/,
+    /** Preserve unrelated resources and hold only the selected language's actual payload. */ async (route) => {
+      const response = await route.fetch();
+      if (intercepted || !(await response.text()).includes(marker)) {
+        await route.fulfill({ response });
+        return;
+      }
+      intercepted = true;
+      notify();
+      if (await released) await route.abort('failed');
+      else await route.fulfill({ response });
+    },
+  );
+  return {
+    started,
+    /** Let the original locale response complete. */ release: () => settle(false),
+    /** Reject the real message download. */ reject: () => settle(true),
+  };
+}

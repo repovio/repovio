@@ -295,7 +295,8 @@
     "themeSystem": "سسٹم",
     "themeToggle": "تھیم: {current}۔ {next} پر تبدیل کریں۔",
     "users": "صارفین",
-    "workflowRuns": "ورک فلو رنز"
+    "workflowRuns": "ورک فلو رنز",
+    "localeChangeError": "زبان تبدیل نہیں ہو سکی۔ دوبارہ کوشش کریں۔"
   },
   "mcp": {
     "adminDescription": "{username} کے MCP ٹوکنز کا جائزہ لیں اور انہیں منسوخ کریں۔",

@@ -145,7 +145,7 @@ Run focused browser regressions and affected web unit/lint/type/build targets af
 **Independent Test**: Select each locale, navigate/reload, test browser preference and invalid-cookie fallback, then delay
 or fail a locale load and verify coherent recovery.
 
-- [ ] T006 [US3] Extend `apps/web/tests/e2e/localization.spec.ts`,
+- [x] T006 [US3] Extend `apps/web/tests/e2e/localization.spec.ts`,
       `apps/web/tests/e2e/auth-preferences.spec.ts`, and `apps/web/app/utils/date-time.spec.ts` for all-locale selection
       persistence, navigation/query retention, supported browser preferences, unsupported/malformed fallback, exact
       `zh-CN`/`pt-BR` plus legacy `pt`, delayed and rejected locale changes, and locale-aware date/number/message rendering;

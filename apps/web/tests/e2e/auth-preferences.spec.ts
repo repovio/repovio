@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { appLocales } from '../../shared/locales';
-import { languageFlags, localeMessages, mockLocalization } from './fixtures/localization';
+import { interceptLocaleAsset, languageFlags, localeMessages, mockLocalization } from './fixtures/localization';
 
 for (const route of [
   { heading: 'Sign in', initialized: true, path: '/auth/signin', translatedHeading: 'Anmelden' },
@@ -154,53 +154,60 @@ for (const route of [
   });
 }
 
-test('keeps the language select busy while its locale is loading', /** Verifies keeps the language select busy while its locale is loading. */ async ({
+for (const target of [
+  { code: 'de', name: 'Deutsch', marker: 'Anmelden' },
+  { code: 'pt-BR', name: 'Português (Brasil)', marker: 'Entrar' },
+]) {
+  test(`keeps the language select busy while ${target.code} loads`, /** Hold the real locale asset in both development and production. */ async ({
+    page,
+  }) => {
+    await mockLocalization(page);
+    await page.goto('/auth/signin');
+    await page.getByRole('combobox', { name: 'Language', exact: true }).click();
+    const download = await interceptLocaleAsset(page, target.marker);
+    await page.getByRole('option', { name: target.name, exact: true }).click();
+    try {
+      await download.started;
+      await expect(page.getByRole('combobox')).toBeDisabled();
+      await expect(page.getByRole('combobox').locator('.animate-spin')).toBeVisible();
+    } finally {
+      download.release();
+    }
+    const messages = localeMessages(target.code);
+    await expect(page.getByRole('combobox', { name: messages.layout.language, exact: true })).toBeEnabled();
+    await expect(page.getByRole('heading', { name: messages.auth.signIn, exact: true })).toBeVisible();
+  });
+}
+
+test('recovers a failed locale download and keeps the saved language usable', /** Verify the real swallowed-import failure rather than a mocked setter. */ async ({
   page,
 }) => {
-  await page.route(
-    '**/api/v1/auth/setup-status',
-    /** Supplies the mocked response for `/api/v1/auth/setup-status`. */ (route) =>
-      route.fulfill({ json: { initialized: true } }),
-  );
-  await page.route(
-    '**/api/v1/auth/oidc/status',
-    /** Supplies the mocked response for `/api/v1/auth/oidc/status`. */ (route) =>
-      route.fulfill({ json: { enabled: false } }),
-  );
-  /** Releases the deferred locale response used by this scenario. */
-  let releaseLocale: () => void = () => {};
-  const localeReleased = new Promise<void>(
-    /** Exposes the control that releases the delayed locale download. */ (resolve) => {
-      releaseLocale = resolve;
-    },
-  );
-  /** Selects the requested locale for this response fixture. */
-  let localeRequested: () => void = () => {};
-  const localePending = new Promise<void>(
-    /** Signals when the locale download has started. */ (resolve) => {
-      localeRequested = resolve;
-    },
-  );
-  await page.route(
-    /\/de\.json(?:\?|$)/,
-    /** Supplies the mocked response for the intercepted request. */ async (route) => {
-      localeRequested();
-      await localeReleased;
-      await route.continue();
-    },
-  );
+  await mockLocalization(page);
   await page.goto('/auth/signin');
   await page.getByRole('combobox', { name: 'Language', exact: true }).click();
-  await page.getByRole('option', { name: 'Deutsch', exact: true }).click();
-  try {
-    await localePending;
-    await expect(page.getByRole('combobox')).toBeDisabled();
-    await expect(page.getByRole('combobox').locator('.animate-spin')).toBeVisible();
-  } finally {
-    releaseLocale();
-  }
-  await expect(page.getByRole('combobox', { name: 'Sprache', exact: true })).toBeEnabled();
-  await expect(page.getByRole('heading', { name: 'Anmelden', exact: true })).toBeVisible();
+  const download = await interceptLocaleAsset(page, 'Entrar');
+  await page.getByRole('option', { name: 'Português (Brasil)', exact: true }).click();
+  await download.started;
+  download.reject();
+  const english = localeMessages('en');
+  const error = page.getByText(english.layout.localeChangeError, { exact: true });
+  await expect(error).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: english.layout.localeChangeError })).toContainText(
+    english.layout.localeChangeError,
+  );
+  await expect(page.getByRole('combobox', { name: 'Language', exact: true })).toBeEnabled();
+  await expect(page.getByRole('combobox')).toContainText('English');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en-US');
+  expect(
+    (await page.context().cookies()).find(
+      /** Inspect the rolled-back persisted preference. */ (cookie) => cookie.name === 'repovio-locale',
+    )?.value,
+  ).toBe('en');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await page.getByRole('combobox', { name: 'Language', exact: true }).click();
+  await page.getByRole('option', { name: 'Português (Brasil)', exact: true }).click();
+  await expect(page.getByRole('heading', { name: localeMessages('pt-BR').auth.signIn, exact: true })).toBeVisible();
 });
 
 for (const entry of appLocales) {
@@ -210,7 +217,8 @@ for (const entry of appLocales) {
     }) => {
       const messages = localeMessages(entry.code);
       await mockLocalization(page, { initialized });
-      await page.goto(initialized ? '/auth/signin' : '/auth/setup');
+      await page.goto(initialized ? '/auth/signin?locale-check=kept' : '/auth/setup?locale-check=kept');
+      const originalURL = page.url();
       await page.getByRole('combobox', { name: 'Language', exact: true }).click();
       const option = page.getByRole('option', { name: entry.name, exact: true });
       await option.scrollIntoViewIfNeeded();
@@ -229,6 +237,37 @@ for (const entry of appLocales) {
           /** Read the actual saved preference. */ (cookie) => cookie.name === 'repovio-locale',
         )?.value,
       ).toBe(entry.code);
+      await expect(page).toHaveURL(originalURL);
+      await page.reload();
+      await expect(
+        page.getByRole('heading', { name: initialized ? messages.auth.signIn : messages.auth.setup, exact: true }),
+      ).toBeVisible();
     });
   }
+}
+
+for (const preference of [
+  { language: 'zh-CN', code: 'zh-CN' },
+  { language: 'pt-BR', code: 'pt-BR' },
+  { language: 'pt-PT', code: 'pt' },
+  { language: 'ar-SA', code: 'ar' },
+  { language: 'ur-PK', code: 'ur' },
+  { language: 'sv-SE', code: 'en' },
+]) {
+  test.describe(`browser language ${preference.language}`, /** Isolate navigator language without a saved cookie. */ () => {
+    test.use({ locale: preference.language });
+    test('detects supported languages and preserves English fallback', /** Exercise the actual browser-language resolver at initial app navigation. */ async ({
+      page,
+    }) => {
+      await mockLocalization(page);
+      await page.goto('/');
+      const messages = localeMessages(preference.code);
+      await expect(page.getByRole('heading', { name: messages.auth.signIn, exact: true })).toBeVisible();
+      expect(
+        (await page.context().cookies()).find(
+          /** Read the detected preference. */ (cookie) => cookie.name === 'repovio-locale',
+        )?.value,
+      ).toBe(preference.code);
+    });
+  });
 }

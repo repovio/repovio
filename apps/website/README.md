@@ -79,3 +79,9 @@ without copying prose into locale folders or querying GitHub. The source checker
 versions, invalid headings, and incorrect semantic ordering; a valid empty changelog is supported. Docker builds include
 the same source. Website publication stays independent: new application entries appear with the next website build
 containing that changelog revision. Pending Changesets and the website package changelog are not application releases.
+
+The public release-history route is `/docs/release-notes`, with normal non-English locale prefixes. Interface labels
+and metadata are translated into all website languages; the canonical release descriptions remain English and are
+marked accordingly. The page spans application versions, so it has no handbook version selector. Release heading links
+use the content renderer's IDs and remain valid across language switches. Sitemap discovery is independent of handbook
+archive versions. There is no browser-time GitHub request or need for application/provider credentials.

@@ -53,3 +53,13 @@
 - All 12 screenshots visually inspected in a contact sheet; localized chrome and isolated left-to-right English prose
   remain readable. Review screenshots are local artifacts outside Git; test paths use `test-results/release-notes-*.png`.
 - Website lint/typecheck/build, declaration coverage, and canonical formatting stability passed.
+
+## T006 localized discovery
+
+- Commit for T005: `9f73330` (pushed).
+- Three production SEO scenarios pass, including all 13 SSR locale routes, localized titles/descriptions, canonical and
+  alternate-language metadata, exactly one history sitemap URL per locale, and real EN/DE language-switch fragments.
+- The existing LanguageSwitch already preserves the route and hash; no switch modification was necessary.
+- Website lint/typecheck/build, declaration coverage, and stable canonical formatting passed.
+- Inspection identified a direct FR-008 dependency: Nx cache inputs and CI path selection must include root CHANGELOG.md.
+  A bounded T008 follow-up will fix this before T007 acceptance; no release automation or deployment coupling is added.

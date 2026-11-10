@@ -108,7 +108,7 @@ navigation. Run focused unit checks and production browser checks; compare again
 **Independent test**: EN/DE/RTL history pages at 375 px and 1440 px in light and dark themes; language switching retains
 route and valid fragment.
 
-- [ ] T005 [US3] Complete responsive toolbar/history spacing, keyboard focus, English body `lang` and direction isolation,
+- [x] T005 [US3] Complete responsive toolbar/history spacing, keyboard focus, English body `lang` and direction isolation,
       and mobile TOC behavior in `apps/website/app/components/DocsToolbar.vue` and
       `apps/website/app/components/modules/docs/release-history.vue`; verify all 13 locale keys introduced by T003 and correct
       any translations in `apps/website/i18n/locales/*.json`; add production visual/locale/focus assertions in

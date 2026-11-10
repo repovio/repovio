@@ -12,6 +12,7 @@ export default defineEventHandler(
       ...productPaths,
       '/imprint',
       '/privacy-policy',
+      '/docs/release-notes',
       ...docVersions
         .filter(/** Keep entries matching `version.status !== 'preview'`. */ (version) => version.status !== 'preview')
         .flatMap(

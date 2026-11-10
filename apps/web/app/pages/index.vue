@@ -21,8 +21,8 @@
           icon="i-lucide-refresh-cw"
           variant="soft"
           :label="$t('dashboard.refresh')"
-          :loading="isLoading"
-          @click="loadDashboard"
+          :loading="refreshLoading"
+          @click="refreshView"
         />
       </div>
     </template>
@@ -87,10 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, onScopeDispose, reactive, ref } from 'vue';
 
 import TrendChart from '~/components/modules/dashboard/trend-chart.vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
+import { useAutoRefresh } from '~/composables/app/auto-refresh';
+import { createReadQueue } from '~/composables/app/refresh-reads';
 import type {
   DashboardPeriodQuery,
   DashboardSummary,
@@ -122,6 +124,14 @@ const errors = reactive({
 });
 const range = ref<'7d' | '30d' | '90d'>('30d');
 let historicalRequestId = 0;
+let currentRequestId = 0;
+const historicalReads = createReadQueue();
+onScopeDispose(
+  /** Discard responses belonging to a disposed dashboard. */ () => {
+    historicalRequestId++;
+    currentRequestId++;
+  },
+);
 
 useHead({ title: computed(/** Derives title from the current reactive dependencies. */ () => t('dashboard.title')) });
 
@@ -129,6 +139,7 @@ const isLoading = computed(
   /** Derives is loading from the current reactive dependencies. */ () =>
     isCurrentLoading.value || isHistoricalLoading.value,
 );
+const { refresh: refreshView, loading: refreshLoading } = useAutoRefresh(loadDashboard, isLoading);
 const hasError = computed(
   /** Derives has error from the current reactive dependencies. */ () => Object.values(errors).some(Boolean),
 );
@@ -186,6 +197,7 @@ async function loadDashboard(): Promise<void> {
 
 /** Fetch current failed workflows and the latest visible runs independently. */
 async function loadCurrentDashboard(): Promise<void> {
+  const requestId = ++currentRequestId;
   isCurrentLoading.value = true;
   const [failureResult, latestResult, issueResult, pullRequestResult] = await Promise.allSettled([
     api.dashboard.getFailures(),
@@ -193,6 +205,7 @@ async function loadCurrentDashboard(): Promise<void> {
     api.issues.summary(),
     api.pullRequests.summary(),
   ]);
+  if (requestId !== currentRequestId) return;
   errors.failures = failureResult.status === 'rejected';
   errors.latestRuns = latestResult.status === 'rejected';
   errors.issues = issueResult.status === 'rejected';
@@ -210,13 +223,16 @@ async function loadHistoricalDashboard(): Promise<void> {
   isHistoricalLoading.value = true;
   const days = Number(range.value.replace('d', ''));
   const query = createPeriodQuery(days);
-  const [summaryResult, trendResult] = await Promise.allSettled([
-    api.dashboard.getSummary(query),
-    api.dashboard.getTrend({
-      ...query,
-      bucket: days <= 7 ? 'hour' : days <= 30 ? 'day' : 'week',
-    }),
-  ]);
+  const [summaryResult, trendResult] = await historicalReads(
+    /** Serialize period changes against interval reads. */ () =>
+      Promise.allSettled([
+        api.dashboard.getSummary(query),
+        api.dashboard.getTrend({
+          ...query,
+          bucket: days <= 7 ? 'hour' : days <= 30 ? 'day' : 'week',
+        }),
+      ]),
+  );
   if (requestId !== historicalRequestId) return;
 
   errors.summary = summaryResult.status === 'rejected';

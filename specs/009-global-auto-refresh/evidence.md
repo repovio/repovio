@@ -35,3 +35,5 @@ No live provider, production synchronization, deployment, or feature browser beh
 Graphify warns SQL extraction lacks tree_sitter_sql; existing graph remains usable.
 
 - T002: Scheduler and real Pinia preference store complete. Twelve focused tests pass after the missing-module red run; web lint/typecheck, declaration documentation, scoped canonical formatting and stable second pass pass. One focused patch Changeset included.
+
+- T003: Dashboard/approval adapters complete. Serial period queue test, three browser scenarios (default cadence, navigation disposal, delayed summary plus failed trend), web lint/typecheck, documentation and stable formatting pass. Initial dev-server dependency optimization caused a blank first load; warmed reruns pass. Existing UAlert exposes text rather than alert role; assertion uses its visible error text.

@@ -23,8 +23,8 @@
         variant="soft"
         :aria-label="$t('dashboard.refresh')"
         :label="$t('dashboard.refresh')"
-        :loading="loading"
-        @click="loadRuns"
+        :loading="refreshLoading"
+        @click="refreshView"
       />
     </template>
 
@@ -110,7 +110,8 @@
 
 <script setup lang="ts">
 import type { TableColumn } from '#ui/types';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onScopeDispose, ref } from 'vue';
+import { useAutoRefresh } from '~/composables/app/auto-refresh';
 
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useDateTime } from '~/composables/use-date-time';
@@ -123,6 +124,13 @@ const api = useRepovioApi();
 const { formatDateTime } = useDateTime();
 const loadError = ref(false);
 const loading = ref(true);
+let requestGeneration = 0;
+onScopeDispose(
+  /** Invalidate approval responses on navigation or sign-out. */ () => {
+    requestGeneration++;
+  },
+);
+const { refresh: refreshView, loading: refreshLoading } = useAutoRefresh(loadRuns, loading);
 const runs = ref<DashboardWorkflowRun[]>([]);
 const search = ref('');
 const columns = computed<TableColumn<DashboardWorkflowRun>[]>(
@@ -162,14 +170,16 @@ const filteredRuns = computed(
 
 /** Load all approval-gated workflow runs visible to the current user. */
 async function loadRuns(): Promise<void> {
+  const generation = ++requestGeneration;
   loading.value = true;
   loadError.value = false;
   try {
-    runs.value = (await api.dashboard.getAwaitingApproval()).data;
+    const response = await api.dashboard.getAwaitingApproval();
+    if (generation === requestGeneration) runs.value = response.data;
   } catch {
-    loadError.value = true;
+    if (generation === requestGeneration) loadError.value = true;
   } finally {
-    loading.value = false;
+    if (generation === requestGeneration) loading.value = false;
   }
 }
 

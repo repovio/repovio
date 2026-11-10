@@ -66,7 +66,7 @@ canonical formatting, and diff checks pass. This task exposes no unconditional g
 **Independent test**: With cleared refresh preference, change synthetic responses and advance the browser clock by 15 s
 on each supported view. Verify new table/widget/summary data, unchanged applicable query choices, and no sync POST.
 
-- [ ] T003 [US1] Integrate the registered refresh target into `apps/web/app/pages/index.vue` and
+- [x] T003 [US1] Integrate the registered refresh target into `apps/web/app/pages/index.vue` and
       `apps/web/app/pages/workflows/awaiting-approval.vue`; use the same guarded operation for existing initial/manual
       loading and scheduled refresh, preserve dashboard period and approval search, await all grouped reads even after a
       sibling fails, and protect current/historical/approval writes from obsolete generations; add focused deferred-loader

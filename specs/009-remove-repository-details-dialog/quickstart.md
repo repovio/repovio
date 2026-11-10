@@ -154,3 +154,14 @@ the final production run includes its geometry assertions and completes T010 acc
   Repository breadcrumb label through the existing item class contract resolved it; all 12 viewport/locale/theme cases
   pass with exactly one active primary section and nonoverlapping action bounds. Full accessible identity is retained.
   Web lint/typecheck, declaration documentation, stable formatting, and screenshot review passed.
+
+## Final base integration (2026-11-10)
+
+After PR creation, main advanced with the independent global auto-refresh feature (#94). The graph union driver and
+normal Git merge preserved both features without manual source conflict resolution. Runtime revision
+`fb9af833858631b45356c0caa6161b6b90bf0811` integrates main `9c89ba9e1680b27c57684bd67262ebddd4b130bd`.
+Web unit tests now pass in 31 files / 157 tests. Web lint, typecheck, production build, canonical formatting, and
+declaration documentation checks passed again. The full 159-scenario production browser run is recorded in
+`/tmp/repovio88-refreshed-e2e.json` and `/tmp/repovio88-refreshed-e2e.log`; its result is reported in PR #95.
+The feature diff still contains no API, schema, dependency, lockfile, workflow, or production configuration changes.
+Remote checks and merge approval are tracked on [PR #95](https://github.com/repovio/repovio/pull/95).

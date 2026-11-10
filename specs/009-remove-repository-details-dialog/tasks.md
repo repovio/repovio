@@ -76,7 +76,7 @@ zero Repository details modals, unchanged embedded actions and access restrictio
 **Independent test**: Visit each tab, reload and traverse history; switch with unsaved input/pending requests; leave
 Settings/change Repository; directly visit tabs as Viewer/Manager.
 
-- [ ] T004 [US2] Add secondary navigation and lazy retained panels in
+- [x] T004 [US2] Add secondary navigation and lazy retained panels in
       `apps/web/app/components/modules/repositories/details/settings-page.vue`; extract Webhook loading into a focused
       `apps/web/app/components/modules/repositories/details/settings-webhook-panel.vue` so it runs only on first Webhook
       visit. Keep the existing Settings route/administrator guard. Implement section values

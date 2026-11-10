@@ -18,6 +18,7 @@
       <div v-if="visited.has('general')" v-show="section === 'general'" data-settings-section="general">
         <ModulesRepositoriesDetailsGeneralCard
           :editable="true"
+          :show-identity="false"
           :repository="repository"
           @updated="handleRepositoryUpdated"
         />

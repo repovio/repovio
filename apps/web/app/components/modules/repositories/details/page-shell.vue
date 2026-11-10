@@ -117,7 +117,7 @@ const navigation = computed(
       ...(canViewAlerts.value
         ? [
             {
-              label: t('repositoryDetails.activity.securityAlerts'),
+              label: t('securityAlerts.title'),
               icon: 'i-lucide-shield-alert',
               to: `${path}/security-alerts`,
             },

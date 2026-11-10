@@ -1,6 +1,6 @@
 <template>
   <UCard class="lg:col-span-2" :ui="{ body: 'space-y-4' }">
-    <template #header>
+    <template v-if="showIdentity !== false" #header>
       <div>
         <h2 class="font-semibold">
           {{ repository.owner }}/{{ repository.name }}
@@ -75,21 +75,42 @@
         :help="$t('repositoryDetails.retentionHelp')"
         :label="$t('repositoryDetails.retention')"
       >
-        <UInput v-model="retentionDays.workflowRunRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
+        <UInput
+          v-model="retentionDays.workflowRunRetentionDays"
+          class="w-full"
+          max="3650"
+          min="1"
+          type="number"
+          :disabled="saving"
+        />
       </UFormField>
       <UFormField
         name="issueRetentionDays"
         :help="$t('repositoryDetails.retentionHelp')"
         :label="$t('repositoryDetails.issueRetention')"
       >
-        <UInput v-model="retentionDays.issueRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
+        <UInput
+          v-model="retentionDays.issueRetentionDays"
+          class="w-full"
+          max="3650"
+          min="1"
+          type="number"
+          :disabled="saving"
+        />
       </UFormField>
       <UFormField
         name="pullRequestRetentionDays"
         :help="$t('repositoryDetails.retentionHelp')"
         :label="$t('repositoryDetails.pullRequestRetention')"
       >
-        <UInput v-model="retentionDays.pullRequestRetentionDays" max="3650" min="1" type="number" :disabled="saving" />
+        <UInput
+          v-model="retentionDays.pullRequestRetentionDays"
+          class="w-full"
+          max="3650"
+          min="1"
+          type="number"
+          :disabled="saving"
+        />
       </UFormField>
       <div class="flex justify-end lg:col-span-3">
         <UButton type="submit" :disabled="saving" :label="$t('repositoryDetails.save')" :loading="saving" />
@@ -112,6 +133,8 @@ import type { Repository } from '~/types/api/resources';
 const props = defineProps<{
   editable: boolean;
   repository: Repository;
+  /** Hide identity repeated by the enclosing Settings page; Overview keeps its default header. */
+  showIdentity?: boolean;
 }>();
 const emit = defineEmits<{
   updated: [repository: Repository];

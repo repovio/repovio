@@ -86,3 +86,8 @@ CI status. Production deployment and Provider writes are outside this feature.
   guards, drafts/pending requests, and memory-only synthetic webhook draft disposal. Existing administration, webhook,
   and user-discovery regressions passed after selecting the proper section. Web lint/typecheck and 129 unit tests passed.
   Existing app locale parity requires new labels in all 17 supported catalogs; this preserves rather than expands locales.
+
+- T005: 12 language/theme/viewport browser scenarios passed (390/1102/1440 px), visiting all five Settings sections via
+  keyboard and capturing their layouts. Screenshot review confirms full-width retention inputs and no duplicate Settings
+  identity; Overview retains its existing card header. Four Repository detail/retention/access scenarios passed.
+  Existing translated Alerts labels and action/field keys are reused; no new label keys are needed for T006-T008.

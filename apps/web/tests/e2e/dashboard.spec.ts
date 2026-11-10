@@ -304,7 +304,7 @@ test('renders dashboard values, reloads for range filters, and presents request 
     .toBe(2);
 
   failDashboardRequest = true;
-  await page.getByRole('button', { name: 'Refresh' }).click();
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await expect(page.getByText('Some dashboard data is unavailable')).toBeVisible();
   await expect(page.getByText('Available sections remain visible. Refresh to retry the missing data.')).toBeVisible();
   await expect(page.getByText('CI', { exact: true }).first()).toBeVisible();

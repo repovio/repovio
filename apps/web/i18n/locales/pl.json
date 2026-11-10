@@ -1243,5 +1243,11 @@
     "draftError": "Nie udało się załadować adresu URL. Spróbuj ponownie.",
     "retryDraft": "Załaduj adres URL",
     "savedConfigurations": "Zapisane konfiguracje"
+  },
+  "autoRefresh": {
+    "title": "Automatyczne odświeżanie",
+    "off": "Wyłączone",
+    "help": "Dotyczy aktywnych widoków monitorowania w tej przeglądarce. Synchronizacja z dostawcami pozostaje bez zmian.",
+    "current": "Automatyczne odświeżanie: {interval}"
   }
 }

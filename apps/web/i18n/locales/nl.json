@@ -1243,5 +1243,11 @@
     "draftError": "De callback-URL kon niet worden geladen. Probeer opnieuw.",
     "retryDraft": "Callback-URL laden",
     "savedConfigurations": "Opgeslagen configuraties"
+  },
+  "autoRefresh": {
+    "title": "Automatisch vernieuwen",
+    "off": "Uit",
+    "help": "Geldt voor actieve monitoringweergaven in deze browser. Providersynchronisatie blijft ongewijzigd.",
+    "current": "Automatisch vernieuwen: {interval}"
   }
 }

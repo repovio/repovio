@@ -1243,5 +1243,11 @@
     "draftError": "No se pudo cargar la URL de callback. Vuelve a intentarlo.",
     "retryDraft": "Cargar URL de callback",
     "savedConfigurations": "Configuraciones guardadas"
+  },
+  "autoRefresh": {
+    "title": "Actualización automática",
+    "off": "Desactivada",
+    "help": "Se aplica a las vistas de supervisión activas en este navegador. La sincronización con los proveedores no cambia.",
+    "current": "Actualización automática: {interval}"
   }
 }

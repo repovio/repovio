@@ -1243,5 +1243,11 @@
     "draftError": "The callback URL could not be loaded. Retry setup.",
     "retryDraft": "Load callback URL",
     "savedConfigurations": "Saved configurations"
+  },
+  "autoRefresh": {
+    "title": "Automatic refresh",
+    "off": "Off",
+    "help": "Applies to active monitoring views in this browser. Provider synchronization is unchanged.",
+    "current": "Automatic refresh: {interval}"
   }
 }

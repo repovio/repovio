@@ -1243,5 +1243,11 @@
     "draftError": "Die Callback-URL konnte nicht geladen werden. Einrichtung erneut versuchen.",
     "retryDraft": "Callback-URL laden",
     "savedConfigurations": "Gespeicherte Konfigurationen"
+  },
+  "autoRefresh": {
+    "title": "Automatisch aktualisieren",
+    "off": "Aus",
+    "help": "Gilt für aktive Monitoring-Ansichten in diesem Browser. Die Provider-Synchronisierung bleibt unverändert.",
+    "current": "Automatische Aktualisierung: {interval}"
   }
 }

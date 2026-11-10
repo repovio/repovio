@@ -1243,5 +1243,11 @@
     "draftError": "URL callback tidak dapat dimuat. Coba lagi.",
     "retryDraft": "Muat URL callback",
     "savedConfigurations": "Konfigurasi tersimpan"
+  },
+  "autoRefresh": {
+    "title": "Penyegaran otomatis",
+    "off": "Nonaktif",
+    "help": "Berlaku untuk tampilan pemantauan aktif di browser ini. Sinkronisasi penyedia tidak berubah.",
+    "current": "Penyegaran otomatis: {interval}"
   }
 }

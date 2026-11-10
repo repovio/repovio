@@ -1243,5 +1243,11 @@
     "draftError": "コールバック URL を読み込めませんでした。再試行してください。",
     "retryDraft": "コールバック URL を読み込む",
     "savedConfigurations": "保存済みの設定"
+  },
+  "autoRefresh": {
+    "title": "自動更新",
+    "off": "オフ",
+    "help": "このブラウザーでアクティブな監視ビューに適用されます。プロバイダーの同期は変更されません。",
+    "current": "自動更新: {interval}"
   }
 }

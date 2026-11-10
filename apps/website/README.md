@@ -85,3 +85,6 @@ and metadata are translated into all website languages; the canonical release de
 marked accordingly. The page spans application versions, so it has no handbook version selector. Release heading links
 use the content renderer's IDs and remain valid across language switches. Sitemap discovery is independent of handbook
 archive versions. There is no browser-time GitHub request or need for application/provider credentials.
+
+The root changelog is an explicit external input to website Nx build, container, test, and typecheck targets. Its changes
+invalidate those caches and select website CI validation, without changing independently approved publication triggers.

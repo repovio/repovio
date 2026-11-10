@@ -63,3 +63,12 @@
 - Website lint/typecheck/build, declaration coverage, and stable canonical formatting passed.
 - Inspection identified a direct FR-008 dependency: Nx cache inputs and CI path selection must include root CHANGELOG.md.
   A bounded T008 follow-up will fix this before T007 acceptance; no release automation or deployment coupling is added.
+
+## T008 canonical source dependency correction
+
+- Commit for T006: `851d35d` (pushed).
+- Red CI-area regression failed before the fix; all nine CI-area tests now pass.
+- Eleven release-source unit checks pass, including every source-consuming Nx target retaining normal inputs plus root history.
+- Effective `nx show project website --json` confirms root CHANGELOG.md in build, container, test, and typecheck inputs.
+- Website ESLint, focused root-script ESLint, declaration coverage, and stable canonical formatting passed.
+- No deployment or release trigger changed; only validation selection and cache inputs changed.

@@ -6,7 +6,7 @@
 **Issue**: [#83](https://github.com/repovio/repovio/issues/83).
 **Branch**: `codex/83-website-release-notes`, reusing the existing Codex worktree. Implementation approved on 2026-11-10; merge and deployment remain separately gated.
 **Tests**: Required by the specification and repository rules; each behavior increment includes its focused tests.
-**Organization**: Seven coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
+**Organization**: Eight coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
 
 ## Format and Execution Rules
 
@@ -14,7 +14,7 @@
 - Paths are repository-relative. Referenced new source/test paths are planned deliverables, not existing files.
 - Before each edit, test, and commit, inspect working status and the relevant diff. Read owning instructions and use
   Graphify before new source exploration. Preserve unrelated work and pinned dependencies.
-- During separately approved implementation, each T002–T006 gets its own working, verified commit containing code,
+- During separately approved implementation, each T002–T006 and T008 gets its own working, verified commit containing code,
   focused tests, attached documentation, exactly one focused Changeset, and the corresponding graph update. Generate
   Changesets with the pinned workspace CLI; include `repovio` and the independently affected `@repovio/website` in the
   same file as appropriate. Never version or publish packages during task work. Push each authorized commit.
@@ -114,7 +114,7 @@ route and valid fragment.
       any translations in `apps/website/i18n/locales/*.json`; add production visual/locale/focus assertions in
       `apps/website/tests/e2e/release-notes-visual.spec.ts`; document language and accessibility contracts in component comments
       and include `.changeset/website-release-accessibility.md`.
-- [ ] T006 [P] [US3] Add localized history URLs to `apps/website/server/routes/sitemap.xml.ts`, reactive localized page
+- [x] T006 [P] [US3] Add localized history URLs to `apps/website/server/routes/sitemap.xml.ts`, reactive localized page
       metadata in `apps/website/app/pages/docs/release-notes.vue`, and narrowly scoped route/hash preservation in
       `apps/website/app/components/LanguageSwitch.vue` only if existing switching loses them; add metadata, all-locale route,
       sitemap uniqueness, and language-switch fragment assertions in `apps/website/tests/e2e/release-notes-seo.spec.ts`;
@@ -126,6 +126,20 @@ No page horizontal overflow; all tabs reachable; English prose readable; visible
 history sitemap destination per supported locale, no handbook-version duplicates, translated metadata, and preserved
 history route/hash after switching language. Both run their focused browser checks, website lint/typecheck/build, and
 translation-key coverage. Locale destinations remain available even if their archived handbook lacks API content.
+
+## Phase 5b: Canonical Source Build Dependency
+
+**Reason**: Acceptance inspection found that root `CHANGELOG.md` was outside website Nx cache inputs and CI path selection.
+This is a direct FR-008 dependency, not an additional product feature or deployment trigger. Keep all existing task IDs.
+
+- [ ] T008 Add root `CHANGELOG.md` to website target inputs in `apps/website/project.json`; select website validation for
+      changelog-only changes in `scripts/ci-areas.mjs`; extend `scripts/ci-areas.test.mjs` and
+      `apps/website/tests/unit/release-notes.test.ts` with CI/source-input contract checks; document cache invalidation in
+      `apps/website/README.md`; include `.changeset/website-release-inputs.md`. Preserve default dependency inputs and
+      independent release publishing. Validate the effective Nx configuration and focused regressions before committing.
+
+**Acceptance**: Changing only the root application changelog selects website checks and invalidates website source-consuming
+build/test/typecheck/container targets. Application deployment triggers and independently versioned releases remain unchanged.
 
 ## Phase 6: Cross-Cutting Verification
 
@@ -144,23 +158,23 @@ release, merge, or production mutation occurs. Do not mark acceptance complete w
 
 ## Requirements Coverage
 
-| Requirement                                                  | Owning tasks     |
-| ------------------------------------------------------------ | ---------------- |
-| FR-001 fourth tab and original navigation                    | T003, T005       |
-| FR-002 direct localized public route and active state        | T003, T006       |
-| FR-003 canonical complete released history                   | T002, T003, T004 |
-| FR-004 release anchors and desktop/mobile TOC                | T004, T005       |
-| FR-005 theme, keyboard, focus, responsive layout             | T005             |
-| FR-006 all locale chrome and English prose markup            | T003, T005       |
-| FR-007 global history and handbook selector semantics        | T003             |
-| FR-008 canonical source and zero external requests           | T002, T003, T007 |
-| FR-009 empty state and invalid source failure                | T002, T003, T004 |
-| FR-010 sitemap and localized metadata                        | T006             |
-| SC-001 one activation from every published toolbar           | T003             |
-| SC-002 full canonical history and descending unique versions | T002, T004       |
-| SC-003 reloadable deep links and 13 locale destinations      | T004, T006       |
-| SC-004 responsive EN/DE/RTL, both themes                     | T005             |
-| SC-005 no external release requests or credentials           | T003, T007       |
+| Requirement                                                  | Owning tasks           |
+| ------------------------------------------------------------ | ---------------------- |
+| FR-001 fourth tab and original navigation                    | T003, T005             |
+| FR-002 direct localized public route and active state        | T003, T006             |
+| FR-003 canonical complete released history                   | T002, T003, T004       |
+| FR-004 release anchors and desktop/mobile TOC                | T004, T005             |
+| FR-005 theme, keyboard, focus, responsive layout             | T005                   |
+| FR-006 all locale chrome and English prose markup            | T003, T005             |
+| FR-007 global history and handbook selector semantics        | T003                   |
+| FR-008 canonical source and zero external requests           | T002, T003, T008, T007 |
+| FR-009 empty state and invalid source failure                | T002, T003, T004       |
+| FR-010 sitemap and localized metadata                        | T006                   |
+| SC-001 one activation from every published toolbar           | T003                   |
+| SC-002 full canonical history and descending unique versions | T002, T004             |
+| SC-003 reloadable deep links and 13 locale destinations      | T004, T006             |
+| SC-004 responsive EN/DE/RTL, both themes                     | T005                   |
+| SC-005 no external release requests or credentials           | T003, T007             |
 
 ## Dependencies and Execution Order
 
@@ -171,14 +185,15 @@ T001
       T004 (US2)
         T005 (US3 visual/accessibility)
         T006 (US3 discovery/locale switching; parallel-capable with T005)
-          T007 (requires both T005 and T006)
+          T008 (after both T005 and T006)
+            T007 (requires T008)
 ```
 
 - T002 blocks all stories because the page needs canonical content in development and production.
 - US1 is independently testable after T002 and supplies the MVP, including readable history and basic translated chrome.
 - US2 depends on US1's real route and renderer; it adds release navigation without duplicating content.
 - US3 builds on that page; T005 and T006 touch distinct source/test/documentation paths after T004.
-- T007 requires both US3 tasks and includes full original-navigation/container regression evidence.
+- T007 requires T008 and both US3 tasks and includes full original-navigation/container regression evidence.
 - `[P]` denotes file-disjoint work that could run concurrently, not permission to create agents or combine commits.
   Serialize shared build/container/browser resources and graph updates; use separate commits in dependency order.
 
@@ -198,7 +213,7 @@ T001
 2. Complete T001–T003 for the MVP: fourth tab, direct route, full canonical history, basic locales, and production source input.
 3. Complete T004 for desktop/mobile release navigation and stable deep links.
 4. Complete T005 and T006 for responsive/accessibility evidence and localized discoverability.
-5. Complete T007 and reconcile every requirement with recorded evidence; report limitations honestly.
+5. Complete T008 to preserve canonical source cache/CI invalidation, then T007 and reconcile every requirement with recorded evidence; report limitations honestly.
 6. Commit each substantive task separately only within approved implementation authority. No deployment is implied by a
    working MVP, a green check, or task completion.
 

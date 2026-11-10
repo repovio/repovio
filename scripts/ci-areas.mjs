@@ -7,7 +7,9 @@ import { pathToFileURL } from 'node:url';
 export function affectedAreas(files) {
   const areas = { api: false, web: false, website: false, docs: false, root: false };
   for (const file of files) {
-    if (file.startsWith('apps/website/content/')) {
+    if (file === 'CHANGELOG.md') {
+      areas.website = true;
+    } else if (file.startsWith('apps/website/content/')) {
       areas.docs = areas.website = true;
     } else if (file.startsWith('apps/website/')) {
       areas.website = true;

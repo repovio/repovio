@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -66,5 +66,18 @@ describe('rendered release navigation', /** Verify heading adaptation rather tha
     ).toEqual([release, old]);
     expect(getReleaseHeadings([])).toEqual([]);
     expect(getReleaseHeadings([release])[0]).toBe(release);
+  });
+});
+
+/** Root history is an external project input and must not be hidden behind a stale Nx cache. */
+describe('release source dependency', /** Check the declarative build contract used by Nx. */ () => {
+  it('retains normal inputs and adds the canonical source to each consuming target', /** Cover each website command that reads the external source. */ () => {
+    const project = JSON.parse(readFileSync(new URL('../../project.json', import.meta.url), 'utf8'));
+    for (const target of ['build', 'docker:build', 'test', 'typecheck']) {
+      const base = ['build', 'docker:build'].includes(target) ? 'production' : 'default';
+      expect(project.targets[target].inputs).toEqual(
+        expect.arrayContaining([base, `^${base}`, '{workspaceRoot}/CHANGELOG.md']),
+      );
+    }
   });
 });

@@ -117,3 +117,14 @@ test('CodeQL selects executable languages and conservatively handles manual runs
   });
   assert.ok(Object.values(codeqlLanguages(null)).every(Boolean));
 });
+
+/** Canonical application history is a direct input to the website release page. */
+test('root changelog selects website validation without coupling deployments', /** Keep changelog-only edits from bypassing their renderer checks. */ () => {
+  assert.deepEqual(affectedAreas(['CHANGELOG.md']), {
+    api: false,
+    web: false,
+    website: true,
+    docs: false,
+    root: true,
+  });
+});

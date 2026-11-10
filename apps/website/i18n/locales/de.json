@@ -183,5 +183,10 @@
   "product_details_access-control_useCase": "Nutze lokale Konten oder OpenID Connect zur Anmeldung. Weise Rollen und Repository-Mitgliedschaften zu, damit Nutzer die für ihre Arbeit erlaubten Daten sehen.",
   "product_details_access-control_limit": "Provider-OAuth verbindet Repository-Daten und ist von der Benutzeranmeldung getrennt. Sicherheitsmeldungen erfordern Verwaltungsrechte; Systemadministratoren haben weitergehenden Zugriff.",
   "product_details_mcp_useCase": "Frage über einen kompatiblen Client mit persönlichem MCP-Token sichtbare Repositories, fehlgeschlagene Workflows, Freigabe-Warteschlangen, Zusammenfassungen und Trends ab.",
-  "product_details_mcp_limit": "Clients müssen eigene HTTP-Authorization-Header unterstützen. MCP-OAuth-Discovery, Provider-Aktionen, Konfigurationsänderungen und das Auslösen von Synchronisierungen sind nicht verfügbar."
+  "product_details_mcp_limit": "Clients müssen eigene HTTP-Authorization-Header unterstützen. MCP-OAuth-Discovery, Provider-Aktionen, Konfigurationsänderungen und das Auslösen von Synchronisierungen sind nicht verfügbar.",
+  "releaseNotes": "Release Notes",
+  "releaseNotesDescription": "Änderungen der veröffentlichten Repovio-Anwendungsversionen.",
+  "releaseNotesEnglish": "Die Release-Beschreibungen sind auf Englisch verfügbar.",
+  "releaseNotesEmpty": "Es wurden noch keine Releases veröffentlicht.",
+  "releaseNotesVersions": "Releases"
 }

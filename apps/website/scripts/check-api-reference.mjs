@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 // Exercise unpublished UI in an isolated copy; never add a fake release to the real content manifest.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const temporary = await mkdtemp(resolve(tmpdir(), 'repovio-api-website-'));
+const temporaryRoot = await mkdtemp(resolve(tmpdir(), 'repovio-api-website-'));
+const temporary = resolve(temporaryRoot, 'apps/website');
 const version = 'v99.1';
 const excluded = new Set([
   '.git',
@@ -22,6 +23,9 @@ const excluded = new Set([
   '.publication',
 ]);
 try {
+  // Preserve the same root changelog relationship as local and Docker website builds.
+  await mkdir(temporary, { recursive: true });
+  await cp(resolve(root, '../../CHANGELOG.md'), resolve(temporaryRoot, 'CHANGELOG.md'));
   await cp(root, temporary, {
     recursive: true,
     /** Return `!relative(root, source) .split(sep) .some((part) => excluded.has(part))` when invoked. */
@@ -123,5 +127,5 @@ try {
       /** Handle each cp(resolve(temporary, directory), resolve(root, 'test-results/api-reference', directory), { recursive: true, }).catch callback invocation. */ () => {},
     );
   }
-  await rm(temporary, { recursive: true, force: true });
+  await rm(temporaryRoot, { recursive: true, force: true });
 }

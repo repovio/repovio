@@ -5,6 +5,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
 COPY apps/website/package.json apps/website/package.json
 RUN pnpm install --filter @repovio/website --frozen-lockfile --ignore-scripts
+COPY CHANGELOG.md ./CHANGELOG.md
 COPY apps/website apps/website
 RUN pnpm --filter @repovio/website exec nuxt prepare && pnpm --filter @repovio/website docs:check && pnpm --filter @repovio/website build
 

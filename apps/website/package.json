@@ -10,8 +10,8 @@
     "directory": "apps/website"
   },
   "scripts": {
-    "dev": "nuxt dev --host 127.0.0.1 --port 3002",
-    "build": "nuxt build",
+    "dev": "node scripts/check-release-notes.mjs && nuxt dev --host 127.0.0.1 --port 3002",
+    "build": "node scripts/check-release-notes.mjs && nuxt build",
     "start": "node .output/server/index.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",

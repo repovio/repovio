@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "プロバイダー側の組織またはグループの Webhook を、新しいシークレットで更新します。",
     "lastDelivery": "最後に受け付けた配信：{value}"
+  },
+  "autoRefresh": {
+    "title": "自動更新",
+    "off": "オフ",
+    "help": "このブラウザーでアクティブな監視ビューに適用されます。プロバイダーの同期は変更されません。",
+    "current": "自動更新: {interval}"
   }
 }

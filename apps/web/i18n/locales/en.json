@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "I will update the organization or group webhook at the provider with the new secret.",
     "lastDelivery": "Last accepted delivery: {value}"
+  },
+  "autoRefresh": {
+    "title": "Automatic refresh",
+    "off": "Off",
+    "help": "Applies to active monitoring views in this browser. Provider synchronization is unchanged.",
+    "current": "Automatic refresh: {interval}"
   }
 }

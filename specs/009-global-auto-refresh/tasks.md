@@ -114,7 +114,7 @@ MVP; navbar configuration and uniform manual styling follow without changing the
 **Independent test**: Set 30 s, navigate/reload, verify selected state and cadence; select Off and advance five simulated
 minutes, with no interval requests and manual/sync refresh still operational.
 
-- [ ] T006 [US2] Add `apps/web/app/components/layout/auto-refresh-control.vue` and compose it before notifications in
+- [x] T006 [US2] Add `apps/web/app/components/layout/auto-refresh-control.vue` and compose it before notifications in
       `apps/web/app/components/layout/navbar-controls.vue`; bind Off/15 seconds/30 seconds/1 minute/5 minutes to the T002
       store, provide translated selected-state tooltip/accessible name/help, labeled single-choice popover, keyboard
       selection, Escape/focus return, and non-color selection indication; add matching strings in every existing

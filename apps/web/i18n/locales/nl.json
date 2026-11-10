@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "Ik werk de organisatie- of groepswebhook bij de provider bij met het nieuwe geheim.",
     "lastDelivery": "Laatst geaccepteerde bezorging: {value}"
+  },
+  "autoRefresh": {
+    "title": "Automatisch vernieuwen",
+    "off": "Uit",
+    "help": "Geldt voor actieve monitoringweergaven in deze browser. Providersynchronisatie blijft ongewijzigd.",
+    "current": "Automatisch vernieuwen: {interval}"
   }
 }

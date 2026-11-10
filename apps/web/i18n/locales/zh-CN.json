@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "我会使用新密钥更新提供商上的组织或群组 Webhook。",
     "lastDelivery": "上次接受的投递：{value}"
+  },
+  "autoRefresh": {
+    "title": "自动刷新",
+    "off": "关闭",
+    "help": "适用于此浏览器中处于活动状态的监控视图。提供商同步保持不变。",
+    "current": "自动刷新：{interval}"
   }
 }

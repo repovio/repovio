@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "Ich aktualisiere den Organisations- oder Gruppen-Webhook beim Anbieter mit dem neuen Secret.",
     "lastDelivery": "Letzte akzeptierte Zustellung: {value}"
+  },
+  "autoRefresh": {
+    "title": "Automatisch aktualisieren",
+    "off": "Aus",
+    "help": "Gilt für aktive Monitoring-Ansichten in diesem Browser. Die Provider-Synchronisierung bleibt unverändert.",
+    "current": "Automatische Aktualisierung: {interval}"
   }
 }

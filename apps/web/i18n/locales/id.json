@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "Saya akan memperbarui webhook organisasi atau grup di penyedia dengan rahasia baru.",
     "lastDelivery": "Pengiriman terakhir yang diterima: {value}"
+  },
+  "autoRefresh": {
+    "title": "Penyegaran otomatis",
+    "off": "Nonaktif",
+    "help": "Berlaku untuk tampilan pemantauan aktif di browser ini. Sinkronisasi penyedia tidak berubah.",
+    "current": "Penyegaran otomatis: {interval}"
   }
 }

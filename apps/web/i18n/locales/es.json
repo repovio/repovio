@@ -1232,5 +1232,11 @@
     },
     "rotationConfirm": "Actualizaré el webhook de la organización o del grupo en el proveedor con el nuevo secreto.",
     "lastDelivery": "Última entrega aceptada: {value}"
+  },
+  "autoRefresh": {
+    "title": "Actualización automática",
+    "off": "Desactivada",
+    "help": "Se aplica a las vistas de supervisión activas en este navegador. La sincronización con los proveedores no cambia.",
+    "current": "Actualización automática: {interval}"
   }
 }

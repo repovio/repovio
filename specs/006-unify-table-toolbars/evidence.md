@@ -29,3 +29,12 @@
 
 - T003 web lint/typecheck and documentation passed. Wrapped-filter refresh-loading test and both shortcut/focus
   regressions passed. Escape is exercised from a popover button after native date input interaction settles.
+
+- T003 committed and pushed as `d0dd89d`.
+
+## Security alerts (T004)
+
+- Red proof: CODE path control was absent from the filtering dialog before integration.
+- Security alerts and Repository detail browser suites: 10 passed, including all three alert kinds and exact
+  UTC/path predicates, retained search after Clear, active state, and close/reopen focus.
+- Mandatory kind and Repository constraints and supporting-request refresh ownership remain unchanged.

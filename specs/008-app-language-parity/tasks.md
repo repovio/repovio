@@ -100,7 +100,7 @@ translated content or reject legitimate unchanged technical vocabulary.
 
 ### Browser integration and accessible selection
 
-- [ ] T004 [US1] Expand `apps/web/tests/e2e/localization.spec.ts` and
+- [x] T004 [US1] Expand `apps/web/tests/e2e/localization.spec.ts` and
       `apps/web/tests/e2e/auth-preferences.spec.ts` from hardcoded eight-option checks to registry-derived 17-language
       coverage; verify sign-in, first-administrator setup, and signed-in selectors, native names, all local decorative
       flags, scroll/keyboard reachability, known translated and parameterized labels, built-in Nuxt UI text, and

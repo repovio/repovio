@@ -1,15 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const languageFlags = [
-  ['English', 'gb'],
-  ['Deutsch', 'de'],
-  ['Español', 'es'],
-  ['Français', 'fr'],
-  ['Italiano', 'it'],
-  ['Nederlands', 'nl'],
-  ['Polski', 'pl'],
-  ['Português', 'pt'],
-] as const;
+import { appLocales } from '../../shared/locales';
+import { languageFlags, localeMessages, mockLocalization, uiCloseLabel } from './fixtures/localization';
 
 for (const theme of ['light', 'dark'] as const) {
   for (const width of [390, 1440]) {
@@ -83,6 +75,7 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.locator('html')).toHaveClass(new RegExp(theme));
       for (const [name, country] of languageFlags) {
         const item = page.getByRole('menuitemcheckbox', { name, exact: true });
+        await item.scrollIntoViewIfNeeded();
         await expect(item).toBeVisible();
         await expect(item).toHaveAttribute('aria-checked', String(country === 'gb'));
         const flag = item.locator('img');
@@ -141,4 +134,63 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.locator('main').getByText('Provider accounts', { exact: true }).first()).toBeVisible();
     });
   }
+}
+
+for (const [index, entry] of appLocales.entries()) {
+  test(`uses ${entry.code} in authenticated navigation and dialogs`, /** Exercise native names, role filtering, app messages, and built-in component localization together. */ async ({
+    page,
+  }) => {
+    const role = (['SYSTEM_ADMIN', 'MANAGER', 'VIEWER'] as const)[index % 3]!;
+    const messages = localeMessages(entry.code);
+    const remoteAssets: string[] = [];
+    page.on(
+      'request',
+      /** Record only translation/flag assets that would add an external runtime dependency. */ (request) => {
+        if (/\/flags\//.test(request.url()) && new URL(request.url()).origin !== new URL(page.url()).origin)
+          remoteAssets.push(request.url());
+      },
+    );
+    await mockLocalization(page, { role });
+    await page.goto('/repositories');
+    await page.getByRole('button', { name: 'locale-user', exact: true }).click();
+    await page.mouse.move(0, 0);
+    await page.getByRole('menuitem', { name: 'Language', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    const option = page.getByRole('menuitemcheckbox', { name: entry.name, exact: true });
+    await option.scrollIntoViewIfNeeded();
+    await option.click();
+    await expect(page.locator('main').getByText(messages.repositories.title, { exact: true }).first()).toBeVisible();
+    await expect(page.locator('main').getByText(messages.repositories.empty, { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: messages.systemStatus.openJobs.replace('{count}', '0'), exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', entry.language);
+    await expect(page.locator('html')).toHaveAttribute('dir', entry.dir);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    const administration = page.locator('nav a[href="/admin/providers"]');
+    await expect(administration).toHaveCount(role === 'SYSTEM_ADMIN' ? 1 : 0);
+    await page.getByRole('button', { name: 'locale-user', exact: true }).click();
+    await page.getByRole('menuitem', { name: `${messages.shortcuts.title} ?`, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: messages.shortcuts.title, exact: true })).toBeVisible();
+    await dialog.getByRole('button', { name: uiCloseLabel(entry.code), exact: true }).click();
+    await expect(dialog).toBeHidden();
+    const sections = [
+      { path: '/', text: messages.dashboard.title },
+      { path: '/workflow-runs', text: messages.workflowRuns.title },
+      { path: '/issues', text: messages.issues.title },
+      { path: '/pull-requests', text: messages.pullRequests.title },
+      { path: '/alerts/dependencies', text: messages.securityAlerts.kindTitles.DEPENDENCY },
+      { path: '/notifications', text: messages.notifications.title },
+      { path: '/admin/settings', text: messages.settings.title },
+      role === 'SYSTEM_ADMIN'
+        ? { path: '/admin/providers', text: messages.providers.title }
+        : { path: '/jobs', text: messages.jobs.title },
+    ];
+    const section = sections[index % sections.length]!;
+    await page.goto(section.path);
+    await expect(page.locator('main').getByText(section.text, { exact: true }).first()).toBeVisible();
+    expect(remoteAssets).toEqual([]);
+  });
 }

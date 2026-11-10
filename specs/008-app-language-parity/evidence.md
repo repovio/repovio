@@ -47,3 +47,19 @@ Implementation and separate per-task commits/pushes approved on 2026-11-10. No m
 - Web suite: 24 files, 114 tests passed. Web lint/typecheck/build and repository documentation checks passed.
 - Source formatting stable over two passes; no dependency/schema/provider changes. Full browser/RTL matrix follows in
   T004/T005; preference/failure regression coverage follows in T006.
+
+## T004: Every-language browser integration
+
+- T003 committed/pushed as `54fc799`; all translation and metadata sources verified before continuing.
+- Browser tests derive native labels/flags from the registry and scroll options into view instead of requiring all 17
+  options visible simultaneously. Existing theme, keyboard, persistence, and flag assertions remain intact.
+- 34 public cases cover sign-in and first-admin setup in every language; 17 authenticated cases cover role-scoped
+  repository tables, parameterized status labels, document metadata, and translated Nuxt UI modal close buttons.
+- Distributed navigation also covers dashboard, workflow runs, issues, pull requests, dependency alerts, notifications,
+  settings, jobs, and permitted provider administration. System Administrator/Manager/Viewer fixtures preserve navigation.
+- Six original desktop/mobile/light/dark cases remain green. Total T004 acceptance: 57 passing cases across focused runs.
+- Initial new assertions were corrected to actual accessible names (shortcut key suffix), rendered headings rather than
+  intentionally hidden descriptions, and JavaScript hexadecimal escapes in installed Nuxt UI locale literals.
+- The existing development-only delayed-load scenario remains explicitly assigned to T006; it was not counted as passed
+  against production. T002 already established it on dev. No live-provider/server authorization claim follows from fixtures.
+- Focused test ESLint, repository documentation coverage, canonical stable formatting, and whitespace checks passed.

@@ -1,15 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const languageFlags = [
-  ['English', 'gb'],
-  ['Deutsch', 'de'],
-  ['Español', 'es'],
-  ['Français', 'fr'],
-  ['Italiano', 'it'],
-  ['Nederlands', 'nl'],
-  ['Polski', 'pl'],
-  ['Português', 'pt'],
-] as const;
+import { appLocales } from '../../shared/locales';
+import { languageFlags, localeMessages, mockLocalization } from './fixtures/localization';
 
 for (const route of [
   { heading: 'Sign in', initialized: true, path: '/auth/signin', translatedHeading: 'Anmelden' },
@@ -40,9 +32,10 @@ for (const route of [
     expect(labelBounds!.x - (flagBounds!.x + flagBounds!.width)).toBeGreaterThanOrEqual(4);
     await languageSelect.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('option')).toHaveCount(8);
+    await expect(page.getByRole('option')).toHaveCount(appLocales.length);
     for (const [name, country] of languageFlags) {
       const option = page.getByRole('option', { name, exact: true });
+      await option.scrollIntoViewIfNeeded();
       await expect(option).toBeVisible();
       await expect(option).toHaveAttribute('aria-selected', String(country === 'gb'));
       const flag = option.locator('img');
@@ -209,3 +202,33 @@ test('keeps the language select busy while its locale is loading', /** Verifies 
   await expect(page.getByRole('combobox', { name: 'Sprache', exact: true })).toBeEnabled();
   await expect(page.getByRole('heading', { name: 'Anmelden', exact: true })).toBeVisible();
 });
+
+for (const entry of appLocales) {
+  for (const initialized of [true, false]) {
+    test(`selects ${entry.code} on ${initialized ? 'sign-in' : 'setup'}`, /** Exercise each public selector with actual translated form text. */ async ({
+      page,
+    }) => {
+      const messages = localeMessages(entry.code);
+      await mockLocalization(page, { initialized });
+      await page.goto(initialized ? '/auth/signin' : '/auth/setup');
+      await page.getByRole('combobox', { name: 'Language', exact: true }).click();
+      const option = page.getByRole('option', { name: entry.name, exact: true });
+      await option.scrollIntoViewIfNeeded();
+      await option.click();
+      await expect(
+        page.getByRole('heading', { name: initialized ? messages.auth.signIn : messages.auth.setup, exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole('combobox', { name: messages.layout.language, exact: true })).toContainText(
+        entry.name,
+      );
+      await expect(page.getByLabel(messages.auth.username, { exact: false }).first()).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('lang', entry.language);
+      await expect(page.locator('html')).toHaveAttribute('dir', entry.dir);
+      expect(
+        (await page.context().cookies()).find(
+          /** Read the actual saved preference. */ (cookie) => cookie.name === 'repovio-locale',
+        )?.value,
+      ).toBe(entry.code);
+    });
+  }
+}

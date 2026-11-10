@@ -5,7 +5,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { CreateOrganizationWebhook, OrganizationWebhook as OrganizationWebhookDto } from '@repovio/schemas';
+import type {
+  CreateOrganizationWebhook,
+  OrganizationWebhookDraft,
+  OrganizationWebhook as OrganizationWebhookDto,
+} from '@repovio/schemas';
+import { randomUUID } from 'node:crypto';
 
 import { ENV } from '../../config/env.js';
 import type { OrganizationWebhook, ProviderType } from '../../generated/prisma/client.js';
@@ -48,6 +53,29 @@ export class OrganizationWebhooksService {
   }
 
   /**
+   * Preview a canonical callback without reserving or persisting its identity.
+   * @param user Administrator requesting setup metadata.
+   * @param providerAccountId Connection whose configuration will own the future hook.
+   * @returns Fresh UUID and canonical URL, inactive until explicit creation.
+   * @throws ForbiddenException Administrator access is required.
+   * @throws NotFoundException The connection does not exist.
+   */
+  async draft(user: AuthenticatedUser, providerAccountId: string): Promise<OrganizationWebhookDraft> {
+    await this.requireAccount(user, providerAccountId);
+    const id = randomUUID();
+    return { id, callbackUrl: this.callbackUrl(id) };
+  }
+
+  /**
+   * Build the same server-owned callback for preview and persisted configuration.
+   * @param id Configuration or unsaved draft UUID.
+   * @returns Absolute public callback using the configured public origin.
+   */
+  private callbackUrl(id: string): string {
+    return new URL(`/api/webhooks/organization/${id}`, ENV.PUBLIC_URL).toString();
+  }
+
+  /**
    * Create a local configuration for an immutable normalized scope.
    * @param user - Administrator configuring the hook manually at the provider.
    * @param providerAccountId - Connection owning the namespace.
@@ -69,12 +97,17 @@ export class OrganizationWebhooksService {
       throw new BadRequestException('Only GitLab groups support nested namespace paths.');
     try {
       const hook = await this.prisma.organizationWebhook.create({
-        data: { providerAccountId, scope, encryptedWebhookSecret: this.encryption.encrypt(input.webhookSecret) },
+        data: {
+          ...(input.id ? { id: input.id } : {}),
+          providerAccountId,
+          scope,
+          encryptedWebhookSecret: this.encryption.encrypt(input.webhookSecret),
+        },
       });
       return this.toDto(hook, account.providerType, null);
     } catch (error) {
       if (typeof error === 'object' && error && 'code' in error && error.code === 'P2002')
-        throw new ConflictException('An organization webhook already exists for this namespace.');
+        throw new ConflictException('An organization webhook already exists with this identifier or namespace.');
       throw error;
     }
   }
@@ -161,7 +194,7 @@ export class OrganizationWebhooksService {
       providerAccountId: hook.providerAccountId,
       providerType,
       scope: hook.scope,
-      callbackUrl: new URL(`/api/webhooks/organization/${hook.id}`, ENV.PUBLIC_URL).toString(),
+      callbackUrl: this.callbackUrl(hook.id),
       lastDeliveryAt: lastDeliveryAt?.toISOString() ?? null,
     };
   }

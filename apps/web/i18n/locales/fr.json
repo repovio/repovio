@@ -554,7 +554,8 @@
     "reauthorize": "Autoriser à nouveau",
     "reauthorizationRequired": "Nouvelle autorisation requise",
     "oauthCancelled": "Autorisation GitLab annulée. La connexion existante est conservée.",
-    "oauthUnavailable": "Configurez GitLab OAuth dans l’environnement de l’API pour autoriser cette connexion."
+    "oauthUnavailable": "Configurez GitLab OAuth dans l’environnement de l’API pour autoriser cette connexion.",
+    "actionsFor": "Actions pour {name}"
   },
   "querrykit": {
     "table": {
@@ -1231,6 +1232,11 @@
       "GITLAB": "Ouvrez les paramètres du groupe : Settings > Webhooks. Utilisez l’URL de callback et le même secret de signature ou jeton secret selon votre version de GitLab. Sélectionnez les événements de pipeline, de tâche, d’issue et de merge request nécessaires. Tous les projets suivis de ce groupe et de ses sous-groupes sont couverts."
     },
     "rotationConfirm": "Je mettrai à jour le webhook de l’organisation ou du groupe chez le fournisseur avec le nouveau secret.",
-    "lastDelivery": "Dernière livraison acceptée : {value}"
+    "lastDelivery": "Dernière livraison acceptée : {value}",
+    "unsavedCallback": "Enregistrez cette configuration avant que le fournisseur puisse envoyer des événements à cette URL.",
+    "loadingCallback": "Chargement de l’URL de rappel…",
+    "draftError": "Impossible de charger l’URL de rappel. Réessayez.",
+    "retryDraft": "Charger l’URL de rappel",
+    "savedConfigurations": "Configurations enregistrées"
   }
 }

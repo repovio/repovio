@@ -1,10 +1,24 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import {
   ApiCreateOrganizationWebhookSchema,
+  ApiOrganizationWebhookDraftSchema,
   ApiOrganizationWebhookSchema,
   ApiRotateOrganizationWebhookSchema,
   type OrganizationWebhook,
+  type OrganizationWebhookDraft,
 } from '@repovio/schemas';
 import { z } from 'zod';
 import { ApiErrorResponses, SchemaResponse } from '../../util/resource-contract.js';
@@ -45,6 +59,25 @@ export class OrganizationWebhooksController {
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<OrganizationWebhook[]> {
     return this.webhooks.list(req.user, id);
+  }
+
+  /**
+   * Preview a callback without creating a local or provider resource.
+   * @param req Authenticated caller, checked for administrator access by the service.
+   * @param id Provider account owning future configuration.
+   * @returns Uncacheable callback identity and canonical public URL.
+   * @throws ForbiddenException Administrator access is required.
+   * @throws NotFoundException The connection does not exist.
+   */
+  @Get('draft')
+  @Header('Cache-Control', 'no-store')
+  @SchemaResponse(ApiOrganizationWebhookDraftSchema)
+  @ApiErrorResponses()
+  draft(
+    @Req() req: { user: AuthenticatedUser },
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<OrganizationWebhookDraft> {
+    return this.webhooks.draft(req.user, id);
   }
 
   /**

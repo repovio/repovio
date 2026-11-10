@@ -28,6 +28,7 @@ import type {
   NotificationEventSubscription,
   NotificationRulePreview,
   OrganizationWebhook,
+  OrganizationWebhookDraft,
   PaginatedResource,
   ProviderAccount,
   ProviderAuthenticationOptions,
@@ -204,6 +205,9 @@ export function useRepovioApi() {
       /** Lists safe organization and GitLab group webhook configurations for one connection. */
       organizationWebhooks: (id: string): Promise<AxiosResponse<OrganizationWebhook[]>> =>
         api.get(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks`),
+      /** Preview canonical setup metadata without creating configuration. */
+      organizationWebhookDraft: (id: string): Promise<AxiosResponse<OrganizationWebhookDraft>> =>
+        api.get(`${apiEndpoints.providerAccounts.base}/${id}/organization-webhooks/draft`),
       /** Stores an immutable namespace and encrypted signing secret locally. */
       createOrganizationWebhook: (
         id: string,

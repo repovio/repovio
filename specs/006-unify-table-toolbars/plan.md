@@ -29,16 +29,16 @@ dialogs under one owner. Reuse existing page frames and local table controls; pr
 
 ## Constitution Check
 
-| Gate                                    | Before research                     | After design                                             |
-| --------------------------------------- | ----------------------------------- | -------------------------------------------------------- |
-| Bounded scope and approved architecture | Pass: six comments only             | Pass: existing frontend structures                       |
-| Issue implementation order              | Issue #79; planning approved        | Implementation requires associated issue                 |
-| Read-only providers and authorization   | Pass: no integration changes        | Pass: preserve scoped constraints and admin gate         |
-| Secrets and durable operations          | Pass: no credential/storage changes | Pass: existing group operations unchanged                |
-| Localization, accessibility, loading    | Required acceptance criteria        | Included in UI contract and browser matrix               |
-| Focused tests and visual proof          | Required for implementation         | Existing suites plus targeted browser checks             |
-| Toolchain and coding conventions        | Preserve existing pins              | No dependency or configuration changes                   |
-| Delivery boundaries                     | Planning authorized                 | Tasks and planning commit/push approved; no product code |
+| Gate                                    | Before research                     | After design                                     |
+| --------------------------------------- | ----------------------------------- | ------------------------------------------------ |
+| Bounded scope and approved architecture | Pass: six comments only             | Pass: existing frontend structures               |
+| Issue implementation order              | Issue #79; planning approved        | Implementation requires associated issue         |
+| Read-only providers and authorization   | Pass: no integration changes        | Pass: preserve scoped constraints and admin gate |
+| Secrets and durable operations          | Pass: no credential/storage changes | Pass: existing group operations unchanged        |
+| Localization, accessibility, loading    | Required acceptance criteria        | Included in UI contract and browser matrix       |
+| Focused tests and visual proof          | Required for implementation         | Existing suites plus targeted browser checks     |
+| Toolchain and coding conventions        | Preserve existing pins              | No dependency or configuration changes           |
+| Delivery boundaries                     | Planning authorized                 | Implementation approved; merge approval pending  |
 
 No architecture exceptions. Recheck these gates during implementation; planning checks do not prove runtime behavior.
 

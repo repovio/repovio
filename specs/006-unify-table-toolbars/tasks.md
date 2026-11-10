@@ -3,7 +3,7 @@
 **Input**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md), [data-model.md](data-model.md),
 [UI contract](contracts/ui.md), and [quickstart.md](quickstart.md).
 **Feature**: `006-unify-table-toolbars`
-**Status**: Task generation and issue/planning-commit creation approved on 2026-11-09; implementation approved on 2026-11-10; execution in progress.
+**Status**: Task generation and issue/planning-commit creation approved on 2026-11-09; implementation and feature verification completed on 2026-11-10; merge approval pending.
 **Issue**: [#79](https://github.com/repovio/repovio/issues/79)
 **Branch**: `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls`
 **Organization**: Seven executable tasks grouped by user story. Tests are included as required by the feature spec
@@ -71,7 +71,7 @@ T005 does not depend on T003 or T004 and must not modify their files or locale k
 
 **Independent test**: Bounds, control reachability, active states, and keyboard behavior pass for the six-route matrix.
 
-- [ ] T006 [US3] After T003–T005, extend `apps/web/tests/e2e/page-layout.spec.ts` with all six routes at 390 × 844, 1065 × 1134, and 1440 × 900 in English/German; capture deterministic light/dark screenshots and assert one global header, no duplicate group controls, no page-level horizontal overflow, and reachable toolbar/popover controls. Exercise Shift+F, tab order, visible focus, Escape dismissal/focus return, specialized-only active state, Clear, and close/reopen preservation; retain embedded `data-table-toolbar` coverage in `apps/web/tests/e2e/repository-navigation.spec.ts`. Fix only demonstrated feature regressions in `apps/web/app/components/common/table-filtering.vue`, affected feature tables, or `apps/web/i18n/locales/{en,de}.json`; avoid a global shell redesign. Update `specs/006-unify-table-toolbars/evidence.md`, run focused and affected web checks, refresh `graphify-out/graph.json` for code changes, and include `.changeset/verify-toolbar-accessibility.md` in this test/behavior task's commit.
+- [x] T006 [US3] After T003–T005, extend `apps/web/tests/e2e/page-layout.spec.ts` with all six routes at 390 × 844, 1065 × 1134, and 1440 × 900 in English/German; capture deterministic light/dark screenshots and assert one global header, no duplicate group controls, no page-level horizontal overflow, and reachable toolbar/popover controls. Exercise Shift+F, tab order, visible focus, Escape dismissal/focus return, specialized-only active state, Clear, and close/reopen preservation; retain embedded `data-table-toolbar` coverage in `apps/web/tests/e2e/repository-navigation.spec.ts`. Fix only demonstrated feature regressions in `apps/web/app/components/common/table-filtering.vue`, affected feature tables, or `apps/web/i18n/locales/{en,de}.json`; avoid a global shell redesign. Update `specs/006-unify-table-toolbars/evidence.md`, run focused and affected web checks, refresh `graphify-out/graph.json` for code changes, and include `.changeset/verify-toolbar-accessibility.md` in this test/behavior task's commit.
 
 **Checkpoint**: Responsive wrapping is allowed; clipping and page-level overflow are not. Table-local horizontal
 scrolling remains allowed. Capture all six supplied desktop cases; do not claim screenshots prove network semantics.
@@ -80,7 +80,7 @@ scrolling remains allowed. Capture all six supplied desktop cases; do not claim 
 
 **Goal**: Prove feature-wide acceptance without expanding scope.
 
-- [ ] T007 Run `specs/006-unify-table-toolbars/quickstart.md` against the completed implementation, including the focused browser matrix, `apps/web/tests/e2e/repository-detail.spec.ts`, `apps/web/tests/e2e/repository-navigation.spec.ts`, affected web lint/typecheck/unit tests, canonical formatting stability across two passes, documentation/guideline checks, and `git diff --check`. Review `specs/006-unify-table-toolbars/{spec,plan,tasks}.md` and `contracts/ui.md` for full requirement coverage; record commands, screenshots, commits, current CI status when available, and explicit verification gaps in `specs/006-unify-table-toolbars/evidence.md`. Correct only scoped regressions with focused tests and the required separate Changeset-bearing follow-up commit; a clean read-only verification run needs no empty commit.
+- [x] T007 Run `specs/006-unify-table-toolbars/quickstart.md` against the completed implementation, including the focused browser matrix, `apps/web/tests/e2e/repository-detail.spec.ts`, `apps/web/tests/e2e/repository-navigation.spec.ts`, affected web lint/typecheck/unit tests, canonical formatting stability across two passes, documentation/guideline checks, and `git diff --check`. Review `specs/006-unify-table-toolbars/{spec,plan,tasks}.md` and `contracts/ui.md` for full requirement coverage; record commands, screenshots, commits, current CI status when available, and explicit verification gaps in `specs/006-unify-table-toolbars/evidence.md`. Correct only scoped regressions with focused tests and the required separate Changeset-bearing follow-up commit; a clean read-only verification run needs no empty commit.
 
 **Checkpoint**: All FR-001–FR-009 and SC-001–SC-005 have evidence. Browser evidence uses deterministic local fixtures;
 provider behavior, Docker, production deployment, and remote CI are not inferred from local passes.
@@ -130,4 +130,4 @@ the complete feature. Do not merge a PR without separate approval.
 focused regression coverage, and visual acceptance evidence. No provider/API/database work.
 
 Issue #79 carries the complete plan, ordered task checklist, dependencies, acceptance criteria, validation strategy,
-and material risks. Record the planning commit and artifact links there after pushing; implementation approval is pending.
+and material risks. Implementation and verification records are in [evidence.md](evidence.md); merge approval is pending.

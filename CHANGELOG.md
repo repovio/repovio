@@ -1,5 +1,55 @@
 # Changelog
 
+## 2.3.2
+
+### Patch Changes
+
+- 01dd05c: Make app search, status alignment, workflow table gutters, and mixed-script provider text work in right-to-left languages.
+- 01dd05c: Centralize app language metadata and localize built-in interface controls.
+- 99091a8: Improve Repository group-access forms with visible picker labels, responsive assignment controls, and bounded long group names.
+- 99091a8: Organize Repository Settings into shareable full-width sections while preserving drafts and pending requests during tab switches.
+- 99091a8: Replace the Repository quick-detail dialog with canonical detail and Settings pages, preserving legacy links.
+- 99091a8: Document canonical Repository navigation and the five Settings sections in the current handbook.
+- 9c89ba9: Verify automatic refresh across intervals, lifecycle transitions, repository scope, and localized compact controls.
+- 9c89ba9: Unify monitoring refresh controls as accessible icon-only buttons with consistent tooltips and complete busy state.
+- 9c89ba9: Add a validated browser-local refresh preference and lifecycle-aware scheduling foundation.
+- 9c89ba9: Refresh active issue, pull request, and security alert tables together with their supporting summaries.
+- 9c89ba9: Refresh the active dashboard and approval list automatically while preserving complete request lifetimes and period selection.
+- 9c89ba9: Configure a persistent monitoring refresh interval from the global navbar in every supported application language.
+- 9c89ba9: Refresh workflow monitoring automatically and serialize participating table reads across query, manual, and sync triggers.
+- 99091a8: Improve Repository Workflow Filter forms with visible labels, responsive controls, and a labeled primary action.
+- 99091a8: Align retention field labels and strengthen canonical Repository navigation regression coverage with complete detail fixtures.
+- c666f9a: Keep channel setup actions in the modal footer with validated saves and full request loading.
+
+  Retain the saved draft when the following table refresh fails, so retry refreshes without duplicating the channel.
+
+- c666f9a: Use Nuxt UI Stepper for channel setup while validating every forward navigation path.
+- c666f9a: Make the Delivery history toolbar link icon-only with a localized tooltip and accessible name.
+- c666f9a: Explain Browser push server availability and allow retrying readiness checks from channel setup.
+- c666f9a: Keep the push readiness retry control loading until passive device inspection finishes.
+- c666f9a: Distinguish server push readiness from failed reads and current-device enrollment errors.
+- 01dd05c: Translate the app into all website languages, preserve existing languages, and validate complete localized catalogs and assets.
+- 01dd05c: Keep language controls busy, recover failed translation downloads accessibly, and preserve locale preferences and keyboard focus.
+- 7349aae: Organize webhook setup before saved configurations with responsive dialog scrolling.
+- 7349aae: Preview canonical organization webhook callbacks before saving local configuration.
+- 7349aae: Show copyable organization webhook URLs before saving and isolate setup request state.
+- 01dd05c: Verify all app languages in authentication, accessible selectors, role-scoped navigation, and localized dialogs.
+- 99091a8: Prevent long Repository breadcrumb labels from overlapping page actions.
+- 7349aae: Move provider account row actions into an accessible three-dot menu.
+- 7349aae: Preserve GitLab OAuth conversion, retry, and pending protection through provider account menus.
+- 99091a8: Shorten Repository alert navigation and simplify the General Settings presentation with full-width retention inputs.
+- 01dd05c: Document complete app language support, right-to-left behavior, and translation maintenance in every current handbook language.
+- ce1ff86: Improve release history keyboard focus, mobile touch targets, and English prose isolation in right-to-left locales.
+- ce1ff86: Wait for completed release-anchor navigation before testing reload preservation.
+- ce1ff86: Keep website release-history browser coverage synchronized with every canonical published version.
+- ce1ff86: Publish localized release-history metadata and sitemap destinations across all website languages.
+- ce1ff86: Preserve canonical release history in the isolated API-reference validation fixture.
+- ce1ff86: Invalidate website build caches and run website validation when canonical application release notes change.
+- ce1ff86: Add release table of contents and mobile navigation using canonical Markdown heading links.
+- ce1ff86: Bundle canonical application release history in website builds with source validation.
+- ce1ff86: Add a localized fourth documentation tab and public application release history.
+- 99091a8: Make Repository membership forms readable at narrow widths while preserving user discovery and role controls.
+
 ## 2.3.1
 
 ### Patch Changes

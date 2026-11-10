@@ -1,5 +1,20 @@
 # @repovio/website
 
+## 0.2.3
+
+### Patch Changes
+
+- 01dd05c: Document complete app language support, right-to-left behavior, and translation maintenance in every current handbook language.
+- ce1ff86: Improve release history keyboard focus, mobile touch targets, and English prose isolation in right-to-left locales.
+- ce1ff86: Wait for completed release-anchor navigation before testing reload preservation.
+- ce1ff86: Keep website release-history browser coverage synchronized with every canonical published version.
+- ce1ff86: Publish localized release-history metadata and sitemap destinations across all website languages.
+- ce1ff86: Preserve canonical release history in the isolated API-reference validation fixture.
+- ce1ff86: Invalidate website build caches and run website validation when canonical application release notes change.
+- ce1ff86: Add release table of contents and mobile navigation using canonical Markdown heading links.
+- ce1ff86: Bundle canonical application release history in website builds with source validation.
+- ce1ff86: Add a localized fourth documentation tab and public application release history.
+
 ## 0.2.2
 
 ### Patch Changes

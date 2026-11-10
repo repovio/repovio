@@ -124,10 +124,10 @@ CI status. Production deployment and Provider writes are outside this feature.
 
 ## Final acceptance (2026-11-10)
 
-Validated runtime revision: `de8160fd58fff541ae38db82bb4d3f8e0661ff59`, including current main
+Validated runtime revision: `2768178f8d734ebad2b459b173771a27d30544ff`, including current main
 `c666f9a9f5ae0665a47019af312987bb301949ec` through a non-rewriting merge. Later evidence-only changes do not modify runtime
 code. Task implementation commits: T003 `9c39b11`, T004 `44960bf`, T005 `fd5e5a6`, T006 `4843982`, T007 `92a2070`,
-T008 `132353a`, T009 `3e82441`; T010 scoped validation fixes `d9f2e16`.
+T008 `132353a`, T009 `3e82441`; T010 scoped validation fixes `d9f2e16`; T011 breadcrumb correction `2768178`.
 
 - Production-build Chromium run: 158 passed, 1 failed, 0 skipped, 0 flaky across 159 affected scenarios. The only failure
   is the unchanged multi-repository enrollment scenario described above and reproduced with pre-feature list/dialog
@@ -141,14 +141,14 @@ T008 `132353a`, T009 `3e82441`; T010 scoped validation fixes `d9f2e16`.
 - The final graph has no nodes sourced from the removed dialog, and no current-worktree absolute paths. All 17 merged
   application locale catalogs parse and retain the new labels. The feature diff contains no API, schema, dependency,
   lockfile, workflow, or production configuration changes.
-- Local reports: `/tmp/repovio88-merged-e2e.json`, `/tmp/repovio88-merged-e2e.log`, and
-  `/tmp/repovio88-merged-e2e/`. The run used the built SPA at `http://127.0.0.1:3102` with synthetic API fixtures.
+- Local reports: `/tmp/repovio88-accepted-e2e.json`, `/tmp/repovio88-accepted-e2e.log`, and
+  `/tmp/repovio88-accepted-e2e/`. The run used the built SPA at `http://127.0.0.1:3102` with synthetic API fixtures.
 - API persistence/live Provider behavior, Docker deployment, and remote Actions are not established by mocked browser
   checks. No deployment occurred. Remote CI status must be checked for the final PR head; merge still needs approval.
 
 The independently reproduced pre-existing add-wizard failure remains an explicit broader-suite limitation rather than
-a passing full suite. Final screenshot review additionally found long-breadcrumb/action overlap at 1102 px; T011
-records the bounded correction and adds geometry assertions before T010 final acceptance.
+a passing full suite. T011 corrected the long-breadcrumb/action overlap found at 1102 px during screenshot review;
+the final production run includes its geometry assertions and completes T010 acceptance for the approved feature scope.
 
 - T011: geometry regression reproduced long-breadcrumb/action overlap at 1102 px before the fix. Bounding only the
   Repository breadcrumb label through the existing item class contract resolved it; all 12 viewport/locale/theme cases

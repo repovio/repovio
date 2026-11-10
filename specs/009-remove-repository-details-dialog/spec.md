@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Implemented; final visual follow-up in progress. Unrelated baseline add-wizard failure documented.
+**Status**: Implemented and validated for #88; unrelated baseline add-wizard failure documented.
 
 **Issue**: [#88](https://github.com/repovio/repovio/issues/88).
 

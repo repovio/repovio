@@ -140,7 +140,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       session's writing preference; preserve existing translated content outside the changed sections. Update
       `specs/009-remove-repository-details-dialog/quickstart.md` with exact new focused test commands. Validate references,
       handbook structure/build, and formatting. Include this substantive task's focused Changeset and graph policy checks.
-- [ ] T010 Execute the complete acceptance guide in `specs/009-remove-repository-details-dialog/quickstart.md`, including
+- [x] T010 Execute the complete acceptance guide in `specs/009-remove-repository-details-dialog/quickstart.md`, including
       the new `repository-settings.spec.ts`, `repository-filter-layout.spec.ts`, `repository-member-layout.spec.ts`, and
       `repository-group-layout.spec.ts` under `apps/web/tests/e2e/`; affected web tests/lint/typecheck/build, canonical
       formatting/documentation/guideline checks, and `git diff --check`. Check format stability across two complete passes.
@@ -150,7 +150,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       behavior; no deployment or merge is authorized by this task. Any required fixes are scoped follow-up implementation
       commits with their own Changeset, followed by affected rechecks; do not mark this gate complete until evidence passes.
 
-- [ ] T011 Bound long Repository breadcrumb labels in
+- [x] T011 Bound long Repository breadcrumb labels in
       `apps/web/app/components/modules/repositories/details/page-shell.vue` through the existing breadcrumb item class
       contract, represented explicitly in `apps/web/app/components/layout/page.vue`. Preserve full accessible identity
       and other page layouts. Extend `apps/web/tests/e2e/repository-visual.spec.ts` to verify one active primary section

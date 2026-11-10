@@ -44,3 +44,6 @@ credential values appear in diagnostics, rendered errors, fixtures, screenshots,
 
 The draft exposes `requestStep(value)` for controlled stepper transitions. Next, Back, and indicator requests reject
 changes while submitting, recovering a persisted save, or previewing. A forward request validates exactly the current step.
+
+The page propagates Query Kit table error state after awaiting refresh so the persisted-save dialog remains open for
+refresh-only recovery. The modal close action is hidden during submission; outside click and Escape remain blocked.

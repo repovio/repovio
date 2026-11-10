@@ -3,6 +3,8 @@
     v-model:open="open"
     :description="$t('notifications.channels.dialogDescription')"
     :dismissible="!submitting"
+    :close="!submitting"
+    :ui="{ body: 'min-h-0', header: 'shrink-0', footer: 'shrink-0 justify-between gap-3' }"
     :title="$t(channel ? 'notifications.channels.editTitle' : 'notifications.channels.createTitle')"
   >
     <template #body>
@@ -68,33 +70,34 @@
             @preview="runPreview"
           />
         </div>
-        <div class="flex justify-between gap-3 border-t border-default pt-4">
-          <UButton
-            v-if="step > 0"
-            type="button"
-            color="neutral"
-            variant="soft"
-            :label="$t('notifications.wizard.back')"
-            :disabled="submitting || persisted || previewing"
-            @click="back"
-          />
-          <span v-else />
-          <UButton
-            v-if="step < 3"
-            type="button"
-            :label="$t('notifications.wizard.next')"
-            :disabled="submitting || persisted || previewing"
-            @click="nextStep"
-          />
-          <UButton
-            v-else
-            type="submit"
-            :disabled="!canSave || previewing"
-            :label="$t(persisted ? 'notifications.navbar.retry' : 'common.save')"
-            :loading="submitting"
-          />
-        </div>
       </UForm>
+    </template>
+    <template #footer>
+      <UButton
+        v-if="step > 0"
+        type="button"
+        color="neutral"
+        variant="soft"
+        :label="$t('notifications.wizard.back')"
+        :disabled="submitting || persisted || previewing"
+        @click="back"
+      />
+      <span v-else />
+      <UButton
+        v-if="step < 3"
+        type="button"
+        :label="$t('notifications.wizard.next')"
+        :disabled="submitting || persisted || previewing"
+        @click="nextStep"
+      />
+      <UButton
+        v-else
+        type="button"
+        :disabled="!canSave || previewing"
+        :label="$t(persisted ? 'notifications.navbar.retry' : 'common.save')"
+        :loading="submitting"
+        @click="channelForm?.submit()"
+      />
     </template>
   </UModal>
 </template>

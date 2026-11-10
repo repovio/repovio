@@ -288,9 +288,10 @@ function openEdit(channel: NotificationChannel): void {
   dialogOpen.value = true;
 }
 
-/** Handles saved. */
+/** Refresh saved channels and reject a failed table read so the dialog can retry without another write. */
 async function handleSaved(): Promise<void> {
   await channelTable.refresh();
+  if (tableError.value) throw new Error('Notification channel refresh failed.');
 }
 
 /** Toggles index. */

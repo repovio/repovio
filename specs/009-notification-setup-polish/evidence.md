@@ -46,3 +46,17 @@
   Screenshot: `apps/web/test-results/notifications-validates-no-3eac9-before-save-and-preview-de--chromium/notification-review-de.png`.
 - Explicit values 0–3 use a controlled Stepper with application validation; future jumps and all pending navigation
   paths are guarded. Back preserves draft values. Footer relocation follows in T005.
+
+## Modal footer and save recovery (T005)
+
+- Footer browser regressions failed before implementation. All six transport creation scenarios pass after the move;
+  English/German deferred-write and deferred-refresh checks pass with exactly one write and two refresh attempts.
+- Browser coverage exposed swallowed Query Kit refresh errors. The page now propagates its table error to the existing
+  persisted-save recovery path. Retry performs only a list read, never another channel write.
+- 22 push/draft unit tests pass, including a failed persistence retry. Typecheck, focused ESLint and documentation passed.
+- During one development browser run, a concurrent Nuxt typecheck refreshed templates and detached a control.
+  The isolated English/German rerun passed (2/2); final browser validation must not run alongside Nuxt preparation.
+- Inspected German 390x844 and English 1102x1134 screenshots: separate modal footer stays reachable, all four steps fit.
+  Files are `notification-footer-{locale}-{width}.png` in each footer test's local Playwright output directory.
+- Save invokes the existing form instance's validated `submit()`; modal dismissal/close and navigation are blocked
+  while persistence/refresh is awaited. Unit tests retain duplicate prevention and refresh-only recovery.

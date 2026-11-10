@@ -952,3 +952,109 @@ test('validates controlled stepper clicks and keyboard navigation', /** Future s
   await steps.nth(0).click();
   await expect(dialog.getByRole('textbox', { name: /^Name/ })).toHaveValue('Operations');
 });
+
+for (const locale of ['en', 'de'] as const) {
+  test(`keeps validated footer saves pending through write and refresh (${locale})`, /** Verify footer structure, request lifetime, dismissal, and refresh-only retry. */ async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    const labels =
+      locale === 'de'
+        ? {
+            add: 'Kanal hinzufügen',
+            next: 'Weiter',
+            name: 'Name',
+            type: 'Typ',
+            topic: 'Topic',
+            event: 'Neues Issue',
+            save: 'Speichern',
+            retry: 'Erneut versuchen',
+          }
+        : {
+            add: 'Add channel',
+            next: 'Next',
+            name: 'Name',
+            type: 'Type',
+            topic: 'Topic',
+            event: 'New issue',
+            save: 'Save',
+            retry: 'Retry',
+          };
+    let saves = 0;
+    let refreshes = 0;
+    let release!: () => void;
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Defer the dependent list refresh after persistence. */ async (route) => {
+        if (saves > 0) {
+          refreshes++;
+          if (refreshes === 1) {
+            await new Promise<void>(
+              /** Hold refresh for pending-state checks. */ (resolve) => {
+                release = resolve;
+              },
+            );
+            return route.fulfill({ status: 503, json: { message: 'Refresh failed' } });
+          }
+        }
+        return route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } });
+      },
+    );
+    await page.route(
+      '**/api/v1/notification-channels',
+      /** Defer the write and count persistence requests. */ async (route) => {
+        saves++;
+        await new Promise<void>(
+          /** Hold persistence for duplicate prevention checks. */ (resolve) => {
+            release = resolve;
+          },
+        );
+        return route.fulfill({ json: { ...route.request().postDataJSON(), id: 'created-channel' } });
+      },
+    );
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: labels.add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    const footer = dialog.locator('[data-slot="footer"]');
+    await expect(footer.getByRole('button', { name: labels.next, exact: true })).toBeVisible();
+    await expect(footer.locator('form')).toHaveCount(0);
+    await dialog.getByRole('textbox', { name: new RegExp(`^${labels.name}`) }).fill('Operations');
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await page.getByRole('option', { name: 'ntfy', exact: true }).click();
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    const topic = dialog.getByRole('textbox', { name: labels.topic });
+    await topic.press('Enter');
+    expect(saves).toBe(0);
+    await topic.fill('operations');
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    await dialog.getByRole('checkbox', { name: labels.event, exact: true }).check();
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    for (const width of [390, 1102]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1134 });
+      await expect(footer.getByRole('button', { name: labels.save, exact: true })).toBeInViewport();
+      await page.screenshot({
+        path: testInfo.outputPath(`notification-footer-${locale}-${width}.png`),
+        animations: 'disabled',
+      });
+    }
+    const save = footer.getByRole('button').last();
+    await save.click();
+    await expect.poll(/** Wait for the held persistence request. */ () => saves).toBe(1);
+    await expect(save).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('[data-channel-stepper] button').first()).toBeDisabled();
+    release();
+    await expect.poll(/** Wait for the held list refresh. */ () => refreshes).toBe(1);
+    await expect(save).toBeDisabled();
+    release();
+    const retry = footer.getByRole('button', { name: labels.retry, exact: true });
+    await expect(retry).toBeEnabled();
+    await retry.click();
+    await expect(dialog).not.toBeVisible();
+    expect(saves).toBe(1);
+    expect(refreshes).toBe(2);
+  });
+}

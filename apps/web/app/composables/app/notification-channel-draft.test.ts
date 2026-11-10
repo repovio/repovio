@@ -263,3 +263,24 @@ it('guards stepper clicks, jumps, and every pending navigation path', /** All co
   expect(draft.requestStep(0)).toBe(false);
   expect(draft.requestStep('invalid')).toBe(false);
 });
+
+it('allows a failed write to retry without treating it as persisted', /** Write failures must clear loading and retain the draft. */ async () => {
+  const { draft, open, api } = fixture();
+  open.value = true;
+  await nextTick();
+  draft.form.value.name = 'Operations';
+  draft.form.value.type = 'NTFY';
+  await nextTick();
+  draft.form.value.topic = 'operations';
+  draft.eventStates.value.ISSUE_OPENED.selected = true;
+  draft.step.value = 3;
+  api.notificationChannels.create.mockRejectedValueOnce(new Error('offline'));
+  await draft.submit({ data: draft.form.value } as never);
+  expect(draft.persisted.value).toBe(false);
+  expect(draft.saveError.value).toBe(true);
+  expect(draft.submitting.value).toBe(false);
+  expect(open.value).toBe(true);
+  await draft.submit({ data: draft.form.value } as never);
+  expect(api.notificationChannels.create).toHaveBeenCalledTimes(2);
+  expect(open.value).toBe(false);
+});

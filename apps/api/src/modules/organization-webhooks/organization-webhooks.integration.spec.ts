@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { createHmac, randomUUID } from 'node:crypto';
 import { PoliciesGuard } from '../../casl/policies.guard.js';
+import { ENV } from '../../config/env.js';
 import type { ProviderType } from '../../generated/prisma/client.js';
 import { configureApiRoutes, createApiDocument } from '../../openapi/document.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -165,6 +166,95 @@ describe('Organization webhook HTTP and persistence', /** Group isolated synthet
       payload: request.payload,
     });
   }
+
+  it('previews canonical callbacks without persistence and preserves their ID on insert', /** Verify the actual draft transport, legacy create and inactive unsaved callback. */ async () => {
+    const connection = await account();
+    const base = `/api/v1/provider-accounts/${connection.id}/organization-webhooks`;
+    const headers = { authorization: 'Bearer admin' };
+    const response = await http.inject({ method: 'GET', url: `${base}/draft`, headers });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['cache-control']).toBe('no-store');
+    const draft = response.json();
+    expect(Object.keys(draft).sort()).toEqual(['callbackUrl', 'id']);
+    expect(draft.callbackUrl).toBe(new URL(`/api/webhooks/organization/${draft.id}`, ENV.PUBLIC_URL).toString());
+    expect(await prisma.organizationWebhook.count()).toBe(0);
+    expect((await post(draft.id, delivery('GITHUB'))).statusCode).toBe(401);
+    const saved = await http.inject({
+      method: 'POST',
+      url: base,
+      headers,
+      payload: { id: draft.id, scope: 'acme', webhookSecret: secret },
+    });
+    expect(saved.statusCode).toBe(201);
+    expect(saved.json()).toMatchObject(draft);
+    const legacy = await http.inject({
+      method: 'POST',
+      url: base,
+      headers,
+      payload: { scope: 'legacy', webhookSecret: secret },
+    });
+    expect(legacy.statusCode).toBe(201);
+    expect(legacy.json().id).not.toBe(draft.id);
+    const document = createApiDocument(http, '/');
+    expect(
+      document.paths['/api/v1/provider-accounts/{id}/organization-webhooks/draft']?.get?.responses['200'],
+    ).toBeDefined();
+  });
+
+  it('guards draft metadata and rejects draft collisions without mutation', /** Verify admin boundaries, validation and insert-only IDs across accounts. */ async () => {
+    const first = await account();
+    const second = await account();
+    const headers = { authorization: 'Bearer admin' };
+    const base = `/api/v1/provider-accounts/${first.id}/organization-webhooks`;
+    expect((await http.inject({ method: 'GET', url: `${base}/draft` })).statusCode).toBe(401);
+    expect(
+      (await http.inject({ method: 'GET', url: `${base}/draft`, headers: { authorization: 'Bearer viewer' } }))
+        .statusCode,
+    ).toBe(403);
+    expect(
+      (
+        await http.inject({
+          method: 'GET',
+          url: `/api/v1/provider-accounts/${randomUUID()}/organization-webhooks/draft`,
+          headers,
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await http.inject({
+          method: 'GET',
+          url: '/api/v1/provider-accounts/invalid/organization-webhooks/draft',
+          headers,
+        })
+      ).statusCode,
+    ).toBe(400);
+    expect(
+      (
+        await http.inject({
+          method: 'POST',
+          url: base,
+          headers,
+          payload: { id: 'invalid', scope: 'acme', webhookSecret: secret },
+        })
+      ).statusCode,
+    ).toBe(400);
+    const draft = (await http.inject({ method: 'GET', url: `${base}/draft`, headers })).json();
+    const input = { id: draft.id, scope: 'acme', webhookSecret: secret };
+    expect((await http.inject({ method: 'POST', url: base, headers, payload: input })).statusCode).toBe(201);
+    const collision = await http.inject({
+      method: 'POST',
+      url: `/api/v1/provider-accounts/${second.id}/organization-webhooks`,
+      headers,
+      payload: { ...input, webhookSecret: 'different-signing-secret' },
+    });
+    expect(collision.statusCode).toBe(409);
+    expect(collision.body).not.toContain(first.id);
+    expect(await prisma.organizationWebhook.count()).toBe(1);
+    const stored = await prisma.organizationWebhook.findUniqueOrThrow({ where: { id: draft.id } });
+    expect(stored.providerAccountId).toBe(first.id);
+    expect(encryption.decrypt(stored.encryptedWebhookSecret)).toBe(secret);
+  });
 
   it.each(['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA'] as const)(
     'verifies, deduplicates, rotates, and isolates %s deliveries',

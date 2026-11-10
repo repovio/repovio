@@ -554,7 +554,8 @@
     "reauthorize": "Otorisasi ulang",
     "reauthorizationRequired": "Otorisasi ulang diperlukan",
     "oauthCancelled": "Otorisasi GitLab dibatalkan. Koneksi yang ada dipertahankan.",
-    "oauthUnavailable": "Konfigurasikan GitLab OAuth di lingkungan API untuk mengotorisasi koneksi ini."
+    "oauthUnavailable": "Konfigurasikan GitLab OAuth di lingkungan API untuk mengotorisasi koneksi ini.",
+    "actionsFor": "Tindakan untuk {name}"
   },
   "querrykit": {
     "table": {
@@ -914,6 +915,11 @@
         "FAILED": "Gagal"
       },
       "open": "Buka panel notifikasi"
+    },
+    "pushAvailability": {
+      "checking": "Memeriksa ketersediaan push browser…",
+      "unconfigured": "Konfigurasikan Web Push (VAPID) di server sebelum memilih jenis ini.",
+      "failed": "Tidak dapat memeriksa ketersediaan push browser."
     }
   },
   "notificationDeliveryStatus": {
@@ -1234,6 +1240,11 @@
       "GITLAB": "Buka Settings > Webhooks pada grup. Gunakan URL panggilan balik dan rahasia penandatanganan atau token rahasia yang sama, sesuai versi GitLab Anda. Pilih peristiwa pipeline, pekerjaan, isu, dan permintaan penggabungan sesuai kebutuhan. Semua proyek yang dilacak dalam grup ini beserta subgrupnya tercakup."
     },
     "rotationConfirm": "Saya akan memperbarui webhook organisasi atau grup di penyedia dengan rahasia baru.",
-    "lastDelivery": "Pengiriman terakhir yang diterima: {value}"
+    "lastDelivery": "Pengiriman terakhir yang diterima: {value}",
+    "unsavedCallback": "Simpan konfigurasi ini sebelum penyedia dapat mengirim peristiwa ke URL ini.",
+    "loadingCallback": "Memuat URL callback…",
+    "draftError": "URL callback tidak dapat dimuat. Coba lagi.",
+    "retryDraft": "Muat URL callback",
+    "savedConfigurations": "Konfigurasi tersimpan"
   }
 }

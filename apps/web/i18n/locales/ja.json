@@ -554,7 +554,8 @@
     "reauthorize": "再認証",
     "reauthorizationRequired": "再認証が必要",
     "oauthCancelled": "GitLab の認可をキャンセルしました。既存の接続は保持されています。",
-    "oauthUnavailable": "この接続を認可するには、API 環境に GitLab OAuth を設定してください。"
+    "oauthUnavailable": "この接続を認可するには、API 環境に GitLab OAuth を設定してください。",
+    "actionsFor": "{name} の操作"
   },
   "querrykit": {
     "table": {
@@ -914,6 +915,11 @@
         "FAILED": "失敗"
       },
       "open": "通知パネルを開く"
+    },
+    "pushAvailability": {
+      "checking": "ブラウザープッシュの利用可否を確認中…",
+      "unconfigured": "この種類を選択する前に、サーバーで Web Push（VAPID）を設定してください。",
+      "failed": "ブラウザープッシュの利用可否を確認できませんでした。"
     }
   },
   "notificationDeliveryStatus": {
@@ -1234,6 +1240,11 @@
       "GITLAB": "グループの Settings > Webhooks を開いてください。GitLab のバージョンに応じて、コールバック URL と同じ署名用シークレットまたはシークレットトークンを使用します。必要なパイプライン、ジョブ、Issue、マージリクエストのイベントを選択してください。このグループとサブグループ内の追跡中のすべてのプロジェクトが対象です。"
     },
     "rotationConfirm": "プロバイダー側の組織またはグループの Webhook を、新しいシークレットで更新します。",
-    "lastDelivery": "最後に受け付けた配信：{value}"
+    "lastDelivery": "最後に受け付けた配信：{value}",
+    "unsavedCallback": "プロバイダーがこの URL にイベントを送信する前に、この設定を保存してください。",
+    "loadingCallback": "コールバック URL を読み込み中…",
+    "draftError": "コールバック URL を読み込めませんでした。再試行してください。",
+    "retryDraft": "コールバック URL を読み込む",
+    "savedConfigurations": "保存済みの設定"
   }
 }

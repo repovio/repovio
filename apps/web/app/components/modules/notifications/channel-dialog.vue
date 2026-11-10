@@ -3,19 +3,22 @@
     v-model:open="open"
     :description="$t('notifications.channels.dialogDescription')"
     :dismissible="!submitting"
+    :close="!submitting"
+    :ui="{ body: 'min-h-0', header: 'shrink-0', footer: 'shrink-0 justify-between gap-3' }"
     :title="$t(channel ? 'notifications.channels.editTitle' : 'notifications.channels.createTitle')"
   >
     <template #body>
-      <ol class="mb-5 flex flex-wrap gap-3" :aria-label="$t('notifications.wizard.steps')">
-        <li
-          v-for="(name, index) in ['identity', 'destination', 'events', 'review']"
-          :key="name"
-          :aria-current="step === index ? 'step' : undefined"
-          :class="step === index ? 'font-semibold text-primary' : 'text-muted'"
-        >
-          {{ index + 1 }}. {{ $t(`notifications.wizard.${name}`) }}
-        </li>
-      </ol>
+      <UStepper
+        class="mb-5 w-full"
+        data-channel-stepper
+        :aria-label="$t('notifications.wizard.steps')"
+        :items="stepItems"
+        :model-value="step"
+        :linear="false"
+        :disabled="submitting || persisted || previewing"
+        :ui="{ item: 'min-w-0', title: 'text-xs whitespace-normal text-center' }"
+        @update:model-value="requestStep"
+      />
       <UAlert
         v-if="saveError"
         class="mb-4"
@@ -37,6 +40,9 @@
             v-model:form="form"
             :channel="channel"
             :type-options="typeOptions"
+            :push-availability="browserPushAvailability"
+            :push-refreshing="browserPushRefreshing"
+            @retry="props.onRefreshBrowserPush?.()"
           />
           <ModulesNotificationsChannelDestinationStep
             v-else-if="step === 1"
@@ -64,34 +70,42 @@
             @preview="runPreview"
           />
         </div>
-        <div class="flex justify-between gap-3 border-t border-default pt-4">
-          <UButton
-            v-if="step > 0"
-            type="button"
-            color="neutral"
-            variant="soft"
-            :label="$t('notifications.wizard.back')"
-            :disabled="submitting || persisted"
-            @click="back"
-          />
-          <span v-else />
-          <UButton v-if="step < 3" type="button" :label="$t('notifications.wizard.next')" @click="nextStep" />
-          <UButton
-            v-else
-            type="submit"
-            :disabled="!canSave || previewing"
-            :label="$t(persisted ? 'notifications.navbar.retry' : 'common.save')"
-            :loading="submitting"
-          />
-        </div>
       </UForm>
+    </template>
+    <template #footer>
+      <UButton
+        v-if="step > 0"
+        type="button"
+        color="neutral"
+        variant="soft"
+        :label="$t('notifications.wizard.back')"
+        :disabled="submitting || persisted || previewing"
+        @click="back"
+      />
+      <span v-else />
+      <UButton
+        v-if="step < 3"
+        type="button"
+        :label="$t('notifications.wizard.next')"
+        :disabled="submitting || persisted || previewing"
+        @click="nextStep"
+      />
+      <UButton
+        v-else
+        type="button"
+        :disabled="!canSave || previewing"
+        :label="$t(persisted ? 'notifications.navbar.retry' : 'common.save')"
+        :loading="submitting"
+        @click="channelForm?.submit()"
+      />
     </template>
   </UModal>
 </template>
 
 <script setup lang="ts">
+import type { StepperItem } from '@nuxt/ui';
 import { localizeFormSchema } from '@repovio/schemas';
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useNotificationChannelDraft, type ChannelDraftProps } from '~/composables/app/notification-channel-draft';
 const props = defineProps<ChannelDraftProps>();
@@ -104,6 +118,7 @@ const {
   channelFormSchema,
   step,
   nextStep,
+  requestStep,
   back,
   submit,
   preview,
@@ -123,6 +138,16 @@ const {
   ntfyPriorityOptions,
   showConfiguration,
 } = useNotificationChannelDraft(props, open, t, useRepovioApi());
+const stepItems = computed<StepperItem[]>(
+  /** Keep explicit step values and localized titles in the same order as draft validation. */ () =>
+    ['identity', 'destination', 'events', 'review'].map(
+      /** Disable jumps past the next validated transition. */ (name, value) => ({
+        title: t(`notifications.wizard.${name}`),
+        value,
+        disabled: value > step.value + 1,
+      }),
+    ),
+);
 const stepContent = ref<HTMLElement | null>(null);
 watch(
   step,

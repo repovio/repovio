@@ -67,11 +67,17 @@ test('provider account table opens an add dialog with structured native controls
   await expect(page.getByRole('columnheader', { name: 'Webhook' })).toHaveCount(0);
   await expect(page.locator('#main-content [class~="i-tabler:brand-github"]')).toBeVisible();
   await expect(page.getByRole('button', { name: /add provider|anbieter hinzufügen/i })).toBeVisible();
-  await page.getByRole('button', { name: 'Disable' }).hover();
-  await expect(page.locator('[data-slot="content"][data-side]').filter({ hasText: 'Disable' })).toBeVisible();
-  await page.mouse.move(0, 0);
-  await page.getByRole('button', { name: 'Delete' }).hover();
-  await expect(page.locator('[data-slot="content"][data-side]').filter({ hasText: 'Delete' })).toBeVisible();
+  const actions = page.getByRole('button', { name: 'Actions for Production GitHub' });
+  await expect(page.locator('tbody button')).toHaveCount(1);
+  await actions.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('menuitem', { name: 'Organization webhooks' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Disable' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /GitLab/ })).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('provider-account-actions.png'), fullPage: true });
+  await page.keyboard.press('Escape');
+  await expect(actions).toBeFocused();
 
   await page.getByRole('button', { name: 'playwright' }).click();
   await expect(page.getByText('Language', { exact: true })).toBeVisible();
@@ -105,4 +111,73 @@ test('provider account table opens an add dialog with structured native controls
   await expect(page.getByPlaceholder('https://provider.example.com')).toBeVisible();
 
   await page.screenshot({ path: testInfo.outputPath('provider-account-form.png'), fullPage: true });
+});
+
+test('provider menus preserve capabilities and pending row actions', /** Exercise each provider and delayed local changes through the real menu. */ async ({
+  page,
+}) => {
+  const providers = ['GITHUB', 'GITLAB', 'FORGEJO', 'GITEA'].map(
+    /** Supply one distinct account per supported provider. */ (providerType, index) => ({
+      id: `account-${index}`,
+      providerType,
+      displayName: providerType,
+      enabled: index !== 3,
+      lastSyncAt: null,
+    }),
+  );
+  let releaseUpdate: (() => void) | undefined;
+  const update = new Promise<void>(
+    /** Retain the mutation boundary for the loading assertion. */ (resolve) => {
+      releaseUpdate = resolve;
+    },
+  );
+  await page.addInitScript(
+    /** Authenticate synthetic administration. */ () => localStorage.setItem('repovio.access-token', 'synthetic'),
+  );
+  await page.route(
+    '**/api/v1/**',
+    /** Keep all provider operations synthetic and observable. */ async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/auth/me'))
+        await route.fulfill({ json: { id: 'admin', role: 'SYSTEM_ADMIN', username: 'admin' } });
+      else if (path.endsWith('/authentication-options')) await route.fulfill({ json: { oauthProviderTypes: [] } });
+      else if (route.request().method() === 'PATCH') {
+        expect(path).toBe('/api/v1/provider-accounts/account-0');
+        expect(route.request().postDataJSON()).toEqual({ enabled: false });
+        await update;
+        providers[0]!.enabled = false;
+        await route.fulfill({ json: providers[0] });
+      } else if (path === '/api/v1/provider-accounts')
+        await route.fulfill({ json: { items: providers, meta: { itemCount: 4, pageCount: 1 } } });
+      else await route.abort();
+    },
+  );
+  await page.goto('/admin/providers');
+  await expect(page.locator('tbody button')).toHaveCount(4);
+  for (const provider of providers) {
+    const trigger = page.getByRole('button', { name: `Actions for ${provider.displayName}`, exact: true });
+    await trigger.click();
+    await expect(page.getByRole('menuitem', { name: 'Organization webhooks' })).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: provider.enabled ? 'Disable' : 'Enable', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Delete', exact: true })).toBeVisible();
+    if (provider.providerType === 'GITLAB')
+      await expect(page.getByRole('menuitem', { name: /Connect with GitLab OAuth/ })).toHaveAttribute('data-disabled');
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  }
+  const trigger = page.getByRole('button', { name: 'Actions for GITHUB', exact: true });
+  await trigger.click();
+  await page.getByRole('menuitem', { name: 'Disable', exact: true }).click();
+  await expect(trigger).toBeDisabled();
+  await expect(trigger.locator('[data-slot="leadingIcon"]')).toBeVisible();
+  releaseUpdate?.();
+  await expect(trigger).toBeEnabled();
+  await trigger.click();
+  await expect(page.getByRole('menuitem', { name: 'Enable', exact: true })).toBeVisible();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(trigger).toBeEnabled();
 });

@@ -1,0 +1,15 @@
+meta {
+  name: get organization webhook draft
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/api/v1/provider-accounts/{{providerAccountId}}/organization-webhooks/draft
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

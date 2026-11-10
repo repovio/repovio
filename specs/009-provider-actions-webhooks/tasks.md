@@ -19,7 +19,7 @@ prerequisites pass; it does not authorize subagents or concurrent Git/index/grap
 
 **Purpose**: Confirm scope and establish a reproducible local baseline without changing tooling.
 
-- [ ] T001 Verify approved issue association, task-generation/implementation authorization, current worktree suitability,
+- [x] T001 Verify approved issue association, task-generation/implementation authorization, current worktree suitability,
       Node.js 26.13.0, pnpm 11.28.9, existing dependencies and test fixtures against `AGENTS.md`, `docs/coding-guidelines.md`,
       `package.json`, `.specify/feature.json`, and `specs/009-provider-actions-webhooks/quickstart.md`; record baseline commands,
       failures, and actual feature resolution in `specs/009-provider-actions-webhooks/verification.md` before product edits.
@@ -31,7 +31,7 @@ issue and planning commit. Preserve unrelated changes; no installation migration
 
 **Purpose**: Verify shared safety and testing assumptions; no new infrastructure is required.
 
-- [ ] T002 Inspect existing authorization, callback URL generation, response envelopes, menu conventions, pending state,
+- [x] T002 Inspect existing authorization, callback URL generation, response envelopes, menu conventions, pending state,
       and schema exports in `apps/api/src/modules/organization-webhooks/organization-webhooks.service.ts`,
       `apps/api/src/modules/organization-webhooks/organization-webhooks.controller.ts`,
       `libs/schemas/src/api/organization-webhooks.ts`, `apps/web/app/components/modules/providers/account-actions.vue`, and
@@ -50,7 +50,7 @@ codebase exploration. Block product work only for concrete contradictions with t
 **Independent Test**: Exercise all provider types in `apps/web/tests/e2e/providers.spec.ts`; verify one trigger per row,
 applicable labeled entries, keyboard focus, row targeting, confirmation, and busy state after menu dismissal.
 
-- [ ] T003 [P] [US1] Add focused failing menu regressions in `apps/web/tests/e2e/providers.spec.ts`, then replace the icon
+- [x] T003 [P] [US1] Add focused failing menu regressions in `apps/web/tests/e2e/providers.spec.ts`, then replace the icon
       cluster in `apps/web/app/components/modules/providers/account-actions.vue` with a Nuxt UI ellipsis dropdown retaining
       existing emitted events; preserve conditional GitLab Connect/Reauthorize and unavailable explanation, Enable/Disable,
       destructive Delete grouping and confirmation, and full-request loading/duplicate blocking on the trigger; add an

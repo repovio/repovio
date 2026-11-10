@@ -24,14 +24,12 @@ ready draft; failed draft load must not block managing already loaded saved hook
 New authenticated administrator-only endpoint. Validate account ID, authorize before reading account metadata, return
 404 for an absent account to an authorized administrator. Generate UUID without storage or provider requests.
 
-Response: HTTP 200, existing API response envelope containing:
+Response: HTTP 200, the existing unwrapped API JSON resource (Axios exposes it as response.data):
 
 ```json
 {
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "callbackUrl": "https://repovio.example/api/webhooks/organization/550e8400-e29b-41d4-a716-446655440000"
-  }
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "callbackUrl": "https://repovio.example/api/webhooks/organization/550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 

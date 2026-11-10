@@ -10,6 +10,15 @@ export const ApiOrganizationWebhookSchema = z.strictObject({
   lastDeliveryAt: z.iso.datetime({ offset: true }).nullable(),
 });
 
+/** Stateless callback metadata; preview never persists a configuration. */
+export const ApiOrganizationWebhookDraftSchema = z.strictObject({
+  id: z.uuid(),
+  callbackUrl: z.url(),
+});
+
+/** Public setup metadata with the final callback identity. */
+export type OrganizationWebhookDraft = z.output<typeof ApiOrganizationWebhookDraftSchema>;
+
 /** Write-only secret input shared by creation and rotation. */
 export const ApiRotateOrganizationWebhookSchema = z.strictObject({
   webhookSecret: z.string().trim().min(16).max(1024),
@@ -17,6 +26,7 @@ export const ApiRotateOrganizationWebhookSchema = z.strictObject({
 
 /** Immutable organization login or full GitLab group path and initial signing secret. */
 export const ApiCreateOrganizationWebhookSchema = ApiRotateOrganizationWebhookSchema.extend({
+  id: z.uuid().optional(),
   scope: z
     .string()
     .trim()

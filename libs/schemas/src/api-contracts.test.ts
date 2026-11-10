@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   ApiCreateMcpAccessTokenSchema,
   ApiCreateNotificationChannelSchema,
+  ApiCreateOrganizationWebhookSchema,
   ApiCreateProviderAccountSchema,
   ApiCreateUserSchema,
   ApiDashboardPeriodQuerySchema,
@@ -12,6 +13,7 @@ import {
   ApiNotificationDeliverySchema,
   ApiNotificationEventSubscriptionInputSchema,
   ApiNotificationRulePreviewInputSchema,
+  ApiOrganizationWebhookDraftSchema,
   ApiRemoteAvatarSchema,
   ApiResetUserPasswordSchema,
   ApiSaveUserGroupSchema,
@@ -269,4 +271,26 @@ it('accepts optional nullable safe delivery requester identities', /** Keeps old
     lastName: null,
   });
   assert.equal(requester.safeParse({ id: 'u', username: 'viewer', token: 'secret' }).success, false);
+});
+
+describe('organization webhook drafts', /** Preserve strict optional identity and legacy creation inputs. */ () => {
+  it('accepts optional UUID but rejects malformed identities and unknown fields', /** Verify preview and create validation boundaries. */ () => {
+    const legacy = { scope: ' acme/team ', webhookSecret: ' synthetic-secret-16-characters ' };
+    assert.equal(ApiCreateOrganizationWebhookSchema.parse(legacy).scope, 'acme/team');
+    assert.equal(ApiCreateOrganizationWebhookSchema.parse({ ...legacy, id: repositoryId }).id, repositoryId);
+    assert.equal(ApiCreateOrganizationWebhookSchema.safeParse({ ...legacy, id: 'invalid' }).success, false);
+    assert.equal(
+      ApiCreateOrganizationWebhookSchema.safeParse({ ...legacy, callbackUrl: 'https://example.test' }).success,
+      false,
+    );
+    assert.equal(
+      ApiOrganizationWebhookDraftSchema.safeParse({ id: repositoryId, callbackUrl: 'https://public.example/callback' })
+        .success,
+      true,
+    );
+    assert.equal(
+      ApiOrganizationWebhookDraftSchema.safeParse({ id: repositoryId, callbackUrl: 'relative' }).success,
+      false,
+    );
+  });
 });

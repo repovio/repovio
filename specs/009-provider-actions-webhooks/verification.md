@@ -26,3 +26,13 @@ Application/API acceptance results and task commits are recorded below as implem
 - Inspected provider-account-actions.png: compact labeled entries and separated destructive Delete.
 - API baseline: 18 real PostgreSQL integration tests passed with synthetic authentication and provider adapters.
 - Added action labels across existing supported locales to preserve language parity.
+
+## T004: Stateless canonical callback API
+
+- New tests first failed with missing draft route (404); after implementation all 20 PostgreSQL integration tests passed.
+- All 20 shared-schema tests passed, including strict optional UUID and legacy input compatibility.
+- Real Fastify validation/serialization and generated OpenAPI tested; authentication is synthetic, database/signatures real.
+- Preview has no-store, canonical PUBLIC_URL, no record creation and no provider requests. Unsaved callbacks reject delivery.
+- Cross-account UUID collision returns 409 without changing original secret/owner. Existing create without ID still works.
+- Transport inspection corrected the design example: wire JSON is unwrapped; Axios supplies the client response.data.
+- T003 published as cf55ace; T001/T002 evidence and T003 accepted before advancing.

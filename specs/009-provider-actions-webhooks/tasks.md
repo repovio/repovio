@@ -118,7 +118,7 @@ Another gets fresh metadata; close/reopen, account switch, or delayed responses 
 **Independent Test**: Complete create/select/rotate/remove/reopen in English and German at 1102×1134 and 390×844;
 inspect screenshots and keyboard traversal with long URLs and many existing configurations.
 
-- [ ] T006 [US3] After T005, add responsive and workflow regressions in
+- [x] T006 [US3] After T005, add responsive and workflow regressions in
       `apps/web/tests/e2e/organization-webhooks.spec.ts`, then reorganize
       `apps/web/app/components/modules/providers/organization-webhooks-dialog.vue` into account context and setup with callback
       before namespace/secret, compact provider-specific manual-registration instructions, save controls, and a distinct

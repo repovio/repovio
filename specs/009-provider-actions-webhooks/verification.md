@@ -60,3 +60,35 @@ Application/API acceptance results and task commits are recorded below as implem
   saved configuration section below the form, bounded vertical scrolling.
 - All 135 web tests and 21 guideline regression tests passed; web typecheck, focused ESLint and documentation checks passed.
 - T005 published as 64ebf08. All shipped locales have the saved-section label.
+
+## T007: Integrated acceptance
+
+- Root lint passed: all five Nx targets, documentation coverage (701 handwritten files), and 21 guideline regressions.
+- Root typecheck passed: five targets. API and web production builds passed.
+- Root tests passed: five targets; API 111 suites / 798 tests, web 26 files / 135 tests, schemas 20 tests.
+- Initial broad API run inherited the deliberately different PUBLIC_URL from the focused callback test and failed four
+  unrelated default-hostname assertions. Rerunning with the standard hostname passed all 798 tests; no source waiver.
+- Production web server on loopback port 3092: 15 provider/webhook/GitLab OAuth Playwright cases passed.
+- Updated the preexisting GitLab OAuth browser suite to use menu items and the row trigger's full-request loading state;
+  conversion, reauthorization, failure/retry, EN/DE and desktop/mobile navigation all passed.
+- Focused API contract tests exercise real Fastify/Zod/Swagger transport and PostgreSQL; authentication is synthetic.
+- Browser API fixtures are intercepted/synthetic, so no real provider registration or live device behavior is claimed.
+- Canonical formatting and diff whitespace checks passed; changed sources converged across two formatter passes.
+- No database migration, provider mutation, publish, production deployment, or release-PR change performed.
+- Graphify is AST-only; its existing missing SQL parser warning remains a navigation coverage limitation, not API proof.
+
+### Task commits
+
+| Task      | Commit  | Result                                                       |
+| --------- | ------- | ------------------------------------------------------------ |
+| T001–T003 | cf55ace | Setup/foundation evidence and action menu                    |
+| T004      | 6b34d36 | Stateless callback API and backward-compatible optional UUID |
+| T005      | 64ebf08 | Pre-save URL, request state and recovery                     |
+| T006      | 3e4c07b | Dialog organization and responsive saved-list component      |
+
+### Visual evidence
+
+Nine synthetic screenshots were copied outside the checkout under
+`/home/tobiaswaelde/.codex/visualizations/2026/11/10/01a1c52e-c71a-7471-a4c1-dec46f51a06f/provider-actions-webhooks/`:
+`provider-account-actions.png`, and `webhook-{setup,saved}-{en,de}-{1102,390}.png`.
+These are local review artifacts, not published provider screenshots.

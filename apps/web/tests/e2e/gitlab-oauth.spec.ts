@@ -64,36 +64,38 @@ for (const locale of ['en', 'de'] as const) {
         },
       );
       await page.goto('/admin/providers');
-      const connect = page.getByRole('button', {
+      const actions = page.getByRole('button', {
+        name: locale === 'en' ? 'Actions for Synthetic GitLab' : 'Aktionen für Synthetic GitLab',
+        exact: true,
+      });
+      const connect = page.getByRole('menuitem', {
         name: locale === 'en' ? 'Connect with GitLab OAuth' : 'Mit GitLab OAuth verbinden',
         exact: true,
       });
+      await actions.click();
       await expect(connect).toBeEnabled();
       await connect.click();
-      await expect(connect).toBeDisabled();
-      await expect(connect.locator('.animate-spin')).toBeVisible();
-      await expect(
-        page.getByRole('button', { name: locale === 'en' ? 'Disable' : 'Deaktivieren', exact: true }),
-      ).toBeDisabled();
-      await expect(
-        page.getByRole('button', { name: locale === 'en' ? 'Delete' : 'Löschen', exact: true }),
-      ).toBeDisabled();
+      await expect(actions).toBeDisabled();
+      await expect(actions.locator('.animate-spin')).toBeVisible();
+      await expect(page.getByRole('menuitem')).toHaveCount(0);
       release();
-      await expect(connect).toBeEnabled();
+      await expect(actions).toBeEnabled();
       await expect(page.getByRole('alert')).toBeVisible();
       failure = false;
       gate = Promise.resolve();
+      await actions.click();
       await connect.click();
       await expect(page).toHaveURL(/oauth=connected/);
-      const reauthorize = page.getByRole('button', {
+      const reauthorize = page.getByRole('menuitem', {
         name: locale === 'en' ? 'Reauthorize' : 'Erneut autorisieren',
         exact: true,
       });
+      await actions.click();
       await expect(reauthorize).toBeEnabled();
       failure = true;
       await reauthorize.click();
       await expect(page.getByRole('alert')).toBeVisible();
-      await expect(reauthorize).toBeEnabled();
+      await expect(actions).toBeEnabled();
       failure = false;
       oauthStatus = 'REAUTHORIZATION_REQUIRED';
       await page.goto('/admin/providers');
@@ -102,6 +104,7 @@ for (const locale of ['en', 'de'] as const) {
           exact: true,
         }),
       ).toBeVisible();
+      await actions.click();
       await reauthorize.focus();
       await expect(reauthorize).toBeFocused();
       await page.screenshot({ path: testInfo.outputPath(`gitlab-oauth-${locale}-${width}.png`), fullPage: true });
@@ -121,9 +124,9 @@ for (const locale of ['en', 'de'] as const) {
           { exact: true },
         ),
       ).toBeVisible();
-      await expect(reauthorize).toBeEnabled();
+      await expect(actions).toBeEnabled();
       await page.goto('/admin/providers?oauth=failed');
-      await expect(reauthorize).toBeEnabled();
+      await expect(actions).toBeEnabled();
     });
   }
 }

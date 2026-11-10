@@ -4,7 +4,7 @@ import { expectTableHover } from './fixtures/table-hover';
 const pageMeta = { hasNextPage: false, hasPrevPage: false, itemCount: 1, page: 1, pageCount: 1, perPage: 10 };
 
 /** Mocks shell. */
-async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' = 'SYSTEM_ADMIN'): Promise<void> {
+async function mockShell(page: Page, role: 'SYSTEM_ADMIN' | 'VIEWER' | 'MANAGER' = 'SYSTEM_ADMIN'): Promise<void> {
   await page.route(
     '**/api/v1/**',
     /** Isolate shell metadata from live services during mocked browser tests. */ (route) =>
@@ -181,15 +181,13 @@ test('shows global channel events and system-wide delivery history', /** Verifie
 
   await page.goto('/notifications');
   const primaryNavigation = page.getByRole('navigation', { name: 'Primary navigation' });
-  await expect(primaryNavigation.getByRole('button', { name: 'Notifications' })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  );
-  const notificationNavigation = primaryNavigation.getByRole('region', { name: 'Notifications' });
-  await expect(notificationNavigation.getByRole('link', { name: 'Channels', exact: true })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
+  const notifications = primaryNavigation.getByRole('link', { name: 'Notifications', exact: true });
+  await expect(notifications).toHaveCount(1);
+  await expect(notifications).toHaveAttribute('href', '/notifications');
+  await expect(notifications).toHaveAttribute('aria-current', 'page');
+  await expect(primaryNavigation.getByRole('button', { name: 'Notifications', exact: true })).toHaveCount(0);
+  await expect(primaryNavigation.getByRole('link', { name: 'Channels', exact: true })).toHaveCount(0);
+  await expect(primaryNavigation.getByRole('link', { name: 'Delivery history', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-page-navigation]')).toHaveCount(0);
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
@@ -233,7 +231,8 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await page.keyboard.press('Escape');
   await expect(addChannel).toBeFocused();
 
-  await notificationNavigation.getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await expect(notifications).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
   await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
   await expect(page.getByText('deploy-production')).toBeVisible();
@@ -480,29 +479,139 @@ test('shows private navbar history with independent error, retry, empty and safe
   });
 });
 
-test('keeps administrative history inaccessible to a viewer', /** Verifies toolbar and navbar visibility agree with the route guard. */ async ({
-  page,
-}) => {
-  await mockShell(page, 'VIEWER');
-  await page.route(
-    '**/api/v1/notification-channels/query**',
-    /** Supplies a viewer-visible empty channel table. */ (route) =>
-      route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } }),
-  );
-  await page.goto('/notifications');
-  await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
-  await expect(
-    page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }),
-  ).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Add channel', exact: true })).toHaveCount(0);
-  await page.locator('[data-navbar-notifications]').click();
-  await expect(
-    page.locator('section[aria-label="Notifications"]').getByRole('link', { name: 'Delivery history', exact: true }),
-  ).toHaveCount(0);
-  await page.keyboard.press('Escape');
-  await page.goto('/notifications/history');
-  await expect(page).toHaveURL(/\/$/);
-});
+for (const locale of ['en', 'de'] as const) {
+  test(`keeps delivery history in the channel toolbar (${locale})`, /** Preserves administrative history routes while removing its personal-popover shortcut. */ async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    const labels =
+      locale === 'de'
+        ? {
+            notifications: 'Benachrichtigungen',
+            navigation: 'Hauptnavigation',
+            history: 'Zustellverlauf',
+            error: 'Die Benachrichtigungsdaten konnten nicht geladen werden.',
+          }
+        : {
+            notifications: 'Notifications',
+            navigation: 'Primary navigation',
+            history: 'Delivery history',
+            error: 'Notification data could not be loaded.',
+          };
+    let failChannels = false;
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Keeps the history entry point available through channel loading failure. */ (route) =>
+        failChannels
+          ? route.fulfill({ status: 503, json: { message: 'Temporarily unavailable' } })
+          : route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+    );
+    await page.route(
+      '**/api/v1/notification-deliveries/query**',
+      /** Supplies an authorized empty history page. */ (route) =>
+        route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0, pageCount: 0 } } }),
+    );
+    await page.goto('/notifications');
+    const notifications = page
+      .getByRole('navigation', { name: labels.navigation })
+      .getByRole('link', { name: labels.notifications, exact: true });
+    const toolbar = page.locator('[data-page-toolbar]');
+    const history = toolbar.getByRole('link', { name: labels.history, exact: true });
+    await expect(history).toBeVisible();
+    await page.locator('[data-navbar-notifications]').click();
+    const popover = page.getByRole('region', { name: labels.notifications, exact: true });
+    await expect(popover).toBeVisible();
+    await expect(popover.getByRole('link', { name: labels.history, exact: true })).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath(`notifications-personal-popover-${locale}.png`),
+      animations: 'disabled',
+    });
+    await page.keyboard.press('Escape');
+    await history.click();
+    await expect(page).toHaveURL(/\/notifications\/history$/);
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    await page.reload();
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    await toolbar.getByRole('link', { name: labels.notifications, exact: true }).click();
+    await expect(page).toHaveURL(/\/notifications$/);
+    await history.click();
+    await expect(page).toHaveURL(/\/notifications\/history$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/notifications$/);
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    await page.goForward();
+    await expect(page).toHaveURL(/\/notifications\/history$/);
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    await page.goto('/notifications/history');
+    await expect(notifications).toHaveAttribute('aria-current', 'page');
+    failChannels = true;
+    await toolbar.getByRole('link', { name: labels.notifications, exact: true }).click();
+    await expect(page.getByText(labels.error, { exact: true })).toBeVisible();
+    await expect(history).toBeVisible();
+    await history.click();
+    await expect(page).toHaveURL(/\/notifications\/history$/);
+  });
+
+  for (const role of ['VIEWER', 'MANAGER'] as const) {
+    test(`keeps administrative history inaccessible to ${role} (${locale})`, /** Checks localized toolbar visibility and direct-route denial for non-administrators. */ async ({
+      page,
+      baseURL,
+    }) => {
+      await mockShell(page, role);
+      await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+      const labels =
+        locale === 'de'
+          ? {
+              notifications: 'Benachrichtigungen',
+              navigation: 'Hauptnavigation',
+              history: 'Zustellverlauf',
+              add: 'Kanal hinzufügen',
+            }
+          : {
+              notifications: 'Notifications',
+              navigation: 'Primary navigation',
+              history: 'Delivery history',
+              add: 'Add channel',
+            };
+      await page.route(
+        '**/api/v1/notification-channels/query**',
+        /** Supplies a permitted empty channel listing. */ (route) =>
+          route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } }),
+      );
+      let historyRequests = 0;
+      await page.route(
+        '**/api/v1/notification-deliveries/query**',
+        /** Records any unauthorized history request so route-guard regressions fail explicitly. */ (route) => {
+          historyRequests++;
+          return route.fulfill({ status: 403, json: { message: 'Forbidden' } });
+        },
+      );
+      await page.goto('/notifications');
+      await expect(
+        page
+          .getByRole('navigation', { name: labels.navigation })
+          .getByRole('link', { name: labels.notifications, exact: true }),
+      ).toBeVisible();
+      await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+      await expect(
+        page.locator('[data-page-toolbar]').getByRole('link', { name: labels.history, exact: true }),
+      ).toHaveCount(0);
+      await expect(page.getByRole('button', { name: labels.add, exact: true })).toHaveCount(0);
+      await page.locator('[data-navbar-notifications]').click();
+      await expect(
+        page
+          .getByRole('region', { name: labels.notifications, exact: true })
+          .getByRole('link', { name: labels.history, exact: true }),
+      ).toHaveCount(0);
+      await page.keyboard.press('Escape');
+      await page.goto('/notifications/history');
+      await expect(page).toHaveURL(/\/$/);
+      expect(historyRequests).toBe(0);
+    });
+  }
+}
 
 for (const transport of [
   { type: 'EMAIL', label: 'Email' },

@@ -10,8 +10,8 @@ description: 'Finden Sie Anwendungsziele, Status, persönliche Einstellungen und
 **Übersicht** enthält Dashboard, Workflow-Ausführungen, Issues, Pull Requests und unterstützte
 Sicherheitswarnungen.**Operationen** enthält Repositorys, Jobs und Benachrichtigungen.**Administration** enthält
 Anbieterkonten, Benutzer und Einstellungen für Systemadministratoren. Workflow-Ausführungen werden zu „Alle
-Ausführungen“, „Warten auf Genehmigung“ und „Benötigt Aufmerksamkeit“ erweitert. Die Benachrichtigungsnavigation zeigt
-Kanäle und, für Administratoren, den Lieferverlauf an.
+Ausführungen“, „Warten auf Genehmigung“ und „Benötigt Aufmerksamkeit“ erweitert. Benachrichtigungen öffnet die
+Benachrichtigungskanäle direkt, ohne Untermenü. Die Suche bietet dasselbe Navigationsziel.
 
 Die Seitenleiste bietet nur Ziele an, auf die Ihre Rolle zugreifen kann. Für Sicherheitswarnungen ist eine
 Verwaltungsberechtigung erforderlich. Durch Reduzieren der Seitenleiste bleiben gekennzeichnete Ziele erhalten.
@@ -35,8 +35,10 @@ bevor Sie sich auf die angezeigten Zählungen verlassen.
 
 Die Glocke in der App-Leiste öffnet Gerätesteuerung und bis zu fünf aktuelle, an Sie gerichtete Browser-Push-Zustellungen.
 Einträge berücksichtigen aktuelle Repository- und Sicherheitswarnungsrechte; eine leere Liste zeigt keine fremde
-Historie. Zugestellt bedeutet Annahme durch den Push-Dienst, nicht Lesen durch eine Person. Systemadministratoren
-können im selben Bereich den administrativen Zustellungsverlauf öffnen.
+Historie. Zugestellt bedeutet Annahme durch den Push-Dienst, nicht Lesen durch eine Person. Der administrative
+Zustellverlauf ist davon getrennt: Systemadministratoren öffnen ihn ausschließlich über die Schaltfläche Zustellverlauf
+in der Symbolleiste der Benachrichtigungskanäle. Der Glockenbereich enthält persönliche Benachrichtigungen und
+Gerätesteuerung.
 
 <a id="user-menu-and-footer"></a>
 

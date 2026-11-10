@@ -9,8 +9,8 @@ description: 'Find application destinations, status, personal settings, and vers
 
 **Overview** contains Dashboard, Workflow runs, Issues, Pull requests, and supported Security alerts. **Operations**
 contains Repositories, Jobs, and Notifications. **Administration** contains Provider accounts, Users, and Settings for
-system administrators. Workflow runs expands to All runs, Awaiting approval, and Needs attention; notification
-navigation exposes Channels and, for administrators, Delivery history.
+system administrators. Workflow runs expands to All runs, Awaiting approval, and Needs attention. Notifications opens
+notification channels directly, without a submenu. Search offers the same Notifications destination.
 
 The sidebar only offers destinations your role can access. Security alerts require management permission. Collapsing the
 sidebar preserves labeled destinations. On narrow screens, use the navigation control to open the sidebar. The handbook
@@ -31,8 +31,9 @@ A disconnected indicator means live updates may be stale; inspect the API and re
 
 Open the bell in the app bar for device controls and up to five recent browser-push deliveries addressed to you.
 Entries respect current repository and security-alert permissions; an empty list does not expose other users' history.
-A delivered status means the push service accepted a notification, not that a person read it. System administrators
-can open Delivery history from the same panel for administrative details.
+A delivered status means the push service accepted a notification, not that a person read it. Administrative Delivery
+history is separate: system administrators open it only through the Delivery history button in the Notifications channel
+page toolbar. The bell panel contains personal notifications and device controls.
 
 <a id="user-menu-and-footer"></a>
 

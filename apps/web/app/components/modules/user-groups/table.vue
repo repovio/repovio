@@ -1,64 +1,77 @@
 <template>
-  <QTableToolbar
-    v-model:sorting="sorting"
-    v-model:search="search"
-    class="border-b border-default p-4"
-    :sortable-fields="sortableFields"
-    shortcuts
+  <CommonTablePageFrame
+    :breadcrumbs="[
+      { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
+      { icon: 'i-lucide-users-round', label: $t('userGroups.title') },
+    ]"
+    :padded="false"
+    :title="$t('userGroups.title')"
   >
-    <template #new>
+    <template #actions>
+      <UInput
+        v-model="search"
+        class="w-full sm:w-56"
+        icon="i-lucide-search"
+        :aria-label="$t('querrykit.table.search.placeholder')"
+        :placeholder="$t('querrykit.table.search.placeholder')"
+      />
+      <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
+        <template #trigger="{ active, open, toggle }">
+          <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
+        </template>
+      </QTableSorting>
       <UButton icon="i-lucide-plus" :label="$t('userGroups.create')" @click="edit(null)" />
     </template>
-  </QTableToolbar>
-  <UAlert
-    v-if="error || actionError"
-    class="m-4"
-    color="error"
-    :title="$t(actionError ? 'userGroups.saveError' : 'userGroups.loadError')"
-  />
-  <UTable class="min-h-0 flex-1" :columns="columns" :data="items" :loading="loading" :empty="$t('userGroups.empty')">
-    <template #createdAt-cell="{ row }">
-      {{ formatDateTime(row.original.createdAt) }}
-    </template>
-    <template #actions-cell="{ row }">
-      <div class="flex justify-end gap-1">
-        <UButton
-          color="neutral"
-          icon="i-lucide-users"
-          variant="ghost"
-          :aria-label="$t('userGroups.members')"
-          :disabled="!!pending"
-          @click="showMembers(row.original)"
-        />
-        <UButton
-          color="neutral"
-          icon="i-lucide-pencil"
-          variant="ghost"
-          :aria-label="$t('userGroups.rename')"
-          :disabled="!!pending"
-          @click="edit(row.original)"
-        />
-        <UButton
-          color="error"
-          icon="i-lucide-trash-2"
-          variant="ghost"
-          :aria-label="$t('users.delete')"
-          :disabled="!!pending"
-          :loading="pending === row.original.id"
-          @click="remove(row.original)"
-        />
-      </div>
-    </template>
-  </UTable>
-  <QTablePagination
-    v-model:items-per-page="itemsPerPage"
-    v-model:page="page"
-    class="border-t border-default"
-    :total-items="totalItems"
-    shortcuts
-  />
-  <ModulesUserGroupsEditDialog v-model:open="editOpen" :group="selectedGroup" :refresh="table.refresh" />
-  <ModulesUserGroupsMembersDialog v-model:open="membersOpen" :group="selectedGroup" />
+    <UAlert
+      v-if="error || actionError"
+      class="m-4"
+      color="error"
+      :title="$t(actionError ? 'userGroups.saveError' : 'userGroups.loadError')"
+    />
+    <UTable class="min-h-0 flex-1" :columns="columns" :data="items" :loading="loading" :empty="$t('userGroups.empty')">
+      <template #createdAt-cell="{ row }">
+        {{ formatDateTime(row.original.createdAt) }}
+      </template>
+      <template #actions-cell="{ row }">
+        <div class="flex justify-end gap-1">
+          <UButton
+            color="neutral"
+            icon="i-lucide-users"
+            variant="ghost"
+            :aria-label="$t('userGroups.members')"
+            :disabled="!!pending"
+            @click="showMembers(row.original)"
+          />
+          <UButton
+            color="neutral"
+            icon="i-lucide-pencil"
+            variant="ghost"
+            :aria-label="$t('userGroups.rename')"
+            :disabled="!!pending"
+            @click="edit(row.original)"
+          />
+          <UButton
+            color="error"
+            icon="i-lucide-trash-2"
+            variant="ghost"
+            :aria-label="$t('users.delete')"
+            :disabled="!!pending"
+            :loading="pending === row.original.id"
+            @click="remove(row.original)"
+          />
+        </div>
+      </template>
+    </UTable>
+    <QTablePagination
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="page"
+      class="border-t border-default"
+      :total-items="totalItems"
+      shortcuts
+    />
+    <ModulesUserGroupsEditDialog v-model:open="editOpen" :group="selectedGroup" :refresh="table.refresh" />
+    <ModulesUserGroupsMembersDialog v-model:open="membersOpen" :group="selectedGroup" />
+  </CommonTablePageFrame>
 </template>
 
 <script setup lang="ts">

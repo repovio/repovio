@@ -1,12 +1,12 @@
 # Implementation Plan: Consistent Table Toolbars
 
-**Branch**: `codex/79-unify-table-toolbars`
-**Base**: `origin/main` at `779265ee3544e40b8717367d03725dfe6bc00751`.
+**Branch**: `79-unify-monitoring-list-toolbars-and-merge-user-groups-header-controls`
+**Base**: `origin/main` at `5f568b0a4dd92aa3dd4f5b17c9098e1289dc6f76`.
 **Feature Identifier**: `006-unify-table-toolbars` | **Date**: 2026-11-09 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/006-unify-table-toolbars/spec.md`.
 **Workspace**: Existing Codex worktree `/mnt/projects/.codex-worktrees/51ac/repovio`; initially clean.
 **Tracking**: [GitHub issue #79](https://github.com/repovio/repovio/issues/79). Issue creation and the planning
-commit/push are approved; product implementation requires separate approval.
+commit/push and implementation are approved. PR merge requires separate approval.
 
 ## Summary
 
@@ -29,16 +29,16 @@ dialogs under one owner. Reuse existing page frames and local table controls; pr
 
 ## Constitution Check
 
-| Gate                                    | Before research                     | After design                                             |
-| --------------------------------------- | ----------------------------------- | -------------------------------------------------------- |
-| Bounded scope and approved architecture | Pass: six comments only             | Pass: existing frontend structures                       |
-| Issue implementation order              | Issue #79; planning approved        | Implementation requires associated issue                 |
-| Read-only providers and authorization   | Pass: no integration changes        | Pass: preserve scoped constraints and admin gate         |
-| Secrets and durable operations          | Pass: no credential/storage changes | Pass: existing group operations unchanged                |
-| Localization, accessibility, loading    | Required acceptance criteria        | Included in UI contract and browser matrix               |
-| Focused tests and visual proof          | Required for implementation         | Existing suites plus targeted browser checks             |
-| Toolchain and coding conventions        | Preserve existing pins              | No dependency or configuration changes                   |
-| Delivery boundaries                     | Planning authorized                 | Tasks and planning commit/push approved; no product code |
+| Gate                                    | Before research                     | After design                                     |
+| --------------------------------------- | ----------------------------------- | ------------------------------------------------ |
+| Bounded scope and approved architecture | Pass: six comments only             | Pass: existing frontend structures               |
+| Issue implementation order              | Issue #79; planning approved        | Implementation requires associated issue         |
+| Read-only providers and authorization   | Pass: no integration changes        | Pass: preserve scoped constraints and admin gate |
+| Secrets and durable operations          | Pass: no credential/storage changes | Pass: existing group operations unchanged        |
+| Localization, accessibility, loading    | Required acceptance criteria        | Included in UI contract and browser matrix       |
+| Focused tests and visual proof          | Required for implementation         | Existing suites plus targeted browser checks     |
+| Toolchain and coding conventions        | Preserve existing pins              | No dependency or configuration changes           |
+| Delivery boundaries                     | Planning authorized                 | Implementation approved; merge approval pending  |
 
 No architecture exceptions. Recheck these gates during implementation; planning checks do not prove runtime behavior.
 

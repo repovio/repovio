@@ -143,6 +143,8 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
     page.getByRole('table').getByText(`${alert.repositoryOwner}/${alert.repositoryName}`, { exact: true }),
   ).toBeVisible();
   await page.getByRole('textbox', { name: 'Search alerts' }).fill('vite');
+  await expect(page.locator('[data-page-toolbar]').getByLabel('Updated from')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Filter', exact: true }).click();
   await page.getByLabel('Updated from').fill('2026-09-01');
   await expect
     .poll(
@@ -156,6 +158,8 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
         decodeURIComponent(new URL(listUrls.at(-1)!).searchParams.get('where') ?? ''),
     )
     .toContain('vite');
+  await page.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
+  await page.keyboard.press('Escape');
   await page.getByRole('link', { name: 'Vite path traversal' }).click();
   await expect(page.getByText('Upgrade the affected dependency.')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Open in provider' })).toHaveAttribute('href', alert.providerUrl);
@@ -266,3 +270,100 @@ test('shows empty and request-error states', /** Verifies shows empty and reques
   await page.getByRole('button', { name: 'Refresh' }).click();
   await expect(page.getByText('Security alerts could not be loaded.')).toBeVisible();
 });
+
+for (const [path, kind] of [
+  ['dependencies', 'DEPENDENCY'],
+  ['code', 'CODE'],
+  ['secrets', 'SECRET'],
+] as const) {
+  test(`preserves specialized alert filtering in the compact ${path} toolbar`, /** Verifies exact date/path constraints, active state, and Clear through the shared filtering surface. */ async ({
+    page,
+  }) => {
+    const urls: string[] = [];
+    const empty = { items: [], meta: { itemCount: 0, pageCount: 0, page: 1, perPage: 25 } };
+    await page.route(
+      '**/api/v1/**',
+      /** Isolates the scenario from live services. */ (route) => route.fulfill({ json: empty }),
+    );
+    await mockShell(page, 'MANAGER');
+    await page.route(
+      '**/api/v1/security-alerts/summary',
+      /** Supplies stable summary counts. */ (route) =>
+        route.fulfill({
+          json: { open: { CODE: 0, DEPENDENCY: 0, SECRET: 0 }, severity: {}, unavailableRepositories: 0 },
+        }),
+    );
+    await page.route(
+      '**/api/v1/security-alerts/filter-options',
+      /** Supplies every supported field family without network discovery. */ (route) =>
+        route.fulfill({
+          json: {
+            availability: [],
+            ecosystems: [],
+            manifests: [],
+            packages: [],
+            paths: ['src/example.ts'],
+            repositories: [],
+            rules: [],
+            scanners: [],
+            secretProviders: [],
+            secretTypes: [],
+          },
+        }),
+    );
+    await page.route(
+      /\/api\/v1\/security-alerts(?:\?.*)?$/,
+      /** Records the serialized effective constraints. */ (route) => {
+        urls.push(route.request().url());
+        return route.fulfill({ json: empty });
+      },
+    );
+    await page.goto(`/alerts/${path}`);
+    const toolbar = page.locator('[data-page-toolbar]');
+    const trigger = toolbar.getByRole('button', { name: 'Filter', exact: true });
+    await expect(trigger).toBeVisible();
+    await expect(toolbar.locator('input[type="date"]')).toHaveCount(0);
+    await expect(toolbar.getByRole('button', { name: 'Path', exact: true })).toHaveCount(0);
+    await toolbar.getByRole('textbox', { name: 'Search alerts' }).fill('retained search');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Filter', exact: true });
+    await expect(dialog).toBeVisible();
+    if (kind === 'CODE') {
+      await dialog.getByRole('button', { name: 'Path', exact: true }).click();
+      await page.getByRole('option', { name: 'src/example.ts', exact: true }).click();
+    }
+    await dialog.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
+    await dialog.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
+    await expect
+      .poll(
+        /** Reads the latest request until all bound filters are serialized. */ () =>
+          new URL(urls.at(-1)!).searchParams.get('where') ?? '',
+      )
+      .toContain('2026-09-13T23:59:59.999Z');
+    const where = JSON.parse(new URL(urls.at(-1)!).searchParams.get('where')!);
+    expect(where.AND).toEqual(
+      expect.arrayContaining([
+        { kind },
+        { providerUpdatedAt: { gte: '2026-09-01T00:00:00.000Z' } },
+        { providerUpdatedAt: { lte: '2026-09-13T23:59:59.999Z' } },
+      ]),
+    );
+    if (kind === 'CODE') expect(where.AND).toContainEqual({ location: { path: ['path'], equals: 'src/example.ts' } });
+    await expect(trigger).toHaveClass(/text-primary/);
+    await dialog.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await expect(dialog.getByLabel('Updated from', { exact: true })).toHaveValue('2026-09-01');
+    await dialog.getByRole('button', { name: 'Clear filters', exact: true }).click();
+    await expect(dialog.getByLabel('Updated from', { exact: true })).toHaveValue('');
+    await expect(dialog.getByLabel('Updated to', { exact: true })).toHaveValue('');
+    await expect
+      .poll(
+        /** Waits for cleared specialized constraints to leave the serialized query. */ () =>
+          new URL(urls.at(-1)!).searchParams.get('where') ?? '',
+      )
+      .not.toContain('providerUpdatedAt');
+    await expect(toolbar.getByRole('textbox', { name: 'Search alerts' })).toHaveValue('retained search');
+  });
+}

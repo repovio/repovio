@@ -1,5 +1,40 @@
 # Changelog
 
+## 2.3.1
+
+### Patch Changes
+
+- 779265e: paginate named browser notification recipients.
+- 1466da6: Show the pointer cursor on enabled application buttons while preserving disabled and loading control styles.
+- 71a06f7: Refresh the handbook for repository detail navigation, four-step notification channel setup, personal notifications,
+  and browser-push enrollment across all supported languages. Correct monorepo documentation ownership and complete the
+  API environment reference without modifying published archives.
+- 779265e: show names in notification summaries.
+- 19dada5: Hide invalid final timing for active Workflow Runs in dashboard and history tables, including stale cached responses.
+- 19dada5: Clear stale completion and final duration whenever queued or running Workflow Runs are synchronized.
+- 19dada5: Return unavailable final timing for previously stored active Workflow Runs before their next synchronization.
+- 19dada5: Prevent active Forgejo Workflow Runs from receiving a completion date or final duration. Reject invalid run timestamps.
+- 19dada5: Validate Workflow Run timing independently at persistence and response boundaries. Preserve valid terminal and zero durations, and hide stale active timing from Gitea and GitLab.
+- 779265e: use names in membership identities.
+- d96d3a8: Merge User Group search, sorting, and creation controls into the breadcrumb toolbar.
+- 779265e: normalize user identity names.
+- 63191f0: Open notification channels directly from one Notifications navigation link, including search and collapsed or mobile navigation.
+- 63191f0: Keep administrative notification delivery history accessible through the channel toolbar while preserving personal notifications in the navbar popover.
+- 779265e: identify account actions by personal names.
+- 779265e: verify user name fallback workflows.
+- ee08ac4: Show a read-only callback URL in the organization webhook setup form, with guidance before saving and copying after creation or selection.
+- ee08ac4: Complete the organization webhook callback guidance in every supported application locale.
+- 5f568b0: Use the three-line Tabler menu-2 icon for the sidebar menu button.
+- 779265e: search users by personal names.
+- 779265e: show names in user selectors.
+- 779265e: show safe delivery requester identities.
+- 779265e: expose safe notification recipient names.
+- d96d3a8: Move security alert path and date criteria into the shared filtering popover without changing alert query constraints.
+- d96d3a8: Move Issue and Pull Request label and updated-date controls into the filtering popover, preserving query semantics.
+- 19dada5: Derive Workflow Run duration only from valid start and completion timestamps, preventing sentinel start dates from producing excessive terminal durations.
+- 19dada5: Add regression coverage for localized terminal Workflow Run timing and active-to-terminal refreshes.
+- d96d3a8: Label updated-date filter boundaries and verify compact toolbars across screen sizes, languages, and keyboard interactions.
+
 ## 2.3.0
 
 ### Minor Changes

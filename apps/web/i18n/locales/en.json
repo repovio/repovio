@@ -554,7 +554,8 @@
     "reauthorize": "Reauthorize",
     "reauthorizationRequired": "Reauthorization required",
     "oauthCancelled": "GitLab authorization cancelled. Existing connection preserved.",
-    "oauthUnavailable": "Configure GitLab OAuth in the API environment to authorize this connection."
+    "oauthUnavailable": "Configure GitLab OAuth in the API environment to authorize this connection.",
+    "actionsFor": "Actions for {name}"
   },
   "querrykit": {
     "table": {
@@ -1231,7 +1232,12 @@
       "GITLAB": "Open group Settings > Webhooks. Use the callback URL and the same signing secret or secret token, depending on your GitLab version. Select pipeline, job, issue, and merge request events as needed. All tracked projects in this group and its subgroups are covered."
     },
     "rotationConfirm": "I will update the organization or group webhook at the provider with the new secret.",
-    "lastDelivery": "Last accepted delivery: {value}"
+    "lastDelivery": "Last accepted delivery: {value}",
+    "unsavedCallback": "Save this configuration before the provider can deliver events to this URL.",
+    "loadingCallback": "Loading callback URL…",
+    "draftError": "The callback URL could not be loaded. Retry setup.",
+    "retryDraft": "Load callback URL",
+    "savedConfigurations": "Saved configurations"
   },
   "autoRefresh": {
     "title": "Automatic refresh",

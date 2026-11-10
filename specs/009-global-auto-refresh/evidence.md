@@ -98,3 +98,15 @@ All eight tasks are complete under the implementation approval. Each substantive
 focused `repovio` patch Changeset and commit; no API, database, dependency, toolchain, server Polling, or deployment change.
 Provider authorization and synchronization behavior are preserved by existing clients; mocked/browser evidence does not
 prove live provider freshness, remote CI, or production deployment. No implementation extension hooks are configured.
+
+## Current-main integration
+
+Main advanced to `7349aae` (provider actions / organization webhook setup, PR #92) during implementation. Merged this
+upstream commit without rewriting task commits. All 17 locale conflicts were resolved structurally: assert our catalog
+minus the new autoRefresh block equals the merge base, retain the complete upstream catalog, then append exactly that
+refresh block. Compared with current main, every locale has only the six refresh lines added. No upstream API/schema
+changes enter this feature's PR diff.
+
+On the integrated source: 31 web unit suites / 151 tests, web typecheck, full web ESLint, 720-file documentation check,
+and production web build pass. All 32 feature browser cases pass again against a fresh integrated production preview.
+The merge commit records integration/evidence only; it adds no new feature behavior or package release entry.

@@ -95,3 +95,8 @@ CI status. Production deployment and Provider writes are outside this feature.
 - T006: 12 populated long-pattern layout cases passed in both locales/themes and all three widths. Focused regression
   verifies empty-pattern validation, failed create, full-lifetime pending state, successful create, cancellation, and
   confirmed removal. Invalid-field recovery waits for real validation completion. Web lint/typecheck passed.
+
+- T007: 13 focused member cases passed: 12 locale/theme/width layouts with long identities, plus actual remote search,
+  pagination, failed assignment, held successful assignment/role change, cancellation, and confirmed removal. Invisible
+  native select bridge inputs are excluded from visible-control geometry checks. Screenshot reviewed at 1102 px.
+  Existing seven role/access/lazy-metadata/user-discovery scenarios passed; web typecheck passed.

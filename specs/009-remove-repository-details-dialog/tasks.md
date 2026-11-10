@@ -110,7 +110,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       those tasks start, reusing current keys when meanings match. Update
       `apps/web/tests/e2e/repository-visual.spec.ts` and `repository-settings.spec.ts` for primary/secondary navigation,
       General presentation, retention behavior, focus, and existing permissions. Verify desktop/mobile theme/locale evidence.
-- [ ] T006 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/workflow-filters-card.vue`: visible
+- [x] T006 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/workflow-filters-card.vue`: visible
       labels, flexible `min-w-0` pattern field, full-width controls, aligned text-plus-icon add action on wide screens,
       stacked fields/actions below the existing medium breakpoint, consistent spacing, and contained table overflow with
       pinned actions. Retain validation, allow/deny semantics, loading/errors, and confirmations. Add focused

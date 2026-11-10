@@ -53,6 +53,8 @@ export async function mockRefreshApplication(page: Page) {
           authors: [],
           labels: [],
           milestones: [],
+          manifests: [],
+          secretProviders: [],
           repositories: [],
           availability: [],
           ecosystems: [],

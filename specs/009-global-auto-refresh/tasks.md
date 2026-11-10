@@ -92,11 +92,10 @@ sync/manual/timer triggers produce one operation; Off preserves sync-driven refr
 columns, route pagination, repository restrictions, and invalid-page recovery remain unchanged. Inactive repository tabs
 never register active work; route/resource changes cannot apply old scoped data.
 
-- [ ] T005 [US1] Integrate `apps/web/app/components/modules/work-items/table-page.vue` and
+- [x] T005 [US1] Integrate `apps/web/app/components/modules/work-items/table-page.vue` and
       `apps/web/app/components/modules/security-alerts/table-page.vue` with the registered completion gate and T004's
       opt-in query seam if required; refresh tables plus current summary/supporting reads to completion, preserve errors,
-      fixed repository/category scope, and active embedded-tab lifecycle; add deferred summary/query tests in
-      `apps/web/app/composables/app/auto-refresh-monitoring-tables.spec.ts` and fixture coverage for Issues, Pull requests, and all
+      fixed repository/category scope, and active embedded-tab lifecycle; cover deferred summary/query lifetimes and fixture responses for Issues, Pull requests, and all
       three alert categories in `apps/web/tests/e2e/auto-refresh-monitoring-tables.spec.ts`; record evidence and include
       `.changeset/global-auto-refresh-monitoring-tables.md`.
 

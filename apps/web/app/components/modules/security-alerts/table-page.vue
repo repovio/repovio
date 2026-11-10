@@ -24,8 +24,8 @@
           icon="i-lucide-refresh-cw"
           variant="soft"
           :aria-label="$t('dashboard.refresh')"
-          :loading="loading || supportingLoading"
-          @click="refreshAll"
+          :loading="refreshLoading"
+          @click="refreshView"
         />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
@@ -175,6 +175,7 @@ import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 import { defineProps, onScopeDispose } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
+import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
 import type {
@@ -447,6 +448,7 @@ const staticFilter = computed(
   }),
 );
 const table = useTable({
+  serializeReads: true,
   columnDefinition,
   defaultItemsPerPage: 25,
   endpoint: 'security-alerts',
@@ -472,6 +474,10 @@ const {
   sorting,
   totalItems,
 } = table;
+const { refresh: refreshView, loading: refreshLoading } = useAutoRefresh(
+  refreshAll,
+  /** Include table and supporting read lifetimes. */ () => loading.value || supportingLoading.value,
+);
 const summaryMetrics = computed(
   /** Derives summary metrics from the current reactive dependencies. */ () => [
     { icon: kindIcon.value, label: t('securityAlerts.open'), value: String(summary.value?.open[props.kind] ?? '—') },
@@ -514,7 +520,7 @@ async function loadSupportingData(): Promise<void> {
 }
 /** Refreshes all. */
 async function refreshAll(): Promise<void> {
-  await Promise.all([refresh(), loadSupportingData()]);
+  await Promise.allSettled([refresh(), loadSupportingData()]);
 }
 /** Maps alert severity to the corresponding UI color. */
 function severityColor(severity: SecurityAlertSeverity): 'error' | 'warning' | 'info' | 'neutral' {

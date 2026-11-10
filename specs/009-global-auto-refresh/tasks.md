@@ -153,7 +153,7 @@ controls remain separate. Run focused component/browser checks and affected web 
 
 **Purpose**: Prove the integrated feature and preserve unrelated behaviors.
 
-- [ ] T008 Execute `specs/009-global-auto-refresh/quickstart.md`, compose shared fixture helpers and cross-route acceptance
+- [x] T008 Execute `specs/009-global-auto-refresh/quickstart.md`, compose shared fixture helpers and cross-route acceptance
       in `apps/web/tests/e2e/auto-refresh.spec.ts` as needed, and record commands/results, screenshots, requirement coverage,
       issue/commit references, and limitations in `specs/009-global-auto-refresh/evidence.md`; run all new focused suites,
       affected existing toolbar/dashboard/query/repository-tab/localization regressions, web test/lint/typecheck/build,
@@ -219,7 +219,7 @@ These examples describe scheduling possibilities; they do not authorize addition
 ## Implementation Strategy
 
 1. Issue/planning-commit approval received; issue #91 and its branch are established in the existing worktree.
-   Commit/push the reviewed planning artifacts, then obtain separate implementation approval.
+   Planning commit `742fd9e` is pushed; implementation approval received on 2026-11-10.
 2. Complete T001–T005 for the independently verified US1 MVP. This checkpoint does not end the approved full scope.
 3. Complete T006 and T007 for global configuration and consistent compact manual controls.
 4. Complete T008, repair scoped failures, and record actual evidence before preparing the feature PR.

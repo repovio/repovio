@@ -7,8 +7,8 @@ Use synthetic authenticated API and socket fixtures from the existing web E2E su
 real providers, or production timing. Start the local web app with `corepack pnpm --dir apps/web dev` and use the existing
 Playwright configuration/base URL conventions.
 
-This is a future implementation validation guide. The tests named below must be authored during implementation; none are
-claimed to exist or pass yet.
+The implementation and named acceptance suites are present. See [evidence.md](evidence.md) for actual results and
+pre-existing regression limitations. This guide remains the repeatable validation procedure.
 
 ## Focused automated proof
 

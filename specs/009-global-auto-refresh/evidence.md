@@ -45,3 +45,56 @@ Graphify warns SQL extraction lacks tree_sitter_sql; existing graph remains usab
 - T006: Global navbar preference complete in all 17 locales. Three preference/locale unit tests and eight EN/DE × 390/1440 × light/dark browser cases pass, including native radio selection, Escape/focus return, persisted choice, reload, Off for five simulated minutes, and no page overflow. All eight screenshots inspected; review montage saved under the task visualization directory as auto-refresh/navbar-matrix.png. Web lint/typecheck/docs and stable formatting pass. Browser cookie setup now derives the configured base URL; two representative cases rerun successfully.
 
 - T007: Common icon-only refresh button replaces all five host implementations across nine routes. Ten real-component/cadence/pending browser cases and 19 existing monitoring regressions pass. All nine tooltip/focus screenshots inspected in auto-refresh/controls-matrix.png. Existing ambiguous Refresh selectors now use exact names to distinguish the navbar preference. Browser integration replaces mock-only component coverage. Web lint/typecheck/docs, stable formatting and production build pass.
+
+## Integrated acceptance (T008)
+
+- `corepack pnpm --dir apps/web test`: 30 files / 145 tests pass.
+- Web typecheck, `corepack pnpm exec eslint apps/web --max-warnings=0`, declaration documentation (718 files), 21 guideline
+  regression tests, canonical formatting and whitespace checks pass. Scoped formatting is byte-stable on its second pass.
+- `corepack pnpm --dir apps/web build`: production build passes. No application source changed after this build.
+- Against the production preview: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3017 corepack pnpm --dir apps/web e2e auto-refresh
+--workers=3 --output=/tmp/repovio91-production-results`: all 32 feature browser cases pass.
+- Coverage includes every interval and Off, persisted/reloaded choices, all nine routes, real visible row updates with
+  unchanged search/query, real browser offline events, simulated document visibility events, one catch-up, active scoped
+  repository tabs/disposal, and real Socket.IO protocol sync-completion invalidation while Off. No sync/provider writes.
+- Manual controls compared on all nine routes in English/German at 390/1440 px, with compact light/wide dark themes;
+  identical computed styles, localized names/tooltips, keyboard focus, and no new viewport overflow. All 36 production
+  control screenshots inspected, plus eight preference theme/locale/width screenshots. Copies and montage are retained in
+  the task visualization directory under `auto-refresh/production-controls-matrix.png` and `auto-refresh/navbar-matrix.png`.
+- Nineteen existing dashboard/approval/needs-attention/work-item/security browser regressions pass.
+- Broader repository/navigation/toolbar/localization run: 69 of 73 initially passed. A selector coupled to Nuxt UI's
+  `leadingIcon` slot was replaced with the exact localized manual Refresh accessible name; the affected German 1440 px
+  toolbar case passes three production repeats. An initial row-navigation failure also occurred on the baseline cold
+  server, then passed on the warm baseline and three current production repeats. No navigation implementation changed.
+
+## Existing regression limits
+
+Two independent Repository tests fail identically against the unchanged `01dd05c` baseline in a disposable archive:
+
+1. `repository-navigation.spec.ts:105`: brand-link test expects text `Repovio`, while the existing brand renders an image
+   with an accessible name and empty text content.
+2. `repository-navigation.spec.ts:430`: after removing a webhook, the existing dialog does not show the expected
+   `Not configured` text. Reproduced on the warmed baseline after the initial cold-server run.
+
+Baseline evidence logs: `/tmp/repovio91-baseline-viewer.log` and `/tmp/repovio91-baseline-warm.log`; the original broad
+run is `/tmp/repovio91-final-regressions.log`. These are outside the refresh implementation; no unrelated product changes
+or weakened assertions were made. The complete existing browser suite is therefore not claimed green.
+
+The new exact-boundary test initially used a running clock and could drift by real action time; freezing the clock before
+selecting a cadence proves the exact deadline without tolerance. The socket test initially expected the wrong existing
+status label; it now asserts `Fetching workflows from provider`. Both corrected tests pass in production.
+
+## Requirement reconciliation
+
+| Requirements                           | Actual evidence                                                                                                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| FR-001, FR-004, FR-005, FR-009; SC-001 | Nine-route adapters, visible row/search update, active Repository tab scope/disposal, zero write capture                |
+| FR-002, FR-003; SC-002                 | Every cadence at exact deadlines, Pinia storage failure/validation tests, navbar persistence/reload and five-minute Off |
+| FR-006, FR-007; SC-003                 | Real Query Kit transport concurrency/cancellation, delayed siblings, offline/visibility resume, fake-clock scheduler    |
+| FR-008, FR-010; SC-004, SC-005         | Shared control in 36 real host screenshots, eight navbar matrices, keyboard/focus tests, 17-locale key coverage         |
+| FR-011                                 | Synthetic Socket.IO protocol completion event refreshes the workflow table while Off                                    |
+
+All eight tasks are complete under the implementation approval. Each substantive implementation increment has its own
+focused `repovio` patch Changeset and commit; no API, database, dependency, toolchain, server Polling, or deployment change.
+Provider authorization and synchronization behavior are preserved by existing clients; mocked/browser evidence does not
+prove live provider freshness, remote CI, or production deployment. No implementation extension hooks are configured.

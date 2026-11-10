@@ -79,7 +79,7 @@ specs/009-global-auto-refresh/
 └── tasks.md
 ```
 
-Task generation was approved on 2026-11-10; [tasks.md](tasks.md) records the ordered implementation work.
+Task generation and implementation were approved on 2026-11-10; [tasks.md](tasks.md) records the ordered implementation work.
 `.specify/feature.json` selects this feature locally.
 The issue branch is established in the existing worktree. Setup's `BRANCH` output identifies the feature context.
 

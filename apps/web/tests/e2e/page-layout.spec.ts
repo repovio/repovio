@@ -527,10 +527,7 @@ for (const locale of ['en', 'de']) {
             await page.reload();
             await expect(page.locator('html')).toHaveClass(new RegExp(theme));
             await expect(
-              actions
-                .locator('button[aria-label]')
-                .filter({ has: page.locator('[data-slot="leadingIcon"]') })
-                .first(),
+              actions.getByRole('button', { name: locale === 'de' ? 'Aktualisieren' : 'Refresh', exact: true }),
             ).toBeVisible();
             await expect(actions.locator('input').first()).toBeVisible();
             await page.screenshot({ path: testInfo.outputPath(`issues-${theme}.png`), fullPage: true });

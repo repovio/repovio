@@ -4,7 +4,7 @@
 [UI contract](contracts/ui.md), and [validation guide](quickstart.md).
 **Approval**: Task generation and issue/planning-commit approval received on 2026-11-10.
 **Issue**: [#83](https://github.com/repovio/repovio/issues/83).
-**Branch**: `codex/83-website-release-notes`, reusing the existing Codex worktree. Implementation requires separate approval.
+**Branch**: `codex/83-website-release-notes`, reusing the existing Codex worktree. Implementation approved on 2026-11-10; merge and deployment remain separately gated.
 **Tests**: Required by the specification and repository rules; each behavior increment includes its focused tests.
 **Organization**: Seven coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
 
@@ -27,7 +27,7 @@
 
 **Purpose**: Confirm approved feature context and the website validation baseline without toolchain changes.
 
-- [ ] T001 Verify `specs/007-website-release-notes/{spec,plan,tasks}.md` resolve through `.specify/feature.json`; after issue
+- [x] T001 Verify `specs/007-website-release-notes/{spec,plan,tasks}.md` resolve through `.specify/feature.json`; after issue
       association and planning-commit approval, confirm the issue checklist matches these IDs and the selected task branch
       reuses this worktree; inspect `apps/website/package.json`, `docs/coding-guidelines.md`, and current CI/check commands;
       run the smallest website baseline checks and record failures and environment prerequisites in

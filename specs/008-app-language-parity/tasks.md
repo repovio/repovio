@@ -76,7 +76,7 @@ navigate representative authorized screens. Expected set is all 13 website codes
 
 ### Catalogs, registration, and contract tests
 
-- [ ] T003 [US1] Add complete `apps/web/i18n/locales/{zh-CN,hi,ar,bn,pt-BR,id,ur,ru,ja}.json` catalogs from the current English
+- [x] T003 [US1] Add complete `apps/web/i18n/locales/{zh-CN,hi,ar,bn,pt-BR,id,ur,ru,ja}.json` catalogs from the current English
       reference; register them in `apps/web/shared/locales.ts`, extend `apps/web/app/utils/locales.ts`, and add
       `apps/web/public/flags/{cn,in,sa,bd,br,id,pk,ru,jp}.svg` with existing MIT attribution; expand
       `apps/web/app/i18n/locales.spec.ts` to derive all shipped entries, compare the website registry at

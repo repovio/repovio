@@ -17,26 +17,6 @@
         :aria-label="$t('workItems.search')"
         :placeholder="$t('workItems.searchPlaceholder')"
       />
-      <USelectMenu
-        v-model="selectedLabels"
-        multiple
-        class="min-w-0 flex-1 basis-40 sm:w-40 sm:flex-none"
-        :items="filterOptions.labels"
-        :placeholder="$t('workItems.labels')"
-        :aria-label="$t('workItems.labels')"
-      />
-      <UInput
-        v-model="updatedFrom"
-        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
-        type="date"
-        :aria-label="$t('workItems.updatedFrom')"
-      />
-      <UInput
-        v-model="updatedTo"
-        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
-        type="date"
-        :aria-label="$t('workItems.updatedTo')"
-      />
       <div class="flex flex-wrap items-center gap-2">
         <UButton
           color="neutral"
@@ -51,11 +31,32 @@
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
           </template>
         </QTableSorting>
-        <QTableFiltering v-model:filtering="filtering" :fields="visibleFilterFields" shortcuts>
-          <template #trigger="{ active, open, toggle }">
-            <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
-          </template>
-        </QTableFiltering>
+        <CommonTableFiltering
+          v-model:filtering="filtering"
+          :fields="visibleFilterFields"
+          :specialized-active="selectedLabels.length > 0 || !!updatedFrom || !!updatedTo"
+          @clear-specialized="clearSpecializedFilters"
+        >
+          <USelectMenu
+            v-model="selectedLabels"
+            multiple
+            class="w-full min-w-0 sm:col-span-2"
+            :items="filterOptions.labels"
+            :placeholder="$t('workItems.labels')"
+            :aria-label="$t('workItems.labels')"
+          />
+          <UFormField class="min-w-0" :label="$t('workItems.updatedFrom')">
+            <UInput
+              v-model="updatedFrom"
+              class="w-full min-w-0"
+              type="date"
+              :aria-label="$t('workItems.updatedFrom')"
+            />
+          </UFormField>
+          <UFormField class="min-w-0" :label="$t('workItems.updatedTo')">
+            <UInput v-model="updatedTo" class="w-full min-w-0" type="date" :aria-label="$t('workItems.updatedTo')" />
+          </UFormField>
+        </CommonTableFiltering>
         <QTableOptions
           v-model:column-order="columnOrder"
           v-model:column-pinning="columnPinning"
@@ -498,6 +499,13 @@ async function loadSupportingData(): Promise<void> {
 /** Refreshes all. */
 async function refreshAll(): Promise<void> {
   await Promise.all([refresh(), loadSupportingData()]);
+}
+
+/** Clears feature-owned filters while preserving search and structured filter ownership. */
+function clearSpecializedFilters(): void {
+  selectedLabels.value = [];
+  updatedFrom.value = '';
+  updatedTo.value = '';
 }
 
 /** Remove a dashboard preset and its table constraints. */

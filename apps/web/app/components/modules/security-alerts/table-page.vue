@@ -18,26 +18,6 @@
         :aria-label="$t('securityAlerts.search')"
         :placeholder="$t('securityAlerts.search')"
       />
-      <USelectMenu
-        v-if="kind === 'CODE'"
-        v-model="selectedPath"
-        class="min-w-0 flex-1 basis-40 sm:w-40 sm:flex-none"
-        :aria-label="$t('securityAlerts.columns.path')"
-        :items="filterOptions.paths"
-        :placeholder="$t('securityAlerts.columns.path')"
-      />
-      <UInput
-        v-model="updatedFrom"
-        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
-        type="date"
-        :aria-label="$t('workItems.updatedFrom')"
-      />
-      <UInput
-        v-model="updatedTo"
-        class="min-w-0 flex-1 basis-36 sm:w-36 sm:flex-none"
-        type="date"
-        :aria-label="$t('workItems.updatedTo')"
-      />
       <div class="flex flex-wrap items-center gap-2">
         <UButton
           color="neutral"
@@ -52,11 +32,32 @@
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
           </template>
         </QTableSorting>
-        <QTableFiltering v-model:filtering="filtering" :fields="visibleFilterFields" shortcuts>
-          <template #trigger="{ active, open, toggle }">
-            <CommonTablePopoverTrigger kind="filtering" :active="active" :open="open" :toggle="toggle" />
-          </template>
-        </QTableFiltering>
+        <CommonTableFiltering
+          v-model:filtering="filtering"
+          :fields="visibleFilterFields"
+          :specialized-active="!!selectedPath || !!updatedFrom || !!updatedTo"
+          @clear-specialized="clearSpecializedFilters"
+        >
+          <USelectMenu
+            v-if="kind === 'CODE'"
+            v-model="selectedPath"
+            class="w-full min-w-0 sm:col-span-2"
+            :aria-label="$t('securityAlerts.columns.path')"
+            :items="filterOptions.paths"
+            :placeholder="$t('securityAlerts.columns.path')"
+          />
+          <UFormField class="min-w-0" :label="$t('workItems.updatedFrom')">
+            <UInput
+              v-model="updatedFrom"
+              class="w-full min-w-0"
+              type="date"
+              :aria-label="$t('workItems.updatedFrom')"
+            />
+          </UFormField>
+          <UFormField class="min-w-0" :label="$t('workItems.updatedTo')">
+            <UInput v-model="updatedTo" class="w-full min-w-0" type="date" :aria-label="$t('workItems.updatedTo')" />
+          </UFormField>
+        </CommonTableFiltering>
         <QTableOptions
           v-model:column-order="columnOrder"
           v-model:column-pinning="columnPinning"
@@ -409,6 +410,13 @@ const visibleFilterFields = computed(
         !props.repositoryId || !['repositoryId', 'repository.providerAccount.providerType'].includes(field.value),
     ),
 );
+/** Clears only the alert-specific criteria; search and mandatory scope remain unchanged. */
+function clearSpecializedFilters(): void {
+  selectedPath.value = undefined;
+  updatedFrom.value = '';
+  updatedTo.value = '';
+}
+
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => ({
     AND: [

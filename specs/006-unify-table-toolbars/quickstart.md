@@ -1,6 +1,6 @@
 # Validation Guide: Consistent Table Toolbars
 
-These steps validate a future implementation. They have not been executed as runtime acceptance during planning.
+These steps reproduce feature validation. See [evidence.md](evidence.md) for observed results and baseline exceptions.
 
 ## Prerequisites
 

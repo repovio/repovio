@@ -460,3 +460,46 @@ test('Repository section links restore direct destinations and browser history',
   await page.reload();
   await expect(page.locator('tbody')).toContainText('Build repository-1');
 });
+
+for (const section of ['issues', 'pull-requests', 'security-alerts?kind=CODE']) {
+  test(`keeps Repository scope in embedded ${section} filtering`, /** Verifies the moved criteria use the local toolbar and cannot broaden Repository or Provider scope. */ async ({
+    page,
+  }) => {
+    await mockRepositoryApplication(page, 'MANAGER');
+    const urls: string[] = [];
+    page.on(
+      'request',
+      /** Captures effective scoped queries without replacing the existing fixture adapter. */ (request) => {
+        if (/\/api\/v1\/(issues|pull-requests|security-alerts)\?/.test(request.url())) urls.push(request.url());
+      },
+    );
+    await page.goto(`/repositories/repository-1/${section}`);
+    const local = page.locator('[data-table-toolbar]');
+    await expect(local).toHaveCount(1);
+    await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+    await local.getByRole('button', { name: 'Filter', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Filter', exact: true });
+    await dialog.getByRole('combobox', { name: 'Select field' }).click();
+    await expect(page.getByRole('option', { name: 'Repository', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('option', { name: 'Provider', exact: true })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await dialog.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
+    await expect
+      .poll(
+        /** Reads the effective request until the moved date constraint arrives. */ () =>
+          new URL(urls.at(-1)!).searchParams.get('where') ?? '',
+      )
+      .toContain('2026-09-01T00:00:00.000Z');
+    expect(new URL(urls.at(-1)!).searchParams.get('where')).toContain('repository-1');
+    await dialog.getByRole('button', { name: 'Clear filters', exact: true }).click();
+    await expect
+      .poll(
+        /** Waits for the cleared date while preserving mandatory constraints. */ () =>
+          new URL(urls.at(-1)!).searchParams.get('where') ?? '',
+      )
+      .not.toContain('providerUpdatedAt');
+    expect(new URL(urls.at(-1)!).searchParams.get('where')).toContain('repository-1');
+    if (section.startsWith('security-alerts'))
+      expect(new URL(urls.at(-1)!).searchParams.get('where')).toContain('CODE');
+  });
+}

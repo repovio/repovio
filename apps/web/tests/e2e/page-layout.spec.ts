@@ -388,7 +388,7 @@ test('queues workflow retrieval from the repository details dialog', /** Verifie
 async function mockToolbarPages(page: Page): Promise<void> {
   await mockApplication(page);
   await page.route(
-    /\/api\/v1\/(?:issues|pull-requests|security-alerts)(?:\?.*)?$/,
+    /\/api\/v1\/(?:issues|pull-requests|security-alerts|user-groups)(?:\?.*)?$/,
     /** Supplies the mocked response for the intercepted request. */ (route) => route.fulfill({ json: emptyPage }),
   );
   await page.route(
@@ -573,11 +573,12 @@ test('operates wrapped filters and preserves refresh loading until every request
   const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
   await expect(refresh).toBeEnabled();
   await toolbar.getByRole('textbox', { name: 'Search work items' }).fill('mobile');
-  await toolbar.getByRole('button', { name: 'Labels', exact: true }).click();
+  await toolbar.getByRole('button', { name: 'Filter', exact: true }).click();
+  await page.getByRole('button', { name: 'Labels', exact: true }).click();
   await page.getByRole('option', { name: 'Bug', exact: true }).click();
   await page.keyboard.press('Escape');
-  await toolbar.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
-  await toolbar.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
+  await page.getByLabel('Updated from', { exact: true }).fill('2026-09-01');
+  await page.getByLabel('Updated to', { exact: true }).fill('2026-09-13');
   await expect
     .poll(
       /** Evaluates `requestedUrls.at(-1) ?? ''` when expect.poll invokes this callback. */ () =>
@@ -592,6 +593,10 @@ test('operates wrapped filters and preserves refresh loading until every request
     .toContain('2026-09-13T23:59:59.999Z');
   expect(decodeURIComponent(requestedUrls.at(-1)!)).toContain('bug');
 
+  await page.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Filter', exact: true })).toBeHidden();
+  await expect(toolbar.getByRole('button', { name: 'Filter', exact: true })).toBeFocused();
   for (const name of ['Sort', 'Filter', 'Table options']) {
     const trigger = toolbar.getByRole('button', { name, exact: true });
     await trigger.focus();
@@ -620,6 +625,17 @@ test('operates wrapped filters and preserves refresh loading until every request
     await expect(popover).toBeHidden();
     await expect(trigger).toBeFocused();
   }
+  await toolbar.getByRole('button', { name: 'Filter', exact: true }).click();
+  const combinedFilters = page.getByRole('dialog', { name: 'Filter', exact: true });
+  await combinedFilters.getByRole('button', { name: 'Clear filters', exact: true }).click();
+  await expect(combinedFilters.getByRole('button', { name: 'Remove filter' })).toHaveCount(0);
+  await expect(combinedFilters.getByLabel('Updated from', { exact: true })).toHaveValue('');
+  await expect(combinedFilters.getByLabel('Updated to', { exact: true })).toHaveValue('');
+  await expect(toolbar.getByRole('textbox', { name: 'Search work items' })).toHaveValue('mobile');
+  await combinedFilters.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
+  await page.keyboard.press('Escape');
+  await expect(combinedFilters).toBeHidden();
+  await expect(toolbar.getByRole('button', { name: 'Filter', exact: true })).toBeFocused();
   holdSummary = true;
   await refresh.click();
   await expect
@@ -836,4 +852,79 @@ for (const locale of ['en', 'de'] as const) {
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`notifications-mobile-${locale}.png`), animations: 'disabled' });
   });
+}
+
+for (const locale of ['en', 'de']) {
+  for (const width of [390, 1065, 1440]) {
+    test(`matches the six marked toolbars at ${width}px in ${locale}`, /** Proves compact headers, visible controls, themes, popover bounds, and keyboard access across the requested viewports. */ async ({
+      page,
+      context,
+    }, testInfo) => {
+      test.setTimeout(120_000);
+      await context.addCookies([{ name: 'repovio-locale', value: locale, url: testInfo.project.use.baseURL! }]);
+      await page.setViewportSize({ width, height: width === 1065 ? 1134 : width === 390 ? 844 : 900 });
+      await mockToolbarPages(page);
+      const filterName = locale === 'de' ? 'Filtern' : 'Filter';
+      const modeName = locale === 'de' ? 'Filtermodus wechseln' : 'Toggle filter mode';
+      for (const theme of ['light', 'dark']) {
+        await page.addInitScript(
+          /** Sets a deterministic theme before the next navigation. */ (value) =>
+            localStorage.setItem('nuxt-color-mode', value),
+          theme,
+        );
+        for (const path of [
+          '/issues',
+          '/pull-requests',
+          '/alerts/dependencies',
+          '/alerts/code',
+          '/alerts/secrets',
+          '/admin/user-groups',
+        ]) {
+          await page.goto(path);
+          const toolbar = page.locator('[data-page-toolbar]');
+          await expect(toolbar).toBeVisible({ timeout: 15_000 });
+          await expect(toolbar).toHaveCount(1);
+          await expect(page.locator('html')).toHaveClass(new RegExp(theme));
+          await expectToolbarControls(page, width);
+          await expect(toolbar.locator('input[type="date"]')).toHaveCount(0);
+          await expect(toolbar.getByRole('textbox')).toHaveCount(1);
+          await expect(page.locator('.qk-table-toolbar-search')).toHaveCount(0);
+          const name = path.slice(1).replaceAll('/', '-');
+          await page.screenshot({ path: testInfo.outputPath(`${name}-${theme}.png`), animations: 'disabled' });
+          if (path === '/admin/user-groups') {
+            await expect(
+              toolbar.getByRole('button', { name: locale === 'de' ? 'Neue Gruppe' : 'New group', exact: true }),
+            ).toBeVisible();
+            continue;
+          }
+          const trigger = toolbar.getByRole('button', { name: filterName, exact: true });
+          await trigger.focus();
+          await page.keyboard.press('Shift+F');
+          const dialog = page.getByRole('dialog', { name: filterName, exact: true });
+          await expect(dialog).toBeVisible();
+          await expect(dialog.locator('input[type="date"]')).toHaveCount(2);
+          await expect
+            .poll(
+              /** Checks that the portaled criteria remain inside the viewport. */ () =>
+                dialog.evaluate(
+                  /** Reads popover bounds and its scrollable content width. */ (element) => {
+                    const box = element.getBoundingClientRect();
+                    return box.left >= 0 && box.right <= innerWidth && element.scrollWidth <= element.clientWidth;
+                  },
+                ),
+            )
+            .toBe(true);
+          if (path === '/issues' || path === '/alerts/code')
+            await page.screenshot({
+              path: testInfo.outputPath(`${name}-filters-${theme}.png`),
+              animations: 'disabled',
+            });
+          await dialog.getByRole('button', { name: modeName, exact: true }).focus();
+          await page.keyboard.press('Escape');
+          await expect(dialog).toBeHidden();
+          await expect(trigger).toBeFocused();
+        }
+      }
+    });
+  }
 }

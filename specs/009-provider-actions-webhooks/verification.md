@@ -1,0 +1,28 @@
+# Verification: Provider Account Actions and Webhook Setup
+
+## T001 and T002: Setup and foundation
+
+- Implementation approved on 2026-11-10 for issue #89; existing worktree and branch reused at planning commit ea4d969.
+- Spec Kit resolves feature 009 with tasks and all 16 requirements checklist items checked.
+- Node.js 26.13.0 and Corepack pnpm 11.28.9 verified. Frozen offline installation succeeded without lockfile changes.
+- Existing ignore rules cover dependencies, generated clients, build/test/browser output and local Graphify metadata.
+- Baseline callback uses server PUBLIC_URL and database UUID. Existing primary key accepts explicit UUID insertion;
+  administrator/account authorization and insertion-only uniqueness constraints remain the implementation seams.
+- Local disposable PostgreSQL container repovio-89-test uses loopback port 15891 and database repovio_test.
+- Prisma client generation requires DATABASE_URL and SHADOW_DATABASE_URL; supplied only synthetic local test values.
+- Nested package scripts discover a global pnpm 10; use an isolated PATH shim forwarding to Corepack pnpm 11.28.9.
+- Local Nuxt dev server on port 3091; Playwright Chromium available. First cold-start browser attempt timed out before
+  navigation; rerun after startup separates initialization delay from feature failures.
+- T003 test changed first to require the missing account action trigger; failing output retained in local test artifacts.
+
+Application/API acceptance results and task commits are recorded below as implementation progresses.
+
+## T003: Provider account action menu
+
+- Red test confirmed the old row exposed three buttons instead of one.
+- Six provider/webhook browser scenarios passed; additional all-provider capability/pending scenario passed.
+- Nuxt web typecheck, focused ESLint, and documentation coverage passed.
+- Browser regression found modal dismissal lost row focus; menu now restores live trigger focus before opening modal.
+- Inspected provider-account-actions.png: compact labeled entries and separated destructive Delete.
+- API baseline: 18 real PostgreSQL integration tests passed with synthetic authentication and provider adapters.
+- Added action labels across existing supported locales to preserve language parity.

@@ -554,7 +554,8 @@
     "reauthorize": "Повторно авторизовать",
     "reauthorizationRequired": "Требуется повторная авторизация",
     "oauthCancelled": "Авторизация GitLab отменена. Существующее подключение сохранено.",
-    "oauthUnavailable": "Настройте GitLab OAuth в окружении API, чтобы авторизовать это подключение."
+    "oauthUnavailable": "Настройте GitLab OAuth в окружении API, чтобы авторизовать это подключение.",
+    "actionsFor": "Действия для {name}"
   },
   "querrykit": {
     "table": {

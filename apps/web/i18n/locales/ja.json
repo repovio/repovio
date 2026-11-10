@@ -554,7 +554,8 @@
     "reauthorize": "再認証",
     "reauthorizationRequired": "再認証が必要",
     "oauthCancelled": "GitLab の認可をキャンセルしました。既存の接続は保持されています。",
-    "oauthUnavailable": "この接続を認可するには、API 環境に GitLab OAuth を設定してください。"
+    "oauthUnavailable": "この接続を認可するには、API 環境に GitLab OAuth を設定してください。",
+    "actionsFor": "{name} の操作"
   },
   "querrykit": {
     "table": {

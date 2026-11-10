@@ -554,7 +554,8 @@
     "reauthorize": "Opnieuw autoriseren",
     "reauthorizationRequired": "Opnieuw autoriseren vereist",
     "oauthCancelled": "GitLab-autorisatie geannuleerd. Bestaande verbinding behouden.",
-    "oauthUnavailable": "Configureer GitLab OAuth in de API-omgeving om deze verbinding te autoriseren."
+    "oauthUnavailable": "Configureer GitLab OAuth in de API-omgeving om deze verbinding te autoriseren.",
+    "actionsFor": "Acties voor {name}"
   },
   "querrykit": {
     "table": {

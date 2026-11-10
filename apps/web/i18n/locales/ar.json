@@ -554,7 +554,8 @@
     "reauthorize": "إعادة التفويض",
     "reauthorizationRequired": "تلزم إعادة التفويض",
     "oauthCancelled": "أُلغي تفويض GitLab. تم الاحتفاظ بالاتصال الحالي.",
-    "oauthUnavailable": "أعدّ GitLab OAuth في بيئة API لتفويض هذا الاتصال."
+    "oauthUnavailable": "أعدّ GitLab OAuth في بيئة API لتفويض هذا الاتصال.",
+    "actionsFor": "إجراءات {name}"
   },
   "querrykit": {
     "table": {

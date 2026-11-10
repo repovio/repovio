@@ -554,7 +554,8 @@
     "reauthorize": "Autoryzuj ponownie",
     "reauthorizationRequired": "Wymagana ponowna autoryzacja",
     "oauthCancelled": "Anulowano autoryzację GitLab. Istniejące połączenie zostało zachowane.",
-    "oauthUnavailable": "Skonfiguruj GitLab OAuth w środowisku API, aby autoryzować to połączenie."
+    "oauthUnavailable": "Skonfiguruj GitLab OAuth w środowisku API, aby autoryzować to połączenie.",
+    "actionsFor": "Działania dla {name}"
   },
   "querrykit": {
     "table": {

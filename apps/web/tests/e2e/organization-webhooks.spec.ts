@@ -123,8 +123,12 @@ for (const { locale, width } of [
 
     await page.goto('/admin/providers');
     const title = locale === 'de' ? 'Organisations-Webhooks' : 'Organization webhooks';
-    const trigger = page.getByRole('button', { name: title, exact: true });
+    const trigger = page.getByRole('button', {
+      name: locale === 'de' ? 'Aktionen für Synthetic GitLab' : 'Actions for Synthetic GitLab',
+      exact: true,
+    });
     await trigger.click();
+    await page.getByRole('menuitem', { name: title, exact: true }).click();
     const dialog = page.getByRole('dialog', { name: title, exact: true });
     await expect(dialog.getByRole('heading', { name: title })).toBeVisible();
     await expect(dialog.getByRole('alert')).toBeVisible();
@@ -223,6 +227,7 @@ for (const { locale, width } of [
     await expect(management).toHaveAttribute('href', '/admin/providers');
     await management.click();
     await trigger.click();
+    await page.getByRole('menuitem', { name: title, exact: true }).click();
     await dialog.getByRole('button', { name: locale === 'de' ? 'Webhook verwalten' : 'Manage webhook' }).click();
     await expect(dialog.locator('input[autocomplete="new-password"]')).toHaveValue('');
     await dialog
@@ -359,8 +364,12 @@ for (const { locale, width } of [
 
     await page.goto('/admin/providers');
     const title = locale === 'de' ? 'Organisations-Webhooks' : 'Organization webhooks';
-    const trigger = page.getByRole('button', { name: title, exact: true });
+    const trigger = page.getByRole('button', {
+      name: locale === 'de' ? 'Aktionen für Synthetic GitLab' : 'Actions for Synthetic GitLab',
+      exact: true,
+    });
     await trigger.click();
+    await page.getByRole('menuitem', { name: title, exact: true }).click();
     const dialog = page.getByRole('dialog', { name: title, exact: true });
     const form = dialog.locator('form');
     const callback = form.getByRole('textbox', {
@@ -474,6 +483,7 @@ for (const { locale, width } of [
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await trigger.click();
+    await page.getByRole('menuitem', { name: title, exact: true }).click();
     await expect(callback).toHaveValue('');
     await expect(copy).toBeDisabled();
     await expect(help).toBeVisible();

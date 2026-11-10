@@ -554,7 +554,8 @@
     "reauthorize": "Volver a autorizar",
     "reauthorizationRequired": "Se requiere una nueva autorización",
     "oauthCancelled": "Autorización de GitLab cancelada. Se conserva la conexión existente.",
-    "oauthUnavailable": "Configure GitLab OAuth en el entorno de la API para autorizar esta conexión."
+    "oauthUnavailable": "Configure GitLab OAuth en el entorno de la API para autorizar esta conexión.",
+    "actionsFor": "Acciones de {name}"
   },
   "querrykit": {
     "table": {

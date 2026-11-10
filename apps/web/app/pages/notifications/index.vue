@@ -36,14 +36,15 @@
         :label="$t('notifications.channels.add')"
         @click="openCreate"
       />
-      <UButton
-        v-if="auth.user?.role === 'SYSTEM_ADMIN'"
-        color="neutral"
-        icon="i-lucide-history"
-        to="/notifications/history"
-        variant="soft"
-        :label="$t('notifications.tabs.history')"
-      />
+      <UTooltip v-if="auth.user?.role === 'SYSTEM_ADMIN'" :text="$t('notifications.tabs.history')">
+        <UButton
+          color="neutral"
+          icon="i-lucide-history"
+          to="/notifications/history"
+          variant="soft"
+          :aria-label="$t('notifications.tabs.history')"
+        />
+      </UTooltip>
     </template>
 
     <UAlert
@@ -155,7 +156,10 @@
     <ModulesNotificationsChannelDialog
       v-model:open="dialogOpen"
       :channel="selectedChannel"
-      :browser-push-available="push.available.value"
+      :browser-push-available="push.availability.value === 'available'"
+      :browser-push-availability="push.availability.value"
+      :browser-push-refreshing="push.refreshing.value"
+      :on-refresh-browser-push="push.refresh"
       :repositories="manageableRepositories"
       @saved="handleSaved"
     />
@@ -285,9 +289,10 @@ function openEdit(channel: NotificationChannel): void {
   dialogOpen.value = true;
 }
 
-/** Handles saved. */
+/** Refresh saved channels and reject a failed table read so the dialog can retry without another write. */
 async function handleSaved(): Promise<void> {
   await channelTable.refresh();
+  if (tableError.value) throw new Error('Notification channel refresh failed.');
 }
 
 /** Toggles index. */
@@ -333,9 +338,17 @@ async function testChannel(channel: NotificationChannel): Promise<void> {
   );
 }
 
+watch(
+  dialogOpen,
+  /** Refresh readiness for each draft and invalidate results when its dialog closes. */ (shown) => {
+    if (shown) void push.refresh();
+    else push.cancelRefresh();
+  },
+);
+
 onMounted(
   /** Initializes component subscriptions and data after mounting. */ async () => {
-    const requests: Promise<unknown>[] = [channelTable.initialize(), push.refresh()];
+    const requests: Promise<unknown>[] = [channelTable.initialize()];
     if (auth.user?.role === 'SYSTEM_ADMIN') {
       requests.push(
         api.notificationChannels.manageableRepositories().then(

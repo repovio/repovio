@@ -214,7 +214,7 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await dialog.getByRole('textbox', { name: 'From address' }).fill('repovio@example.com');
   await dialog.getByRole('textbox', { name: 'Recipients' }).fill('operations@example.com');
   await dialog.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(dialog.getByText('Events', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: 'Dependency alert opened' })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: 'Secret scanning alert resolved' })).toBeVisible();
   await dialog.getByRole('checkbox', { name: 'Workflow failed' }).check();
@@ -520,6 +520,9 @@ for (const locale of ['en', 'de'] as const) {
     const toolbar = page.locator('[data-page-toolbar]');
     const history = toolbar.getByRole('link', { name: labels.history, exact: true });
     await expect(history).toBeVisible();
+    await expect(history).toHaveText('');
+    await history.hover();
+    await expect(page.getByRole('tooltip', { name: labels.history, exact: true })).toBeVisible();
     await page.locator('[data-navbar-notifications]').click();
     const popover = page.getByRole('region', { name: labels.notifications, exact: true });
     await expect(popover).toBeVisible();
@@ -529,7 +532,8 @@ for (const locale of ['en', 'de'] as const) {
       animations: 'disabled',
     });
     await page.keyboard.press('Escape');
-    await history.click();
+    await history.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/notifications\/history$/);
     await expect(notifications).toHaveAttribute('aria-current', 'page');
     await page.reload();
@@ -853,3 +857,269 @@ for (const locale of ['en', 'de']) {
     await page.screenshot({ path: `/tmp/repovio76-recipients-narrow-${locale}.png` });
   });
 }
+
+for (const locale of ['en', 'de'] as const) {
+  test(`explains and retries server push availability (${locale})`, /** Verify global setup without device support or passive enrollment. */ async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    await page.addInitScript(
+      /** Simulate a browser without device push support. */ () => {
+        Reflect.deleteProperty(window, 'PushManager');
+      },
+    );
+    const labels =
+      locale === 'de'
+        ? {
+            add: 'Kanal hinzufügen',
+            loading: 'Browser-Push-Verfügbarkeit wird geprüft…',
+            unconfigured: 'Konfiguriere Web Push (VAPID) auf dem Server, bevor du diesen Typ auswählst.',
+            error: 'Die Browser-Push-Verfügbarkeit konnte nicht geprüft werden.',
+            retry: 'Erneut versuchen',
+            type: 'Typ',
+          }
+        : {
+            add: 'Add channel',
+            loading: 'Checking Browser push availability…',
+            unconfigured: 'Configure Web Push (VAPID) on the server before selecting this type.',
+            error: 'Could not check Browser push availability.',
+            retry: 'Retry',
+            type: 'Type',
+          };
+    let outcome: 'unconfigured' | 'pending' | 'available' = 'unconfigured';
+    let release!: () => void;
+    await page.route(
+      '**/api/v1/browser-push',
+      /** Control readiness independently of browser capability. */ async (route) => {
+        if (outcome === 'pending') {
+          await new Promise<void>(
+            /** Hold the request until the checking state is inspected. */ (resolve) => {
+              release = resolve;
+            },
+          );
+          return route.fulfill({ status: 503, json: { message: 'Unavailable' } });
+        }
+        return route.fulfill({
+          json: {
+            available: outcome === 'available',
+            publicKey: outcome === 'available' ? 'AQID' : null,
+            subscriptionCount: 0,
+          },
+        });
+      },
+    );
+    await page.setViewportSize({ width: locale === 'de' ? 390 : 1102, height: locale === 'de' ? 844 : 1134 });
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: labels.add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(labels.unconfigured, { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-push-unconfigured-${locale}.png`),
+      animations: 'disabled',
+    });
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await expect(
+      page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('Escape');
+    outcome = 'pending';
+    await dialog.getByRole('button', { name: labels.retry, exact: true }).click();
+    await expect(dialog.getByText(labels.loading, { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-push-checking-${locale}.png`),
+      animations: 'disabled',
+    });
+    await expect(dialog.getByRole('button', { name: labels.retry, exact: true })).toBeDisabled();
+    release();
+    await expect(dialog.getByText(labels.error, { exact: true })).toBeVisible();
+    outcome = 'available';
+    await dialog.getByRole('button', { name: labels.retry, exact: true }).click();
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await expect(
+      page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }),
+    ).not.toHaveAttribute('aria-disabled', 'true');
+    await page.getByRole('option', { name: locale === 'de' ? 'Browser-Push' : 'Browser push', exact: true }).click();
+  });
+}
+
+test('validates controlled stepper clicks and keyboard navigation', /** Future steps cannot skip validation or erase draft fields. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.goto('/notifications');
+  await page.getByRole('button', { name: 'Add channel', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const steps = dialog.locator('[data-channel-stepper] button');
+  await expect(steps).toHaveCount(4);
+  await expect(steps.nth(3)).toBeDisabled();
+  await steps.nth(1).click();
+  await expect(dialog.getByRole('textbox', { name: /^Name/ })).toBeVisible();
+  await dialog.getByRole('textbox', { name: /^Name/ }).fill('Operations');
+  await steps.nth(1).focus();
+  await page.keyboard.press('Enter');
+  await expect(dialog.getByRole('textbox', { name: 'SMTP server' })).toBeFocused();
+  await steps.nth(2).click();
+  await expect(dialog.getByRole('textbox', { name: 'SMTP server' })).toBeVisible();
+  await steps.nth(0).click();
+  await expect(dialog.getByRole('textbox', { name: /^Name/ })).toHaveValue('Operations');
+});
+
+for (const locale of ['en', 'de'] as const) {
+  test(`keeps validated footer saves pending through write and refresh (${locale})`, /** Verify footer structure, request lifetime, dismissal, and refresh-only retry. */ async ({
+    page,
+    baseURL,
+  }, testInfo) => {
+    await mockShell(page);
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    const labels =
+      locale === 'de'
+        ? {
+            add: 'Kanal hinzufügen',
+            next: 'Weiter',
+            name: 'Name',
+            type: 'Typ',
+            topic: 'Topic',
+            event: 'Neues Issue',
+            save: 'Speichern',
+            retry: 'Erneut versuchen',
+          }
+        : {
+            add: 'Add channel',
+            next: 'Next',
+            name: 'Name',
+            type: 'Type',
+            topic: 'Topic',
+            event: 'New issue',
+            save: 'Save',
+            retry: 'Retry',
+          };
+    let saves = 0;
+    let refreshes = 0;
+    let release!: () => void;
+    await page.route(
+      '**/api/v1/notification-channels/query**',
+      /** Defer the dependent list refresh after persistence. */ async (route) => {
+        if (saves > 0) {
+          refreshes++;
+          if (refreshes === 1) {
+            await new Promise<void>(
+              /** Hold refresh for pending-state checks. */ (resolve) => {
+                release = resolve;
+              },
+            );
+            return route.fulfill({ status: 503, json: { message: 'Refresh failed' } });
+          }
+        }
+        return route.fulfill({ json: { items: [], meta: { ...pageMeta, itemCount: 0 } } });
+      },
+    );
+    await page.route(
+      '**/api/v1/notification-channels',
+      /** Defer the write and count persistence requests. */ async (route) => {
+        saves++;
+        await new Promise<void>(
+          /** Hold persistence for duplicate prevention checks. */ (resolve) => {
+            release = resolve;
+          },
+        );
+        return route.fulfill({ json: { ...route.request().postDataJSON(), id: 'created-channel' } });
+      },
+    );
+    await page.goto('/notifications');
+    await page.getByRole('button', { name: labels.add, exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    const footer = dialog.locator('[data-slot="footer"]');
+    await expect(footer.getByRole('button', { name: labels.next, exact: true })).toBeVisible();
+    await expect(footer.locator('form')).toHaveCount(0);
+    await dialog.getByRole('textbox', { name: new RegExp(`^${labels.name}`) }).fill('Operations');
+    await dialog.getByRole('combobox', { name: new RegExp(`^${labels.type}`) }).click();
+    await page.getByRole('option', { name: 'ntfy', exact: true }).click();
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    const topic = dialog.getByRole('textbox', { name: labels.topic });
+    await topic.press('Enter');
+    expect(saves).toBe(0);
+    await topic.fill('operations');
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    await dialog.getByRole('checkbox', { name: labels.event, exact: true }).check();
+    await footer.getByRole('button', { name: labels.next, exact: true }).click();
+    for (const width of [390, 1102]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1134 });
+      await expect(footer.getByRole('button', { name: labels.save, exact: true })).toBeInViewport();
+      await page.screenshot({
+        path: testInfo.outputPath(`notification-footer-${locale}-${width}.png`),
+        animations: 'disabled',
+      });
+    }
+    const save = footer.getByRole('button').last();
+    await save.click();
+    await expect.poll(/** Wait for the held persistence request. */ () => saves).toBe(1);
+    await expect(save).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('[data-channel-stepper] button').first()).toBeDisabled();
+    release();
+    await expect.poll(/** Wait for the held list refresh. */ () => refreshes).toBe(1);
+    await expect(save).toBeDisabled();
+    release();
+    const retry = footer.getByRole('button', { name: labels.retry, exact: true });
+    await expect(retry).toBeEnabled();
+    await retry.click();
+    await expect(dialog).not.toBeVisible();
+    expect(saves).toBe(1);
+    expect(refreshes).toBe(2);
+  });
+}
+
+test('keeps push retry loading until passive device inspection completes', /** The initiating control must remain pending for the entire operation. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.addInitScript(
+    /** Hold passive device inspection after server readiness succeeds. */ () => {
+      Object.defineProperty(Notification, 'permission', {
+        get: /** Model granted permission without a real prompt. */ () => 'granted',
+      });
+      navigator.serviceWorker.getRegistration = /** Return only after the test releases the device read. */ () =>
+        new Promise<ServiceWorkerRegistration | undefined>(
+          /** Bind release without registering or enrolling a device. */ (resolve) => {
+            document.documentElement.dataset.pushInspecting = 'true';
+            window.addEventListener(
+              'release-push-inspection',
+              /** Complete the held local lookup. */ () => resolve(undefined),
+              { once: true },
+            );
+          },
+        );
+    },
+  );
+  let reads = 0;
+  await page.route(
+    '**/api/v1/browser-push',
+    /** First report unconfigured, then configured readiness. */ (route) => {
+      reads++;
+      return route.fulfill({
+        json: { available: reads > 1, publicKey: reads > 1 ? 'AQID' : null, subscriptionCount: 0 },
+      });
+    },
+  );
+  await page.goto('/notifications');
+  await page.getByRole('button', { name: 'Add channel', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const retry = dialog.getByRole('button', { name: 'Retry', exact: true });
+  await expect(retry).toBeEnabled();
+  await page.evaluate(
+    /** Clear any earlier inspection marker. */ () => document.documentElement.removeAttribute('data-push-inspecting'),
+  );
+  await retry.click();
+  await expect(page.locator('html')).toHaveAttribute('data-push-inspecting', 'true');
+  await expect.poll(/** Observe successful server readiness before releasing device inspection. */ () => reads).toBe(2);
+  await expect(retry).toBeVisible();
+  await expect(retry).toBeDisabled();
+  await page.evaluate(
+    /** Release the passive browser operation without enrolling. */ () =>
+      window.dispatchEvent(new Event('release-push-inspection')),
+  );
+  await expect(retry).toHaveCount(0);
+});

@@ -213,3 +213,74 @@ it('uses personal names for recipient options without dropping older fallback id
   ]);
   expect(draft.form.value.browserRecipientUserIds).toEqual([]);
 });
+
+it('blocks new unavailable push selection without clearing an existing channel', /** Preserve server guards and existing recipients. */ async () => {
+  const { draft, open, props } = fixture();
+  props.browserPushAvailable = false;
+  expect(
+    draft.typeOptions.value.find(/** Find the native push option. */ (option) => option.value === 'BROWSER_PUSH')
+      ?.disabled,
+  ).toBe(true);
+  props.channel = {
+    id: 'push-channel',
+    name: 'Operations',
+    type: 'BROWSER_PUSH',
+    enabled: true,
+    browserRecipients: [{ id: '30b7b20a-159a-42c7-a283-0246848d5ab4', username: 'viewer' }],
+    eventSubscriptions: [{ eventType: 'ISSUE_OPENED', repositoryIds: [], workflowPatterns: [] }],
+  } as never;
+  open.value = true;
+  await nextTick();
+  expect(draft.form.value.type).toBe('BROWSER_PUSH');
+  expect(draft.form.value.browserRecipientUserIds).toEqual(['30b7b20a-159a-42c7-a283-0246848d5ab4']);
+  expect(draft.nextStep()).toBe(true);
+  expect(draft.nextStep()).toBe(true);
+  expect(draft.nextStep()).toBe(true);
+});
+
+it('guards stepper clicks, jumps, and every pending navigation path', /** All controls must share step-local validation. */ async () => {
+  const { draft, open } = fixture();
+  open.value = true;
+  await nextTick();
+  expect(draft.requestStep(3)).toBe(false);
+  expect(draft.requestStep(1)).toBe(false);
+  draft.form.value.name = 'Operations';
+  expect(draft.requestStep(1)).toBe(true);
+  expect(draft.requestStep(2)).toBe(false);
+  expect(draft.requestStep(0)).toBe(true);
+  expect(draft.form.value.name).toBe('Operations');
+  draft.submitting.value = true;
+  expect(draft.nextStep()).toBe(false);
+  expect(draft.requestStep(1)).toBe(false);
+  draft.step.value = 1;
+  draft.back();
+  expect(draft.step.value).toBe(1);
+  draft.submitting.value = false;
+  draft.persisted.value = true;
+  expect(draft.requestStep(0)).toBe(false);
+  draft.persisted.value = false;
+  draft.previewing.value = true;
+  expect(draft.requestStep(0)).toBe(false);
+  expect(draft.requestStep('invalid')).toBe(false);
+});
+
+it('allows a failed write to retry without treating it as persisted', /** Write failures must clear loading and retain the draft. */ async () => {
+  const { draft, open, api } = fixture();
+  open.value = true;
+  await nextTick();
+  draft.form.value.name = 'Operations';
+  draft.form.value.type = 'NTFY';
+  await nextTick();
+  draft.form.value.topic = 'operations';
+  draft.eventStates.value.ISSUE_OPENED.selected = true;
+  draft.step.value = 3;
+  api.notificationChannels.create.mockRejectedValueOnce(new Error('offline'));
+  await draft.submit({ data: draft.form.value } as never);
+  expect(draft.persisted.value).toBe(false);
+  expect(draft.saveError.value).toBe(true);
+  expect(draft.submitting.value).toBe(false);
+  expect(open.value).toBe(true);
+  await draft.submit({ data: draft.form.value } as never);
+  expect(api.notificationChannels.create).toHaveBeenCalledTimes(2);
+  expect(open.value).toBe(false);
+});

@@ -168,3 +168,94 @@ it('ignores a passive lookup started before successful enrollment', /** Prevents
   await old;
   expect(state.currentDeviceEnabled.value).toBe(true);
 });
+
+describe('server push readiness', /** Keep server readiness independent of device enrollment. */ () => {
+  it('distinguishes pending, failed, disabled, and configured reads with retry', /** Exercise all readiness outcomes. */ async () => {
+    const f = fixture();
+    const state = createBrowserPushState(f.api, null);
+    expect(state.availability.value).toBe('idle');
+    let release!: (value: unknown) => void;
+    f.api.status.mockImplementationOnce(
+      /** Defer server readiness. */ () =>
+        new Promise(
+          /** Capture status completion. */ (resolve) => {
+            release = resolve;
+          },
+        ),
+    );
+    const pending = state.refresh();
+    expect(state.availability.value).toBe('loading');
+    expect(state.refreshing.value).toBe(true);
+    release({ data: { available: false, publicKey: null, subscriptionCount: 0 } });
+    await pending;
+    expect(state.availability.value).toBe('server-unconfigured');
+    expect(state.refreshing.value).toBe(false);
+    f.api.status.mockRejectedValueOnce(new Error('offline'));
+    await state.refresh();
+    expect(state.availability.value).toBe('request-failed');
+    expect(state.available.value).toBe(false);
+    await state.refresh();
+    expect(state.availability.value).toBe('available');
+    expect(state.available.value).toBe(true);
+    expect(f.platform.requestPermission).not.toHaveBeenCalled();
+  });
+
+  it('retains successful server readiness after a device inspection failure', /** A broken worker lookup must not disable global channels. */ async () => {
+    const f = fixture();
+    f.platform.getRegistration.mockRejectedValueOnce(new Error('worker blocked'));
+    const state = createBrowserPushState(f.api, f.platform as never);
+    await state.refresh();
+    expect(state.availability.value).toBe('available');
+    expect(state.available.value).toBe(true);
+    expect(state.errorStage.value).toBe('worker');
+    expect(state.refreshing.value).toBe(false);
+  });
+
+  it('ignores superseded, cancelled, and prior-account status results', /** Protect readiness against stale async completions. */ async () => {
+    const f = fixture();
+    const state = createBrowserPushState(f.api, null);
+    let release!: (value: unknown) => void;
+    f.api.status.mockImplementationOnce(
+      /** Hold a stale read. */ () =>
+        new Promise(
+          /** Capture the stale response. */ (resolve) => {
+            release = resolve;
+          },
+        ),
+    );
+    const stale = state.refresh();
+    await state.refresh();
+    release({ data: { available: false, publicKey: null, subscriptionCount: 0 } });
+    await stale;
+    expect(state.availability.value).toBe('available');
+    f.api.status.mockImplementationOnce(
+      /** Hold a cancelled read. */ () =>
+        new Promise(
+          /** Capture the cancelled response. */ (resolve) => {
+            release = resolve;
+          },
+        ),
+    );
+    const cancelled = state.refresh();
+    state.cancelRefresh();
+    release({ data: { available: true, publicKey: 'AQID', subscriptionCount: 0 } });
+    await cancelled;
+    expect(state.availability.value).toBe('idle');
+    expect(state.refreshing.value).toBe(false);
+    f.api.status.mockImplementationOnce(
+      /** Hold the old account read. */ () =>
+        new Promise(
+          /** Capture the old account response. */ (resolve) => {
+            release = resolve;
+          },
+        ),
+    );
+    const oldAccount = state.refresh();
+    state.reset();
+    release({ data: { available: true, publicKey: 'AQID', subscriptionCount: 1 } });
+    await oldAccount;
+    expect(state.availability.value).toBe('idle');
+    expect(state.available.value).toBe(false);
+    expect(state.subscriptionCount.value).toBe(0);
+  });
+});

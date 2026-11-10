@@ -915,6 +915,11 @@
         "FAILED": "Fehlgeschlagen"
       },
       "open": "Benachrichtigungsbereich öffnen"
+    },
+    "pushAvailability": {
+      "checking": "Browser-Push-Verfügbarkeit wird geprüft…",
+      "unconfigured": "Konfiguriere Web Push (VAPID) auf dem Server, bevor du diesen Typ auswählst.",
+      "failed": "Die Browser-Push-Verfügbarkeit konnte nicht geprüft werden."
     }
   },
   "notificationDeliveryStatus": {

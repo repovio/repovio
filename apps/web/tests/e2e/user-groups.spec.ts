@@ -152,6 +152,31 @@ for (const locale of ['en', 'de']) {
       },
     );
     await page.goto('/admin/user-groups');
+    const toolbar = page.locator('[data-page-toolbar]');
+    await expect(toolbar.getByRole('button', { name: de ? 'Neue Gruppe' : 'New group', exact: true })).toBeVisible();
+    await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
+    await expect(toolbar.getByRole('textbox', { name: de ? 'Suchen' : 'Search', exact: true })).toBeVisible();
+    await expect(page.locator('[data-page-content] .qk-table-toolbar-search')).toHaveCount(0);
+    const query = page.waitForRequest(
+      /** Observes the name constraint emitted from the merged header. */ (request) =>
+        request.url().includes('/user-groups?') && decodeURIComponent(request.url()).includes('Readers'),
+    );
+    await toolbar.getByRole('textbox', { name: de ? 'Suchen' : 'Search', exact: true }).fill('Readers');
+    expect(new URL((await query).url()).searchParams.get('where')).toContain('Readers');
+    await toolbar.getByRole('textbox', { name: de ? 'Suchen' : 'Search', exact: true }).fill('');
+    await toolbar.getByRole('button', { name: de ? 'Sortieren' : 'Sort', exact: true }).click();
+    const sortDialog = page.getByRole('dialog', { name: de ? 'Sortieren' : 'Sort', exact: true });
+    await sortDialog.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Name', exact: true }).click();
+    const sortedQuery = page.waitForRequest(
+      /** Observes the sorting request before the control emits it. */ (request) =>
+        request.url().includes('/user-groups?') && decodeURIComponent(request.url()).includes('orderBy'),
+    );
+    await sortDialog.getByRole('button', { name: de ? 'Sortierung hinzufügen' : 'Add sort', exact: true }).click();
+    expect(new URL((await sortedQuery).url()).searchParams.get('orderBy')).toContain('name');
+    await page.keyboard.press('Escape');
+    await expect(toolbar.getByRole('button', { name: de ? 'Sortieren' : 'Sort', exact: true })).toBeFocused();
+
     await page.getByRole('button', { name: de ? 'Neue Gruppe' : 'New group', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Name', { exact: true }).fill('Readers');

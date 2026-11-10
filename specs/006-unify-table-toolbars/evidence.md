@@ -38,3 +38,12 @@
 - Security alerts and Repository detail browser suites: 10 passed, including all three alert kinds and exact
   UTC/path predicates, retained search after Clear, active state, and close/reopen focus.
 - Mandatory kind and Repository constraints and supporting-request refresh ownership remain unchanged.
+
+- T004 web lint/typecheck and documentation passed; committed and pushed as `5cc61f1`.
+
+## User groups (T005)
+
+- Red proof: New group was absent from the breadcrumb header before moving frame ownership.
+- Route retains its admin middleware, full-width metadata, and localized title. The table owns one frame,
+  its existing state, and its existing dialogs; no Teleport or duplicate state.
+- Web lint and typecheck passed. EN/DE workflows now also assert merged-header search/sort request serialization.

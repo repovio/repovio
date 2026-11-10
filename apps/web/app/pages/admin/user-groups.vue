@@ -1,15 +1,5 @@
 <template>
-  <LayoutPage
-    :breadcrumbs="[
-      { icon: 'i-lucide-layout-dashboard', label: $t('layout.dashboard'), to: '/' },
-      { icon: 'i-lucide-users-round', label: $t('userGroups.title') },
-    ]"
-    :description="$t('userGroups.description')"
-    :padded="false"
-    :title="$t('userGroups.title')"
-  >
-    <ModulesUserGroupsTable />
-  </LayoutPage>
+  <ModulesUserGroupsTable />
 </template>
 
 <script setup lang="ts">

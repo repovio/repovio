@@ -4,7 +4,7 @@
 [contracts/ui.md](contracts/ui.md), and [quickstart.md](quickstart.md).
 
 **Authorization**: Planning, task generation, issue creation, branch creation, and planning-only commit/push approved
-on 2026-11-10. Implementation is not yet approved. Issue: [#91](https://github.com/repovio/repovio/issues/91).
+on 2026-11-10. Implementation of all eight tasks was approved on 2026-11-10. Issue: [#91](https://github.com/repovio/repovio/issues/91).
 Current checkout: existing Codex worktree `/mnt/projects/.codex-worktrees/c996/repovio`, branch
 `codex/91-global-auto-refresh`.
 
@@ -22,7 +22,7 @@ Checks within a completed increment may run independently when they do not share
 
 **Purpose**: Resolve issue/branch authority and verify the existing toolchain before product changes.
 
-- [ ] T001 Verify the associated issue and approved implementation scope against `specs/009-global-auto-refresh/spec.md`
+- [x] T001 Verify the associated issue and approved implementation scope against `specs/009-global-auto-refresh/spec.md`
       and `specs/009-global-auto-refresh/tasks.md`; inspect current instructions, status/diffs, remote base, and task worktree;
       install existing dependencies from `pnpm-lock.yaml` using Node.js 26.13.0/pnpm 11.28.9 if missing; inspect installed
       Query Kit refresh/query completion and active repository-tab lifecycle; record actual baseline checks, precise request

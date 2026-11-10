@@ -78,7 +78,7 @@ on each supported view. Verify new table/widget/summary data, unchanged applicab
 manual control busy until every related read settles; existing error/retry feedback survives partial failures. Period
 changes during refresh do not apply an obsolete result. No requests continue to schedule after navigation/sign-out.
 
-- [ ] T004 [US1] Integrate `apps/web/app/components/modules/workflow-runs/table-page.vue` for All runs, Needs attention,
+- [x] T004 [US1] Integrate `apps/web/app/components/modules/workflow-runs/table-page.vue` for All runs, Needs attention,
       and active embedded repository workflow tabs; preserve the 500 ms sync-completion debounce and route its final call,
       manual refresh, and scheduled refresh through the same completion gate; if T001 proves necessary, add a narrow
       opt-in dispatch/completion seam in `apps/web/app/composables/api/table.ts` with regression coverage in

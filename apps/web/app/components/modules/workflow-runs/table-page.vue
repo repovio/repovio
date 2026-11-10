@@ -15,8 +15,8 @@
           icon="i-lucide-refresh-cw"
           variant="soft"
           :aria-label="$t('dashboard.refresh')"
-          :loading="loading"
-          @click="refresh"
+          :loading="refreshLoading"
+          @click="refreshView"
         />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
@@ -156,6 +156,7 @@ import { defineProps } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useSystemStatusState } from '~/composables/api/system-status';
 import { useTable } from '~/composables/api/table';
+import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
 import { providerTypes, type WorkflowRun, type WorkflowRunStatus } from '~/types/api/resources';
@@ -311,6 +312,7 @@ const staticFilter = computed(
   },
 );
 const workflowRunTable = useTable({
+  serializeReads: true,
   columnDefinition,
   defaultItemsPerPage: 25,
   endpoint: props.endpoint,
@@ -333,6 +335,7 @@ const {
   sorting,
   totalItems,
 } = workflowRunTable;
+const { refresh: refreshView, loading: refreshLoading } = useAutoRefresh(refresh, loading);
 if (initialDashboardPreset) {
   queryFiltering.value = initialDashboardPreset.filtering;
   page.value = 1;
@@ -388,7 +391,7 @@ watch(
     refreshAfterSyncTimer = setTimeout(
       /** Completes the deferred table page operation after its delay. */ () => {
         refreshAfterSyncTimer = undefined;
-        void refresh();
+        void refreshView();
       },
       500,
     );

@@ -7,7 +7,7 @@ Implementation and per-task commit/push approved on 2026-11-10.
 **Tracking**: [Issue #84](https://github.com/repovio/repovio/issues/84), branch `codex/84-app-language-parity`, reusing the
 current Codex worktree. Planning commit `7910243` is pushed and recorded in the issue.
 **Tests**: Required by the specification and repository rules; included with each behavior increment.
-**Organization**: Eight tasks, grouped by user story; all remain unchecked until approved work is verified and recorded.
+**Organization**: Eight tasks, grouped by user story; all verified and recorded in evidence.md.
 
 ## Format and Execution Rules
 
@@ -182,7 +182,7 @@ T007 depends on T003's metadata and catalogs; start its draft alongside browser 
 Reconcile final loading/recovery facts after T006 before marking it complete. This handbook-only task does not change
 website routing, UI translations, registry, release timing, or archived documentation.
 
-- [ ] T008 Reconcile all FR/SC requirements below against `specs/008-app-language-parity/evidence.md`; execute the
+- [x] T008 Reconcile all FR/SC requirements below against `specs/008-app-language-parity/evidence.md`; execute the
       applicable `specs/008-app-language-parity/quickstart.md` checks for final app tests/lint/types/build, focused browser
       scenarios, documentation, canonical formatting stable over two passes, and `git diff --check`; verify final scope,
       unchanged published archives, retained toolchain/provider/authorization contracts, task commits and focused
@@ -260,4 +260,4 @@ These opportunities describe dependencies, not a request to delegate work or cre
 - Total: eight tasks; US1 has two, US2 one, US3 one, setup one, foundation one, and cross-cutting work two.
 - No new dependency, translation service, database, account setting, provider call, or published archive rewrite.
 - Extension hooks: `.specify/extensions.yml` is absent; no before/after-tasks hooks are registered to dispatch.
-- Task generation itself changes only planning artifacts. All implementation checkboxes remain unchecked.
+- Task generation changed only planning artifacts. All eight tasks are now verified; see evidence.md.

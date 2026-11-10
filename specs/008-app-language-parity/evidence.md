@@ -113,3 +113,46 @@ Implementation and separate per-task commits/pushes approved on 2026-11-10. No m
   mapping, identifiers, commands, and pins were checked. Canonical formatting is stable. Published archives are unchanged.
 - No website runtime/routing/publishing or dependency change. This source update does not claim deployment or native-speaker
   certification; agent translations and source consistency checks were used.
+
+## T008: Final acceptance
+
+- All eight tasks verified. Final application suite: 25 files / 129 passing unit tests; web lint, typecheck, production
+  build, focused browser-test lint, and documentation coverage passed on the final application code.
+- Final production-browser reruns: 70 auth/localization cases and 26 RTL/visual cases passed (96 total). The latter
+  includes Arabic/Urdu isolation and 24 combinations of six languages, two themes, and 390px/1440px viewports.
+- Canonical repository formatting, 21 guideline tests, website documentation validation, 11 handbook tests, and whitespace checks passed.
+  Source formatting was stable over two passes. Screenshot inspection and translation review limitations are recorded above.
+- Integrated current main (`ce1ff86`, unrelated website Release Notes PR #85) with merge commit `c7c80a8`, preserving
+  task commits. No app sources changed during integration. Graph union merge validated; AST graph updated afterward.
+- Final scope against current main: app localization/presentation/tests, 13 current localization handbooks, planning
+  evidence, six focused Changesets, and the graph. No API, database, provider adapter, authorization, dependency manifest,
+  lockfile, toolchain, website runtime, or published documentation archive changes belong to this feature.
+- Final catalogs contain 1,030 messages per language, including the T006 locale-load error. The earlier T003 count of
+  1,029 describes that task's checkpoint. All 17 catalogs compile and render with matching parameters and linked targets.
+- Live-provider behavior, Docker images, remote CI, and native-speaker certification are not established by these local
+  checks. No merge, release, publishing, or deployment performed. PR review and separate merge approval remain.
+
+### Requirement acceptance
+
+| Requirements           | Final evidence                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001, FR-002, SC-001 | Registry subset/uniqueness checks and all 17 public/signed-in browser selections; legacy options preserved.                                       |
+| FR-003, FR-007, SC-002 | Exact catalog coverage, actual message compilation/rendering, parameters/plurals/links, 15 date-format tests, translated Nuxt UI controls.        |
+| FR-004, FR-006, SC-003 | Native names/local flags, keyboard/focus, role-shaped screen fixtures, persistence/detection/query checks, real delayed/failed imports and retry. |
+| FR-005, SC-004         | Arabic/Urdu direction, technical-data isolation, logical alignment, overlay/focus checks and inspected script/theme/viewport matrix.              |
+| FR-008, SC-006         | Negative fixtures reject missing website language, missing/empty key, parameter, compiler/link, metadata and flag defects.                        |
+| FR-009                 | All 13 current handbook translations validated; localized frontmatter/anchors retained; published archives unchanged.                             |
+| FR-010, SC-005         | Scope diff excludes API/provider/permission changes; local assets/catalogs only; browser fixtures retain source provider values.                  |
+
+### Task commits and Changesets
+
+| Task | Pushed commit              | Focused Changeset                                      |
+| ---- | -------------------------- | ------------------------------------------------------ |
+| T001 | Evidence included in T002  | Verification only                                      |
+| T002 | `a0b3eee`                  | `chubby-ends-leave.md`                                 |
+| T003 | `54fc799`                  | `odd-heads-relax.md`                                   |
+| T004 | `667eae8`                  | `plenty-peaches-try.md`                                |
+| T005 | `e6b1c1e`                  | `better-goats-wash.md`                                 |
+| T006 | `7290b51`                  | `old-kings-watch.md`                                   |
+| T007 | `e6d357b`                  | `smart-tires-judge.md` (repovio and website)           |
+| T008 | Acceptance evidence commit | Verification only; no fabricated package release entry |

@@ -1,6 +1,6 @@
 # Implementation Plan: App Language Parity
 
-**Branch**: `codex/84-app-language-parity`; base `aa0fa7eb525f7226c32f6b49cbb7807f6bb269ec`, verified against `origin/main`.
+**Branch**: `codex/84-app-language-parity`; base `aa0fa7eb525f7226c32f6b49cbb7807f6bb269ec`, verified against `origin/main` at planning; current `main` commit `ce1ff86` integrated before final acceptance.
 **Date**: 2026-11-10 | **Spec**: [spec.md](spec.md)
 **Input**: `specs/008-app-language-parity/spec.md`
 **Tracking**: [Issue #84](https://github.com/repovio/repovio/issues/84). Planning, tasks, issue creation, and the
@@ -59,7 +59,7 @@ specs/008-app-language-parity/
 └── contracts/localization.md
 ```
 
-[tasks.md](tasks.md) records the separately approved task-generation phase. Implementation is in progress with per-task verification and commits.
+[tasks.md](tasks.md) records the separately approved task-generation phase. Implementation and local acceptance are complete with separate task commits; PR review and merge approval remain.
 
 ### Source Code (repository root)
 

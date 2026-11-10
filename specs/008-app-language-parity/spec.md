@@ -3,7 +3,7 @@
 **Feature Branch**: `codex/84-app-language-parity`
 **Feature Directory**: `specs/008-app-language-parity`
 **Created**: 2026-11-10
-**Status**: Planning, tasks, issue creation, and planning commit/push approved; implementation and per-task commit/push approved
+**Status**: Implementation and local acceptance complete; PR review and separate merge approval remain
 **Issue**: [#84](https://github.com/repovio/repovio/issues/84)
 **Input**: User description: "die app sollte in den gleichen sprachen übersetzt sein wie die website"
 

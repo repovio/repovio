@@ -39,3 +39,7 @@ four explicit numeric values: identity 0, destination 1, events 2, review 3.
 - Saving blocks navigation and dismissal; full-form validation precedes persistence.
 - Successful persistence followed by failed refresh enters existing persisted recovery. Retry refreshes without writing again.
 - Preview results remain invalidated after relevant draft edits; stale results cannot overwrite newer state.
+
+Read lifecycle is exposed as `availability` and `refreshing`; `cancelRefresh()` invalidates dialog-owned reads without
+changing subscriptions. Existing `loading` remains the explicit enrollment mutation state. Device inspection errors
+retain confirmed server availability.

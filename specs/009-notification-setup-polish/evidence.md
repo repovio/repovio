@@ -16,3 +16,12 @@
 - Browser support, permission, and enrollment describe this device; they do not define global channel readiness.
 - Existing code exposes only an availability boolean to the dialog. Pending/failure/unconfigured states are ambiguous.
 - Application tests and configuration unchanged by T001. This evidence-only task needs no package Changeset.
+
+## Server readiness (T002)
+
+- Three added regressions failed before implementation; 19 focused push/draft tests pass after the change.
+- Added explicit readiness/read-pending state, cancellation, retry and stale-account/read protection.
+- Successful server status survives device inspection failure; passive inspection does not prompt or register.
+- Focused ESLint and repository documentation checks passed. Web typecheck caught a narrowed local stage type;
+  an explicit union corrected it before commit.
+- Final web typecheck passed.

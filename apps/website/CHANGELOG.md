@@ -1,5 +1,13 @@
 # @repovio/website
 
+## 0.2.2
+
+### Patch Changes
+
+- 71a06f7: Refresh the handbook for repository detail navigation, four-step notification channel setup, personal notifications,
+  and browser-push enrollment across all supported languages. Correct monorepo documentation ownership and complete the
+  API environment reference without modifying published archives.
+
 ## 0.2.1
 
 ### Patch Changes

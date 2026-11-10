@@ -47,3 +47,17 @@
 - Route retains its admin middleware, full-width metadata, and localized title. The table owns one frame,
   its existing state, and its existing dialogs; no Teleport or duplicate state.
 - Web lint and typecheck passed. EN/DE workflows now also assert merged-header search/sort request serialization.
+
+- T005 EN/DE browser workflows passed (2/2); committed and pushed as `4febab0`.
+
+## Responsive and keyboard acceptance (T006)
+
+- Targeted matrix: 10/10 browser cases passed (six locale/viewport matrix cases, three embedded scope cases,
+  one combined-filter Clear/refresh-loading case).
+- All six marked routes exercised at 390 × 844, 1065 × 1134, and 1440 × 900, in English/German and Light/Dark.
+  Screenshots are generated under `apps/web/test-results/page-layout-matches-the-six-marked-toolbars-*`.
+- Inspected mobile Issues/filtering and desktop Issues, CODE filtering, and User groups, including German groups.
+  No clipped controls or page-level overflow. Added existing localized visible date-boundary labels after visual review.
+- Verified Shift+F, Escape/focus return, both generic and specialized Clear, and retained search. Embedded Issue,
+  Pull Request, and CODE filters cannot select Repository/Provider and preserve mandatory constraints after Clear.
+- Web lint/typecheck and documentation passed after the label change. No new translation keys or dependencies.

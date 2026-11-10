@@ -45,8 +45,17 @@
             :placeholder="$t('workItems.labels')"
             :aria-label="$t('workItems.labels')"
           />
-          <UInput v-model="updatedFrom" class="w-full min-w-0" type="date" :aria-label="$t('workItems.updatedFrom')" />
-          <UInput v-model="updatedTo" class="w-full min-w-0" type="date" :aria-label="$t('workItems.updatedTo')" />
+          <UFormField class="min-w-0" :label="$t('workItems.updatedFrom')">
+            <UInput
+              v-model="updatedFrom"
+              class="w-full min-w-0"
+              type="date"
+              :aria-label="$t('workItems.updatedFrom')"
+            />
+          </UFormField>
+          <UFormField class="min-w-0" :label="$t('workItems.updatedTo')">
+            <UInput v-model="updatedTo" class="w-full min-w-0" type="date" :aria-label="$t('workItems.updatedTo')" />
+          </UFormField>
         </CommonTableFiltering>
         <QTableOptions
           v-model:column-order="columnOrder"

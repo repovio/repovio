@@ -123,3 +123,17 @@
 | FR-009                         | Valid-empty real builds and UI, missing-source build failure, invalid/duplicate/order fixtures         | Pass   |
 | FR-010, SC-003                 | All 13 SSR routes and metadata, unique sitemap entries, live EN/DE language-switch hashes              | Pass   |
 | SC-005                         | Browser request assertions and local-only content design; no credentials or application API dependency | Pass   |
+
+## T011 remote-CI anchor synchronization
+
+- Initial remote website run failed one EN anchor reload assertion; 145 other browser cases passed.
+- CI reported the correct `_230` heading at viewport ratio zero after reload.
+- Nuxt UI ContentToc calls `router.push` to update history; global CSS enables smooth scrolling. The previous test
+  reloaded as soon as the URL changed, without proving the preceding navigation had reached its target.
+- Ten repeated baseline EN cases passed locally, consistent with timing-dependent execution rather than a missing ID.
+- Add a fully-visible anchor condition before reload; keep the original after-reload viewport assertion unchanged.
+  No runtime behavior, timeout, forced scroll, or test-skip change.
+
+- Focused proof after synchronization: 40 repeated EN/DE desktop/mobile anchor scenarios passed (20 repetitions each).
+- Website lint/typecheck and repository documentation coverage passed; formatting stable across two passes.
+- Remote CI must pass on the new commit before the already-approved merge; final remote results are recorded in issue #83.

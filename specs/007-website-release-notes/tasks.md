@@ -6,7 +6,7 @@
 **Issue**: [#83](https://github.com/repovio/repovio/issues/83).
 **Branch**: `codex/83-website-release-notes`, reusing the existing Codex worktree. Implementation approved on 2026-11-10; merge and deployment remain separately gated.
 **Tests**: Required by the specification and repository rules; each behavior increment includes its focused tests.
-**Organization**: Ten coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
+**Organization**: Eleven coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
 
 ## Format and Execution Rules
 
@@ -14,7 +14,7 @@
 - Paths are repository-relative. Referenced new source/test paths are planned deliverables, not existing files.
 - Before each edit, test, and commit, inspect working status and the relevant diff. Read owning instructions and use
   Graphify before new source exploration. Preserve unrelated work and pinned dependencies.
-- During separately approved implementation, each T002–T006 and T008–T010 gets its own working, verified commit containing code,
+- During separately approved implementation, each T002–T006 and T008–T011 gets its own working, verified commit containing code,
   focused tests, attached documentation, exactly one focused Changeset, and the corresponding graph update. Generate
   Changesets with the pinned workspace CLI; include `repovio` and the independently affected `@repovio/website` in the
   same file as appropriate. Never version or publish packages during task work. Push each authorized commit.
@@ -253,3 +253,13 @@ T001
 - Task generation itself creates no issue, product code, branch, commit, push, release, or deployment.
 - Before issue creation, recheck the tracker for a matching issue; reuse an existing one rather than creating a duplicate.
 - Extension hooks: `.specify/extensions.yml` is absent; no before/after-tasks hooks to dispatch.
+
+## Post-Acceptance CI Follow-Up
+
+- [x] T011 Synchronize the real anchor navigation before reload in `apps/website/tests/e2e/release-notes.spec.ts`:
+      Nuxt UI pushes router history before scroll completion, so URL-only readiness can interrupt the scroll. Preserve the
+      post-reload viewport assertion, add a stronger fully-visible anchor assertion before reloading, repeat EN/DE anchor
+      scenarios, record local proof in `evidence.md` and current-head CI in issue #83; include `.changeset/website-release-anchor-test.md`.
+
+**Acceptance**: No skipped assertions, timeout relaxation, forced scrolling, or arbitrary sleeps. Actual desktop/mobile
+anchors and reloads remain verified. Merge only after the new head passes every required CI check.

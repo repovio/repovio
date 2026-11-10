@@ -88,6 +88,8 @@ for (const prefix of ['', '/de']) {
     const href = `#${ids[1]}`;
     await toc.locator(`a[href="${href}"]`).click();
     await expect(page).toHaveURL(new RegExp(`${href}$`));
+    // Router history updates before smooth scrolling completes; reload only after the anchor is fully reached.
+    await expect(headings.nth(1)).toBeInViewport({ ratio: 1 });
     await page.reload();
     await expect(headings.nth(1)).toBeInViewport();
     await expect(page.getByTestId('release-notes-body')).toContainText(

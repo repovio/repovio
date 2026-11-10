@@ -520,6 +520,9 @@ for (const locale of ['en', 'de'] as const) {
     const toolbar = page.locator('[data-page-toolbar]');
     const history = toolbar.getByRole('link', { name: labels.history, exact: true });
     await expect(history).toBeVisible();
+    await expect(history).toHaveText('');
+    await history.hover();
+    await expect(page.getByRole('tooltip', { name: labels.history, exact: true })).toBeVisible();
     await page.locator('[data-navbar-notifications]').click();
     const popover = page.getByRole('region', { name: labels.notifications, exact: true });
     await expect(popover).toBeVisible();
@@ -529,7 +532,8 @@ for (const locale of ['en', 'de'] as const) {
       animations: 'disabled',
     });
     await page.keyboard.press('Escape');
-    await history.click();
+    await history.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/notifications\/history$/);
     await expect(notifications).toHaveAttribute('aria-current', 'page');
     await page.reload();

@@ -36,14 +36,15 @@
         :label="$t('notifications.channels.add')"
         @click="openCreate"
       />
-      <UButton
-        v-if="auth.user?.role === 'SYSTEM_ADMIN'"
-        color="neutral"
-        icon="i-lucide-history"
-        to="/notifications/history"
-        variant="soft"
-        :label="$t('notifications.tabs.history')"
-      />
+      <UTooltip v-if="auth.user?.role === 'SYSTEM_ADMIN'" :text="$t('notifications.tabs.history')">
+        <UButton
+          color="neutral"
+          icon="i-lucide-history"
+          to="/notifications/history"
+          variant="soft"
+          :aria-label="$t('notifications.tabs.history')"
+        />
+      </UTooltip>
     </template>
 
     <UAlert

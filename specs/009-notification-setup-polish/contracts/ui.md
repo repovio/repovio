@@ -47,3 +47,5 @@ changes while submitting, recovering a persisted save, or previewing. A forward 
 
 The page propagates Query Kit table error state after awaiting refresh so the persisted-save dialog remains open for
 refresh-only recovery. The modal close action is hidden during submission; outside click and Escape remain blocked.
+
+The history tooltip wraps the administrator-only link; its accessible name remains the existing localized history label.

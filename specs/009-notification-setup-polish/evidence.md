@@ -60,3 +60,11 @@
   Files are `notification-footer-{locale}-{width}.png` in each footer test's local Playwright output directory.
 - Save invokes the existing form instance's validated `submit()`; modal dismissal/close and navigation are blocked
   while persistence/refresh is awaited. Unit tests retain duplicate prevention and refresh-only recovery.
+
+## Delivery history icon (T006)
+
+- Both new icon-only assertions failed before the change. Six English/German history/role browser cases pass afterward.
+- History retains its route and administrator guard, localized accessible name, hover tooltip, and keyboard activation.
+  Empty/error tables keep the action available; Manager and Viewer history restrictions remain covered.
+- Focused ESLint, documentation coverage, and web typecheck passed. Inspected the German toolbar screenshot: compact
+  history icon is visible beside Add channel, without a text label. Existing translations were reused.

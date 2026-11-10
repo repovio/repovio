@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { testRepository } from './fixtures/repository-detail';
 
 const emptyPage = {
   items: [],
@@ -168,6 +169,7 @@ test('groups authorized global results and keeps stale responses from replacing 
     /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
       route.fulfill({
         json: {
+          ...testRepository(),
           enabled: true,
           id: 'repository-1',
           lastSyncAt: null,
@@ -255,6 +257,7 @@ test('groups authorized global results and keeps stale responses from replacing 
   await results.getByRole('option', { name: /^tobiaswaelde\/repovio/ }).click();
   await expect(page).toHaveURL(/\/repositories\/repository-1$/);
   await expect(page.getByRole('navigation', { name: 'Repository navigation', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synchronization', exact: true })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'tobiaswaelde/repovio' })).toHaveCount(0);
 });
 

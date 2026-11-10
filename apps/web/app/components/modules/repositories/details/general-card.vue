@@ -73,6 +73,7 @@
       <UFormField
         name="workflowRunRetentionDays"
         :help="$t('repositoryDetails.retentionHelp')"
+        :ui="{ label: 'lg:min-h-10' }"
         :label="$t('repositoryDetails.retention')"
       >
         <UInput
@@ -87,6 +88,7 @@
       <UFormField
         name="issueRetentionDays"
         :help="$t('repositoryDetails.retentionHelp')"
+        :ui="{ label: 'lg:min-h-10' }"
         :label="$t('repositoryDetails.issueRetention')"
       >
         <UInput
@@ -101,6 +103,7 @@
       <UFormField
         name="pullRequestRetentionDays"
         :help="$t('repositoryDetails.retentionHelp')"
+        :ui="{ label: 'lg:min-h-10' }"
         :label="$t('repositoryDetails.pullRequestRetention')"
       >
         <UInput

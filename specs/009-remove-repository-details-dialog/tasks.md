@@ -132,7 +132,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
 
 ## Phase 6: Polish and cross-cutting verification
 
-- [ ] T009 Update current documentation in `apps/website/content/en/docs/next/repositories.md` and
+- [x] T009 Update current documentation in `apps/website/content/en/docs/next/repositories.md` and
       `apps/website/content/en/docs/next/settings.md` for canonical entry points, legacy links, five Settings tabs, short Alerts
       navigation, and current-visit draft lifetime; reconcile corresponding existing `docs/next/repositories.md` and
       `docs/next/settings.md` pages in the other supported handbook locale directories and

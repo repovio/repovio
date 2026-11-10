@@ -116,3 +116,8 @@ CI status. Production deployment and Provider writes are outside this feature.
   guidance and preserved localized references/technical identifiers. Published archives were not changed. Handbook
   validation and 11 documentation tests passed; final website build passed. Root canonical formatting, declaration
   documentation, and 21 guideline regression tests passed. Web production build also passed.
+
+- T010 follow-up: migrated the remaining embedded-action keyboard test from modal dismissal to Settings link/history
+  semantics. Search acceptance now supplies complete Repository detail fixtures and checks the visible Synchronization
+  card; all three focused follow-up scenarios passed against the production build. Retention label rows receive a shared
+  minimum height on the three-column desktop layout so wrapped labels keep inputs aligned.

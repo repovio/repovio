@@ -1,6 +1,7 @@
 <template>
   <UDropdownMenu
     v-if="auth.user"
+    v-model:open="menuOpen"
     :content="{ onCloseAutoFocus: openShortcutsAfterMenu }"
     :items="items"
     :ui="{ content: 'w-64' }"
@@ -11,8 +12,8 @@
       color="neutral"
       variant="ghost"
       :aria-label="getUserDisplayName(auth.user)"
-      :disabled="signingOut"
-      :loading="signingOut"
+      :disabled="signingOut || isChangingLocale"
+      :loading="signingOut || isChangingLocale"
     >
       <CommonUserAvatar
         size="2xs"
@@ -45,6 +46,7 @@
 
 <script setup lang="ts">
 import type { DropdownMenuItem } from '#ui/types';
+import { useEventListener } from '@vueuse/core';
 
 import { useLocales } from '~/composables/app/locales';
 import { useShortcuts } from '~/composables/app/shortcuts';
@@ -58,10 +60,17 @@ const signingOut = ref(false);
 const cleanupFailed = ref(false);
 const menuTrigger = useTemplateRef('menuTrigger');
 const shortcutsRequested = ref(false);
+const menuOpen = ref(false);
+const restoreLocaleFocus = ref(false);
+const localeFocusOrigin = shallowRef<HTMLElement | null>(null);
 const { open: shortcutsOpen } = useShortcuts();
 
 /** Let the dropdown restore trigger focus before the dialog captures it. */
 function openShortcutsAfterMenu(event: Event): void {
+  if (isChangingLocale.value && restoreLocaleFocus.value) {
+    event.preventDefault();
+    return;
+  }
   if (!shortcutsRequested.value) return;
   event.preventDefault();
   menuTrigger.value?.$el?.focus();
@@ -74,7 +83,35 @@ function openShortcutsAfterMenu(event: Event): void {
 }
 
 const { t } = useI18n();
-const { dropdownMenuItems: localeItems } = useLocales();
+const { dropdownMenuItems: localeItems, isChangingLocale } = useLocales(
+  /** Release modal hiding so a failed selection can announce its error. */ () => {
+    menuOpen.value = false;
+  },
+);
+
+/** Remember keyboard dismissal while the native menu trigger cannot receive focus. */
+function deferLocaleFocus(event: KeyboardEvent): void {
+  if (event.key !== 'Escape' || !menuOpen.value || !isChangingLocale.value) return;
+  restoreLocaleFocus.value = true;
+  localeFocusOrigin.value = document.activeElement?.closest<HTMLElement>('[role="menu"]') ?? null;
+}
+
+useEventListener('keydown', deferLocaleFocus, { capture: true });
+
+watch(
+  isChangingLocale,
+  /** Restore deferred keyboard focus after loading, without moving it away from another control. */ async (
+    changing,
+  ) => {
+    if (changing || !restoreLocaleFocus.value) return;
+    await nextTick();
+    if (document.activeElement === document.body || localeFocusOrigin.value?.contains(document.activeElement)) {
+      menuTrigger.value?.$el?.focus();
+    }
+    restoreLocaleFocus.value = false;
+    localeFocusOrigin.value = null;
+  },
+);
 const { dropdownMenuItems: themeItems } = useThemes();
 
 const items = computed<DropdownMenuItem[]>(

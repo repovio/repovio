@@ -11,6 +11,8 @@
       />
     </UTooltip>
     <USelect
+      ref="localeSelect"
+      v-model:open="localeMenuOpen"
       class="w-44 ps-10"
       size="sm"
       :aria-label="$t('layout.language')"
@@ -29,9 +31,10 @@ import { useLocales } from '~/composables/app/locales';
 import { useThemes, type Theme } from '~/composables/app/themes';
 
 const { t } = useI18n();
-const { handleSelectLocale, locale, selectItems } = useLocales();
+const localeSelect = useTemplateRef('localeSelect');
+const localeMenuOpen = ref(false);
+const { handleSelectLocale, isChangingLocale, locale, selectItems } = useLocales();
 const { colorMode, setTheme, themes } = useThemes();
-const isChangingLocale = ref(false);
 const selectedLocale = computed(
   /** Derives selected locale from the current reactive dependencies. */ () =>
     selectItems.value.find(
@@ -70,13 +73,9 @@ const themeLabel = computed(
 
 /** Keep the language control busy until the selected locale has finished loading. */
 async function changeLocale(code: typeof locale.value): Promise<void> {
-  if (isChangingLocale.value) return;
-
-  isChangingLocale.value = true;
-  try {
-    await handleSelectLocale(code);
-  } finally {
-    isChangingLocale.value = false;
-  }
+  localeMenuOpen.value = false;
+  await handleSelectLocale(code);
+  await nextTick();
+  if (document.activeElement === document.body) localeSelect.value?.triggerRef?.focus();
 }
 </script>

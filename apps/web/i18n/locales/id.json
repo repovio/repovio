@@ -1093,7 +1093,10 @@
     "deleteSyncConflict": "Sinkronisasi sedang berjalan. Tunggu hingga selesai, lalu coba lagi.",
     "deleteError": "Operasi tidak dapat diselesaikan. Coba lagi.",
     "overview": "Ikhtisar",
-    "navigation": "Navigasi repositori"
+    "navigation": "Navigasi repositori",
+    "general": "Umum",
+    "webhook": "Webhook",
+    "settingsNavigation": "Bagian pengaturan repositori"
   },
   "securityAlerts": {
     "code": "Pemindaian kode",

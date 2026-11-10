@@ -26,3 +26,10 @@ ausgewählt. Administratoren konfigurieren [OIDC-Authentifizierung](/docs/next/a
 [Systemvorgaben](/docs/next/settings-system) in ihren jeweiligen Registerkarten. Ein fehlender Tab kann für Ihre Rolle
 richtig sein; Durch das Ändern einer URL wird keine Autorisierung gewährt. Versuchen Sie fehlgeschlagene
 Einstellungsanfragen erst erneut, nachdem Sie die API-Konnektivität überprüft haben.
+
+<a id="repository-settings"></a>
+
+## Repository-Einstellungen
+
+Die Repository-Konfiguration ist von den persönlichen Einstellungen getrennt. Systemadministratoren wechseln dort zwischen Allgemein, Webhook, Workflow-Filter, Mitglieder und Gruppenzugriff. Direkte Adressen und die Lebensdauer von Entwürfen erläutert der Abschnitt
+[Bereiche der Repository-Einstellungen](/docs/next/repositories#repository-settings-sections).

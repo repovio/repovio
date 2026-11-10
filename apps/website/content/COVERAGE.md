@@ -154,3 +154,11 @@ readiness check, TLS proxy configuration, bootstrap administration, and backup/r
 distinguish Keycloak group names, Entra group object IDs and denied overage markers, and Auth0 administratively managed
 namespaced ID-token claims. Existing-provider deployments reuse the local-account stack with the public callback URL.
 These editorial updates leave every published archive and the single-provider OIDC runtime unchanged.
+
+## Repository Settings navigation follow-up
+
+Issue [#88](https://github.com/repovio/repovio/issues/88) consolidates Repository details into full pages and replaces
+Settings' card grid with five shareable full-width sections. Current `next` Repositories and Settings pages document
+canonical entry points, legacy dialog redirects, Alerts navigation, section addresses, and current-visit draft lifetime.
+The canonical guide is authored in en-US; existing localized reference pages preserve their language and technical
+identifier parity. Translated content outside the changed sections and every published archive remain unchanged.

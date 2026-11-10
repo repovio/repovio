@@ -99,7 +99,11 @@ const breadcrumbs = computed(
   /** Keep Repository identity visible across child sections. */ () => [
     { icon: 'i-lucide-layout-dashboard', label: t('layout.dashboard'), to: '/' },
     { icon: 'i-lucide-git-branch', label: t('layout.repositories'), to: '/repositories' },
-    { label: repositoryName.value, to: `/repositories/${encodeURIComponent(repositoryId.value)}` },
+    {
+      label: repositoryName.value,
+      to: `/repositories/${encodeURIComponent(repositoryId.value)}`,
+      class: 'max-w-full sm:max-w-64',
+    },
   ],
 );
 const navigation = computed(
@@ -117,7 +121,7 @@ const navigation = computed(
       ...(canViewAlerts.value
         ? [
             {
-              label: t('repositoryDetails.activity.securityAlerts'),
+              label: t('securityAlerts.title'),
               icon: 'i-lucide-shield-alert',
               to: `${path}/security-alerts`,
             },

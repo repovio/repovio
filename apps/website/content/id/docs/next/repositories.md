@@ -10,7 +10,7 @@ description: 'Lacak repositori, periksa aktivitas, dan konfigurasikan sinkronisa
 Buka repositori dari tabel untuk berpindah antara Ringkasan, Eksekusi workflow, Issue, Pull request, Peringatan
 keamanan, dan Pengaturan. Halaman aktivitas tetap dalam lingkup repositori dan menyediakan filter, pengurutan,
 paginasi, dan navigasi baris. Peringatan memerlukan izin pengelolaan; Pengaturan hanya tersedia bagi administrator
-sistem. Tautan penyedia membuka repositori eksternal; dialog pengaturan tetap tersedia dari daftar repositori.
+sistem. Tautan penyedia membuka repositori eksternal.
 
 Ringkasan menampilkan informasi umum, retensi, sinkronisasi terakhir, usia data, interval, pekerjaan saat ini, dan
 aktivitas terbaru. Pekerjaan tertunda atau berjalan menampilkan progres dan kesalahan terklasifikasi tanpa rahasia.
@@ -30,6 +30,24 @@ hanya-baca. Identitas repositori menggunakan akun penyedia dan ID repositori pen
 melestarikan riwayat, filter, keanggotaan, dan saluran; penyegaran metadata menolak ID yang berbeda di jalur lama
 daripada menugaskannya kembali. Repositori yang dinonaktifkan mempertahankan data yang disimpan tetapi berhenti
 berpartisipasi dalam sinkronisasi.
+
+<a id="repository-settings-sections"></a>
+
+## Bagian pengaturan repositori
+
+Pengaturan repositori memiliki lima tab sekunder. Setiap bagian memakai lebar yang tersedia; kolom formulir ditumpuk pada layar sempit. Tautan tab dapat dibagikan dan dipulihkan dengan muat ulang atau Kembali/Maju. Umum dipilih secara default.
+
+| Bagian            | Tujuan                            | Alamat                       |
+| ----------------- | --------------------------------- | ---------------------------- |
+| Umum              | Masa retensi                      | `/repositories/:id/settings` |
+| Webhook           | Konfigurasi webhook repositori    | `?tab=webhook`               |
+| Filter alur kerja | Pola izin dan penolakan           | `?tab=workflow-filters`      |
+| Anggota           | Akses pengguna langsung dan peran | `?tab=members`               |
+| Akses grup        | Akses tambahan grup lokal         | `?tab=groups`                |
+
+Isian yang belum disimpan dan permintaan tertunda tetap tersimpan saat berpindah tab dalam kunjungan yang sama. Meninggalkan pengaturan atau membuka repositori lain menghapus draf, termasuk rahasia webhook yang dibuat. Gunakan tindakan simpan atau penetapan pada bagian terkait untuk menyimpan perubahan.
+
+Dialog detail cepat telah dihapus. Tautan lama `?repository=` membuka Ringkasan. Halaman lengkap tetap menyediakan penyegaran, sinkronisasi, tautan penyedia, dan penghapusan lokal. Mengubah URL tidak memberi pelihat atau pengelola akses ke pengaturan.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -54,9 +72,7 @@ menghapus konfigurasi. URL publik yang hilang harus diperbaiki sebelum pendaftar
 selama konfigurasi; simpan di manajer rahasia. Ikuti [Webhook repositori](/docs/next/provider-webhooks) untuk pengaturan
 dan verifikasi.
 
-Pemirsa dan pengelola menerima ringkasan pengaturan repositori hanya-baca. Coba lagi memuat/menyimpan kesalahan setelah
-pemulihan; periksa [Tugas sinkronisasi](/docs/next/guide-jobs) untuk akses penyedia, batas kecepatan, atau kegagalan
-sinkronisasi.
+Pelihat dan pengelola memeriksa metadata repositori hanya baca di Ringkasan; pengaturan tetap khusus administrator. Coba lagi setelah penyebab diperbaiki dan periksa [Pekerjaan](/docs/next/guide-jobs) untuk kegagalan sinkronisasi.
 
 <a id="local-user-and-group-management"></a>
 
@@ -72,7 +88,7 @@ permintaan berikutnya kecuali ada hak lain. Grup menerima akun lokal dan OIDC ta
 
 ## Menghapus pelacakan lokal
 
-Administrator sistem dapat memilih **Hapus repositori** di halaman detail atau dialog pengaturan. Konfirmasi menyebutkan
+Administrator sistem dapat memilih **Hapus repositori** di halaman detail. Konfirmasi menyebutkan
 nama repositori dan menjelaskan penghapusan permanen workflow, eksekusi, issue, pull request, peringatan keamanan,
 pengaturan, pemberian akses, riwayat webhook, status sinkronisasi, dan riwayat notifikasi terkait yang tersimpan lokal.
 Akun penyedia dan data repositori pada penyedia tetap tidak berubah.

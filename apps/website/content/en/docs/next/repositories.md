@@ -7,10 +7,11 @@ description: 'Track repositories, inspect activity, and configure local synchron
 
 ## Browse and open details
 
-Open a repository from the table to navigate between Overview, Workflow runs, Issues, Pull requests, Security alerts,
-and Settings. Activity pages keep the repository scope and offer filtering, sorting, pagination, and row navigation.
-Security alerts require management permission; Settings is available only to system administrators. The provider link
-opens the external repository, while the settings dialog remains available from the repository list.
+Open a repository name, noninteractive row area, or global-search result to reach Overview. The explicit row action
+opens Settings for system administrators and Overview for other authorized users. Repository navigation includes
+Overview, Workflow runs, Issues, Pull requests, Alerts, and Settings. Activity pages retain repository scope and offer
+filtering, sorting, pagination, and row navigation. Alerts require management permission; Settings is administrator-only.
+The provider link opens the external repository. Old `?repository=` links redirect to the full Overview page.
 
 Overview shows general information, retention, last synchronization/data age, interval, current job, and recent activity.
 Pending/running jobs show progress; warnings and failures include categorized safe errors.
@@ -28,6 +29,28 @@ Administrators can enable/disable tracking, **Refresh provider data**, and queue
 identity uses the provider account and stable provider repository ID. Renames/transfers preserve history, filters,
 memberships, and channels; metadata refresh rejects a different ID at the old path rather than reassigning it. Disabled
 repositories retain stored data but stop participating in synchronization.
+
+<a id="repository-settings-sections"></a>
+
+## Repository Settings sections
+
+Repository Settings has five secondary tabs. Each section uses the available content width; forms stack on narrow
+screens. Tab links can be shared and restored with reload or browser Back/Forward. General is the default.
+
+| Section          | Purpose                                 | Address                      |
+| ---------------- | --------------------------------------- | ---------------------------- |
+| General          | General retention overrides             | `/repositories/:id/settings` |
+| Webhook          | Repository webhook configuration        | `?tab=webhook`               |
+| Workflow filters | Allow/deny workflow patterns            | `?tab=workflow-filters`      |
+| Members          | Direct user access and repository roles | `?tab=members`               |
+| Group access     | Additive local group access             | `?tab=groups`                |
+
+Unsubmitted inputs and pending requests remain attached to their section while switching tabs during the same Settings
+visit. Leaving Settings or opening another Repository clears those drafts, including generated webhook secrets. Do not
+rely on tab switching to save changes; use the section's save or assignment action.
+
+The quick-detail dialog has been removed. Existing full detail pages retain refresh, synchronization, Provider links,
+and local deletion controls. Viewers and managers cannot access Settings by changing its URL.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -51,8 +74,8 @@ generate/copy a secret, save configuration, rotate with explicit confirmation, o
 URL must be fixed before provider registration. Secrets are shown only during configuration; keep them in a secret
 manager. Follow [Repository webhooks](/docs/next/provider-webhooks) for setup and verification.
 
-Viewers and managers receive a read-only repository settings summary. Retry load/save errors after recovery; inspect
-[Jobs](/docs/next/guide-jobs) for provider access, rate-limit, or synchronization failures.
+Viewers and managers inspect read-only Repository metadata in Overview; Settings remains administrator-only. Retry
+load/save errors after recovery and inspect [Jobs](/docs/next/guide-jobs) for synchronization failures.
 
 <a id="local-user-and-group-management"></a>
 
@@ -70,7 +93,7 @@ not synchronized from OIDC claims.
 
 ## Delete local tracking
 
-System administrators can select **Delete repository** on the detail page or in the settings dialog. Confirmation names
+System administrators can select **Delete repository** on the detail page. Confirmation names
 the repository and explains that deletion permanently removes local workflows, runs, issues, pull requests, security
 alerts, configuration, access assignments, webhook history, synchronization state, and associated notification history.
 The provider account and repository data at the provider remain unchanged.

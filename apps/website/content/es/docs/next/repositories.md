@@ -12,8 +12,7 @@ description:
 Abra un repositorio desde la tabla para navegar por Resumen, Ejecuciones de workflows, Issues, Pull requests, Alertas
 de seguridad y Configuración. Las páginas de actividad conservan el ámbito del repositorio y ofrecen filtros,
 ordenación, paginación y navegación por filas. Las alertas requieren permisos de gestión; Configuración solo está
-disponible para administradores del sistema. El enlace del proveedor abre el repositorio externo; el diálogo de
-configuración sigue disponible desde la lista.
+disponible para administradores del sistema. El enlace del proveedor abre el repositorio externo.
 
 Resumen muestra información general, retención, última sincronización, antigüedad de los datos, intervalo, trabajo
 actual y actividad reciente. Los trabajos pendientes o en curso muestran progreso y errores clasificados sin secretos.
@@ -33,6 +32,24 @@ sincronización de solo lectura. La identidad del repositorio utiliza la cuenta 
 estable del proveedor. Los cambios de nombre/transferencias conservan el historial, los filtros, las membresías y los
 canales; La actualización de metadatos rechaza una ID diferente en la ruta anterior en lugar de reasignarla. Los
 repositorios deshabilitados conservan los datos almacenados pero dejan de participar en la sincronización.
+
+<a id="repository-settings-sections"></a>
+
+## Secciones de configuración del repositorio
+
+La configuración del repositorio ofrece cinco pestañas secundarias. Cada sección utiliza todo el ancho disponible y los campos se apilan en pantallas estrechas. Los enlaces se pueden compartir y restaurar al recargar o usar Atrás/Adelante. General es la selección predeterminada.
+
+| Sección          | Finalidad                                 | Dirección                    |
+| ---------------- | ----------------------------------------- | ---------------------------- |
+| General          | Plazos de retención                       | `/repositories/:id/settings` |
+| Webhook          | Configuración del webhook del repositorio | `?tab=webhook`               |
+| Filtros de flujo | Patrones de permiso y exclusión           | `?tab=workflow-filters`      |
+| Miembros         | Acceso directo de usuarios y roles        | `?tab=members`               |
+| Acceso de grupos | Acceso adicional de grupos locales        | `?tab=groups`                |
+
+Los datos sin guardar y las solicitudes pendientes se conservan al cambiar de pestaña durante la misma visita. Al salir de la configuración o cambiar de repositorio se descartan los borradores, incluidos los secretos de webhook generados. Use la acción de guardar o asignar de cada sección para conservar los cambios.
+
+El diálogo de detalles rápidos se ha eliminado. Los enlaces antiguos `?repository=` abren el resumen. Las páginas completas conservan actualización, sincronización, enlaces del proveedor y eliminación local. Cambiar la URL no concede acceso a la configuración a lectores ni gestores.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -59,10 +76,7 @@ explícita o eliminar configuración. Una URL pública faltante debe corregirse 
 secretos se muestran sólo durante la configuración; guárdelos en un administrador secreto. Siga
 [Webhooks del repositorio](/docs/next/provider-webhooks) para configuración y verificación.
 
-Los espectadores y administradores reciben un resumen de la configuración del repositorio de solo lectura. Vuelva a
-intentar cargar/guardar errores después de la recuperación; Inspeccione
-[Tareas de sincronización](/docs/next/guide-jobs) para detectar errores de acceso, límite de velocidad o sincronización
-del proveedor.
+Los lectores y gestores consultan metadatos de solo lectura en Resumen; la configuración sigue reservada a administradores. Reintente después de resolver la causa y consulte [Trabajos](/docs/next/guide-jobs) para errores de sincronización.
 
 <a id="local-user-and-group-management"></a>
 
@@ -79,8 +93,7 @@ locales y OIDC, sin sincronización de claims OIDC.
 
 ## Eliminar el seguimiento local
 
-Los administradores del sistema pueden seleccionar **Eliminar repositorio** en la página de detalles o el diálogo de
-configuración. La confirmación identifica el repositorio y explica que se eliminan permanentemente los workflows,
+Los administradores del sistema pueden seleccionar **Eliminar repositorio** en la página de detalles. La confirmación identifica el repositorio y explica que se eliminan permanentemente los workflows,
 ejecuciones, issues, pull requests, alertas de seguridad, configuración, permisos, historial de webhooks, estado de
 sincronización e historial de notificaciones asociados localmente. La cuenta y los datos del repositorio en el proveedor
 permanecen sin cambios.

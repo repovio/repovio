@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ body: 'space-y-4' }">
+  <UCard class="min-w-0" :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
         <h2 class="font-semibold">
@@ -19,20 +19,22 @@
       :title="$t('repositoryDetails.saveError')"
     />
     <UForm
-      class="flex flex-col gap-2 sm:flex-row"
+      class="grid grid-cols-1 items-end gap-4 md:grid-cols-[9rem_minmax(0,1fr)_auto]"
       :schema="localizeFormSchema(filterSchema, $t('forms.invalidValue'))"
       :state="form"
       @submit="addWorkflowFilter"
     >
-      <UFormField name="mode" :label="$t('repositoryDetails.mode')" :ui="{ label: 'sr-only' }">
-        <USelect v-model="form.mode" class="sm:w-36" :items="filterModeOptions" />
+      <UFormField name="mode" :label="$t('repositoryDetails.mode')">
+        <USelect v-model="form.mode" class="w-full" :items="filterModeOptions" />
       </UFormField>
-      <UFormField name="pattern" class="flex-1" :label="$t('repositoryDetails.pattern')" :ui="{ label: 'sr-only' }">
+      <UFormField name="pattern" class="min-w-0" :label="$t('repositoryDetails.pattern')">
         <UInput v-model="form.pattern" class="w-full" :placeholder="$t('repositoryDetails.filterPlaceholder')" />
       </UFormField>
       <UButton
+        class="w-full justify-center md:w-auto"
         icon="i-lucide-plus"
         type="submit"
+        :label="$t('repositoryDetails.addFilter')"
         :aria-label="$t('repositoryDetails.addFilter')"
         :disabled="adding"
         :loading="adding"
@@ -41,6 +43,7 @@
 
     <UTable
       sticky
+      class="min-w-0"
       :column-pinning="{ right: ['actions'] }"
       :columns="columns"
       :data="filters"

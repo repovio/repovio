@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ body: 'space-y-4' }">
+  <UCard class="min-w-0" :ui="{ body: 'space-y-5' }">
     <template #header>
       <div>
         <h2 class="font-semibold">
@@ -19,12 +19,12 @@
       :title="$t('repositoryDetails.saveError')"
     />
     <UForm
-      class="flex flex-col gap-2 sm:flex-row"
+      class="grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1fr)_12rem_auto]"
       :schema="localizeFormSchema(membershipFormSchema, $t('forms.invalidValue'))"
       :state="form"
       @submit="addMember"
     >
-      <UFormField name="userId" class="flex-1" :label="$t('repositoryDetails.user')" :ui="{ label: 'sr-only' }">
+      <UFormField name="userId" class="min-w-0" :label="$t('repositoryDetails.user')">
         <USelectMenu
           v-model="form.userId"
           v-model:search-term="userSearch"
@@ -66,12 +66,14 @@
           </template>
         </USelectMenu>
       </UFormField>
-      <UFormField name="role" :label="$t('repositoryDetails.role')" :ui="{ label: 'sr-only' }">
-        <USelect v-model="form.role" class="w-full sm:w-48" :items="membershipRoleOptions" />
+      <UFormField name="role" :label="$t('repositoryDetails.role')">
+        <USelect v-model="form.role" class="w-full" :items="membershipRoleOptions" />
       </UFormField>
       <UButton
+        class="w-full justify-center md:w-auto"
         type="submit"
         icon="i-lucide-user-plus"
+        :label="$t('repositoryDetails.addMember')"
         :aria-label="$t('repositoryDetails.addMember')"
         :disabled="!form.userId"
         :loading="adding"
@@ -80,6 +82,7 @@
 
     <UTable
       sticky
+      class="min-w-0"
       :column-pinning="{ right: ['actions'] }"
       :columns="columns"
       :data="memberships"
@@ -97,7 +100,7 @@
             :user-id="row.original.user.id"
             :username="row.original.user.username"
           />
-          <div class="min-w-0">
+          <div class="min-w-0 max-w-64" :title="getUserIdentityLabel(row.original.user)">
             <p class="truncate">
               {{ getUserDisplayName(row.original.user) }}
             </p>

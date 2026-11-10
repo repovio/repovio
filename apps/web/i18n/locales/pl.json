@@ -1093,7 +1093,10 @@
     "workflowFilters": "Filtry workflow",
     "workflowFiltersDescription": "Filtry wykluczające mają pierwszeństwo przed filtrami zezwalającymi.",
     "overview": "Przegląd",
-    "navigation": "Nawigacja repozytorium"
+    "navigation": "Nawigacja repozytorium",
+    "general": "Ogólne",
+    "webhook": "Webhook",
+    "settingsNavigation": "Sekcje ustawień repozytorium"
   },
   "securityAlerts": {
     "code": "Skanowanie kodu",

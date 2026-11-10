@@ -25,3 +25,10 @@ Administrator mengonfigurasi [Otentikasi OIDC](/docs/next/authentication) dan
 [Default sistem](/docs/next/settings-system) di tabnya masing-masing. Tab yang hilang mungkin sesuai dengan peran Anda;
 mengubah URL tidak memberikan otorisasi. Coba lagi permintaan pengaturan yang gagal hanya setelah memeriksa konektivitas
 API.
+
+<a id="repository-settings"></a>
+
+## Pengaturan repositori
+
+Konfigurasi repositori terpisah dari pengaturan pribadi. Administrator dapat beralih antara Umum, Webhook, Filter alur kerja, Anggota, dan Akses grup. Untuk alamat langsung dan masa berlaku draf, lihat
+[Bagian pengaturan repositori](/docs/next/repositories#repository-settings-sections).

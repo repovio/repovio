@@ -10,8 +10,7 @@ description: "Suivez les référentiels, inspectez l'activité et configurez la 
 Ouvrez un dépôt depuis le tableau pour accéder à la vue d’ensemble, aux exécutions de workflows, aux issues, aux pull
 requests, aux alertes de sécurité et aux paramètres. Les pages d’activité restent limitées au dépôt et proposent
 filtres, tri, pagination et navigation par ligne. Les alertes nécessitent des droits de gestion ; les paramètres sont
-réservés aux administrateurs système. Le lien du fournisseur ouvre le dépôt externe ; la boîte de paramètres reste
-accessible depuis la liste des dépôts.
+réservés aux administrateurs système. Le lien du fournisseur ouvre le dépôt externe.
 
 La vue d’ensemble affiche les informations générales, la rétention, la dernière synchronisation, l’âge des données,
 l’intervalle, le job actuel et l’activité récente. Les jobs en attente ou en cours affichent leur progression et des
@@ -32,6 +31,24 @@ d'attente une synchronisation en lecture seule. L'identité du référentiel uti
 référentiel du fournisseur stable. Les renommages/transferts préservent l'historique, les filtres, les adhésions et les
 chaînes ; L'actualisation des métadonnées rejette un ID différent sur l'ancien chemin plutôt que de le réattribuer. Les
 référentiels désactivés conservent les données stockées mais cessent de participer à la synchronisation.
+
+<a id="repository-settings-sections"></a>
+
+## Sections des paramètres du dépôt
+
+Les paramètres du dépôt proposent cinq onglets secondaires. Chaque section utilise toute la largeur disponible et les champs s’empilent sur les petits écrans. Les liens des onglets peuvent être partagés et restaurés après rechargement ou navigation Précédent/Suivant. Général est sélectionné par défaut.
+
+| Section           | Fonction                                 | Adresse                      |
+| ----------------- | ---------------------------------------- | ---------------------------- |
+| Général           | Durées de conservation                   | `/repositories/:id/settings` |
+| Webhook           | Configuration du webhook du dépôt        | `?tab=webhook`               |
+| Filtres de flux   | Motifs d’autorisation et d’exclusion     | `?tab=workflow-filters`      |
+| Membres           | Accès directs et rôles des utilisateurs  | `?tab=members`               |
+| Accès des groupes | Accès supplémentaires des groupes locaux | `?tab=groups`                |
+
+Les saisies non enregistrées et les requêtes en cours sont conservées lors du changement d’onglet pendant une même visite. Quitter les paramètres ou changer de dépôt efface ces brouillons, y compris les secrets de webhook générés. Utilisez l’action d’enregistrement ou d’attribution de la section pour conserver les modifications.
+
+La boîte de détails rapide a été supprimée. Les anciens liens `?repository=` ouvrent la vue d’ensemble. Les pages complètes conservent l’actualisation, la synchronisation, les liens du fournisseur et la suppression locale. Modifier l’URL ne donne aucun accès aux paramètres aux lecteurs ou gestionnaires.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -59,9 +76,7 @@ l'enregistrement du fournisseur. Les secrets sont affichés uniquement lors de l
 gestionnaire secret. Suivez [Webhooks du référentiel](/docs/next/provider-webhooks) pour la configuration et la
 vérification.
 
-Les visualiseurs et les gestionnaires reçoivent un résumé des paramètres du référentiel en lecture seule. Réessayez de
-charger/enregistrer les erreurs après la récupération ; inspectez [Tâches de synchronisation](/docs/next/guide-jobs)
-pour détecter les échecs d’accès au fournisseur, de limite de débit ou de synchronisation.
+Les lecteurs et gestionnaires consultent les métadonnées en lecture seule dans la vue d’ensemble ; les paramètres restent réservés aux administrateurs. Réessayez après correction et consultez les [Jobs](/docs/next/guide-jobs) pour les erreurs de synchronisation.
 
 <a id="local-user-and-group-management"></a>
 
@@ -78,8 +93,7 @@ locaux et OIDC, sans synchronisation des claims OIDC.
 
 ## Supprimer le suivi local
 
-Les administrateurs système peuvent sélectionner **Supprimer le dépôt** sur la page de détails ou dans la fenêtre des
-paramètres. La confirmation nomme le dépôt et explique la suppression définitive des workflows, exécutions, issues,
+Les administrateurs système peuvent sélectionner **Supprimer le dépôt** sur la page de détails. La confirmation nomme le dépôt et explique la suppression définitive des workflows, exécutions, issues,
 pull requests, alertes de sécurité, paramètres, attributions d’accès, historiques de webhooks, états de synchronisation
 et historiques de notifications associés localement. Le compte fournisseur et les données du dépôt chez le fournisseur
 restent inchangés.

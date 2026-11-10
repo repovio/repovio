@@ -1,7 +1,11 @@
 <template>
-  <div class="space-y-2">
+  <div class="min-w-0 space-y-2">
+    <label v-if="labeled" class="block text-sm font-medium text-highlighted" :for="searchId">
+      {{ $t(kind === 'users' ? 'userGroups.searchUsers' : 'userGroups.searchGroups') }}
+    </label>
     <UInput
       v-model="search"
+      :id="labeled ? searchId : undefined"
       class="w-full"
       icon="i-lucide-search"
       :aria-label="$t(kind === 'users' ? 'userGroups.searchUsers' : 'userGroups.searchGroups')"
@@ -9,8 +13,12 @@
       :disabled="disabled"
     />
     <UAlert v-if="error" color="error" :title="$t('userGroups.loadError')" />
+    <label v-if="labeled" class="block text-sm font-medium text-highlighted" :for="selectionId">
+      {{ $t(kind === 'users' ? 'userGroups.selectUser' : 'userGroups.selectGroup') }}
+    </label>
     <USelect
       v-model="selected"
+      :id="labeled ? selectionId : undefined"
       class="w-full"
       value-key="id"
       label-key="label"
@@ -43,10 +51,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, useId, watch } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { getUserIdentityLabel } from '~/utils/user-identity';
-const props = defineProps<{ kind: 'users' | 'groups'; disabled?: boolean }>();
+const props = defineProps<{
+  kind: 'users' | 'groups';
+  disabled?: boolean;
+  /** Render associated visible field labels in full-width configuration forms. */
+  labeled?: boolean;
+}>();
+const searchId = useId();
+const selectionId = useId();
 const selected = defineModel<string>();
 const api = useRepovioApi();
 const search = ref('');

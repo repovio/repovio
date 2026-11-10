@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ body: 'space-y-4' }">
+  <UCard class="min-w-0" :ui="{ body: 'space-y-5' }">
     <template #header>
       <h2 class="font-semibold">
         {{ $t('userGroups.repositoryTitle') }}
@@ -9,10 +9,23 @@
       </p>
     </template>
     <UAlert v-if="error" color="error" :title="$t('userGroups.saveError')" />
-    <ModulesUserGroupsResourcePicker v-model="selected" kind="groups" :disabled="!!pending" />
-    <div class="flex flex-wrap gap-2">
-      <USelect v-model="role" :items="roles" :aria-label="$t('users.columns.role')" :disabled="!!pending" />
+    <div
+      class="grid grid-cols-1 items-start gap-4 md:grid-cols-[minmax(0,1fr)_12rem_auto]"
+      role="group"
+      :aria-label="$t('userGroups.assign')"
+    >
+      <ModulesUserGroupsResourcePicker v-model="selected" labeled kind="groups" :disabled="!!pending" />
+      <UFormField :label="$t('repositoryDetails.role')">
+        <USelect
+          v-model="role"
+          class="w-full"
+          :items="roles"
+          :aria-label="$t('users.columns.role')"
+          :disabled="!!pending"
+        />
+      </UFormField>
       <UButton
+        class="w-full justify-center md:mt-6 md:w-auto"
         icon="i-lucide-plus"
         :label="$t('userGroups.assign')"
         :disabled="!selected || !!pending"
@@ -28,9 +41,10 @@
     </p>
     <ul v-else class="divide-y divide-default">
       <li v-for="grant in grants" :key="grant.id" class="flex flex-wrap items-center justify-between gap-2 py-2">
-        <span class="min-w-0 truncate">{{ grant.group.name }}</span>
-        <div class="flex items-center gap-2">
+        <span class="min-w-0 max-w-full truncate" :title="grant.group.name">{{ grant.group.name }}</span>
+        <div class="flex min-w-0 items-center gap-2">
           <USelect
+            class="w-44"
             :model-value="grant.role"
             :loading="pending === grant.groupId"
             :items="roles"

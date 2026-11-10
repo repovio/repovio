@@ -89,7 +89,7 @@ test('viewer cannot access repository webhook controls', /** Verifies viewer can
   await page.goto('/repositories?repository=repository-1');
 
   await expect(page.getByRole('columnheader', { name: 'Webhook' })).toHaveCount(0);
-  const dialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
+  const dialog = page.locator('#main-content');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toHaveCount(0);
 });
@@ -102,7 +102,7 @@ test('viewer browses assigned repositories without administration actions', /** 
 
   await expect(page).toHaveTitle('Repositories · Repovio');
   const brandLink = page.getByRole('link', { name: 'Repovio', exact: true });
-  await expect(brandLink).toHaveText('Repovio');
+  await expect(brandLink.locator('img:visible')).toBeVisible();
   await expect(brandLink).toHaveAttribute('href', '/');
   await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
     'href',
@@ -133,42 +133,28 @@ test('viewer browses assigned repositories without administration actions', /** 
   await expect(repositoriesLink).toHaveAttribute('aria-current', 'page');
   await page.screenshot({ path: testInfo.outputPath('viewer-repository-navigation-collapsed.png'), fullPage: true });
   await page.getByRole('button', { name: 'Expand sidebar' }).click();
-  await expect(brandLink).toHaveText('Repovio');
+  await expect(brandLink.locator('img:visible')).toBeVisible();
 
-  await page.getByPlaceholder('Search Repovio').fill('repositories');
-  await expect(page.getByRole('link', { name: 'Repositories' }).last()).toHaveAttribute('href', '/repositories');
+  await page.getByRole('button', { name: 'Open search', exact: true }).click();
+  await page.getByPlaceholder('Search or type a command').fill('repositories');
+  await expect(page.getByRole('option', { name: 'Repositories', exact: true })).toHaveAttribute(
+    'href',
+    '/repositories',
+  );
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open repository' }).click();
+  await page.getByRole('link', { name: 'Open repository', exact: true }).click();
 
-  await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  const repositoryDialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
-  await expect(repositoryDialog).toBeVisible();
-  await expect(repositoryDialog.getByText('Enabled', { exact: true })).toBeVisible();
-  await expect(repositoryDialog.getByRole('button', { name: 'Save' })).toHaveCount(0);
-  await expect(repositoryDialog.getByRole('button', { name: 'Refresh provider data' })).toHaveCount(0);
-  await expect(repositoryDialog.getByRole('heading', { name: 'Workflow filters' })).toHaveCount(0);
-  await expect(repositoryDialog.getByRole('heading', { name: 'Members' })).toHaveCount(0);
-  await expect(repositoryDialog.getByRole('heading', { name: 'Repository webhook' })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/repositories\/repository-1$/);
+  await expect(page.getByRole('navigation', { name: 'Repository navigation', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'twaelde/repovio' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Refresh provider data' })).toHaveCount(0);
   await page.goBack();
   await expect(page).toHaveURL(/\/repositories$/);
-  await expect(repositoryDialog).not.toBeVisible();
-  await expect(repositoriesLink).toHaveAttribute('aria-current', 'page');
   await page.goForward();
-  await expect(repositoryDialog).toBeVisible();
+  await expect(page).toHaveURL(/\/repositories\/repository-1$/);
   await page.reload();
-  await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  await expect(repositoryDialog).toBeVisible();
-
-  await page.goto('/repositories/repository-1?source=detail#settings');
-  await expect
-    .poll(
-      /** Reads the observable state until the browser assertion settles. */ () => {
-        const url = new URL(page.url());
-        return `${url.pathname}|${url.searchParams.get('source')}|${url.hash}`;
-      },
-    )
-    .toBe('/repositories/repository-1|detail|#settings');
-  await expect(page.getByRole('heading', { name: 'Synchronization' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synchronization', exact: true })).toBeVisible();
 
   await page.goto('/admin/repositories/repository-1?source=legacy#details');
   await expect
@@ -288,7 +274,7 @@ test('administrator refreshes renamed repository metadata from the provider', /*
   await page.screenshot({ path: testInfo.outputPath('repository-refresh-loading.png'), fullPage: true });
   releaseRefresh?.();
 
-  await expect(page.getByRole('dialog', { name: 'new-owner/repovio' })).toBeVisible();
+  await expect(page).toHaveTitle('new-owner/repovio · Repovio');
   await expect(page.getByRole('link', { name: 'Open in provider' })).toHaveAttribute(
     'href',
     'https://github.com/new-owner/repovio',
@@ -391,9 +377,13 @@ test('administrator configures a webhook for one repository', /** Verifies admin
   await page.goto('/repositories');
   await expect(page.getByRole('columnheader', { name: 'Webhook' })).toBeVisible();
   await expect(page.getByText('Not configured', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Edit repository' }).click();
+  await page.getByRole('link', { name: 'Edit repository', exact: true }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'twaelde/repovio' });
+  await page
+    .getByRole('navigation', { name: 'Repository settings sections', exact: true })
+    .getByRole('link', { name: 'Webhook', exact: true })
+    .click();
+  const dialog = page.locator('#main-content');
   await expect(dialog.getByRole('heading', { name: 'Repository webhook' })).toBeVisible();
   await expect(
     dialog.locator('input[value="https://repovio.example.test/api/webhooks/github/repository-1"]'),
@@ -421,12 +411,11 @@ test('administrator configures a webhook for one repository', /** Verifies admin
   await expect(dialog.getByText('The webhook secret could not be updated.')).toBeVisible();
   requestFails = false;
 
-  page.once(
-    'dialog',
-    /** Evaluates `confirmation.accept()` when page.once invokes this callback. */ (confirmation) =>
-      confirmation.accept(),
-  );
   await dialog.getByRole('button', { name: 'Remove configuration' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm removal' })
+    .getByRole('button', { name: 'Remove', exact: true })
+    .click();
   await expect(dialog.getByText('Not configured', { exact: true })).toBeVisible();
   await expect(page.getByText('Not configured', { exact: true }).first()).toBeVisible();
 
@@ -501,5 +490,37 @@ for (const section of ['issues', 'pull-requests', 'security-alerts?kind=CODE']) 
     expect(new URL(urls.at(-1)!).searchParams.get('where')).toContain('repository-1');
     if (section.startsWith('security-alerts'))
       expect(new URL(urls.at(-1)!).searchParams.get('where')).toContain('CODE');
+  });
+}
+
+for (const role of ['VIEWER', 'MANAGER', 'SYSTEM_ADMIN'] as const) {
+  test(`canonical entry points and legacy links for ${role}`, /** Preserve old destinations without recreating the modal. */ async ({
+    page,
+  }) => {
+    await mockRepositoryApplication(page, role);
+    await page.goto('/repositories');
+    const action = page
+      .getByRole('link', { name: role === 'SYSTEM_ADMIN' ? 'Edit repository' : 'Open repository', exact: true })
+      .first();
+    await expect(action).toHaveAttribute(
+      'href',
+      `/repositories/repository-1${role === 'SYSTEM_ADMIN' ? '/settings' : ''}`,
+    );
+    await action.click();
+    await expect(page).toHaveURL(`/repositories/repository-1${role === 'SYSTEM_ADMIN' ? '/settings' : ''}`);
+    await page.goBack();
+    await expect(page).toHaveURL('/repositories');
+    await page.goto('/repositories?source=legacy&repository=repository-1#details');
+    await expect(page).toHaveURL('/repositories/repository-1?source=legacy#details');
+    await expect(page.getByRole('dialog', { name: 'team/repository-1' })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole('navigation', { name: 'Repository navigation', exact: true })).toBeVisible();
+    for (const query of ['repository=', 'repository=repository-1&repository=repository-2']) {
+      await page.goto(`/repositories?${query}`);
+      await expect(page.getByRole('link', { name: 'repository-1', exact: true })).toBeVisible();
+      expect(new URL(page.url()).pathname).toBe('/repositories');
+    }
+    await page.goto('/repositories?repository=forbidden');
+    await expect(page.getByText('This repository was not found or is not available to you.')).toBeVisible();
   });
 }

@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { testRepository } from './fixtures/repository-detail';
 
 const emptyPage = {
   items: [],
@@ -168,6 +169,7 @@ test('groups authorized global results and keeps stale responses from replacing 
     /** Supplies the mocked response for `/api/v1/repositories/repository-1`. */ (route) =>
       route.fulfill({
         json: {
+          ...testRepository(),
           enabled: true,
           id: 'repository-1',
           lastSyncAt: null,
@@ -214,7 +216,7 @@ test('groups authorized global results and keeps stale responses from replacing 
   await expect(results.getByText('Repositories', { exact: true })).toBeVisible();
   await expect(results.getByRole('option', { name: /^tobiaswaelde\/repovio/ })).toHaveAttribute(
     'href',
-    '/repositories?repository=repository-1',
+    '/repositories/repository-1',
   );
   await expect(results.getByText('Workflow runs', { exact: true })).toBeVisible();
   await expect(results.getByRole('option', { name: /Repovio deployment/ })).toHaveAttribute(
@@ -253,8 +255,10 @@ test('groups authorized global results and keeps stale responses from replacing 
   await expect(search).toHaveValue('');
   await search.fill('flow');
   await results.getByRole('option', { name: /^tobiaswaelde\/repovio/ }).click();
-  await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  await expect(page.getByRole('dialog', { name: 'tobiaswaelde/repovio' })).toBeVisible();
+  await expect(page).toHaveURL(/\/repositories\/repository-1$/);
+  await expect(page.getByRole('navigation', { name: 'Repository navigation', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synchronization', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'tobiaswaelde/repovio' })).toHaveCount(0);
 });
 
 test('does not request or expose provider accounts to a viewer and preserves successful groups on partial failure', /** Verifies does not request or expose provider accounts to a viewer and preserves successful groups on partial failure. */ async ({

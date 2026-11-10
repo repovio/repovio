@@ -35,6 +35,8 @@
 import { computed, defineProps, withDefaults } from 'vue';
 
 interface PageBreadcrumbItem {
+  /** Bound long item labels through the existing Nuxt UI breadcrumb class contract. */
+  class?: string;
   icon?: string;
   label: string;
   to?: string;

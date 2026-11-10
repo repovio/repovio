@@ -47,6 +47,11 @@ test('Settings metadata loads lazily and legacy anchors reach the guarded child'
   await page.goto('/repositories/repository-1#settings');
   await expect(page).toHaveURL('/repositories/repository-1/settings');
   await expect(page.getByRole('heading', { name: 'Repository settings', exact: true })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Repository settings sections', exact: true })
+    .getByRole('link', { name: 'Webhook', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Repository webhook', exact: true })).toBeVisible();
   expect(
     requests.some(
       /** Confirm metadata was loaded only on Settings entry. */ (url) => url.includes('webhook-configurations'),
@@ -112,7 +117,7 @@ test('repository User discovery preserves full names and later pages', /** Exerc
       });
     },
   );
-  await page.goto('/repositories/repository-1/settings');
+  await page.goto('/repositories/repository-1/settings?tab=members');
   await page.getByRole('button', { name: 'User', exact: true }).click();
   await expect(page.getByRole('option', { name: 'Vera Viewer (@viewer)' })).toBeVisible();
   await page.getByRole('button', { name: 'Next page', exact: true }).last().click();

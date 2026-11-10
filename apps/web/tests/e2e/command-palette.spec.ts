@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { testRepository } from './fixtures/repository-detail';
 
 const emptyPage = {
   items: [],
@@ -13,6 +14,7 @@ const providerAccount = {
   providerType: 'GITHUB',
 };
 const repository = {
+  ...testRepository(),
   enabled: true,
   id: 'repository-1',
   lastSyncAt: null,
@@ -203,11 +205,10 @@ test('opens globally, restores focus, supports keyboard navigation, and opens re
     .getByRole('option', { name: /tobiaswaelde\/repovio/ })
     .first()
     .click();
-  await expect(page).toHaveURL(/\/repositories\?repository=repository-1$/);
-  const repositoryDialog = page.getByRole('dialog', { name: 'tobiaswaelde/repovio' });
-  await expect(repositoryDialog).toBeVisible();
-  await repositoryDialog.getByRole('button', { name: 'Close' }).click();
-  await expect(repositoryDialog).not.toBeVisible();
+  await expect(page).toHaveURL(/\/repositories\/repository-1$/);
+  await expect(page.getByRole('navigation', { name: 'Repository navigation', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synchronization', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'tobiaswaelde/repovio' })).toHaveCount(0);
 
   await page.setViewportSize({ height: 844, width: 390 });
   await page.keyboard.press(shortcut);

@@ -25,3 +25,10 @@ application/utilisateur. Les administrateurs configurent [Authentification OIDC]
 [Paramètres par défaut du système](/docs/next/settings-system) dans leurs onglets respectifs. Un onglet manquant peut
 être correct pour votre rôle ; changer une URL n’accorde pas d’autorisation. Réessayez les demandes de paramètres ayant
 échoué uniquement après avoir vérifié la connectivité de l'API.
+
+<a id="repository-settings"></a>
+
+## Paramètres du dépôt
+
+La configuration du dépôt est distincte des paramètres personnels. Les administrateurs y trouvent Général, Webhook, Filtres de flux, Membres et Accès des groupes. Pour les adresses directes et la durée des brouillons, consultez
+[Sections des paramètres du dépôt](/docs/next/repositories#repository-settings-sections).

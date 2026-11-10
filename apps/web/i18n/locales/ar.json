@@ -1093,7 +1093,10 @@
     "deleteSyncConflict": "المزامنة قيد التشغيل. انتظر حتى تنتهي، ثم أعد المحاولة.",
     "deleteError": "تعذّر إكمال العملية. أعد المحاولة.",
     "overview": "نظرة عامة",
-    "navigation": "التنقل في المستودع"
+    "navigation": "التنقل في المستودع",
+    "general": "عام",
+    "webhook": "Webhook",
+    "settingsNavigation": "أقسام إعدادات المستودع"
   },
   "securityAlerts": {
     "code": "فحص الشفرة",

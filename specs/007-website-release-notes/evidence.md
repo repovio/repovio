@@ -72,3 +72,11 @@
 - Effective `nx show project website --json` confirms root CHANGELOG.md in build, container, test, and typecheck inputs.
 - Website ESLint, focused root-script ESLint, declaration coverage, and stable canonical formatting passed.
 - No deployment or release trigger changed; only validation selection and cache inputs changed.
+
+## T009 API-reference fixture compatibility
+
+- Existing API-reference acceptance reproduced `ENOENT /CHANGELOG.md` before the fixture layout fix.
+- Fixture now preserves `apps/website` and root changelog relationship; no production source override added.
+- Real isolated API-reference build and browser acceptance passed: 54 tests, one optional real-schema case skipped.
+- Existing schema, archive, browser, and cleanup assertions were preserved. Website ESLint, declaration coverage, and
+  stable canonical formatting passed after the fixture change.

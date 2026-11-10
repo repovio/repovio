@@ -88,3 +88,6 @@ archive versions. There is no browser-time GitHub request or need for applicatio
 
 The root changelog is an explicit external input to website Nx build, container, test, and typecheck targets. Its changes
 invalidate those caches and select website CI validation, without changing independently approved publication triggers.
+
+Isolated API-reference validation preserves the website's repository-relative root changelog input in its disposable
+fixture. It continues to create synthetic API archives only in that fixture and never modifies real release content.

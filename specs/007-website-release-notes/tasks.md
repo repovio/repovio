@@ -6,7 +6,7 @@
 **Issue**: [#83](https://github.com/repovio/repovio/issues/83).
 **Branch**: `codex/83-website-release-notes`, reusing the existing Codex worktree. Implementation approved on 2026-11-10; merge and deployment remain separately gated.
 **Tests**: Required by the specification and repository rules; each behavior increment includes its focused tests.
-**Organization**: Eight coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
+**Organization**: Nine coherent tasks, grouped by story. Do not split failing tests and their implementation into commits.
 
 ## Format and Execution Rules
 
@@ -14,7 +14,7 @@
 - Paths are repository-relative. Referenced new source/test paths are planned deliverables, not existing files.
 - Before each edit, test, and commit, inspect working status and the relevant diff. Read owning instructions and use
   Graphify before new source exploration. Preserve unrelated work and pinned dependencies.
-- During separately approved implementation, each T002–T006 and T008 gets its own working, verified commit containing code,
+- During separately approved implementation, each T002–T006, T008, and T009 gets its own working, verified commit containing code,
   focused tests, attached documentation, exactly one focused Changeset, and the corresponding graph update. Generate
   Changesets with the pinned workspace CLI; include `repovio` and the independently affected `@repovio/website` in the
   same file as appropriate. Never version or publish packages during task work. Push each authorized commit.
@@ -132,7 +132,7 @@ translation-key coverage. Locale destinations remain available even if their arc
 **Reason**: Acceptance inspection found that root `CHANGELOG.md` was outside website Nx cache inputs and CI path selection.
 This is a direct FR-008 dependency, not an additional product feature or deployment trigger. Keep all existing task IDs.
 
-- [ ] T008 Add root `CHANGELOG.md` to website target inputs in `apps/website/project.json`; select website validation for
+- [x] T008 Add root `CHANGELOG.md` to website target inputs in `apps/website/project.json`; select website validation for
       changelog-only changes in `scripts/ci-areas.mjs`; extend `scripts/ci-areas.test.mjs` and
       `apps/website/tests/unit/release-notes.test.ts` with CI/source-input contract checks; document cache invalidation in
       `apps/website/README.md`; include `.changeset/website-release-inputs.md`. Preserve default dependency inputs and
@@ -140,6 +140,20 @@ This is a direct FR-008 dependency, not an additional product feature or deploym
 
 **Acceptance**: Changing only the root application changelog selects website checks and invalidates website source-consuming
 build/test/typecheck/container targets. Application deployment triggers and independently versioned releases remain unchanged.
+
+## Phase 5c: Existing API Reference Fixture Compatibility
+
+**Reason**: The existing isolated API-reference build copies only the website and resolves the newly required canonical
+source as `/CHANGELOG.md`. Its unchanged acceptance command fails with ENOENT. Preserve the repository-relative source
+layout in that disposable fixture; do not add production source overrides or change the canonical history location.
+
+- [ ] T009 Update `apps/website/scripts/check-api-reference.mjs` to copy the website under `apps/website` inside its own
+      temporary root and copy canonical `CHANGELOG.md` to that root; preserve all existing synthetic schema/archive/browser
+      assertions and cleanup; run the real `test:api-reference` regression command; document the fixture boundary and include
+      `.changeset/website-release-fixture.md` before its separate verified commit.
+
+**Acceptance**: The existing API-reference production build/browser checks pass with the canonical changelog present,
+without changing real archives, real release notes, dependency pins, or application behavior. T007 also depends on T009.
 
 ## Phase 6: Cross-Cutting Verification
 
@@ -186,14 +200,15 @@ T001
         T005 (US3 visual/accessibility)
         T006 (US3 discovery/locale switching; parallel-capable with T005)
           T008 (after both T005 and T006)
-            T007 (requires T008)
+            T009 (existing API-reference fixture)
+              T007 (requires T008 and T009)
 ```
 
 - T002 blocks all stories because the page needs canonical content in development and production.
 - US1 is independently testable after T002 and supplies the MVP, including readable history and basic translated chrome.
 - US2 depends on US1's real route and renderer; it adds release navigation without duplicating content.
 - US3 builds on that page; T005 and T006 touch distinct source/test/documentation paths after T004.
-- T007 requires T008 and both US3 tasks and includes full original-navigation/container regression evidence.
+- T007 requires T008, T009, and both US3 tasks and includes full original-navigation/container regression evidence.
 - `[P]` denotes file-disjoint work that could run concurrently, not permission to create agents or combine commits.
   Serialize shared build/container/browser resources and graph updates; use separate commits in dependency order.
 

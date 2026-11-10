@@ -100,3 +100,7 @@ CI status. Production deployment and Provider writes are outside this feature.
   pagination, failed assignment, held successful assignment/role change, cancellation, and confirmed removal. Invisible
   native select bridge inputs are excluded from visible-control geometry checks. Screenshot reviewed at 1102 px.
   Existing seven role/access/lazy-metadata/user-discovery scenarios passed; web typecheck passed.
+
+- T008: 13 group-access cases passed: 12 long-name viewport/locale/theme layouts, plus search/pagination, assignment
+  failure, loading through dependent refresh, role updates, cancellation, and confirmed grant removal. Visible picker
+  labels are opt-in; existing consumers retain their previous presentation. Web lint/typecheck and documentation passed.

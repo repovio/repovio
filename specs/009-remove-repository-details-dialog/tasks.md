@@ -116,7 +116,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       pinned actions. Retain validation, allow/deny semantics, loading/errors, and confirmations. Add focused
       `apps/web/tests/e2e/repository-filter-layout.spec.ts` using the unchanged shared fixture to verify add/remove,
       validation, pending/error states, long patterns, empty/populated rows, and unclipped controls at all target sizes.
-- [ ] T007 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/members-card.vue`: visible labels,
+- [x] T007 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/members-card.vue`: visible labels,
       flexible user selection, full-width role control, stacked narrow layout and aligned wide layout, labeled primary add
       action, and contained table overflow with pinned actions. Preserve user search/pagination, avatars, role validation,
       pending role/remove controls, and confirmation behavior. Add focused

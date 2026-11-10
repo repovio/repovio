@@ -207,11 +207,8 @@ for (const locale of ['en', 'de']) {
       dialog.getByText(de ? 'Diese Gruppe hat keine Mitglieder.' : 'This group has no members.'),
     ).toBeVisible();
     await page.keyboard.press('Escape');
-    await page.goto('/repositories/repository-1/settings');
-    const card = page
-      .locator('[data-slot="root"]')
-      .filter({ has: page.getByRole('heading', { name: de ? 'Gruppenzugriff' : 'Group access', exact: true }) })
-      .last();
+    await page.goto('/repositories/repository-1/settings?tab=groups');
+    const card = page.locator('[data-settings-section="groups"]');
     await card.getByRole('combobox', { name: de ? 'Gruppe auswählen' : 'Select a group', exact: true }).click();
     await page.getByRole('option', { name: 'Maintainers' }).click();
     await card.getByRole('button', { name: de ? 'Gruppe zuweisen' : 'Assign group', exact: true }).click();

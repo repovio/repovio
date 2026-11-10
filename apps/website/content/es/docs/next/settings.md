@@ -26,3 +26,10 @@ usuario. Los administradores configuran [Autenticación OIDC](/docs/next/authent
 [Valores predeterminados del sistema](/docs/next/settings-system) en sus respectivas pestañas. Una pestaña que falta
 puede ser correcta para su función; cambiar una URL no otorga autorización. Vuelva a intentar las solicitudes de
 configuración fallidas solo después de verificar la conectividad API.
+
+<a id="repository-settings"></a>
+
+## Configuración del repositorio
+
+La configuración del repositorio es independiente de los ajustes personales. Los administradores pueden alternar entre General, Webhook, Filtros de flujos, Miembros y Acceso de grupos. Para direcciones directas y duración de borradores, consulte
+[Secciones de configuración del repositorio](/docs/next/repositories#repository-settings-sections).

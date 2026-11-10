@@ -23,3 +23,11 @@ forms, but can still edit their avatar. [MCP](/docs/next/mcp) manages personal r
 Administrators configure [OIDC authentication](/docs/next/authentication) and
 [System defaults](/docs/next/settings-system) in their respective tabs. A missing tab can be correct for your role;
 changing a URL does not grant authorization. Retry failed settings requests only after checking API connectivity.
+
+<a id="repository-settings"></a>
+
+## Repository Settings
+
+Repository configuration is separate from personal Settings. System administrators open a Repository's Settings to
+switch between General, Webhook, Workflow filters, Members, and Group access. See
+[Repository Settings sections](/docs/next/repositories#repository-settings-sections) for direct addresses and draft lifetime.

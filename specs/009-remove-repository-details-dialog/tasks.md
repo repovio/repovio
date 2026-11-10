@@ -5,7 +5,7 @@
 
 **Authorization**: Task generation and issue/planning-commit creation approved on 2026-11-10. Scope belongs to
 [#88](https://github.com/repovio/repovio/issues/88), branch `codex/88-repository-settings-navigation`. Product implementation
-and merge remain separate approval gates. Implementation was separately approved on 2026-11-10; merge remains gated.
+was separately approved on 2026-11-10; merge remains gated.
 
 **Tests**: Required by the specification and constitution. Each behavior task includes its focused tests and evidence;
 write/update the relevant regressions before its implementation, then make the complete increment green before commit.
@@ -122,7 +122,7 @@ and error/pending states. Navigation/tables may scroll within their containers; 
       pending role/remove controls, and confirmation behavior. Add focused
       `apps/web/tests/e2e/repository-member-layout.spec.ts` using the unchanged fixture for long user names, add/update/remove,
       search/pagination, errors/pending states, empty/populated rows, keyboard operation, and target viewport coverage.
-- [ ] T008 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/groups-card.vue`: consistent visible
+- [x] T008 [P] [US3] Improve `apps/web/app/components/modules/repositories/details/groups-card.vue`: consistent visible
       search/group/role labels, search and pagination spacing, flexible full-width fields, stacked narrow layout and aligned
       wide assignment actions. Preserve additive grants, role restrictions, request states, and confirmations. Add focused
       `apps/web/tests/e2e/repository-group-layout.spec.ts` using the unchanged fixture for long group names, search/pagination,

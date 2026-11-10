@@ -32,7 +32,7 @@ corepack pnpm --dir apps/web dev
 With the web app running, in another terminal:
 
 ```sh
-corepack pnpm --dir apps/web e2e tests/e2e/repository-navigation.spec.ts tests/e2e/repository-detail.spec.ts tests/e2e/repository-access.spec.ts tests/e2e/repository-deletion.spec.ts tests/e2e/repository-visual.spec.ts tests/e2e/table-row-navigation.spec.ts tests/e2e/global-search.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/admin-tables.spec.ts tests/e2e/page-layout.spec.ts
+corepack pnpm --dir apps/web e2e tests/e2e/repository-settings.spec.ts tests/e2e/repository-filter-layout.spec.ts tests/e2e/repository-member-layout.spec.ts tests/e2e/repository-group-layout.spec.ts tests/e2e/user-groups.spec.ts tests/e2e/repository-navigation.spec.ts tests/e2e/repository-detail.spec.ts tests/e2e/repository-access.spec.ts tests/e2e/repository-deletion.spec.ts tests/e2e/repository-visual.spec.ts tests/e2e/table-row-navigation.spec.ts tests/e2e/global-search.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/admin-tables.spec.ts tests/e2e/page-layout.spec.ts
 corepack pnpm --dir apps/web test
 corepack pnpm --dir apps/web lint
 corepack pnpm --dir apps/web typecheck
@@ -104,3 +104,15 @@ CI status. Production deployment and Provider writes are outside this feature.
 - T008: 13 group-access cases passed: 12 long-name viewport/locale/theme layouts, plus search/pagination, assignment
   failure, loading through dependent refresh, role updates, cancellation, and confirmed grant removal. Visible picker
   labels are opt-in; existing consumers retain their previous presentation. Web lint/typecheck and documentation passed.
+
+- Baseline isolation: the unchanged multi-repository-add test also fails with the pre-feature Repository list and
+  details dialog temporarily restored from planning commit `5adb18d`. Current implementation files were restored
+  exactly afterward. Failure: `Selected: 2` never appears after selecting two discovered repositories. Evidence:
+  `/tmp/repovio88-baseline-add/`. This pre-existing add-wizard failure is outside #88's detail/Settings scope.
+- T008 existing group-administration regression: both English and German complete workflows passed after migrating
+  their direct Settings address to `?tab=groups`; opt-in picker labels did not change other picker consumers.
+
+- T009: current Repositories/Settings handbook pages reconciled in all 13 documentation locales, with en-US canonical
+  guidance and preserved localized references/technical identifiers. Published archives were not changed. Handbook
+  validation and 11 documentation tests passed; final website build passed. Root canonical formatting, declaration
+  documentation, and 21 guideline regression tests passed. Web production build also passed.

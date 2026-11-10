@@ -10,8 +10,7 @@ description: 'Rastreie repositórios, inspecione atividades e configure sincroni
 Abra um repositório na tabela para navegar por Visão geral, Execuções de workflows, Issues, Pull requests, Alertas
 de segurança e Configurações. As páginas de atividade mantêm o escopo do repositório e oferecem filtros, ordenação,
 paginação e navegação por linha. Alertas exigem permissão de gerenciamento; Configurações fica disponível apenas para
-administradores do sistema. O link do provedor abre o repositório externo; o diálogo de configurações continua
-acessível pela lista.
+administradores do sistema. O link do provedor abre o repositório externo.
 
 A visão geral mostra informações gerais, retenção, última sincronização, idade dos dados, intervalo, trabalho atual e
 atividade recente. Trabalhos pendentes ou em execução mostram progresso e erros classificados sem dados sensíveis.
@@ -31,6 +30,24 @@ somente leitura. A identidade do repositório usa a conta do provedor e o ID do 
 Renomeações/transferências preservam histórico, filtros, associações e canais; a atualização de metadados rejeita um ID
 diferente no caminho antigo em vez de reatribuí-lo. Os repositórios desativados retêm os dados armazenados, mas param de
 participar da sincronização.
+
+<a id="repository-settings-sections"></a>
+
+## Seções das configurações do repositório
+
+As configurações do repositório têm cinco abas secundárias. Cada seção usa toda a largura disponível, com campos empilhados em telas estreitas. Os links podem ser compartilhados e restaurados ao recarregar ou usar Voltar/Avançar. Geral é a seleção padrão.
+
+| Seção               | Finalidade                             | Endereço                     |
+| ------------------- | -------------------------------------- | ---------------------------- |
+| Geral               | Prazos de retenção                     | `/repositories/:id/settings` |
+| Webhook             | Configuração do webhook do repositório | `?tab=webhook`               |
+| Filtros de workflow | Padrões de permissão e bloqueio        | `?tab=workflow-filters`      |
+| Membros             | Acesso direto de usuários e papéis     | `?tab=members`               |
+| Acesso de grupos    | Acesso adicional de grupos locais      | `?tab=groups`                |
+
+Entradas não salvas e solicitações pendentes permanecem ao trocar de aba durante a mesma visita. Sair das configurações ou abrir outro repositório descarta os rascunhos, inclusive segredos de webhook gerados. Use a ação de salvar ou atribuir da seção para preservar as alterações.
+
+O diálogo de detalhes rápidos foi removido. Links antigos `?repository=` abrem a visão geral. As páginas completas mantêm atualização, sincronização, links do provedor e exclusão local. Alterar a URL não dá acesso às configurações a leitores ou gerentes.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -55,9 +72,7 @@ configuração. Um URL público ausente deve ser corrigido antes do registro do 
 durante a configuração; mantenha-os em um gerenciador secreto. Siga
 [Webhooks de repositório](/docs/next/provider-webhooks) para configuração e verificação.
 
-Os visualizadores e gerentes recebem um resumo das configurações do repositório somente leitura. Tentar novamente erros
-de carregamento/salvamento após a recuperação; inspecione [Tarefas de sincronização](/docs/next/guide-jobs) em busca de
-acesso do provedor, limite de taxa ou falhas de sincronização.
+Leitores e gerentes consultam metadados somente leitura na visão geral; configurações continuam exclusivas de administradores. Tente novamente após corrigir a causa e consulte [Trabalhos](/docs/next/guide-jobs) para falhas de sincronização.
 
 <a id="local-user-and-group-management"></a>
 
@@ -74,7 +89,7 @@ sincronizar claims OIDC.
 
 ## Excluir o rastreamento local
 
-Administradores do sistema podem selecionar **Eliminar repositório** na página de detalhes ou no diálogo de configurações.
+Administradores do sistema podem selecionar **Eliminar repositório** na página de detalhes.
 A confirmação identifica o repositório e explica a exclusão permanente dos workflows, execuções, issues, pull requests,
 alertas de segurança, configurações, permissões, histórico de webhooks, estado de sincronização e histórico de
 notificações associados localmente. A conta do provedor e os dados do repositório no provedor permanecem inalterados.

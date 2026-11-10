@@ -11,7 +11,6 @@ description: 'Verfolgen Sie Repositorys, überprüfen Sie Aktivitäten und konfi
 Pull Requests, Sicherheitswarnungen und Einstellungen. Aktivitätsseiten bleiben auf das Repository beschränkt und
 bieten Filter, Sortierung, Paginierung und Zeilennavigation. Sicherheitswarnungen benötigen Verwaltungsrechte;
 Einstellungen sind nur für Systemadministratoren verfügbar. Der Anbieterlink öffnet das externe Repository.
-Der Einstellungsdialog bleibt über die Repository-Liste erreichbar.
 
 Die Übersicht zeigt allgemeine Informationen, Aufbewahrung, letzte Synchronisierung/Datenalter, Intervall, aktuellen
 Job und jüngste Aktivitäten. Ausstehende/laufende Jobs zeigen Fortschritt; Fehler werden sicher kategorisiert.
@@ -32,6 +31,24 @@ und die Repository-ID des stabilen Anbieters. Bei Umbenennungen/Übertragungen b
 und Kanäle erhalten; Bei der Metadatenaktualisierung wird eine andere ID am alten Pfad abgelehnt, anstatt sie neu
 zuzuweisen. Deaktivierte Repositorys behalten gespeicherte Daten bei, nehmen jedoch nicht mehr an der Synchronisierung
 teil.
+
+<a id="repository-settings-sections"></a>
+
+## Bereiche der Repository-Einstellungen
+
+Die Repository-Einstellungen bieten fünf zusätzliche Tabs. Jeder Bereich nutzt die verfügbare Breite; auf schmalen Bildschirmen stehen Formularfelder untereinander. Tab-Links lassen sich teilen sowie durch Neuladen und Vor/Zurück wiederherstellen. Allgemein ist die Standardauswahl.
+
+| Bereich         | Zweck                               | Adresse                      |
+| --------------- | ----------------------------------- | ---------------------------- |
+| Allgemein       | Aufbewahrungsfristen                | `/repositories/:id/settings` |
+| Webhook         | Repository-Webhook konfigurieren    | `?tab=webhook`               |
+| Workflow-Filter | Erlaubnis- und Ausschlussmuster     | `?tab=workflow-filters`      |
+| Mitglieder      | Direkte Benutzerzugriffe und Rollen | `?tab=members`               |
+| Gruppenzugriff  | Zusätzliche lokale Gruppenrechte    | `?tab=groups`                |
+
+Nicht gespeicherte Eingaben und laufende Anfragen bleiben beim Tabwechsel innerhalb desselben Einstellungsbesuchs erhalten. Beim Verlassen der Einstellungen oder Wechsel des Repositorys werden diese Entwürfe einschließlich erzeugter Webhook-Geheimnisse verworfen. Zum Speichern die jeweilige Speicher- oder Zuweisungsaktion verwenden.
+
+Der bisherige Detaildialog entfällt. Alte Links mit `?repository=` führen zur Übersicht. Die Detailseiten behalten Aktualisierung, Synchronisierung, Anbieterlinks und lokales Löschen. Betrachter und Manager erhalten auch durch URL-Änderungen keinen Zugriff auf die Einstellungen.
 
 <a id="retention-filters-and-memberships"></a>
 
@@ -57,9 +74,7 @@ rotieren oder die Konfiguration entfernen. Eine fehlende öffentliche URL muss v
 werden. Geheimnisse werden nur während der Konfiguration angezeigt; Bewahren Sie sie in einem Secret-Manager auf. Folgen
 Sie [Repository-Webhooks](/docs/next/provider-webhooks) für die Einrichtung und Überprüfung.
 
-Betrachter und Manager erhalten eine schreibgeschützte Zusammenfassung der Repository-Einstellungen. Nach der
-Wiederherstellung Lade-/Speicherfehler erneut versuchen; Überprüfen Sie [Jobs](/docs/next/guide-jobs) auf
-Anbieterzugriffs-, Ratenbegrenzungs- oder Synchronisierungsfehler.
+Betrachter und Manager sehen schreibgeschützte Repository-Metadaten in der Übersicht; Einstellungen bleiben der Systemadministration vorbehalten. Nach Behebung der Ursache fehlgeschlagene Anfragen wiederholen und [Jobs](/docs/next/guide-jobs) auf Synchronisierungsfehler prüfen.
 
 <a id="local-user-and-group-management"></a>
 
@@ -77,7 +92,7 @@ OIDC-Konten und werden nicht aus OIDC-Claims synchronisiert.
 
 ## Lokale Erfassung löschen
 
-Systemadministratoren können auf der Detailseite oder im Einstellungsdialog **Repository löschen** wählen. Die
+Systemadministratoren können auf der Detailseite **Repository löschen** wählen. Die
 Bestätigung nennt das Repository und erläutert den endgültigen Verlust lokaler Workflows, Runs, Issues, Pull Requests,
 Sicherheitswarnungen, Einstellungen, Zugriffszuweisungen, Webhook-Verläufe, Synchronisierungsdaten und zugehöriger
 Benachrichtigungsverläufe. Der Provider Account und Repository-Daten beim Anbieter bleiben unverändert.

@@ -20,3 +20,10 @@ description: '查找个人设置以及仅限管理员的身份验证和系统控
 从应用程序/用户控件中选择 [语言](/docs/next/language) 和 [外貌](/docs/next/appearance)。管理员在各自的选项卡中配置
 [OIDC认证](/docs/next/authentication) 和
 [系统默认值](/docs/next/settings-system)。缺少的选项卡可能适合您的角色；更改 URL 并不授予授权。仅在检查 API 连接后重试失败的设置请求。
+
+<a id="repository-settings"></a>
+
+## 仓库设置
+
+仓库配置与个人设置分开。系统管理员可切换常规、Webhook、工作流筛选器、成员和用户组访问。直接访问地址及草稿保留规则请参见
+[仓库设置分区](/docs/next/repositories#repository-settings-sections).

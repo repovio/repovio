@@ -25,3 +25,10 @@ aplicativo/usuário. Os administradores configuram [Autenticação OIDC](/docs/n
 [Padrões do sistema](/docs/next/settings-system) em suas respectivas guias. Uma guia ausente pode ser correta para sua
 função; alterar um URL não concede autorização. Tente novamente as solicitações de configurações com falha somente após
 verificar a conectividade da API.
+
+<a id="repository-settings"></a>
+
+## Configurações do repositório
+
+A configuração do repositório é separada das preferências pessoais. Administradores podem alternar entre Geral, Webhook, Filtros de fluxos, Membros e Acesso de grupos. Para endereços diretos e duração dos rascunhos, consulte
+[Seções das configurações do repositório](/docs/next/repositories#repository-settings-sections).

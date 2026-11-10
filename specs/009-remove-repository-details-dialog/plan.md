@@ -42,8 +42,7 @@ Pre-research and post-design: PASS for the bounded user-requested planning scope
 - State: existing resource contracts retained; inactive mounted sections retain drafts only within a Settings visit.
 - Verification/localization: focused behavior tests and browser evidence required; English/German UI strings.
 - Delivery: task generation and issue/planning-commit creation were separately approved on 2026-11-10. Issue #88 owns
-  this scope; product implementation and merge remain separately gated. No product edits, releases, or deployment are
-  authorized.
+  this scope; product implementation was separately approved on 2026-11-10. Merge, release, and deployment remain gated.
 - Documentation: follow the explicit session/project instructions and `docs/coding-guidelines.md` for changed
   declarations. Explicit user instructions govern any conflicting inherited documentation conventions.
 

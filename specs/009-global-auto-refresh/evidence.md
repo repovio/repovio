@@ -110,3 +110,13 @@ changes enter this feature's PR diff.
 On the integrated source: 31 web unit suites / 151 tests, web typecheck, full web ESLint, 720-file documentation check,
 and production web build pass. All 32 feature browser cases pass again against a fresh integrated production preview.
 The merge commit records integration/evidence only; it adds no new feature behavior or package release entry.
+
+## Approved merge gate and second base integration
+
+Merge after successful required CI was approved on 2026-11-10. PR #94 initially became conflicted when main advanced to
+`c666f9a` (notification setup polish, PR #93); no pull-request CI had run for the conflicted head. Integrated this base
+without rewriting task commits. Locale catalogs merged automatically and retain exactly the six refresh lines over main.
+
+Post-integration validation: 31 web suites / 157 tests, web typecheck/lint/build, 720-file declaration documentation,
+canonical formatting, and all 32 feature browser cases against a fresh production preview pass. No pending reviews or
+review threads were present. Required CI must still pass for the pushed final head before the authorized merge.

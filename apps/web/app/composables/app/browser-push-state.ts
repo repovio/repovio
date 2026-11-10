@@ -27,6 +27,9 @@ export interface PushPlatform {
   readonly ready: Promise<ServiceWorkerRegistration>;
 }
 
+/** Non-secret server readiness and its current read lifecycle. */
+export type BrowserPushAvailability = 'idle' | 'loading' | 'available' | 'server-unconfigured' | 'request-failed';
+
 /**
  * Manage the authenticated user's PushSubscription for the current browser.
  * @param api Authenticated current-user enrollment methods.
@@ -35,6 +38,8 @@ export interface PushPlatform {
  */
 export function createBrowserPushState(api: PushApi, platform: PushPlatform | null) {
   const available = ref(false);
+  const availability = ref<BrowserPushAvailability>('idle');
+  const refreshing = ref(false);
   const currentDeviceEnabled = ref(false);
   const errorStage = ref<'availability' | 'permission' | 'worker' | 'enrollment' | null>(null);
   const error = computed(/** Reports actionable lifecycle failure. */ () => errorStage.value !== null);
@@ -51,6 +56,8 @@ export function createBrowserPushState(api: PushApi, platform: PushPlatform | nu
     revision++;
     readRevision++;
     available.value = false;
+    availability.value = 'idle';
+    refreshing.value = false;
     currentDeviceEnabled.value = false;
     errorStage.value = null;
     publicKey.value = null;
@@ -58,28 +65,49 @@ export function createBrowserPushState(api: PushApi, platform: PushPlatform | nu
     loading.value = false;
   }
 
-  /** Refresh server availability and the current browser's local subscription state. */
+  /** Invalidate dialog-owned reads without touching a browser subscription. */
+  function cancelRefresh(): void {
+    readRevision++;
+    availability.value = 'idle';
+    available.value = false;
+    refreshing.value = false;
+  }
+
+  /** Refresh server readiness independently of subsequent device inspection. */
   async function refresh(internal = false): Promise<void> {
     if (loading.value && !internal) return;
     const epoch = revision;
     const request = ++readRevision;
+    availability.value = 'loading';
+    refreshing.value = true;
     currentDeviceEnabled.value = false;
+    let stage: 'availability' | 'worker' | 'enrollment' = 'availability';
     errorStage.value = null;
     try {
       const { data } = await api.status();
       if (epoch !== revision || request !== readRevision) return;
       available.value = data.available;
+      availability.value = data.available ? 'available' : 'server-unconfigured';
       publicKey.value = data.publicKey;
       subscriptionCount.value = data.subscriptionCount;
       permission.value = platform?.permission() ?? 'default';
       if (!platform?.supported || !available.value || permission.value !== 'granted') return;
+      stage = 'worker';
       const subscription = await (await platform.getRegistration())?.pushManager.getSubscription();
       if (epoch !== revision || request !== readRevision || !subscription || !matchesKey(subscription, publicKey.value))
         return;
+      stage = 'enrollment';
       const enrollment = await api.enrolled(subscription.endpoint);
       if (epoch === revision && request === readRevision) currentDeviceEnabled.value = enrollment.data.enrolled;
     } catch {
-      if (epoch === revision && request === readRevision) errorStage.value = 'availability';
+      if (epoch !== revision || request !== readRevision) return;
+      errorStage.value = stage;
+      if (stage === 'availability') {
+        available.value = false;
+        availability.value = 'request-failed';
+      }
+    } finally {
+      if (epoch === revision && request === readRevision) refreshing.value = false;
     }
   }
 
@@ -110,6 +138,8 @@ export function createBrowserPushState(api: PushApi, platform: PushPlatform | nu
   async function enable(): Promise<void> {
     if (loading.value || !platform?.supported || !available.value || !publicKey.value) return;
     readRevision++;
+    refreshing.value = false;
+    if (availability.value === 'loading') availability.value = available.value ? 'available' : 'idle';
     loading.value = true;
     currentDeviceEnabled.value = false;
     const epoch = revision;
@@ -158,6 +188,8 @@ export function createBrowserPushState(api: PushApi, platform: PushPlatform | nu
   async function disable(): Promise<void> {
     if (loading.value || !platform?.supported) return;
     readRevision++;
+    refreshing.value = false;
+    if (availability.value === 'loading') availability.value = available.value ? 'available' : 'idle';
     loading.value = true;
     errorStage.value = null;
     const epoch = revision;
@@ -180,7 +212,10 @@ export function createBrowserPushState(api: PushApi, platform: PushPlatform | nu
   }
 
   return {
+    availability,
     available,
+    cancelRefresh,
+    refreshing,
     currentDeviceEnabled,
     disable,
     enable,

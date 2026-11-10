@@ -915,6 +915,11 @@
         "FAILED": "ناکام"
       },
       "open": "اطلاعات کا پینل کھولیں"
+    },
+    "pushAvailability": {
+      "checking": "براؤزر پش کی دستیابی جانچی جا رہی ہے…",
+      "unconfigured": "اس قسم کو منتخب کرنے سے پہلے سرور پر Web Push (VAPID) ترتیب دیں۔",
+      "failed": "براؤزر پش کی دستیابی نہیں جانچی جا سکی۔"
     }
   },
   "notificationDeliveryStatus": {

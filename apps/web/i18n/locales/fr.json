@@ -1246,5 +1246,11 @@
     "draftError": "Impossible de charger l’URL de rappel. Réessayez.",
     "retryDraft": "Charger l’URL de rappel",
     "savedConfigurations": "Configurations enregistrées"
+  },
+  "autoRefresh": {
+    "title": "Actualisation automatique",
+    "off": "Désactivée",
+    "help": "S’applique aux vues de surveillance actives dans ce navigateur. La synchronisation des fournisseurs reste inchangée.",
+    "current": "Actualisation automatique : {interval}"
   }
 }

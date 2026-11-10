@@ -2,11 +2,12 @@ import type { Filtering } from '@querry-kit/nuxt-ui/types';
 import { useTable as useQueryKitTable } from '@querry-kit/nuxt/table';
 import type { TableColumn as QueryKitTableColumn } from '@querry-kit/nuxt/types';
 import { useRouteQuery } from '@vueuse/router';
-import { computed, type Ref, watch } from 'vue';
+import { computed, onScopeDispose, type Ref, watch } from 'vue';
 
 import type { Endpoint, Endpoints } from '~/types/api/endpoints';
 import type { ColumnDefinition } from '~/types/table';
 import { useApi } from './api';
+import { serializeApiReads } from './serialized-reads';
 
 type TableRow<TEndpoint extends Endpoint> = Endpoints[TEndpoint]['dto'] & { id: string } & Record<string, unknown>;
 
@@ -18,6 +19,8 @@ export interface UseTableOptions<TEndpoint extends Endpoint> {
   name: string;
   repositoryId?: string;
   scopeKind?: string;
+  /** Serialize transport only for explicitly participating monitoring views. */
+  serializeReads?: boolean;
   staticFields?: string[];
   staticFilter?: Ref<Record<string, unknown> | undefined>;
 }
@@ -111,8 +114,14 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     /** Derives columns from the current reactive dependencies. */ () =>
       toQueryKitColumns(options.columnDefinition.value),
   );
+  const api = useApi();
+  if (options.serializeReads) {
+    const controller = new AbortController();
+    serializeApiReads(api, controller.signal);
+    onScopeDispose(/** Cancel active and queued reads when this table identity leaves. */ () => controller.abort());
+  }
   const table = useQueryKitTable<TableRow<TEndpoint>>({
-    api: useApi(),
+    api,
     columns,
     defaultItemsPerPage: options.defaultItemsPerPage,
     endpoint: options.endpoint,

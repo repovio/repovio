@@ -18,14 +18,7 @@
         :placeholder="$t('workItems.searchPlaceholder')"
       />
       <div class="flex flex-wrap items-center gap-2">
-        <UButton
-          color="neutral"
-          icon="i-lucide-refresh-cw"
-          variant="soft"
-          :aria-label="$t('dashboard.refresh')"
-          :loading="loading || summaryLoading"
-          @click="refreshAll"
-        />
+        <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -190,6 +183,7 @@ import { refDebounced } from '@vueuse/core';
 import { defineProps, onScopeDispose } from 'vue';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useTable } from '~/composables/api/table';
+import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
@@ -380,6 +374,7 @@ const staticFilter = computed(
   },
 );
 const table = useTable({
+  serializeReads: true,
   columnDefinition,
   defaultItemsPerPage: 25,
   endpoint,
@@ -404,6 +399,10 @@ const {
   sorting,
   totalItems,
 } = table;
+const { refresh: refreshView, loading: refreshLoading } = useAutoRefresh(
+  refreshAll,
+  /** Include table and supporting read lifetimes. */ () => loading.value || summaryLoading.value,
+);
 if (initialDashboardPreset) {
   filtering.value = initialDashboardPreset.filtering;
   page.value = 1;
@@ -498,7 +497,7 @@ async function loadSupportingData(): Promise<void> {
 }
 /** Refreshes all. */
 async function refreshAll(): Promise<void> {
-  await Promise.all([refresh(), loadSupportingData()]);
+  await Promise.allSettled([refresh(), loadSupportingData()]);
 }
 
 /** Clears feature-owned filters while preserving search and structured filter ownership. */

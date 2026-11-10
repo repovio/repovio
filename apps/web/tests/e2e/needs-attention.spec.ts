@@ -153,7 +153,7 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
   );
   await page.keyboard.press('Escape');
   await page.locator('#main-content').focus();
-  await expect(page.getByRole('button', { name: 'Refresh' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeDisabled();
   await page.screenshot({ path: testInfo.outputPath('needs-attention-loading.png'), fullPage: true });
   releaseInitialRequest?.();
   await expect(page.getByText('twaelde/repovio', { exact: true })).toBeVisible();
@@ -201,11 +201,11 @@ test('browses, searches, sorts, filters, refreshes, and paginates the complete n
     .toBe(true);
 
   failRequest = true;
-  await page.getByRole('button', { name: 'Refresh' }).click();
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await expect(page.getByText('Workflow runs that need attention could not be loaded.')).toBeVisible();
 
   failRequest = false;
-  await page.getByRole('button', { name: 'Refresh' }).click();
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await expect(page.getByText('No workflows currently need attention.')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('needs-attention.png'), fullPage: true });
 });
@@ -246,7 +246,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.locator('tbody').getByText('Build', { exact: true })).toBeVisible();
     await expect(page.getByPlaceholder('Search workflows or repositories')).toBeVisible();
     const toolbar = page.locator('[data-page-toolbar]');
-    await expect(toolbar.getByRole('button', { name: 'Refresh' })).toBeVisible();
+    await expect(toolbar.getByRole('button', { name: 'Refresh', exact: true })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Sort' })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Filter' })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Table options' })).toBeVisible();

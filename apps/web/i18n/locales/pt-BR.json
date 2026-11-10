@@ -1246,5 +1246,11 @@
     "draftError": "Não foi possível carregar a URL de retorno. Tente novamente.",
     "retryDraft": "Carregar URL de retorno",
     "savedConfigurations": "Configurações salvas"
+  },
+  "autoRefresh": {
+    "title": "Atualização automática",
+    "off": "Desativada",
+    "help": "Aplica-se às visualizações de monitoramento ativas neste navegador. A sincronização com os provedores não muda.",
+    "current": "Atualização automática: {interval}"
   }
 }

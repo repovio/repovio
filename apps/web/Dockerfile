@@ -9,6 +9,7 @@ COPY . .
 RUN pnpm --filter @repovio/web build
 
 FROM node:26.13.0-bookworm-slim AS runtime
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /workspace/apps/web/.output ./.output

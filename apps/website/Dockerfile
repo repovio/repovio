@@ -10,6 +10,7 @@ COPY apps/website apps/website
 RUN pnpm --filter @repovio/website exec nuxt prepare && pnpm --filter @repovio/website docs:check && pnpm --filter @repovio/website build
 
 FROM node:26.13.0-bookworm-slim
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 COPY --from=build --chown=node:node /app/apps/website/.output ./.output

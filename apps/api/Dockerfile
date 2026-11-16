@@ -16,8 +16,8 @@ RUN pnpm --filter @repovio/api deploy --legacy --prod /production
 FROM node:26.13.0-bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install --yes --no-install-recommends openssl python3 python3-pip \
-  && python3 -m pip install --break-system-packages --no-cache-dir apprise==1.9.9 \
-  && rm -rf /var/lib/apt/lists/*
+  && python3 -m pip install --break-system-packages --no-cache-dir apprise==1.11.0 \
+  && rm -rf /var/lib/apt/lists/* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 ENV NODE_ENV=production
 COPY --from=build /workspace/apps/api/dist ./dist
 COPY --from=build /workspace/apps/api/prisma ./prisma

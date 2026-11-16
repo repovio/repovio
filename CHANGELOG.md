@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.3
+
+### Patch Changes
+
+- 9eb8451: Fix GitHub repository synchronization by following Dependabot alert pagination cursors.
+
 ## 2.3.2
 
 ### Patch Changes

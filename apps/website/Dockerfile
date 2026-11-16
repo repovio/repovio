@@ -1,4 +1,4 @@
-FROM node:26.13.0-bookworm-slim AS build
+FROM node:26.13.1-bookworm-slim AS build
 WORKDIR /app
 RUN npm install --global corepack@0.36.0 && corepack enable && corepack prepare pnpm@11.28.9 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -9,7 +9,7 @@ COPY CHANGELOG.md ./CHANGELOG.md
 COPY apps/website apps/website
 RUN pnpm --filter @repovio/website exec nuxt prepare && pnpm --filter @repovio/website docs:check && pnpm --filter @repovio/website build
 
-FROM node:26.13.0-bookworm-slim
+FROM node:26.13.1-bookworm-slim
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000

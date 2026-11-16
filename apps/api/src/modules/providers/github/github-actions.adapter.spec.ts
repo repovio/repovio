@@ -513,6 +513,118 @@ describe('GitHubActionsAdapter security alerts', /** Groups scenarios for GitHub
   const context = { accessToken: 'token', baseUrl: null, providerAccountId: 'account' };
   const repository = { name: 'repovio', owner: 'octo', providerRepositoryId: '1' };
 
+  const dependencyAlert = {
+    created_at: '2026-09-01T00:00:00Z',
+    dependency: { manifest_path: 'package.json', package: { ecosystem: 'npm', name: 'vite' } },
+    html_url: 'https://github.test/dependabot/1',
+    number: 1,
+    state: 'open',
+    updated_at: '2026-09-02T00:00:00Z',
+  };
+
+  it.each(
+    [[], [dependencyAlert]].map(/** Wraps each collection as a single Jest argument. */ (alerts) => [alerts] as const),
+  )(
+    'reads a terminal Dependabot page without numbered pagination (%j)',
+    /** Reproduces GitHub's rejection of numbered requests on the Dependabot endpoint. */ async (alerts) => {
+      const fetchFn = jest.fn(
+        /** Returns a lone Dependabot page and empty results from the other endpoints. */ async (input: string) => {
+          const url = new URL(input);
+          if (!url.pathname.endsWith('/dependabot/alerts')) return Response.json([]);
+          if (url.searchParams.has('page')) return Response.json({}, { status: 400 });
+          return Response.json(alerts);
+        },
+      );
+
+      const [result] = await new GitHubActionsAdapter(fetchFn).listSecurityAlerts(context, repository);
+
+      expect(result).toMatchObject({ availability: 'AVAILABLE', kind: 'DEPENDENCY' });
+      expect(result?.alerts).toHaveLength(alerts.length);
+      expect(fetchFn.mock.calls[0]?.[0]).toBe(
+        'https://api.github.com/repos/octo/repovio/dependabot/alerts?per_page=100',
+      );
+      expect(fetchFn).toHaveBeenCalledTimes(3);
+    },
+  );
+
+  it('follows the Dependabot next link even when the first page is short', /** Verifies cursor links from a configured API origin. */ async () => {
+    const baseUrl = 'https://github.test/api/v3';
+    const firstUrl = `${baseUrl}/repos/octo/repovio/dependabot/alerts?per_page=100`;
+    const nextUrl = `${baseUrl}/repositories/1/dependabot/alerts?per_page=100&after=opaque%2B%3D`;
+    const fetchFn = jest.fn(
+      /** Returns cursor-linked alerts while rejecting the numbered Dependabot request. */ async (input: string) => {
+        const url = new URL(input);
+        if (!url.pathname.endsWith('/dependabot/alerts')) return Response.json([]);
+        if (url.searchParams.has('page')) return Response.json({}, { status: 400 });
+        if (input === firstUrl) {
+          return Response.json([dependencyAlert], {
+            headers: { link: `<${firstUrl}>; rel="prev", <${nextUrl}>; rel="next"` },
+          });
+        }
+        if (input === nextUrl) return Response.json([{ ...dependencyAlert, number: 2 }]);
+        return new Response(null, { status: 404 });
+      },
+    );
+
+    const [result] = await new GitHubActionsAdapter(fetchFn).listSecurityAlerts({ ...context, baseUrl }, repository);
+
+    expect(result?.alerts).toMatchObject([{ providerAlertId: '1' }, { providerAlertId: '2' }]);
+    expect(fetchFn).toHaveBeenCalledWith(
+      nextUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer token' }),
+        redirect: 'manual',
+      }),
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(4);
+  });
+
+  it.each([
+    'https://other.test/dependabot/alerts',
+    'https://user:embedded@api.github.com/dependabot/alerts',
+    'http://[',
+    '?per_page=100#same-page',
+  ])(
+    'rejects an unsafe Dependabot next link (%s)',
+    /** Verifies rejected URLs receive no fetch. */ async (nextUrl) => {
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValueOnce(Response.json([], { headers: { link: `<${nextUrl}>; rel="next"` } }))
+        .mockResolvedValueOnce(Response.json([]))
+        .mockResolvedValueOnce(Response.json([]));
+
+      await expect(new GitHubActionsAdapter(fetchFn).listSecurityAlerts(context, repository)).rejects.toThrow(
+        /^Invalid GitHub Dependabot pagination link\.$/,
+      );
+      expect(fetchFn).toHaveBeenCalledTimes(3);
+    },
+  );
+
+  it.each([302, 429])(
+    'preserves HTTP %s from a Dependabot continuation',
+    /** Verifies redirect and rate-limit responses use the existing provider error classification. */ async (
+      status,
+    ) => {
+      const nextUrl = 'https://api.github.com/repositories/1/dependabot/alerts?after=cursor';
+      const fetchFn = jest
+        .fn()
+        .mockResolvedValueOnce(Response.json([], { headers: { link: `<${nextUrl}>; rel="next"` } }))
+        .mockResolvedValueOnce(Response.json([]))
+        .mockResolvedValueOnce(Response.json([]))
+        .mockResolvedValueOnce(
+          new Response(null, { status, headers: { location: 'https://other.test/', 'retry-after': '120' } }),
+        );
+
+      await expect(new GitHubActionsAdapter(fetchFn).listSecurityAlerts(context, repository)).rejects.toMatchObject({
+        rateLimited: status === 429,
+        retryAt: expect.any(Date),
+        status,
+      });
+      expect(fetchFn).toHaveBeenCalledWith(nextUrl, expect.objectContaining({ redirect: 'manual' }));
+      expect(fetchFn).toHaveBeenCalledTimes(4);
+    },
+  );
+
   it('normalizes all three alert APIs without retaining secret material', /** Verifies normalizes all three alert APIs without retaining secret material. */ async () => {
     const fetchFn = jest
       .fn()

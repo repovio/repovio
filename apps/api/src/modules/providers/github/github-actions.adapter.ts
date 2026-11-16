@@ -438,16 +438,10 @@ export class GitHubActionsAdapter implements ProviderAdapter {
     return Promise.all([
       this.readAlertKind(
         'DEPENDENCY',
-        /** Reads this alert category using the provider permission and availability guard. */ () =>
-          this.listAlertPages<GitHubDependabotAlert>(context, `${base}/dependabot/alerts`).then(
-            /** Evaluates `alerts.map((alert) => this.toDependabotAlert(alert))` when this.listAlertPages<GitHubDependabotAlert>(context, `${base}/dependabot/alerts`).then invokes this callback. */ (
-              alerts,
-            ) =>
-              alerts.map(
-                /** Projects each entry using `this.toDependabotAlert(alert)`. */ (alert) =>
-                  this.toDependabotAlert(alert),
-              ),
-          ),
+        /** Collects and normalizes Dependabot alerts under the availability guard. */ async () => {
+          const alerts = await this.listDependabotAlertPages(context, `${base}/dependabot/alerts`);
+          return alerts.map(/** Normalizes each Dependabot alert. */ (alert) => this.toDependabotAlert(alert));
+        },
       ),
       this.readAlertKind(
         'CODE',
@@ -544,6 +538,53 @@ export class GitHubActionsAdapter implements ProviderAdapter {
       if (result.length < 100 || (result.length > 0 && !keepReading(result[result.length - 1]!))) break;
     }
     return items;
+  }
+
+  /**
+   * Read all Dependabot alert pages using GitHub's cursor links.
+   *
+   * @param {ProviderAccountContext} context Provider account credentials and API base.
+   * @param {string} path Repository Dependabot alerts path.
+   * @returns {Promise<GitHubDependabotAlert[]>} The complete provider collection.
+   * @throws {ProviderRequestError} When GitHub returns an unsuccessful HTTP response.
+   * @throws {Error} When a continuation is invalid, unsafe, or cyclic.
+   */
+  private async listDependabotAlertPages(
+    context: ProviderAccountContext,
+    path: string,
+  ): Promise<GitHubDependabotAlert[]> {
+    let url = new URL(this.url(context, `${path}?per_page=100`));
+    const origin = url.origin;
+    const visited = new Set<string>();
+    const alerts: GitHubDependabotAlert[] = [];
+
+    for (;;) {
+      const response = await this.fetchFn(url.href, {
+        headers: this.headers(context),
+        redirect: visited.size === 0 ? 'follow' : 'manual',
+      });
+      if (!response.ok) throw providerRequestError('GitHub', response);
+
+      visited.add(url.href);
+      alerts.push(...((await response.json()) as GitHubDependabotAlert[]));
+      const next = response.headers.get('link')?.match(/(?:^|,)\s*<([^<>]*)>\s*;\s*rel\s*=\s*"next"\s*(?=,|;|$)/i)?.[1];
+      if (next === undefined) return alerts;
+
+      const target = URL.parse(next, url);
+      if (
+        !target ||
+        (target.protocol !== 'https:' && target.protocol !== 'http:') ||
+        target.origin !== origin ||
+        target.username ||
+        target.password
+      ) {
+        throw new Error('Invalid GitHub Dependabot pagination link.');
+      }
+      target.hash = '';
+      if (visited.has(target.href)) throw new Error('Invalid GitHub Dependabot pagination link.');
+
+      url = target;
+    }
   }
 
   /**

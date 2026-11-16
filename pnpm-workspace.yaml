@@ -20,6 +20,7 @@ overrides:
   '@rollup/plugin-node-resolve>deepmerge': '-'
   '@nestjs/platform-fastify>fastify': 5.12.8
   '@modelcontextprotocol/node>@hono/node-server': 2.1.6
+  'hono@>=4.13.12 <4.13.16': 4.13.16
   '@tiptap/core@>=3.7.0 <3.30.5': 3.31.4
   '@tiptap/pm@>=3.7.0 <3.31.3': 3.31.4
   'brace-expansion@<1.1.21': 1.1.21

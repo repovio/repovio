@@ -1,4 +1,4 @@
-FROM node:26.13.0-bookworm-slim AS build
+FROM node:26.13.1-bookworm-slim AS build
 WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
@@ -8,7 +8,7 @@ RUN npm install --global corepack@0.36.0 && corepack enable && pnpm install --fr
 COPY . .
 RUN pnpm --filter @repovio/web build
 
-FROM node:26.13.0-bookworm-slim AS runtime
+FROM node:26.13.1-bookworm-slim AS runtime
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 WORKDIR /app
 ENV NODE_ENV=production

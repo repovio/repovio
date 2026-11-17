@@ -35,7 +35,7 @@
   Changesets.
 - Preserve the TypeScript compiler aliases and version ranges in the workspace manifests.
   Toolchain changes require an explicit request and compatibility validation.
-- Use Node.js 26.13.0 and the pinned pnpm 11.28.9. Run package commands through Corepack when pnpm is
+- Use Node.js 26.13.1 and the pinned pnpm 12.21.0. Run package commands through Corepack when pnpm is
   not already the pinned workspace version.
 - Format TypeScript, JSON, YAML, and Markdown with 120-character lines, single
   quotes, semicolons, and trailing commas where applicable.

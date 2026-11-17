@@ -57,7 +57,7 @@ scope. Each substantive increment includes the repository-required Changeset and
       failures with the existing notification tests and a synthetic integration check.
 - [x] T013 [US4] Migrate Apprise in `apps/api/Dockerfile`. Verify the CLI invocation and synthetic delivery from
       `apps/api/src/modules/notifications/apprise-notification.adapter.ts` in the API image.
-- [ ] T014 [US4] After explicit approval of the pin change, migrate to pnpm 12 in `package.json`,
+- [x] T014 [US4] After explicit approval of the pin change, migrate to pnpm 12 in `package.json`,
       `pnpm-workspace.yaml`, `pnpm-lock.yaml`, the Dockerfiles, and CI. Verify clean installs, dependency patch behavior,
       and API deployment output. Record any unavailable stable Prisma or Node target in
       `specs/012-update-dependencies/research.md`.

@@ -1,7 +1,7 @@
 # Repovio website and documentation
 
 The Nuxt product website and 13-language documentation live in this workspace package. Documentation sources are ordinary
-tracked files in `content/`, not a Git submodule. Run commands from the monorepo root with Node.js 26.13.0 and pnpm 11.28.9.
+tracked files in `content/`, not a Git submodule. Run commands from the monorepo root with Node.js 26.13.1 and pnpm 12.21.0.
 
 ```sh
 pnpm install --frozen-lockfile

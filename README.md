@@ -20,9 +20,9 @@ Customize colors, typography, logos, metadata, links, and PWA icons through
 
 ## Prerequisites
 
-- Node.js 26.13.0, managed through [nvm](https://github.com/nvm-sh/nvm) or an
+- Node.js 26.13.1, managed through [nvm](https://github.com/nvm-sh/nvm) or an
   equivalent Node version manager.
-- Corepack-enabled pnpm 11.28.9.
+- Corepack-enabled pnpm 12.21.0.
 - Docker and Docker Compose for the local PostgreSQL and application
   stack.
 
@@ -220,7 +220,7 @@ Application scripts build the schema package before starting, testing, typecheck
 
 ## Development toolchain
 
-Use Node.js 26.13.0 LTS and the package manager pinned in `package.json`. Node-based application runtimes require Node.js 26. Builds use TypeScript 7; ESLint and compiler-API consumers use the TypeScript 6 compatibility package. Dependency overrides, where present, pin security fixes for transitive packages; validate tests and documentation builds when changing them.
+Use Node.js 26.13.1 LTS and the package manager pinned in `package.json`. Node-based application runtimes require Node.js 26. Builds use TypeScript 7; ESLint and compiler-API consumers use the TypeScript 6 compatibility package. Dependency overrides, where present, pin security fixes for transitive packages; validate tests and documentation builds when changing them.
 
 ## Website and public documentation
 

@@ -1,6 +1,6 @@
 # Verify Dependency Updates
 
-1. Use Node.js 26.13.0 and Corepack pnpm 11.28.9. Run `corepack pnpm install --frozen-lockfile` in a clean checkout.
+1. Use Node.js 26.13.1 and Corepack pnpm 12.21.0. Run `corepack pnpm install --frozen-lockfile` in a clean checkout.
 2. Build schemas with `corepack pnpm --filter @repovio/schemas build`. Run `corepack pnpm test:dependencies` and inspect
    Nuxt, Nuxt Schema, Nitro, and node-forge versions in the lockfile.
 3. Run `corepack pnpm format:check`, `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm test`.

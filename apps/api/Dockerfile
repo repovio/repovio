@@ -11,7 +11,7 @@ RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
   SHADOW_DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder_shadow \
   pnpm --filter @repovio/api db:generate \
   && pnpm --filter @repovio/api build
-RUN pnpm --filter @repovio/api deploy --legacy --prod /production
+RUN pnpm --filter @repovio/api deploy --prod /production
 
 FROM node:26.13.1-bookworm-slim AS runtime
 WORKDIR /app

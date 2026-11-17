@@ -57,5 +57,14 @@ Sources: [Nuxt v4.6.4](https://github.com/nuxt/nuxt/releases/tag/v4.6.4),
 - The API, web, and website images built locally. Apprise 2.2.0 delivered a synthetic notification inside the API image.
   The web and website images passed HTTP smoke tests. Web Push 4 passed 34 focused tests and a local encrypted HTTPS
   delivery check with 201, 410, and 503 responses.
-- The npm inventory found Prettier 3.10.1 and a Prisma 8 release candidate remaining. The pinned local and CI toolchain
-  awaits the explicit decision in T014. Docker Node.js is already 26.13.1 on `main`.
+- The npm inventory found Prettier 3.10.1 and a Prisma 8 release candidate remaining.
+
+## Toolchain migration
+
+- Node.js 26.13.1 and pnpm 12.21.0 passed a clean frozen install. pnpm added a package-manager document to the shared
+  lockfile. The dependency-resolution document is byte-for-byte identical, and a second clean install preserved the file.
+- The pnpm 12 legacy API deploy failed when the production-only install reported unused workspace patches. The current
+  deploy mode generated a production-specific lockfile and preserved the API package, native bcrypt, and shared schemas.
+- All three Docker images built with Node.js 26.13.1 and pnpm 12.21.0. Formatting, lint, type checks, workspace tests and
+  builds, ten dependency security tests, and 18 Chromium PWA scenarios passed with the new pins. Migrations passed on a
+  disposable PostgreSQL 18 instance. The production audit reported zero known vulnerabilities.

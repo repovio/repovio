@@ -7,7 +7,7 @@ Dependabot PRs. Follow with the stable major migrations below.
 
 ## Technical Context
 
-- **Toolchain:** Node.js 26.13.0, pnpm 11.28.9, current TypeScript aliases, and the existing release-age policy.
+- **Toolchain:** Node.js 26.13.1, pnpm 12.21.0, current TypeScript aliases, and the existing release-age policy.
 - **Affected projects:** API, web, website, schemas, root development tooling, and applicable CI/container dependencies.
 - **Dependency ownership:** Workspace manifests declare direct ranges. Workspace settings own overrides and patches.
   pnpm generates the shared lockfile.
@@ -53,8 +53,8 @@ exceptions. Keep the required Changeset, Graphify, and GitHub CI checks.
   update retries, and protected-cache isolation in a production browser.
 - **web-push 4.0.0 and Apprise 2.2.0.** Use two increments. Verify ESM exports, VAPID, terminal status handling, retries,
   and Apprise CLI behavior in the API container with synthetic payloads.
-- **pnpm 12.21.0, subject to toolchain approval.** Align local, CI, and Docker pins. Verify reproducibility, patches,
-  override resolution, build trust settings, and the API deployment layout.
+- **pnpm 12.21.0 and Node.js 26.13.1.** Align local, CI, and Docker pins. Verify reproducibility, patches, override
+  resolution, build trust settings, and the API deployment layout.
 
 Prisma 8 and Node.js 27 currently have prerelease targets. Retest stable availability at implementation time. Keep the
 TypeScript aliases and declared ranges for the workspace compiler roles. Assess any future compiler migration separately.

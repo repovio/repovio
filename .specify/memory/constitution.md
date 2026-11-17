@@ -66,7 +66,7 @@
 
 - Preserve the pnpm/Nx monorepo: NestJS/Fastify API in `apps/api`, framework-independent shared Zod contracts in
   `libs/schemas`, Nuxt 4 SPA (`ssr: false`) in `apps/web`, Prisma/PostgreSQL persistence, and Docker Compose deployment.
-- Use Node.js 26.13.0 and pnpm 11.28.9; use Corepack when pnpm is not already the pinned version. Preserve TypeScript
+- Use Node.js 26.13.1 and pnpm 12.21.0; use Corepack when pnpm is not already the pinned version. Preserve TypeScript
   compiler aliases, manifest version ranges, and strict types. Toolchain changes require explicit user request and
   compatibility validation; framework-generated strictness overrides MUST be explicitly justified.
 - API features MUST follow the module/service/controller/shared-schema/types/test layout. Public boundaries MUST use

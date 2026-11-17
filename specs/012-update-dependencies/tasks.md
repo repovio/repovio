@@ -55,7 +55,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 - [x] T012 [US4] Migrate web-push in `apps/api/package.json` and
       `apps/api/src/modules/notifications/browser-push.service.ts`. Verify ESM imports, VAPID, and terminal and retryable
       failures with the existing notification tests and a synthetic integration check.
-- [ ] T013 [US4] Migrate Apprise in `apps/api/Dockerfile`. Verify the CLI invocation and synthetic delivery from
+- [x] T013 [US4] Migrate Apprise in `apps/api/Dockerfile`. Verify the CLI invocation and synthetic delivery from
       `apps/api/src/modules/notifications/apprise-notification.adapter.ts` in the API image.
 - [ ] T014 [US4] After explicit approval of the pin change, migrate to pnpm 12 in `package.json`,
       `pnpm-workspace.yaml`, `pnpm-lock.yaml`, the Dockerfiles, and CI. Verify clean installs, dependency patch behavior,

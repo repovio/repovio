@@ -89,12 +89,11 @@ export default defineNuxtConfig({
     },
     manifest: false,
     registerType: 'prompt',
-    workbox: {
-      cleanupOutdatedCaches: true,
+    filename: 'sw.js',
+    strategies: 'buildSW',
+    buildSW: {
+      swSrc: 'service-worker.js',
       globPatterns: ['**/*.{css,ico,js,png,svg,woff2}'],
-      importScripts: ['/notification-sw.js'],
-      navigateFallback: null,
-      runtimeCaching: [],
     },
   },
 });

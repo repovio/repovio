@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
-    "@vite-pwa/assets-generator": "1.0.4",
+    "@vite-pwa/assets-generator": "2.0.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.1.0",
     "vue-tsc": "3.3.14",
@@ -35,7 +35,8 @@
     "@querry-kit/nuxt": "^1.0.0",
     "@querry-kit/nuxt-ui": "^4.0.0",
     "@tanstack/table-core": "^9.3.1",
-    "@vite-pwa/nuxt": "^1.1.1",
+    "@vite-pwa/nuxt": "^2.0.1",
+    "@vite-pwa/workbox-swkit": "^8.0.15",
     "@vueuse/core": "^15.0.0",
     "@vueuse/router": "^15.0.0",
     "axios": "1.21.1",

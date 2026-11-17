@@ -1,5 +1,15 @@
 # @repovio/website
 
+## 0.2.5
+
+### Patch Changes
+
+- 6c63092: Update the node-forge resolution used by the web app and website to address security advisories.
+- 6c63092: Update Nuxt and its transitive framework packages to patched versions in the web app and website.
+- 6c63092: Update compatible frontend dependencies for the web app and website.
+- 6c63092: Update Playwright, Nx, and ESLint tooling across the workspace.
+- 6c63092: Use Node.js 26.13.1 and pnpm 12.21.0 for local development, CI, and container builds.
+
 ## 0.2.4
 
 ### Patch Changes

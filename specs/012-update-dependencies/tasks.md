@@ -26,7 +26,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 **Independent test.** Compare direct and resolved versions. Verify affected API, web, website, and tooling targets.
 
-- [ ] T005 [US2] Update compatible API dependencies in `apps/api/package.json` and `pnpm-lock.yaml`; validate Nest
+- [x] T005 [US2] Update compatible API dependencies in `apps/api/package.json` and `pnpm-lock.yaml`; validate Nest
       peers, API lint, type check, tests, build, and offline OpenAPI export.
 - [ ] T006 [US2] Update compatible frontend dependencies in `apps/web/package.json`, `apps/website/package.json`,
       and `pnpm-lock.yaml`; verify browser behavior, website SSR, lint, type checks, tests, and builds.
@@ -48,7 +48,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 - [ ] T009 [US4] Migrate Querry Kit Nest, Nuxt, and Nuxt UI in `apps/api/package.json`, `apps/web/package.json`,
       `apps/web/app/composables/api/`, and the affected API query modules. Verify DTO selection, CASL enforcement,
       filters, sorting, pagination, and web table state.
-- [ ] T010 [US4] Migrate Fastify Multipart in `apps/api/package.json` and the affected upload path. Verify accepted
+- [x] T010 [US4] Migrate Fastify Multipart in `apps/api/package.json` and the affected upload path. Verify accepted
       uploads, limits, malformed payload responses, and the Fastify peer line.
 - [ ] T011 [US4] Migrate both Vite PWA packages in `apps/web/package.json` and `apps/web/nuxt.config.ts`. Verify
       generated assets and run `apps/web/playwright.pwa.config.ts` against a production build.
@@ -72,7 +72,8 @@ scope. Each substantive increment includes the repository-required Changeset and
 - T001 and T002 establish the baseline. T003 and T004 deliver the security minimum.
 - T005 through T007 share `pnpm-lock.yaml`; run their mutations sequentially.
 - T008 is independent of local package changes. Validate each Docker PR against its current base.
-- T009 through T013 follow compatible updates. T014 is last so package and toolchain regressions remain diagnosable.
+- T010 runs with T005 because Nest Fastify requires Multipart 10. T009 and T011 through T013 follow compatible updates.
+  T014 is last so package and toolchain regressions remain diagnosable.
 - Independent read-only peer and upstream release checks can run together. Independent checks of already fixed
   packages can also run together when their build output directories do not overlap.
 - T015 verifies the combined result.

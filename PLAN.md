@@ -20,7 +20,7 @@ Do not copy Machine Admin domain models or endpoints.
 
 ## Technical Baseline
 
-- Use Node.js 26.13.0, pnpm 11.28.9 via Corepack, and the existing TypeScript compiler aliases.
+- Use Node.js 26.13.1, pnpm 12.21.0 via Corepack, and the existing TypeScript compiler aliases.
 - Load and validate API environment variables with `envalid`; use `dotenv` only to load local environment files before validation.
 - Configure the existing TypeScript compiler aliases at the workspace root and verify it in CI with API and web typechecks. Re-evaluate
   TypeScript 7 when the lint and import-organization toolchain supports its compiler API.

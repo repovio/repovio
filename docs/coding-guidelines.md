@@ -4,7 +4,7 @@
 
 These standards apply to handwritten application code, shared schemas, tests, scripts, and configuration in this
 repository. Architecture and provider read-only constraints remain defined in `PLAN.md` and `AGENTS.md`.
-Use Node.js 26.13.0 and Corepack pnpm 11.28.9. Preserve the TypeScript compiler aliases and version ranges.
+Use Node.js 26.13.1 and Corepack pnpm 12.21.0. Preserve the TypeScript compiler aliases and version ranges.
 
 ESLint, Prettier, `.editorconfig`, and the scripts below implement the executable standards. Exclude dependencies,
 vendor/generated sources, framework output, build output, coverage and browser reports. Let pnpm own the lockfile.

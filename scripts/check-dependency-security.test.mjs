@@ -17,9 +17,9 @@ const jestRequire = createRequire(apiRequire.resolve('jest'));
 const configRequire = createRequire(jestRequire.resolve('jest-config'));
 const eslintRequire = createRequire(rootRequire.resolve('eslint'));
 const webRequire = createRequire(resolve(root, 'apps/web/package.json'));
-const pwaRequire = createRequire(webRequire.resolve('@vite-pwa/nuxt'));
-const vitePwaRequire = createRequire(pwaRequire.resolve('vite-plugin-pwa'));
-const workboxRequire = createRequire(vitePwaRequire.resolve('workbox-build'));
+const nuxtRequire = createRequire(webRequire.resolve('nuxt/package.json'));
+const nitroServerRequire = createRequire(nuxtRequire.resolve('@nuxt/nitro-server/package.json'));
+const nitroRequire = createRequire(nitroServerRequire.resolve('nitropack/package.json'));
 
 test('the lockfile excludes the three vulnerable dependency ranges', /** Verifies the lockfile excludes the three vulnerable dependency ranges. */ async () => {
   const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
@@ -32,6 +32,16 @@ test('the lockfile excludes the three vulnerable dependency ranges', /** Verifie
     assert.ok(Number(major) < 7 || Number(major) >= 11);
   }
   assert.doesNotMatch(lockfile, /^ {2}minimatch@11\.0\.0:/m);
+});
+
+test('the Nuxt lockfile entries exclude the affected 4.6 releases', /** Guards against stale vulnerable transitive Nuxt entries after an upgrade. */ async () => {
+  const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
+  assert.doesNotMatch(lockfile, /^ {2}(?:nuxt|'@nuxt\/(?:schema|nitro-server|vite-server))@4\.6\.[0-3]'?:/m);
+});
+
+test('the lockfile excludes the vulnerable node-forge patch releases', /** Guards the node-forge security resolution used by Nuxt. */ async () => {
+  const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
+  assert.doesNotMatch(lockfile, /^ {2}node-forge@1\.4\.[0-2]:/m);
 });
 
 test('Jest merging clones arrays and nested objects without inheriting poisoned keys', /** Verifies Jest merging clones arrays and nested objects without inheriting poisoned keys. */ () => {
@@ -50,12 +60,12 @@ test('Jest merging clones arrays and nested objects without inheriting poisoned 
 
 for (const format of ['commonjs', 'module']) {
   test(`Rollup resolves real workspace dependencies with safe merge initialization (${format})`, /** Verifies Rollup resolves real workspace dependencies with safe merge initialization ([format]). */ async () => {
-    const entry = workboxRequire.resolve('@rollup/plugin-node-resolve');
+    const entry = nitroRequire.resolve('@rollup/plugin-node-resolve');
     const plugin =
       format === 'commonjs'
-        ? workboxRequire('@rollup/plugin-node-resolve')
+        ? nitroRequire('@rollup/plugin-node-resolve')
         : await import(pathToFileURL(entry.replace('/cjs/', '/es/')));
-    const { rollup } = workboxRequire('rollup');
+    const { rollup } = nitroRequire('rollup');
     const bundle = await rollup({
       input: resolve(root, 'libs/schemas/dist/index.js'),
       plugins: [plugin.nodeResolve()],

@@ -58,7 +58,7 @@ the included MIT license. They require no external image or translation service.
    messages, incompatible parameters, malformed syntax, missing UI mappings, and missing flag assets. English fallback
    does not replace a completed translation. Unchanged product names and technical literals are valid.
 
-Activate the pinned Node.js 26.13.0 and pnpm 11.28.9 toolchain, start the local app, then run:
+Activate the pinned Node.js 26.13.1 and pnpm 12.21.0 toolchain, start the local app, then run:
 
 ```sh
 corepack pnpm --dir apps/web test

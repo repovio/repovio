@@ -1,10 +1,10 @@
 FROM node:26.13.1-bookworm-slim AS build
 WORKDIR /app
-RUN npm install --global corepack@0.36.0 && corepack enable && corepack prepare pnpm@11.28.9 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
 COPY apps/website/package.json apps/website/package.json
-RUN pnpm install --filter @repovio/website --frozen-lockfile --ignore-scripts
+RUN npm install --global corepack@0.36.0 && corepack enable \
+  && pnpm install --filter @repovio/website --frozen-lockfile --ignore-scripts
 COPY CHANGELOG.md ./CHANGELOG.md
 COPY apps/website apps/website
 RUN pnpm --filter @repovio/website exec nuxt prepare && pnpm --filter @repovio/website docs:check && pnpm --filter @repovio/website build

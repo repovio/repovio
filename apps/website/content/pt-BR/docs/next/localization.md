@@ -54,7 +54,7 @@ Os arquivos de `apps/web/public/flags` vêm de [flag-icons v7.5.0](https://githu
    mensagens ausentes, parâmetros incompatíveis, sintaxe inválida, mapeamentos UI e bandeiras ausentes. O fallback em inglês
    não substitui uma tradução completa; nomes de produtos e literais técnicos podem permanecer iguais.
 
-Ative Node.js 26.13.0 e pnpm 11.28.9, inicie o aplicativo local e execute:
+Ative Node.js 26.13.1 e pnpm 12.21.0, inicie o aplicativo local e execute:
 
 ```sh
 corepack pnpm --dir apps/web test

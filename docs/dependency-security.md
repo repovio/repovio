@@ -11,14 +11,16 @@ run the affected builds and tests when changing these overrides.
 ## Removing deepmerge
 
 [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4) has no published fixed `deepmerge` version.
-The workspace removes its dependency edges from `nestjs-zod`, `jest-config`, and `@rollup/plugin-node-resolve`.
+The workspace removes its dependency edges from `jest-config` and `@rollup/plugin-node-resolve`.
 Version-specific pnpm patches replace their imports with `@fastify/deepmerge@3.2.4`; package extensions declare the new
 dependency. The old implementation is not bundled or renamed.
 
-The patches cover CommonJS and ES modules, symbol properties, nested cloning, Jest configuration merging, and the
-custom array union used for Zod intersection schemas. The replacement rejects prototype-control keys from both merge
-inputs. Keep these semantics when upgrading a patched consumer; remove its patch and dependency extension only when
-the upstream package no longer depends on the vulnerable implementation.
+The patches cover CommonJS and ES modules, symbol properties, nested cloning, and Jest configuration merging.
+The replacement rejects prototype-control keys from both merge inputs. Keep these semantics when upgrading a patched
+consumer. Remove its patch and dependency extension after confirming the upstream replacement and running the tests.
+
+`nestjs-zod` 5.6 uses its own merge implementation. The regression tests cover cloning, deduplicated intersection arrays,
+and prototype isolation in its CommonJS and ES module exports.
 
 Run `pnpm test:dependencies`, API tests and offline OpenAPI export, web tests and production builds, and both Docker
 builds. Validate a clean `pnpm install --frozen-lockfile`; existing `node_modules` contents are not reproducibility proof.

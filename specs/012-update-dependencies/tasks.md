@@ -28,7 +28,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 - [x] T005 [US2] Update compatible API dependencies in `apps/api/package.json` and `pnpm-lock.yaml`; validate Nest
       peers, API lint, type check, tests, build, and offline OpenAPI export.
-- [ ] T006 [US2] Update compatible frontend dependencies in `apps/web/package.json`, `apps/website/package.json`,
+- [x] T006 [US2] Update compatible frontend dependencies in `apps/web/package.json`, `apps/website/package.json`,
       and `pnpm-lock.yaml`; verify browser behavior, website SSR, lint, type checks, tests, and builds.
 - [ ] T007 [US2] Update compatible tooling and remaining eligible resolutions in `package.json`,
       `libs/schemas/package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml`. Recheck `.github/workflows/` action

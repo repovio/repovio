@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.4
+
+### Patch Changes
+
+- 20fab58: Remove the unused npm CLI from production container images and update the API’s Hono and Apprise dependencies to patched versions.
+
 ## 2.3.3
 
 ### Patch Changes

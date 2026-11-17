@@ -52,7 +52,7 @@ scope. Each substantive increment includes the repository-required Changeset and
       uploads, limits, malformed payload responses, and the Fastify peer line.
 - [x] T011 [US4] Migrate both Vite PWA packages in `apps/web/package.json` and `apps/web/nuxt.config.ts`. Verify
       generated assets and run `apps/web/playwright.pwa.config.ts` against a production build.
-- [ ] T012 [US4] Migrate web-push in `apps/api/package.json` and
+- [x] T012 [US4] Migrate web-push in `apps/api/package.json` and
       `apps/api/src/modules/notifications/browser-push.service.ts`. Verify ESM imports, VAPID, and terminal and retryable
       failures with the existing notification tests and a synthetic integration check.
 - [ ] T013 [US4] Migrate Apprise in `apps/api/Dockerfile`. Verify the CLI invocation and synthetic delivery from

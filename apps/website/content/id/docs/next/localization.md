@@ -55,7 +55,7 @@ Aset dalam `apps/web/public/flags` berasal dari [flag-icons v7.5.0](https://gith
    hilang, parameter tidak cocok, sintaks tidak valid, pemetaan UI, dan aset bendera yang hilang. Cadangan bahasa Inggris
    bukan pengganti terjemahan lengkap; nama produk serta literal teknis boleh tetap sama.
 
-Aktifkan Node.js 26.13.0 dan pnpm 11.28.9, jalankan aplikasi lokal, lalu jalankan:
+Aktifkan Node.js 26.13.1 dan pnpm 12.21.0, jalankan aplikasi lokal, lalu jalankan:
 
 ```sh
 corepack pnpm --dir apps/web test

@@ -56,7 +56,7 @@ Die Dateien unter `apps/web/public/flags` stammen aus [flag-icons v7.5.0](https:
    falsche Parameter, ungültige Syntax, UI-Zuordnungen und fehlende Flaggen. Englischer Fallback ersetzt keine vollständige
    Übersetzung; unveränderte Produktnamen und technische Literale sind zulässig.
 
-Aktiviere Node.js 26.13.0 und pnpm 11.28.9, starte die lokale App und führe aus:
+Aktiviere Node.js 26.13.1 und pnpm 12.21.0, starte die lokale App und führe aus:
 
 ```sh
 corepack pnpm --dir apps/web test

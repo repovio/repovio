@@ -54,7 +54,7 @@ Los recursos de `apps/web/public/flags` proceden de [flag-icons v7.5.0](https://
    mensajes ausentes, parámetros incompatibles, sintaxis inválida, asignaciones UI y banderas ausentes. El inglés de
    reserva no sustituye una traducción completa; los nombres de producto y literales técnicos pueden permanecer iguales.
 
-Activa Node.js 26.13.0 y pnpm 11.28.9, inicia la app local y ejecuta:
+Activa Node.js 26.13.1 y pnpm 12.21.0, inicia la app local y ejecuta:
 
 ```sh
 corepack pnpm --dir apps/web test

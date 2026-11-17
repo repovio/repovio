@@ -19,7 +19,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 - [x] T003 [US1] Upgrade Nuxt to 4.6.4 in `apps/web/package.json` and `apps/website/package.json`; refresh the Nuxt
       kit, schema, Vite server, and Nitro resolutions in `pnpm-lock.yaml`. Verify affected package ranges and both builds.
-- [ ] T004 [US1] Set the bounded node-forge floor to 1.4.3 in `pnpm-workspace.yaml`, regenerate `pnpm-lock.yaml`,
+- [x] T004 [US1] Set the bounded node-forge floor to 1.4.3 in `pnpm-workspace.yaml`, regenerate `pnpm-lock.yaml`,
       and run the checks in `scripts/check-dependency-security.test.mjs`.
 
 ## Phase 4 - US2 - Compatible updates

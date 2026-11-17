@@ -5,19 +5,19 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 ## Phase 1 - Setup
 
-- [ ] T001 Verify the linked task branch is based on current `main` and record the environment and dependency baseline
+- [x] T001 Verify the linked task branch is based on current `main` and record the environment and dependency baseline
       in `specs/012-update-dependencies/research.md`.
 
 ## Phase 2 - Foundation
 
-- [ ] T002 Compare direct, resolved, and peer versions from `package.json`, the workspace manifests,
+- [x] T002 Compare direct, resolved, and peer versions from `package.json`, the workspace manifests,
       `pnpm-workspace.yaml`, and `pnpm-lock.yaml`. Check runtime requirements, affected overrides, and patch ownership.
 
 ## Phase 3 - US1 - Dependency security
 
 **Independent test.** Frozen install, advisory range inspection, dependency tests, web and website checks and builds.
 
-- [ ] T003 [US1] Upgrade Nuxt to 4.6.4 in `apps/web/package.json` and `apps/website/package.json`; refresh the Nuxt
+- [x] T003 [US1] Upgrade Nuxt to 4.6.4 in `apps/web/package.json` and `apps/website/package.json`; refresh the Nuxt
       kit, schema, Vite server, and Nitro resolutions in `pnpm-lock.yaml`. Verify affected package ranges and both builds.
 - [ ] T004 [US1] Set the bounded node-forge floor to 1.4.3 in `pnpm-workspace.yaml`, regenerate `pnpm-lock.yaml`,
       and run the checks in `scripts/check-dependency-security.test.mjs`.

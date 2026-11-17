@@ -34,6 +34,11 @@ test('the lockfile excludes the three vulnerable dependency ranges', /** Verifie
   assert.doesNotMatch(lockfile, /^ {2}minimatch@11\.0\.0:/m);
 });
 
+test('the Nuxt lockfile entries exclude the affected 4.6 releases', /** Guards against stale vulnerable transitive Nuxt entries after an upgrade. */ async () => {
+  const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
+  assert.doesNotMatch(lockfile, /^ {2}(?:nuxt|'@nuxt\/(?:schema|nitro-server|vite-server))@4\.6\.[0-3]'?:/m);
+});
+
 test('Jest merging clones arrays and nested objects without inheriting poisoned keys', /** Verifies Jest merging clones arrays and nested objects without inheriting poisoned keys. */ () => {
   const { mergeConfig } = jestRequire('jest-config');
   const defaults = { globals: { nested: { enabled: true } }, setupFiles: ['first'] };

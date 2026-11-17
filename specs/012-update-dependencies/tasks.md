@@ -45,7 +45,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 **Independent test.** Install and validate each migration separately against its application and runtime contracts.
 
-- [ ] T009 [US4] Migrate Querry Kit Nest, Nuxt, and Nuxt UI in `apps/api/package.json`, `apps/web/package.json`,
+- [x] T009 [US4] Migrate Querry Kit Nest, Nuxt, and Nuxt UI in `apps/api/package.json`, `apps/web/package.json`,
       `apps/web/app/composables/api/`, and the affected API query modules. Verify DTO selection, CASL enforcement,
       filters, sorting, pagination, and web table state.
 - [x] T010 [US4] Migrate Fastify Multipart in `apps/api/package.json` and the affected upload path. Verify accepted

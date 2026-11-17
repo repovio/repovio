@@ -1,4 +1,4 @@
-FROM node:26.13.0-bookworm-slim AS build
+FROM node:26.13.1-bookworm-slim AS build
 WORKDIR /workspace
 RUN apt-get update && apt-get install --yes --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -13,7 +13,7 @@ RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
   && pnpm --filter @repovio/api build
 RUN pnpm --filter @repovio/api deploy --legacy --prod /production
 
-FROM node:26.13.0-bookworm-slim AS runtime
+FROM node:26.13.1-bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install --yes --no-install-recommends openssl python3 python3-pip \
   && python3 -m pip install --break-system-packages --no-cache-dir apprise==1.11.0 \

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.3.5
+
+### Patch Changes
+
+- 6c63092: Update Apprise in the API image to 2.2.0.
+- 6c63092: Update Querry Kit across the API and web app.
+- 6c63092: Update the PWA module and asset generator. Preserve explicit update acceptance and browser push with a dedicated worker entry.
+- 6c63092: Update the browser Web Push transport to web-push 4.
+- 6c63092: Update the node-forge resolution used by the web app and website to address security advisories.
+- 6c63092: Update Nuxt and its transitive framework packages to patched versions in the web app and website.
+- 6c63092: Update compatible API dependencies and align Fastify Multipart with the Nest platform adapter.
+- 6c63092: Update compatible frontend dependencies for the web app and website.
+- 6c63092: Update Playwright, Nx, and ESLint tooling across the workspace.
+- 6c63092: Use Node.js 26.13.1 and pnpm 12.21.0 for local development, CI, and container builds.
+
 ## 2.3.4
 
 ### Patch Changes

@@ -30,7 +30,7 @@ scope. Each substantive increment includes the repository-required Changeset and
       peers, API lint, type check, tests, build, and offline OpenAPI export.
 - [x] T006 [US2] Update compatible frontend dependencies in `apps/web/package.json`, `apps/website/package.json`,
       and `pnpm-lock.yaml`; verify browser behavior, website SSR, lint, type checks, tests, and builds.
-- [ ] T007 [US2] Update compatible tooling and remaining eligible resolutions in `package.json`,
+- [x] T007 [US2] Update compatible tooling and remaining eligible resolutions in `package.json`,
       `libs/schemas/package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml`. Recheck `.github/workflows/` action
       pins, patch applicability, security protections, and canonical format stability.
 
@@ -38,7 +38,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 **Independent test.** Inspect #100 through #104 and verify merged image tags on `main`.
 
-- [ ] T008 [US3] Record final PR and check states in `specs/012-update-dependencies/research.md`. Verify the build and
+- [x] T008 [US3] Record final PR and check states in `specs/012-update-dependencies/research.md`. Verify the build and
       runtime image tags in `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `apps/website/Dockerfile`.
 
 ## Phase 6 - US4 - Stable major migrations

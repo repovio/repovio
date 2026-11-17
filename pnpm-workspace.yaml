@@ -93,7 +93,6 @@ minimumReleaseAgeExclude:
   - '@hono/node-server@2.1.6'
 
 patchedDependencies:
-  eslint-plugin-import-x@4.17.1: patches/eslint-plugin-import-x@4.17.1.patch
   '@rollup/plugin-node-resolve@16.0.3': patches/@rollup__plugin-node-resolve@16.0.3.patch
   braces@3.0.3: patches/braces@3.0.3.patch
   jest-config@30.5.2: patches/jest-config@30.5.2.patch

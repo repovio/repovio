@@ -34,3 +34,15 @@ Sources: [Nuxt v4.6.4](https://github.com/nuxt/nuxt/releases/tag/v4.6.4),
 [web-push v4](https://github.com/web-push-libs/web-push/releases/tag/v4.0.0),
 [Apprise v2.2.0](https://github.com/caronc/apprise/releases/tag/v2.2.0),
 [pnpm migration guide](https://pnpm.io/migration-v11).
+
+## Verified Dependabot dispositions
+
+- [#100](https://github.com/repovio/repovio/pull/100), [#101](https://github.com/repovio/repovio/pull/101), and
+  [#102](https://github.com/repovio/repovio/pull/102) merged after CI on their updated heads. The build and runtime stages
+  in all three Dockerfiles use Node.js 26.13.1 on `main`.
+- [#103](https://github.com/repovio/repovio/pull/103) closed because its lockfile still resolved vulnerable Nuxt Schema
+  and CI required a Changeset. [#104](https://github.com/repovio/repovio/pull/104) closed as a duplicate.
+- Prettier 3.10.1 reformatted roughly 240 files in check mode, including documented callback layout. Keep 3.9.10 for
+  this dependency update. Nest 12.5.0 was the newest group selected by pnpm under the existing release-age policy.
+- `eslint-plugin-import-x` 4.18.1 uses the matcher API covered by the local 4.17.1 patch. The workspace no longer needs
+  that patch. Formatting, lint, and dependency-security checks passed.

@@ -46,3 +46,16 @@ Sources: [Nuxt v4.6.4](https://github.com/nuxt/nuxt/releases/tag/v4.6.4),
   this dependency update. Nest 12.5.0 was the newest group selected by pnpm under the existing release-age policy.
 - `eslint-plugin-import-x` 4.18.1 uses the matcher API covered by the local 4.17.1 patch. The workspace no longer needs
   that patch. Formatting, lint, and dependency-security checks passed.
+
+## Combined validation
+
+- Node.js 26.13.0 with pnpm 11.28.9 passed a fresh frozen install, canonical formatting, lint, type checks, workspace
+  tests and builds, dependency regressions, and website documentation validation. PostgreSQL migrations passed on a
+  disposable PostgreSQL 18 instance. The production npm audit reported zero findings.
+- The Querry Kit migration passed 277 focused API tests and 29 Chromium scenarios for repository authorization, filters,
+  and table navigation. Vite PWA 2 passed 18 production Chromium scenarios and generated the expected PWA asset set.
+- The API, web, and website images built locally. Apprise 2.2.0 delivered a synthetic notification inside the API image.
+  The web and website images passed HTTP smoke tests. Web Push 4 passed 34 focused tests and a local encrypted HTTPS
+  delivery check with 201, 410, and 503 responses.
+- The npm inventory found Prettier 3.10.1 and a Prisma 8 release candidate remaining. The pinned local and CI toolchain
+  awaits the explicit decision in T014. Docker Node.js is already 26.13.1 on `main`.

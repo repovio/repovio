@@ -64,7 +64,7 @@ scope. Each substantive increment includes the repository-required Changeset and
 
 ## Final verification
 
-- [ ] T015 Run the full checks in `specs/012-update-dependencies/quickstart.md`, verify the Graphify output if source
+- [x] T015 Run the full checks in `specs/012-update-dependencies/quickstart.md`, verify the Graphify output if source
       changed, and record results and any deferred targets in `specs/012-update-dependencies/research.md`.
 
 ## Dependencies and execution strategy

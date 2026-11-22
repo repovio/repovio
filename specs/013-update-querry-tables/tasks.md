@@ -4,7 +4,7 @@
 
 - [x] T001 [US1] Resolve Effect in `pnpm-lock.yaml` and, if needed, `pnpm-workspace.yaml`. Add regression coverage
   in `scripts/check-dependency-security.test.mjs`. Verify audit, frozen installation, and Prisma configuration loading.
-- [ ] T002 [US1] Update Querry-Kit in `apps/api/package.json`, `apps/web/package.json`, and `pnpm-lock.yaml`.
+- [x] T002 [US1] Update Querry-Kit in `apps/api/package.json`, `apps/web/package.json`, and `pnpm-lock.yaml`.
   Verify peer resolution, schema generation, API and web tests, and the current paginated lists.
 
 ## Authorized grouping

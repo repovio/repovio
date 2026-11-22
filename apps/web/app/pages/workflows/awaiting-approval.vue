@@ -9,7 +9,7 @@
     :padded="false"
     :title="$t('awaitingApproval.title')"
   >
-    <template #actions>
+    <template #table-actions>
       <UInput
         v-model="search"
         class="w-36 sm:w-56"
@@ -20,24 +20,26 @@
       <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
     </template>
 
-    <UAlert
-      color="warning"
-      class="rounded-none ring-0 border-0 [box-shadow:none]"
-      data-provider-approval-notice
-      icon="i-lucide-info"
-      variant="subtle"
-      :description="$t('awaitingApproval.providerApprovalDescription')"
-      :title="$t('awaitingApproval.providerApprovalTitle')"
-    />
+    <template #before-table>
+      <UAlert
+        color="warning"
+        class="rounded-none ring-0 border-0 [box-shadow:none]"
+        data-provider-approval-notice
+        icon="i-lucide-info"
+        variant="subtle"
+        :description="$t('awaitingApproval.providerApprovalDescription')"
+        :title="$t('awaitingApproval.providerApprovalTitle')"
+      />
 
-    <UAlert
-      v-if="loadError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('awaitingApproval.loadError')"
-    />
+      <UAlert
+        v-if="loadError"
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('awaitingApproval.loadError')"
+      />
+    </template>
     <UTable
       sticky
       class="min-h-0 flex-1 overflow-x-auto"

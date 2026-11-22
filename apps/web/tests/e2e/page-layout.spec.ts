@@ -513,11 +513,11 @@ for (const locale of ['en', 'de']) {
         await expect(page.locator('[data-page-toolbar]')).toBeVisible({ timeout: 15_000 });
         await expectToolbarControls(page, width);
         if (path === '/issues') {
-          const actions = page.locator('[data-page-toolbar] [data-slot="right"]');
+          const actions = page.locator('[data-table-toolbar]');
           const search = actions.locator('input').first();
           if (width < 640) {
             expect((await search.boundingBox())!.width).toBeGreaterThanOrEqual(
-              (await actions.boundingBox())!.width - 2,
+              (await actions.boundingBox())!.width - 34,
             );
           }
           for (const theme of ['light', 'dark']) {
@@ -568,7 +568,7 @@ test('operates wrapped filters and preserves refresh loading until every request
     },
   );
   await page.goto('/issues');
-  const toolbar = page.locator('[data-page-toolbar]');
+  const toolbar = page.locator('[data-table-toolbar]');
   const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
   await expect(refresh).toBeEnabled();
   await toolbar.getByRole('textbox', { name: 'Search work items' }).fill('mobile');
@@ -654,7 +654,7 @@ for (const width of [320, 1440]) {
     await mockApplication(page);
     await page.setViewportSize({ height: 900, width });
     await page.goto('/workflow-runs/needs-attention');
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
     await expect(refresh).toBeEnabled();
     const outside = toolbar.getByRole('textbox', { name: 'Search workflow runs', exact: true });
@@ -880,7 +880,7 @@ for (const locale of ['en', 'de']) {
           '/admin/user-groups',
         ]) {
           await page.goto(path);
-          const toolbar = page.locator('[data-page-toolbar]');
+          const toolbar = page.locator('[data-table-toolbar]');
           await expect(toolbar).toBeVisible({ timeout: 15_000 });
           await expect(toolbar).toHaveCount(1);
           await expect(page.locator('html')).toHaveClass(new RegExp(theme));

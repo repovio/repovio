@@ -39,25 +39,27 @@
       </div>
     </template>
 
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="loadError"
-    />
-    <div v-if="activeDashboardPreset" class="mx-4 mb-4">
-      <UButton
-        color="primary"
-        icon="i-tabler-filter"
-        trailing-icon="i-lucide-x"
-        variant="soft"
-        :aria-label="$t('dashboard.activeRuns')"
-        :label="$t('dashboard.activeRuns')"
-        @click="clearDashboardPreset"
+    <template v-if="tableError || activeDashboardPreset" #before-table>
+      <UAlert
+        v-if="tableError"
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="loadError"
       />
-    </div>
+      <div v-if="activeDashboardPreset" class="mx-4 mb-4">
+        <UButton
+          color="primary"
+          icon="i-tabler-filter"
+          trailing-icon="i-lucide-x"
+          variant="soft"
+          :aria-label="$t('dashboard.activeRuns')"
+          :label="$t('dashboard.activeRuns')"
+          @click="clearDashboardPreset"
+        />
+      </div>
+    </template>
     <CommonTableGroups
       label-prefix="workflowStatus"
       :failed="groupsFailed"

@@ -7,7 +7,7 @@
 
 ## US1: Controls adjacent to results
 
-- [ ] T002 [US1] Extend `apps/web/app/components/common/table-page-frame.vue` and
+- [x] T002 [US1] Extend `apps/web/app/components/common/table-page-frame.vue` and
       `apps/web/app/components/layout/page.vue` with distinct summary and table control regions. Migrate the table
       routes from T001. Verify expanded Issues and embedded list ordering in `apps/web/tests/e2e/page-layout.spec.ts`.
 

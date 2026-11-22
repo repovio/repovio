@@ -8,7 +8,7 @@
     :padded="false"
     :title="$t('providers.title')"
   >
-    <template #actions>
+    <template #table-actions>
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -44,37 +44,39 @@
       </UButton>
     </template>
 
-    <UAlert
-      v-if="oauthStatus === 'connected' && !oauthActionError"
-      class="mx-4 mt-4"
-      color="success"
-      :title="$t('providers.oauthConnected')"
-    />
-    <UAlert
-      v-else-if="oauthStatus === 'failed' || oauthActionError"
-      role="alert"
-      class="mx-4 mt-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('providers.oauthError')"
-    />
+    <template v-if="hasNotice" #before-table>
+      <UAlert
+        v-if="oauthStatus === 'connected' && !oauthActionError"
+        class="mx-4 mt-4"
+        color="success"
+        :title="$t('providers.oauthConnected')"
+      />
+      <UAlert
+        v-else-if="oauthStatus === 'failed' || oauthActionError"
+        role="alert"
+        class="mx-4 mt-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('providers.oauthError')"
+      />
 
-    <UAlert
-      v-if="oauthStatus === 'cancelled' && !oauthActionError"
-      class="mx-4 mt-4"
-      color="neutral"
-      :title="$t('providers.oauthCancelled')"
-    />
+      <UAlert
+        v-if="oauthStatus === 'cancelled' && !oauthActionError"
+        class="mx-4 mt-4"
+        color="neutral"
+        :title="$t('providers.oauthCancelled')"
+      />
 
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('providers.loadError')"
-    />
+      <UAlert
+        v-if="tableError"
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('providers.loadError')"
+      />
+    </template>
     <UTable
       sticky
       v-model:column-pinning="columnPinning"
@@ -247,6 +249,14 @@ const {
   sorting,
   totalItems,
 } = providerTable;
+const hasNotice = computed(
+  /** Keep provider feedback above the table controls while visible. */ () =>
+    Boolean(
+      tableError.value ||
+      oauthActionError.value ||
+      ['connected', 'failed', 'cancelled'].includes(String(oauthStatus.value)),
+    ),
+);
 const columnPinning = computed({
   /** Reads the column pinning binding. */
   get: () => ({ left: providerTable.columnPinning.value.left, right: providerTable.columnPinning.value.right }),

@@ -9,7 +9,7 @@
     :padded="false"
     :title="$t('notifications.tabs.history')"
   >
-    <template #actions>
+    <template #table-actions>
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -32,14 +32,15 @@
         </template>
       </QTableOptions>
     </template>
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('notifications.loadError')"
-    />
+    <template v-if="tableError" #before-table>
+      <UAlert
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('notifications.loadError')"
+      />
+    </template>
     <UTable
       sticky
       v-model:column-pinning="columnPinning"

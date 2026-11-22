@@ -21,6 +21,16 @@
       <slot name="navigation" />
     </UDashboardToolbar>
 
+    <slot name="summary" />
+    <slot name="before-table" />
+    <div
+      v-if="$slots['table-actions']"
+      class="flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b border-default px-4 py-2"
+      data-table-toolbar
+    >
+      <slot name="table-actions" />
+    </div>
+
     <div data-page-content :class="contentClasses">
       <h1 class="sr-only">
         {{ title }}

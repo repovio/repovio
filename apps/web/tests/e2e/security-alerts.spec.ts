@@ -143,7 +143,7 @@ test('renders permission-scoped alerts, availability warnings, details, and a re
     page.getByRole('table').getByText(`${alert.repositoryOwner}/${alert.repositoryName}`, { exact: true }),
   ).toBeVisible();
   await page.getByRole('textbox', { name: 'Search alerts' }).fill('vite');
-  await expect(page.locator('[data-page-toolbar]').getByLabel('Updated from')).toHaveCount(0);
+  await expect(page.locator('[data-table-toolbar]').getByLabel('Updated from')).toHaveCount(0);
   await page.getByRole('button', { name: 'Filter', exact: true }).click();
   await page.getByLabel('Updated from').fill('2026-09-01');
   await expect
@@ -319,7 +319,7 @@ for (const [path, kind] of [
       },
     );
     await page.goto(`/alerts/${path}`);
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     const trigger = toolbar.getByRole('button', { name: 'Filter', exact: true });
     await expect(trigger).toBeVisible();
     await expect(toolbar.locator('input[type="date"]')).toHaveCount(0);

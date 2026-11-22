@@ -190,9 +190,9 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await expect(primaryNavigation.getByRole('link', { name: 'Delivery history', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-page-navigation]')).toHaveCount(0);
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
-  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(1);
   await expect(
-    page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }),
+    page.locator('[data-table-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }),
   ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Rules', exact: true })).toHaveCount(0);
   await expect(page.getByRole('cell', { name: 'Operations' })).toBeVisible();
@@ -231,10 +231,10 @@ test('shows global channel events and system-wide delivery history', /** Verifie
   await page.keyboard.press('Escape');
   await expect(addChannel).toBeFocused();
 
-  await page.locator('[data-page-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }).click();
+  await page.locator('[data-table-toolbar]').getByRole('link', { name: 'Delivery history', exact: true }).click();
   await expect(notifications).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
-  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(1);
   await expect(page.getByText('deploy-production')).toBeVisible();
   await expectTableHover(page, page.getByRole('table'));
   await page.getByRole('button', { name: 'View delivery details' }).click();
@@ -517,7 +517,7 @@ for (const locale of ['en', 'de'] as const) {
     const notifications = page
       .getByRole('navigation', { name: labels.navigation })
       .getByRole('link', { name: labels.notifications, exact: true });
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     const history = toolbar.getByRole('link', { name: labels.history, exact: true });
     await expect(history).toBeVisible();
     await expect(history).toHaveText('');
@@ -600,7 +600,7 @@ for (const locale of ['en', 'de'] as const) {
       ).toBeVisible();
       await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
       await expect(
-        page.locator('[data-page-toolbar]').getByRole('link', { name: labels.history, exact: true }),
+        page.locator('[data-table-toolbar]').getByRole('link', { name: labels.history, exact: true }),
       ).toHaveCount(0);
       await expect(page.getByRole('button', { name: labels.add, exact: true })).toHaveCount(0);
       await page.locator('[data-navbar-notifications]').click();

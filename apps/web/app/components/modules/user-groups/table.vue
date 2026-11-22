@@ -22,12 +22,9 @@
       </QTableSorting>
       <UButton icon="i-lucide-plus" :label="$t('userGroups.create')" @click="edit(null)" />
     </template>
-    <UAlert
-      v-if="error || actionError"
-      class="m-4"
-      color="error"
-      :title="$t(actionError ? 'userGroups.saveError' : 'userGroups.loadError')"
-    />
+    <template v-if="error || actionError" #before-table>
+      <UAlert class="m-4" color="error" :title="$t(actionError ? 'userGroups.saveError' : 'userGroups.loadError')" />
+    </template>
     <UTable class="min-h-0 flex-1" :columns="columns" :data="items" :loading="loading" :empty="$t('userGroups.empty')">
       <template #createdAt-cell="{ row }">
         {{ formatDateTime(row.original.createdAt) }}

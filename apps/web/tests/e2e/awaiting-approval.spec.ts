@@ -94,7 +94,7 @@ test('lists approval-gated workflows with provider and pull-request actions', /*
         page.locator('[data-provider-approval-notice]').evaluate(
           /** Reads or updates browser state for the awaiting approval scenario. */ (notice) => {
             const noticeBounds = notice.getBoundingClientRect();
-            const contentBounds = notice.closest('[data-page-content]')?.getBoundingClientRect();
+            const contentBounds = notice.closest('[data-page-shell]')?.getBoundingClientRect();
             return Boolean(
               contentBounds && noticeBounds.left >= contentBounds.left && noticeBounds.right <= contentBounds.right,
             );

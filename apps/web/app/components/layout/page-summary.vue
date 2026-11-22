@@ -6,6 +6,7 @@
     leave-to-class="grid-rows-[0fr] opacity-0"
     enter-to-class="grid-rows-[1fr] opacity-100"
     leave-from-class="grid-rows-[1fr] opacity-100"
+    @after-leave="emit('collapsed')"
   >
     <div v-show="expanded" :id="id" class="grid min-h-0" data-page-summary :inert="!expanded">
       <div class="min-h-0 overflow-auto">
@@ -17,4 +18,5 @@
 
 <script setup lang="ts">
 defineProps<{ expanded: boolean; id: string }>();
+const emit = defineEmits<{ collapsed: [] }>();
 </script>

@@ -34,7 +34,7 @@
             :aria-expanded="expanded"
             :aria-label="$t('layout.toggleMetrics')"
             :ui="{ leadingIcon: ['transition-transform motion-reduce:transition-none', expanded && 'rotate-180'] }"
-            @click="expanded = !expanded"
+            @click="toggleSummary"
           />
         </div>
       </template>
@@ -44,7 +44,13 @@
       <slot name="navigation" />
     </UDashboardToolbar>
 
-    <LayoutPageSummary v-if="$slots.summary && !padded" :id="summaryId" class="max-h-[50dvh]" :expanded="expanded">
+    <LayoutPageSummary
+      v-if="$slots.summary && !padded"
+      :id="summaryId"
+      class="max-h-[50dvh]"
+      :expanded="expanded"
+      @collapsed="collapsing = false"
+    >
       <slot name="summary" />
     </LayoutPageSummary>
     <slot name="before-table" />
@@ -96,6 +102,12 @@ const props = withDefaults(
 );
 const summaryId = useId();
 const expanded = ref(true);
+const collapsing = ref(false);
+/** Keep the table below the metrics until the shrinking region has finished its transition. */
+function toggleSummary(): void {
+  collapsing.value = expanded.value;
+  expanded.value = !expanded.value;
+}
 const slots = useSlots();
 const mergeTarget = useTemplateRef('mergeTarget');
 const tableToolbar = useTemplateRef('tableToolbar');
@@ -105,7 +117,12 @@ const { width: actionsWidth } = useElementSize(useTemplateRef('pageActions'));
 
 /** Read current conditional slots on each render; never move or duplicate query state. */
 function mergeTable(): boolean {
-  if (!mergeTarget.value || slots.navigation || slots['before-table'] || (slots.summary && expanded.value))
+  if (
+    !mergeTarget.value ||
+    slots.navigation ||
+    slots['before-table'] ||
+    (slots.summary && (expanded.value || collapsing.value))
+  )
     return false;
   const controls = tableToolbar.value?.width ?? 0;
   // Include toolbar padding and gaps between the three groups, in addition to their measured widths.

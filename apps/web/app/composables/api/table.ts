@@ -4,7 +4,7 @@ import type { TableColumn as QueryKitTableColumn } from '@querry-kit/nuxt/types'
 import { refDebounced } from '@vueuse/core';
 import { useRouteQuery } from '@vueuse/router';
 import { computed, onScopeDispose, ref, type Ref, watch } from 'vue';
-import { userSearchWhere } from '~/util/user-search';
+import { userSearchWhere } from '../../util/user-search';
 
 import type { Endpoint, Endpoints } from '~/types/api/endpoints';
 import type { ColumnDefinition } from '~/types/table';
@@ -135,13 +135,13 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     routePage,
     staticFields: options.staticFields,
     staticFilter: computed(
-      /** Compose server-side fixed scope with existing search constraints. */ () =>
-        withRepositoryScope(
-          options.searchMode === 'user' && debounced.value.trim()
-            ? userSearchWhere(debounced.value)
-            : options.staticFilter?.value,
-          options.repositoryId,
-        ),
+      /** Keep fixed filters and repository scope when narrowing a user search. */ () => {
+        const fixed = options.staticFilter?.value;
+        if (options.searchMode !== 'user' || !debounced.value.trim())
+          return withRepositoryScope(fixed, options.repositoryId);
+        const match = userSearchWhere(debounced.value);
+        return withRepositoryScope(fixed ? { AND: [fixed, match] } : match, options.repositoryId);
+      },
     ),
   });
 

@@ -538,7 +538,7 @@ for (const locale of ['en', 'de'] as const) {
     await expect(notifications).toHaveAttribute('aria-current', 'page');
     await page.reload();
     await expect(notifications).toHaveAttribute('aria-current', 'page');
-    await toolbar.getByRole('link', { name: labels.notifications, exact: true }).click();
+    await page.locator('[data-page-toolbar]').getByRole('link', { name: labels.notifications, exact: true }).click();
     await expect(page).toHaveURL(/\/notifications$/);
     await history.click();
     await expect(page).toHaveURL(/\/notifications\/history$/);
@@ -551,7 +551,7 @@ for (const locale of ['en', 'de'] as const) {
     await page.goto('/notifications/history');
     await expect(notifications).toHaveAttribute('aria-current', 'page');
     failChannels = true;
-    await toolbar.getByRole('link', { name: labels.notifications, exact: true }).click();
+    await page.locator('[data-page-toolbar]').getByRole('link', { name: labels.notifications, exact: true }).click();
     await expect(page.getByText(labels.error, { exact: true })).toBeVisible();
     await expect(history).toBeVisible();
     await history.click();

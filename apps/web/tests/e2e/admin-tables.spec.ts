@@ -714,7 +714,7 @@ test('workflow runs render in a filterable and sortable full-page table', /** Ve
     )
     .toBe(120_000);
   await page.keyboard.press('Shift+F');
-  await page.locator('footer').getByRole('combobox').click();
+  await page.locator('footer').getByRole('combobox', { name: 'Items per page' }).click();
   await page.getByRole('option', { name: '100', exact: true }).click();
   await expect
     .poll(

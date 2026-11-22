@@ -960,6 +960,18 @@ test('Ctrl+F searches the current resource on the server from page one', /** Che
   page,
 }) => {
   await mockToolbarPages(page);
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Return a distinct match only when the server receives the expected search. */ (route) => {
+      const matching = new URL(route.request().url()).searchParams.get('search') === 'example';
+      return route.fulfill({
+        json: {
+          items: matching ? [{ ...testRepository(), name: 'example-match' }] : [],
+          meta: { ...emptyPage.meta, itemCount: Number(matching), pageCount: Number(matching) },
+        },
+      });
+    },
+  );
   await page.goto('/repositories?page=3');
   const input = page.locator('[data-table-toolbar]').getByRole('textbox');
   await expect(input).toBeVisible();
@@ -973,6 +985,31 @@ test('Ctrl+F searches the current resource on the server from page one', /** Che
   );
   await input.fill('example');
   expect(new URL((await request).url()).searchParams.get('page')).toBe('1');
+  await expect(page.getByRole('table').getByText('example-match', { exact: false })).toBeVisible();
+  await input.clear();
+  await expect(page.getByRole('table').getByText('example-match', { exact: false })).toHaveCount(0);
+});
+
+test('keeps browser find available outside the active table', /** Follow client navigation and verify listener cleanup. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.goto('/issues');
+  const header = page.locator('[data-page-toolbar]');
+  await header.getByRole('link', { name: 'Dashboard' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      /** Check whether any inactive table consumed native browser find. */ () =>
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, cancelable: true })),
+    ),
+  ).toBe(true);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const toggle = header.getByRole('button', { name: 'Toggle summary metrics' });
+  await toggle.click();
+  await expect(page.locator('[data-page-summary]')).toBeHidden();
+  await expect(toggle).toBeFocused();
 });
 
 test('merges only adjacent toolbars that fit without replacing the active input', /** Check geometry and DOM identity across disclosure and resize. */ async ({

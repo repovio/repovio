@@ -33,7 +33,7 @@
 
 ## Feature verification
 
-- [ ] T006 Run the focused browser matrix in `specs/014-adapt-table-toolbars/quickstart.md`, inspect rendered pages,
+- [x] T006 Run the focused browser matrix in `specs/014-adapt-table-toolbars/quickstart.md`, inspect rendered pages,
       and record actual outcomes. Run affected web checks and address any scoped regressions.
 
 ## Dependencies and implementation strategy

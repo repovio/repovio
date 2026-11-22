@@ -8,11 +8,9 @@
     :title="$t('userGroups.title')"
   >
     <template #actions>
-      <UInput
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('querrykit.table.search.placeholder')"
+        :label="$t('querrykit.table.search.placeholder')"
         :placeholder="$t('querrykit.table.search.placeholder')"
       />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>

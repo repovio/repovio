@@ -1,12 +1,9 @@
 <template>
   <CommonTablePageFrame :embedded="embedded" :breadcrumbs="breadcrumbs" :padded="false" :title="title">
     <template #actions>
-      <UInput
-        v-if="searchable"
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('workflowRuns.search')"
+        :label="$t('workflowRuns.search')"
         :placeholder="$t('workflowRuns.searchPlaceholder')"
       />
       <div class="flex flex-wrap items-center gap-2">
@@ -212,7 +209,6 @@ const props = defineProps<{
   endpoint: 'workflow-runs' | 'workflow-runs/needs-attention';
   loadError: string;
   name: string;
-  searchable?: boolean;
   title: string;
 }>();
 
@@ -319,7 +315,7 @@ const visibleFilterFields = computed(
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => {
     const value = debouncedSearch.value.trim();
-    if (!props.searchable || !value) return undefined;
+    if (!value) return undefined;
     const contains = { contains: value, mode: 'insensitive' };
     return {
       OR: [

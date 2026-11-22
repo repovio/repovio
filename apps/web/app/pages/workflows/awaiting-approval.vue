@@ -10,11 +10,9 @@
     :title="$t('awaitingApproval.title')"
   >
     <template #table-actions>
-      <UInput
+      <CommonTableSearch
         v-model="search"
-        class="w-36 sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('awaitingApproval.searchPlaceholder')"
+        :label="$t('awaitingApproval.searchPlaceholder')"
         :placeholder="$t('awaitingApproval.searchPlaceholder')"
       />
       <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />

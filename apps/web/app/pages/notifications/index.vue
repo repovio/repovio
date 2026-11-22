@@ -9,6 +9,7 @@
     :title="$t('notifications.title')"
   >
     <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -240,6 +241,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const channelTable = useTable({
+  searchMode: 'parameter',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'notification-channels/query',
@@ -250,6 +252,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

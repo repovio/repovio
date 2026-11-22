@@ -9,6 +9,7 @@
     :title="$t('users.title')"
   >
     <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -207,6 +208,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const userTable = useTable({
+  searchMode: 'user',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'users',
@@ -217,6 +219,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

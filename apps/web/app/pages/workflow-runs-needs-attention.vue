@@ -1,6 +1,5 @@
 <template>
   <ModulesWorkflowRunsTablePage
-    searchable
     detailed-timestamps
     endpoint="workflow-runs/needs-attention"
     name="workflow-runs-needs-attention"

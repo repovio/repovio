@@ -11,11 +11,9 @@
     :title="pageTitle"
   >
     <template #actions>
-      <UInput
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('securityAlerts.search')"
+        :label="$t('securityAlerts.search')"
         :placeholder="$t('securityAlerts.search')"
       />
       <div class="flex flex-wrap items-center gap-2">

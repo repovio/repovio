@@ -9,6 +9,7 @@
     :title="$t('repositories.title')"
   >
     <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -231,6 +232,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const repositoryTable = useTable({
+  searchMode: 'parameter',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'repositories',
@@ -241,6 +243,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

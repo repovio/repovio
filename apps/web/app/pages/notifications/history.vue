@@ -10,6 +10,7 @@
     :title="$t('notifications.tabs.history')"
   >
     <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -192,6 +193,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const deliveryTable = useTable({
+  searchMode: 'parameter',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'notification-deliveries/query',
@@ -218,6 +220,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

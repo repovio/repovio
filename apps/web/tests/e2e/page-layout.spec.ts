@@ -949,3 +949,22 @@ test('collapses and restores Issues metrics from the breadcrumb without losing t
   await expect(toggle).toBeFocused();
   await expect(search).toHaveValue('example');
 });
+
+test('Ctrl+F searches the current resource on the server from page one', /** Check active focus and paginated search on an administrative table. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.goto('/repositories?page=3');
+  const input = page.locator('[data-table-toolbar]').getByRole('textbox');
+  await expect(input).toBeVisible();
+  await page.keyboard.press('Control+f');
+  await expect(input).toBeFocused();
+  const request = page.waitForRequest(
+    /** Match the actual resource search before checking its page. */ (request) => {
+      const url = new URL(request.url());
+      return url.pathname.endsWith('/api/v1/repositories') && url.searchParams.get('search') === 'example';
+    },
+  );
+  await input.fill('example');
+  expect(new URL((await request).url()).searchParams.get('page')).toBe('1');
+});

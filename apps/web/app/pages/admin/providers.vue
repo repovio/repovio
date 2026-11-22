@@ -9,6 +9,7 @@
     :title="$t('providers.title')"
   >
     <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -230,6 +231,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const providerTable = useTable({
+  searchMode: 'parameter',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'provider-accounts',
@@ -240,6 +242,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

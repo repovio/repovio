@@ -51,6 +51,9 @@
     <template v-if="loadError" #before-table>
       <UAlert color="error" icon="i-lucide-circle-alert" variant="subtle" :title="$t('jobs.loadError')" />
     </template>
+    <template #table-actions>
+      <CommonTableSearch v-model="search" />
+    </template>
     <UTable
       sticky
       class="min-h-0 flex-1"
@@ -153,7 +156,7 @@
 
 <script setup lang="ts">
 import type { TableColumn } from '#ui/types';
-import { useLocalStorage } from '@vueuse/core';
+import { refDebounced, useLocalStorage } from '@vueuse/core';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { useModuleApi } from '~/composables/api/module-api';
@@ -179,6 +182,9 @@ const summary = ref<RepositorySyncJobSummary | null>(null);
 const loading = ref(true);
 const loadError = ref(false);
 const page = ref(1);
+const search = ref('');
+const queryText = refDebounced(search, 250);
+let requestVersion = 0;
 const itemsPerPage = useLocalStorage('table:jobs:items-per-page', 10);
 const totalItems = ref(0);
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
@@ -213,20 +219,22 @@ useHead({ title: computed(/** Derives title from the current reactive dependenci
 
 /** Load the current queue summary and requested repository page. */
 async function load(showLoading = false): Promise<void> {
+  const version = ++requestVersion;
   if (showLoading) loading.value = true;
   try {
     const [jobsResponse, summaryResponse] = await Promise.all([
-      jobsApi.query({ page: page.value, perPage: itemsPerPage.value }),
+      jobsApi.query({ page: page.value, perPage: itemsPerPage.value, search: queryText.value.trim() || undefined }),
       api.jobs.summary(),
     ]);
+    if (version !== requestVersion) return;
     jobs.value = jobsResponse.data.items;
     totalItems.value = jobsResponse.data.meta.itemCount;
     summary.value = summaryResponse.data;
     loadError.value = false;
   } catch {
-    loadError.value = true;
+    if (version === requestVersion) loadError.value = true;
   } finally {
-    loading.value = false;
+    if (version === requestVersion) loading.value = false;
   }
 }
 
@@ -278,7 +286,14 @@ function formatTimestamp(value: string | null): string {
   return value ? formatDateTime(value) : '—';
 }
 
-watch([page, itemsPerPage], /** Synchronizes jobs when the observed state changes. */ () => void load(true));
+watch(
+  queryText,
+  /** Reset pagination before the filtered jobs query runs. */ () => {
+    page.value = 1;
+  },
+  { flush: 'sync' },
+);
+watch([page, itemsPerPage, queryText], /** Synchronizes jobs when the observed state changes. */ () => void load(true));
 onMounted(
   /** Initializes component subscriptions and data after mounting. */ () => {
     void load(true);

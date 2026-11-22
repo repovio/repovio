@@ -20,7 +20,7 @@
 
 ## US3: Search every active table
 
-- [ ] T004 [US3] Bind one labeled search per toolbar to the resource query under `apps/web/app/composables/api`.
+- [x] T004 [US3] Bind one labeled search per toolbar to the resource query under `apps/web/app/composables/api`.
       Route Ctrl+F to that visible input through a shared shortcut owner under `apps/web/app/composables/app`.
       Verify results across pagination, embedded scopes, tab changes, dialog focus, and native fallback in
       `apps/web/tests/e2e/page-layout.spec.ts`.

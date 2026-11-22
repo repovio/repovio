@@ -630,10 +630,10 @@ test('operates wrapped filters and preserves refresh loading until every request
   await expect(combinedFilters.getByRole('button', { name: 'Remove filter' })).toHaveCount(0);
   await expect(combinedFilters.getByLabel('Updated from', { exact: true })).toHaveValue('');
   await expect(combinedFilters.getByLabel('Updated to', { exact: true })).toHaveValue('');
-  await expect(toolbar.getByRole('textbox', { name: 'Search work items' })).toHaveValue('mobile');
   await combinedFilters.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
   await page.keyboard.press('Escape');
   await expect(combinedFilters).toBeHidden();
+  await expect(toolbar.getByRole('textbox', { name: 'Search work items' })).toHaveValue('mobile');
   await expect(toolbar.getByRole('button', { name: 'Filter', exact: true })).toBeFocused();
   holdSummary = true;
   await refresh.click();
@@ -668,16 +668,21 @@ for (const width of [320, 1440]) {
       await page.keyboard.press(shortcut!);
       const popover = page.getByRole('dialog', { name, exact: true });
       await expect(popover).toBeVisible();
-      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      if (width < 640) {
+        await expect(popover).toHaveAttribute('aria-modal', 'true');
+      } else {
+        await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      }
       await page.keyboard.press('Escape');
       await expect(popover).toBeHidden();
       await expect(trigger).toBeFocused();
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await trigger.click();
       await expect(popover).toBeVisible();
-      await outside.click();
+      if (width < 640) await popover.getByRole('button', { name: 'Close' }).click();
+      else await outside.click();
       await expect(popover).toBeHidden();
-      await expect(outside).toBeFocused();
+      await expect(width < 640 ? trigger : outside).toBeFocused();
     }
 
     const filter = toolbar.getByRole('button', { name: 'Filter', exact: true });
@@ -690,9 +695,10 @@ for (const width of [320, 1440]) {
     await expect(page.getByRole('listbox')).toBeHidden();
     await expect(popover).toBeVisible();
     await expect(field).toBeFocused();
-    await outside.click();
+    if (width < 640) await popover.getByRole('button', { name: 'Close' }).click();
+    else await outside.click();
     await expect(popover).toBeHidden();
-    await expect(outside).toBeFocused();
+    await expect(width < 640 ? filter : outside).toBeFocused();
   });
 }
 
@@ -967,4 +973,35 @@ test('Ctrl+F searches the current resource on the server from page one', /** Che
   );
   await input.fill('example');
   expect(new URL((await request).url()).searchParams.get('page')).toBe('1');
+});
+
+test('merges only adjacent toolbars that fit without replacing the active input', /** Check geometry and DOM identity across disclosure and resize. */ async ({
+  page,
+}, testInfo) => {
+  await mockToolbarPages(page);
+  await page.setViewportSize({ width: 1118, height: 1273 });
+  await page.goto('/issues');
+  const header = page.locator('[data-page-toolbar]');
+  const controls = page.locator('[data-table-toolbar]');
+  const search = controls.getByRole('textbox');
+  const toggle = header.getByRole('button', { name: 'Toggle summary metrics' });
+  await expect(search).toBeVisible();
+  await expect(header.getByRole('textbox')).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('issues-expanded.png') });
+  await search.fill('retained');
+  await toggle.click();
+  await expect(header.getByRole('textbox')).toHaveValue('retained');
+  await expect(page.locator('[data-page-summary]')).toBeHidden();
+  expect((await toggle.boundingBox())!.x).toBeGreaterThan((await search.boundingBox())!.x);
+  await page.screenshot({ path: testInfo.outputPath('issues-merged.png') });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(header.getByRole('textbox')).toHaveCount(0);
+  await expect(search).toHaveValue('retained');
+  await page.keyboard.press('Control+f');
+  await expect(search).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath('issues-narrow.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/workflows/awaiting-approval');
+  await expect(controls).toBeVisible();
+  await expect(header.getByRole('textbox')).toHaveCount(0);
 });

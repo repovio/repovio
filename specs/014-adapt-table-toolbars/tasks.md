@@ -27,7 +27,7 @@
 
 ## US4: Adaptive shared row
 
-- [ ] T005 [US4] Implement fit-based merging in `apps/web/app/components/layout/page.vue` and its table frame.
+- [x] T005 [US4] Implement fit-based merging in `apps/web/app/components/layout/page.vue` and its table frame.
       Verify separate rows at narrow widths, a single row where possible, and correct layout after collapse, resize,
       and navigation. Assert no duplicated inputs or hidden actions in `apps/web/tests/e2e/page-layout.spec.ts`.
 

@@ -13,7 +13,7 @@
 
 ## US2: Animated KPI disclosure
 
-- [ ] T003 [US2] Add the rightmost accessible chevron and reduced-motion-aware disclosure to
+- [x] T003 [US2] Add the rightmost accessible chevron and reduced-motion-aware disclosure to
       `apps/web/app/components/layout/page.vue`. Wire all identified KPI regions, including `apps/web/app/pages/index.vue`.
       Verify localized labels, focus, expanded state, and unchanged filters in `apps/web/tests/e2e/dashboard.spec.ts`
       and the affected monitoring tests.

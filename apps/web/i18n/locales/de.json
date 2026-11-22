@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Kennzahlen ein- oder ausblenden",
     "administration": "Verwaltung",
     "copyright": "Copyright {year} Repovio",
     "dashboard": "Dashboard",

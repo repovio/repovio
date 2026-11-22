@@ -20,6 +20,46 @@
       </div>
     </template>
 
+    <template #summary>
+      <div class="space-y-6">
+        <ModulesDashboardSummaryCards
+          :failing-workflow-count="failures.length"
+          :loading="isLoading"
+          :summary="summary"
+        />
+        <ModulesWorkItemsSummaryCards
+          :loading="isCurrentLoading"
+          :metrics="workMetrics"
+          :title="$t('workItems.summary')"
+        />
+        <UCard v-if="summary?.securityAlerts">
+          <template #header>
+            <div class="flex items-center justify-between gap-4">
+              <h2 class="font-semibold">
+                {{ $t('securityAlerts.openSummary') }}
+              </h2>
+              <UButton
+                color="neutral"
+                trailing-icon="i-lucide-arrow-right"
+                variant="ghost"
+                to="/alerts/dependencies"
+                :label="$t('repositoryDetails.viewAll')"
+              />
+            </div>
+          </template>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div v-for="metric in securityAlertMetrics" :key="metric.kind" class="rounded-lg bg-elevated p-4">
+              <p class="text-xs uppercase tracking-wide text-muted">
+                {{ metric.label }}
+              </p>
+              <p class="mt-1 text-2xl font-semibold tabular-nums">
+                {{ metric.value }}
+              </p>
+            </div>
+          </div>
+        </UCard>
+      </div>
+    </template>
     <UAlert
       v-if="hasError"
       color="error"
@@ -28,35 +68,6 @@
       :description="$t('dashboard.partialLoadError')"
       :title="$t('dashboard.loadErrorTitle')"
     />
-
-    <ModulesDashboardSummaryCards :failing-workflow-count="failures.length" :loading="isLoading" :summary="summary" />
-    <ModulesWorkItemsSummaryCards :loading="isCurrentLoading" :metrics="workMetrics" :title="$t('workItems.summary')" />
-    <UCard v-if="summary?.securityAlerts">
-      <template #header>
-        <div class="flex items-center justify-between gap-4">
-          <h2 class="font-semibold">
-            {{ $t('securityAlerts.openSummary') }}
-          </h2>
-          <UButton
-            color="neutral"
-            trailing-icon="i-lucide-arrow-right"
-            variant="ghost"
-            to="/alerts/dependencies"
-            :label="$t('repositoryDetails.viewAll')"
-          />
-        </div>
-      </template>
-      <div class="grid gap-3 sm:grid-cols-3">
-        <div v-for="metric in securityAlertMetrics" :key="metric.kind" class="rounded-lg bg-elevated p-4">
-          <p class="text-xs uppercase tracking-wide text-muted">
-            {{ metric.label }}
-          </p>
-          <p class="mt-1 text-2xl font-semibold tabular-nums">
-            {{ metric.value }}
-          </p>
-        </div>
-      </div>
-    </UCard>
 
     <div class="grid gap-6 xl:grid-cols-5">
       <UCard class="xl:col-span-3">

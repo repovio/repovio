@@ -7,58 +7,50 @@
     :padded="false"
     :title="$t('jobs.title')"
   >
-    <div class="space-y-4 border-b border-default p-4 sm:p-6">
-      <UAlert
-        v-if="loadError"
-        color="error"
-        icon="i-lucide-circle-alert"
-        variant="subtle"
-        :title="$t('jobs.loadError')"
+    <template v-if="isAdmin" #actions>
+      <UButton
+        icon="i-lucide-play"
+        :disabled="!summary || summary.idle + summary.failed + summary.warning === 0"
+        :label="$t('jobs.runAll')"
+        :loading="isPending('all')"
+        @click="startAll"
       />
-
-      <UCard :ui="{ body: 'p-0 sm:p-0' }">
-        <div class="flex flex-col md:flex-row">
-          <div class="min-w-0 flex-1 space-y-5 p-5 sm:p-7">
-            <div class="flex items-start gap-3">
-              <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-refresh-cw" aria-hidden="true" />
-              <div class="min-w-0">
-                <h2 class="text-lg font-semibold">
-                  {{ $t('jobs.repositorySync') }}
-                </h2>
-                <p class="mt-1 text-sm text-muted">
-                  {{ $t('jobs.description') }}
-                </p>
+    </template>
+    <template #summary>
+      <div class="space-y-4 border-b border-default p-4 sm:p-6">
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+          <div class="flex flex-col md:flex-row">
+            <div class="min-w-0 flex-1 space-y-5 p-5 sm:p-7">
+              <div class="flex items-start gap-3">
+                <UIcon class="mt-0.5 size-6 shrink-0 text-primary" name="i-lucide-refresh-cw" aria-hidden="true" />
+                <div class="min-w-0">
+                  <h2 class="text-lg font-semibold">
+                    {{ $t('jobs.repositorySync') }}
+                  </h2>
+                  <p class="mt-1 text-sm text-muted">
+                    {{ $t('jobs.description') }}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div class="grid grid-cols-2 overflow-hidden rounded-lg sm:grid-cols-5" :aria-label="$t('jobs.summary')">
-              <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-elevated px-4 py-3">
-                <p class="text-xs uppercase tracking-wide text-muted">
-                  {{ metric.label }}
-                </p>
-                <p class="mt-1 text-2xl font-semibold tabular-nums">
-                  {{ metric.value }}
-                </p>
+              <div class="grid grid-cols-2 overflow-hidden rounded-lg sm:grid-cols-5" :aria-label="$t('jobs.summary')">
+                <div v-for="metric in summaryMetrics" :key="metric.key" class="bg-elevated px-4 py-3">
+                  <p class="text-xs uppercase tracking-wide text-muted">
+                    {{ metric.label }}
+                  </p>
+                  <p class="mt-1 text-2xl font-semibold tabular-nums">
+                    {{ metric.value }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-
-          <div v-if="isAdmin" class="flex border-t border-default md:w-36 md:border-l md:border-t-0">
-            <UButton
-              block
-              class="min-h-24 rounded-none"
-              icon="i-lucide-play"
-              size="lg"
-              :disabled="!summary || summary.idle + summary.failed + summary.warning === 0"
-              :label="$t('jobs.runAll')"
-              :loading="isPending('all')"
-              @click="startAll"
-            />
-          </div>
-        </div>
-      </UCard>
-    </div>
-
+        </UCard>
+      </div>
+    </template>
+    <template v-if="loadError" #before-table>
+      <UAlert color="error" icon="i-lucide-circle-alert" variant="subtle" :title="$t('jobs.loadError')" />
+    </template>
     <UTable
       sticky
       class="min-h-0 flex-1"

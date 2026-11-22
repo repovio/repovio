@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "خلاصے کے اعداد و شمار دکھائیں یا چھپائیں",
     "administration": "انتظام",
     "copyright": "حقوق اشاعت {year} Repovio",
     "dashboard": "ڈیش بورڈ",

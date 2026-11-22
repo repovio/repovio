@@ -3,17 +3,31 @@
     <UDashboardToolbar
       class="h-auto min-w-0 shrink-0 flex-col items-stretch gap-2 overflow-visible border-b border-default px-4 py-2 sm:flex-row sm:flex-wrap sm:items-center"
       data-page-toolbar
+      :class="{ 'flex-row flex-wrap items-center': $slots.summary }"
       :ui="{
         left: 'min-w-0 max-w-full',
-        right: 'min-w-0 w-full flex-wrap gap-2 sm:w-auto sm:flex-1 sm:justify-end',
+        right: $slots.summary
+          ? 'ms-auto min-w-0 flex-wrap justify-end gap-2'
+          : 'min-w-0 w-full flex-wrap gap-2 sm:w-auto sm:flex-1 sm:justify-end',
       }"
     >
       <template #left>
         <UBreadcrumb class="min-w-0" :items="breadcrumbs" :ui="{ list: 'flex-wrap', item: 'min-w-0' }" />
       </template>
 
-      <template v-if="$slots.actions" #right>
+      <template v-if="$slots.actions || $slots.summary" #right>
         <slot name="actions" />
+        <UButton
+          v-if="$slots.summary"
+          color="neutral"
+          icon="i-lucide-chevron-down"
+          variant="ghost"
+          :aria-controls="summaryId"
+          :aria-expanded="expanded"
+          :aria-label="$t('layout.toggleMetrics')"
+          :ui="{ leadingIcon: ['transition-transform motion-reduce:transition-none', expanded && 'rotate-180'] }"
+          @click="expanded = !expanded"
+        />
       </template>
     </UDashboardToolbar>
 
@@ -21,7 +35,9 @@
       <slot name="navigation" />
     </UDashboardToolbar>
 
-    <slot name="summary" />
+    <LayoutPageSummary v-if="$slots.summary && !padded" :id="summaryId" class="max-h-[50dvh]" :expanded="expanded">
+      <slot name="summary" />
+    </LayoutPageSummary>
     <slot name="before-table" />
     <div
       v-if="$slots['table-actions']"
@@ -36,13 +52,16 @@
         {{ title }}
       </h1>
 
+      <LayoutPageSummary v-if="$slots.summary && padded" :id="summaryId" :expanded="expanded">
+        <slot name="summary" />
+      </LayoutPageSummary>
       <slot />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, withDefaults } from 'vue';
+import { computed, defineProps, ref, useId, withDefaults } from 'vue';
 
 interface PageBreadcrumbItem {
   /** Bound long item labels through the existing Nuxt UI breadcrumb class contract. */
@@ -61,6 +80,8 @@ const props = withDefaults(
   }>(),
   { fullWidth: false, padded: true },
 );
+const summaryId = useId();
+const expanded = ref(true);
 
 const contentClasses = computed(
   /** Derives content classes from the current reactive dependencies. */ () => {

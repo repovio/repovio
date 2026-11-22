@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "集計指標の表示を切り替える",
     "administration": "管理",
     "copyright": "著作権 {year} Repovio",
     "dashboard": "ダッシュボード",

@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Показать или скрыть показатели",
     "administration": "Администрирование",
     "copyright": "Авторские права {year} Repovio",
     "dashboard": "Панель",

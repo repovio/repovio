@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "إظهار مؤشرات الملخص أو إخفاؤها",
     "administration": "الإدارة",
     "copyright": "حقوق النشر {year} Repovio",
     "dashboard": "لوحة المعلومات",

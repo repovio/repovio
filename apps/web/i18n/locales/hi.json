@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "सारांश आँकड़े दिखाएँ या छिपाएँ",
     "administration": "प्रशासन",
     "copyright": "कॉपीराइट {year} Repovio",
     "dashboard": "डैशबोर्ड",

@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "সারসংক্ষেপের পরিসংখ্যান দেখান বা লুকান",
     "administration": "প্রশাসন",
     "copyright": "কপিরাইট {year} Repovio",
     "dashboard": "ড্যাশবোর্ড",

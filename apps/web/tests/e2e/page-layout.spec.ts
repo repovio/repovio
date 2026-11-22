@@ -927,3 +927,25 @@ for (const locale of ['en', 'de']) {
     });
   }
 }
+
+test('collapses and restores Issues metrics from the breadcrumb without losing the query', /** Check the annotated desktop layout and keyboard disclosure. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.setViewportSize({ width: 1118, height: 1273 });
+  await page.goto('/issues');
+  const toggle = page.locator('[data-page-toolbar]').getByRole('button', { name: 'Toggle summary metrics' });
+  const metrics = page.locator('[data-page-summary]');
+  const search = page.locator('[data-table-toolbar]').getByRole('textbox');
+  await expect(metrics).toBeVisible();
+  expect((await metrics.boundingBox())!.y).toBeLessThan((await search.boundingBox())!.y);
+  await search.fill('example');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(metrics).toBeHidden();
+  await page.keyboard.press('Space');
+  await expect(metrics).toBeVisible();
+  await expect(toggle).toBeFocused();
+  await expect(search).toHaveValue('example');
+});

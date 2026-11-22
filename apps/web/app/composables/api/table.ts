@@ -155,7 +155,7 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
   }
   const items = computed(
     /** Never present retained scoped rows as successful results after a failed query. */ () =>
-      options.repositoryId && table.error.value ? [] : table.items.value,
+      options.repositoryId && table.error.value && table.loadingMode.value !== 'infinite' ? [] : table.items.value,
   );
   return { ...table, items, filtering: table.filtering as Ref<Filtering> };
 };

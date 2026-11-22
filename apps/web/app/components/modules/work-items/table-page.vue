@@ -101,90 +101,98 @@
       @retry="refreshGroups"
       @toggle="toggleGroup"
     >
-      <UTable
-        v-if="!repositoryId || !tableError"
-        sticky
-        v-model:column-pinning="columnPinning"
-        class="min-h-0 flex-1 overflow-x-auto"
-        :columns="columns"
-        :data="items"
-        :empty="$t('workItems.empty')"
-        :loading="loading"
-        :ui="{
-          tr: 'data-[selected]:cursor-pointer',
-          th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
-          td: 'first:pl-6 align-top',
-        }"
-        @select="selectRow"
-      >
-        <template #number-cell="{ row }">
-          <span class="font-mono text-xs">#{{ row.original.number }}</span>
-        </template>
-        <template #title-cell="{ row }">
-          <NuxtLink class="font-medium hover:underline" :to="`/${endpoint}/${row.original.id}`">
-            {{ row.original.title }}
-          </NuxtLink>
-        </template>
-        <template #repositoryName-cell="{ row }">
-          {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
-        </template>
-        <template #providerType-cell="{ row }">
-          <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
-        </template>
-        <template #state-cell="{ row }">
-          <UBadge color="neutral" variant="subtle">
-            {{ $t(`workItems.states.${row.original.state}`) }}
-          </UBadge>
-        </template>
-        <template #author-cell="{ row }">
-          {{ row.original.author?.username ?? '—' }}
-        </template>
-        <template #labels-cell="{ row }">
-          <ModulesWorkItemsLabels :labels="row.original.labels" />
-        </template>
-        <template #providerUpdatedAt-cell="{ row }">
-          <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
-        </template>
-        <template #workflowStatus-cell="{ row }">
-          <UBadge
-            v-if="'workflowStatus' in row.original"
-            variant="subtle"
-            :color="row.original.workflowStatus === 'FAILED' ? 'error' : 'neutral'"
-          >
-            {{ $t(`workItems.workflowStatuses.${row.original.workflowStatus}`) }}
-          </UBadge>
-        </template>
-        <template #workflowApprovalRequired-cell="{ row }">
-          <UBadge
-            v-if="'workflowApprovalRequired' in row.original && row.original.workflowApprovalRequired"
-            color="warning"
-            variant="subtle"
-          >
-            {{ $t('pullRequests.approvalRequired') }}
-          </UBadge>
-          <span v-else>—</span>
-        </template>
-        <template #actions-cell="{ row }">
-          <div class="flex justify-end" data-row-navigation-ignore>
-            <UButton
-              color="neutral"
-              icon="i-tabler-external-link"
-              rel="noreferrer"
-              target="_blank"
-              variant="ghost"
-              :aria-label="$t('dashboard.openProvider')"
-              :to="row.original.url"
-            />
-          </div>
-        </template>
-      </UTable>
-      <QTablePagination
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        class="border-t border-default"
-        :total-items="totalItems"
-        shortcuts
-      />
+      <div :class="loadingMode === 'infinite' ? 'min-h-0 flex-1 overflow-auto' : 'contents'">
+        <UTable
+          v-if="!repositoryId || !tableError || (loadingMode === 'infinite' && items.length > 0)"
+          sticky
+          v-model:column-pinning="columnPinning"
+          class="min-h-0 flex-1 overflow-x-auto"
+          :columns="columns"
+          :data="items"
+          :empty="$t('workItems.empty')"
+          :loading="loading"
+          :ui="{
+            tr: 'data-[selected]:cursor-pointer',
+            th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
+            td: 'first:pl-6 align-top',
+          }"
+          @select="selectRow"
+        >
+          <template #number-cell="{ row }">
+            <span class="font-mono text-xs">#{{ row.original.number }}</span>
+          </template>
+          <template #title-cell="{ row }">
+            <NuxtLink class="font-medium hover:underline" :to="`/${endpoint}/${row.original.id}`">
+              {{ row.original.title }}
+            </NuxtLink>
+          </template>
+          <template #repositoryName-cell="{ row }">
+            {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
+          </template>
+          <template #providerType-cell="{ row }">
+            <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
+          </template>
+          <template #state-cell="{ row }">
+            <UBadge color="neutral" variant="subtle">
+              {{ $t(`workItems.states.${row.original.state}`) }}
+            </UBadge>
+          </template>
+          <template #author-cell="{ row }">
+            {{ row.original.author?.username ?? '—' }}
+          </template>
+          <template #labels-cell="{ row }">
+            <ModulesWorkItemsLabels :labels="row.original.labels" />
+          </template>
+          <template #providerUpdatedAt-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
+          </template>
+          <template #workflowStatus-cell="{ row }">
+            <UBadge
+              v-if="'workflowStatus' in row.original"
+              variant="subtle"
+              :color="row.original.workflowStatus === 'FAILED' ? 'error' : 'neutral'"
+            >
+              {{ $t(`workItems.workflowStatuses.${row.original.workflowStatus}`) }}
+            </UBadge>
+          </template>
+          <template #workflowApprovalRequired-cell="{ row }">
+            <UBadge
+              v-if="'workflowApprovalRequired' in row.original && row.original.workflowApprovalRequired"
+              color="warning"
+              variant="subtle"
+            >
+              {{ $t('pullRequests.approvalRequired') }}
+            </UBadge>
+            <span v-else>—</span>
+          </template>
+          <template #actions-cell="{ row }">
+            <div class="flex justify-end" data-row-navigation-ignore>
+              <UButton
+                color="neutral"
+                icon="i-tabler-external-link"
+                rel="noreferrer"
+                target="_blank"
+                variant="ghost"
+                :aria-label="$t('dashboard.openProvider')"
+                :to="row.original.url"
+              />
+            </div>
+          </template>
+        </UTable>
+        <QTablePagination
+          v-model:items-per-page="itemsPerPage"
+          v-model:loading-mode="loadingMode"
+          v-model:page="page"
+          class="border-t border-default"
+          :total-items="totalItems"
+          :loaded-items="items.length"
+          :has-more="hasMore"
+          :loading="loading"
+          :error="tableError"
+          @load-more="loadMore"
+          shortcuts
+        />
+      </div>
     </CommonTableGroups>
   </CommonTablePageFrame>
 </template>
@@ -406,6 +414,9 @@ const {
   initialize,
   items,
   itemsPerPage,
+  loadingMode,
+  loadMore,
+  hasMore,
   loading,
   page,
   refresh,

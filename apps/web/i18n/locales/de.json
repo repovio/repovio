@@ -592,6 +592,15 @@
         "visibility": "Spaltensichtbarkeit umschalten"
       },
       "pagination": {
+        "pageSize": "Einträge pro Seite",
+        "mode": "Lademodus",
+        "paginated": "Seitennavigation",
+        "infinite": "Endloses Scrollen",
+        "loaded": "{count} von {total} geladen",
+        "loadMore": "Mehr laden",
+        "loading": "Zeilen werden geladen …",
+        "error": "Zeilen konnten nicht geladen werden.",
+        "retry": "Erneut versuchen",
         "summary": "Zeige {start}–{end} von {total}"
       },
       "search": {

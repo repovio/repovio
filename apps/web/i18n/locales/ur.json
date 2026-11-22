@@ -592,6 +592,15 @@
         "visibility": "کالم کی نمائش بدلیں"
       },
       "pagination": {
+        "pageSize": "فی صفحہ آئٹمز",
+        "mode": "لوڈ کرنے کا طریقہ",
+        "paginated": "صفحہ بندی",
+        "infinite": "لامحدود اسکرول",
+        "loaded": "{total} میں سے {count} لوڈ ہوئے",
+        "loadMore": "مزید لوڈ کریں",
+        "loading": "قطاریں لوڈ ہو رہی ہیں…",
+        "error": "قطاریں لوڈ نہیں ہو سکیں۔",
+        "retry": "دوبارہ کوشش کریں",
         "summary": "{total} میں سے {start}–{end} دکھائے جا رہے ہیں"
       },
       "search": {

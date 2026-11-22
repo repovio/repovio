@@ -65,89 +65,97 @@
       @retry="refreshGroups"
       @toggle="toggleGroup"
     >
-      <UTable
-        v-if="!repositoryId || !tableError"
-        sticky
-        v-model:column-pinning="columnPinning"
-        class="min-h-0 flex-1 overflow-x-auto"
-        :columns="columns"
-        :data="items"
-        :empty="empty"
-        :loading="loading"
-        :ui="{
-          th: 'first:ps-6 whitespace-nowrap bg-neutral-100 data-[pinned=right]:bg-neutral-100 dark:bg-neutral-950/20 dark:data-[pinned=right]:bg-neutral-950',
-          td: 'first:ps-6 whitespace-nowrap',
-        }"
-      >
-        <template #displayTitle-cell="{ row }">
-          <bdi class="font-medium" dir="auto">
-            {{ row.original.displayTitle }}
-          </bdi>
-        </template>
-        <template #workflowName-cell="{ row }">
-          <bdi class="text-sm text-muted" dir="auto">
-            {{ row.original.workflowName }}
-          </bdi>
-          <ModulesWorkflowRunsLifecycleBadge
-            :checked-at="row.original.workflowLifecycleCheckedAt"
-            :state="row.original.workflowLifecycleState"
-          />
-        </template>
-        <template #repositoryName-cell="{ row }">
-          <bdi dir="ltr">
-            {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
-          </bdi>
-        </template>
-        <template #providerType-cell="{ row }">
-          <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
-        </template>
-        <template #status-cell="{ row }">
-          <UBadge variant="subtle" :color="statusColor(row.original.status)">
-            {{ $t(`workflowStatus.${row.original.status}`) }}
-          </UBadge>
-        </template>
-        <template #providerCreatedAt-cell="{ row }">
-          <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.providerCreatedAt) }}</span>
-        </template>
-        <template #startedAt-cell="{ row }">
-          <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.startedAt) }}</span>
-        </template>
-        <template #completedAt-cell="{ row }">
-          <span class="whitespace-nowrap text-sm text-muted">
-            {{ formatTimestamp(workflowRunTiming(row.original).completedAt) }}
-          </span>
-        </template>
-        <template #durationMs-cell="{ row }">
-          <span class="whitespace-nowrap text-sm text-muted">
-            {{ formatDuration(workflowRunTiming(row.original).durationMs) }}
-          </span>
-        </template>
-        <template #actions-header="{ column }">
-          <span class="flex justify-end">{{ column.columnDef.header }}</span>
-        </template>
-        <template #actions-cell="{ row }">
-          <div class="flex justify-end">
-            <UTooltip :text="$t('dashboard.openProvider')">
-              <UButton
-                color="neutral"
-                icon="i-tabler-external-link"
-                rel="noreferrer"
-                target="_blank"
-                variant="ghost"
-                :aria-label="$t('dashboard.openProvider')"
-                :to="row.original.url"
-              />
-            </UTooltip>
-          </div>
-        </template>
-      </UTable>
-      <QTablePagination
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
-        class="border-t border-default"
-        :total-items="totalItems"
-        shortcuts
-      />
+      <div :class="loadingMode === 'infinite' ? 'min-h-0 flex-1 overflow-auto' : 'contents'">
+        <UTable
+          v-if="!repositoryId || !tableError || (loadingMode === 'infinite' && items.length > 0)"
+          sticky
+          v-model:column-pinning="columnPinning"
+          class="min-h-0 flex-1 overflow-x-auto"
+          :columns="columns"
+          :data="items"
+          :empty="empty"
+          :loading="loading"
+          :ui="{
+            th: 'first:ps-6 whitespace-nowrap bg-neutral-100 data-[pinned=right]:bg-neutral-100 dark:bg-neutral-950/20 dark:data-[pinned=right]:bg-neutral-950',
+            td: 'first:ps-6 whitespace-nowrap',
+          }"
+        >
+          <template #displayTitle-cell="{ row }">
+            <bdi class="font-medium" dir="auto">
+              {{ row.original.displayTitle }}
+            </bdi>
+          </template>
+          <template #workflowName-cell="{ row }">
+            <bdi class="text-sm text-muted" dir="auto">
+              {{ row.original.workflowName }}
+            </bdi>
+            <ModulesWorkflowRunsLifecycleBadge
+              :checked-at="row.original.workflowLifecycleCheckedAt"
+              :state="row.original.workflowLifecycleState"
+            />
+          </template>
+          <template #repositoryName-cell="{ row }">
+            <bdi dir="ltr">
+              {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
+            </bdi>
+          </template>
+          <template #providerType-cell="{ row }">
+            <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
+          </template>
+          <template #status-cell="{ row }">
+            <UBadge variant="subtle" :color="statusColor(row.original.status)">
+              {{ $t(`workflowStatus.${row.original.status}`) }}
+            </UBadge>
+          </template>
+          <template #providerCreatedAt-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.providerCreatedAt) }}</span>
+          </template>
+          <template #startedAt-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.startedAt) }}</span>
+          </template>
+          <template #completedAt-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">
+              {{ formatTimestamp(workflowRunTiming(row.original).completedAt) }}
+            </span>
+          </template>
+          <template #durationMs-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">
+              {{ formatDuration(workflowRunTiming(row.original).durationMs) }}
+            </span>
+          </template>
+          <template #actions-header="{ column }">
+            <span class="flex justify-end">{{ column.columnDef.header }}</span>
+          </template>
+          <template #actions-cell="{ row }">
+            <div class="flex justify-end">
+              <UTooltip :text="$t('dashboard.openProvider')">
+                <UButton
+                  color="neutral"
+                  icon="i-tabler-external-link"
+                  rel="noreferrer"
+                  target="_blank"
+                  variant="ghost"
+                  :aria-label="$t('dashboard.openProvider')"
+                  :to="row.original.url"
+                />
+              </UTooltip>
+            </div>
+          </template>
+        </UTable>
+        <QTablePagination
+          v-model:items-per-page="itemsPerPage"
+          v-model:loading-mode="loadingMode"
+          v-model:page="page"
+          class="border-t border-default"
+          :total-items="totalItems"
+          :loaded-items="items.length"
+          :has-more="hasMore"
+          :loading="loading"
+          :error="tableError"
+          @load-more="loadMore"
+          shortcuts
+        />
+      </div>
     </CommonTableGroups>
   </CommonTablePageFrame>
 </template>
@@ -335,6 +343,9 @@ const {
   filtering: queryFiltering,
   items,
   itemsPerPage,
+  loadingMode,
+  loadMore,
+  hasMore,
   loading,
   page,
   refresh,

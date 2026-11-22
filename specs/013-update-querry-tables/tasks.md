@@ -18,7 +18,7 @@
 - [x] T004 [US2] Connect the three `table-page.vue` components under `apps/web/app/components/modules` to the four
   resources through `apps/web/app/composables/api`. Add grouping controls and localized labels. Verify opening and
   closing groups preserves filters, row interactions, and authorized scope.
-- [ ] T005 [US3] Enable pagination and infinite scroll on those tables. Cover switching modes, stale requests,
+- [x] T005 [US3] Enable pagination and infinite scroll on those tables. Cover switching modes, stale requests,
   deduplication, append failures, retry, and group-local loading. Verify EN/DE, desktop, and narrow browser layouts.
 
 ## Integration

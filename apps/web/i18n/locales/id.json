@@ -592,6 +592,15 @@
         "visibility": "Alihkan visibilitas kolom"
       },
       "pagination": {
+        "pageSize": "Item per halaman",
+        "mode": "Mode pemuatan",
+        "paginated": "Paginasi",
+        "infinite": "Gulir tanpa batas",
+        "loaded": "{count} dari {total} dimuat",
+        "loadMore": "Muat lagi",
+        "loading": "Memuat baris…",
+        "error": "Gagal memuat baris.",
+        "retry": "Coba lagi",
         "summary": "Menampilkan {start}–{end} dari {total}"
       },
       "search": {

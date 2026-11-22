@@ -592,6 +592,15 @@
         "visibility": "Toggle column visibility"
       },
       "pagination": {
+        "pageSize": "Items per page",
+        "mode": "Row loading mode",
+        "paginated": "Pagination",
+        "infinite": "Infinite scroll",
+        "loaded": "Loaded {count} of {total}",
+        "loadMore": "Load more",
+        "loading": "Loading rows…",
+        "error": "Unable to load rows.",
+        "retry": "Retry",
         "summary": "Showing {start}–{end} of {total}"
       },
       "search": {

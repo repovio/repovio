@@ -1,6 +1,6 @@
 import { andWhere, filteringToWhere } from '@querry-kit/nuxt/utils';
 import { tableGroups } from '@repovio/schemas';
-import { computed, ref, watch } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import type { Endpoint } from '~/types/api/endpoints';
 import { useApi } from './api';
 import { useTable, type UseTableOptions, withRepositoryScope } from './table';
@@ -31,6 +31,8 @@ export function useMonitoringTable<E extends keyof typeof dimensions & Endpoint>
     ),
   });
   const api = useApi();
+  const lifetime = new AbortController();
+  onScopeDispose(/** Cancel count requests when leaving the table. */ () => lifetime.abort());
   const groups = ref<Array<{ value: string; count: number }>>([]);
   const groupsLoading = ref(false);
   const groupsFailed = ref(false);
@@ -60,7 +62,10 @@ export function useMonitoringTable<E extends keyof typeof dimensions & Endpoint>
     groupsLoading.value = grouped.value;
     if (!grouped.value) return;
     try {
-      const response = await api.get<unknown>(`/${options.endpoint}/group-by`, { params: groupParams.value });
+      const response = await api.get<unknown>(`/${options.endpoint}/group-by`, {
+        params: groupParams.value,
+        signal: lifetime.signal,
+      });
       if (version !== generation) return;
       groups.value = tableGroups[model].result.parse(response.data).map(
         /** Normalize the resource-specific enum key for presentation. */ (row) => ({
@@ -98,10 +103,17 @@ export function useMonitoringTable<E extends keyof typeof dimensions & Endpoint>
     selected.value = selected.value === value ? undefined : value;
   }
   const items = computed(
-    /** Hide retained rows from another branch while the next page is loading. */ () =>
-      grouped.value
+    /** Keep branch rows isolated and show each identity once if live data shifts between pages. */ () => {
+      const visible = grouped.value
         ? table.items.value.filter(/** Match the requested branch. */ (item) => item[field] === selected.value)
-        : table.items.value,
+        : table.items.value;
+      if (table.loadingMode.value !== 'infinite') return visible;
+      return [
+        ...new Map(
+          visible.map(/** Retain the latest copy of each loaded row. */ (item) => [item.id, item] as const),
+        ).values(),
+      ];
+    },
   );
   return {
     ...table,

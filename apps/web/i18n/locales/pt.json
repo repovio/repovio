@@ -592,6 +592,15 @@
         "visibility": "Alternar visibilidade da coluna"
       },
       "pagination": {
+        "pageSize": "Itens por página",
+        "mode": "Modo de carregamento",
+        "paginated": "Paginação",
+        "infinite": "Deslocamento infinito",
+        "loaded": "{count} de {total} carregados",
+        "loadMore": "Carregar mais",
+        "loading": "A carregar linhas…",
+        "error": "Não foi possível carregar as linhas.",
+        "retry": "Tentar novamente",
         "summary": "A mostrar {start}–{end} de {total}"
       },
       "search": {

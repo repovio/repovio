@@ -592,6 +592,15 @@
         "visibility": "切换列显示状态"
       },
       "pagination": {
+        "pageSize": "每页条数",
+        "mode": "加载模式",
+        "paginated": "分页",
+        "infinite": "无限滚动",
+        "loaded": "已加载 {count} 条，共 {total} 条",
+        "loadMore": "加载更多",
+        "loading": "正在加载行…",
+        "error": "无法加载行。",
+        "retry": "重试",
         "summary": "显示第 {start}–{end} 条，共 {total} 条"
       },
       "search": {

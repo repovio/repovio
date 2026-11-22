@@ -592,6 +592,15 @@
         "visibility": "Kolomzichtbaarheid wisselen"
       },
       "pagination": {
+        "pageSize": "Items per pagina",
+        "mode": "Laadmodus",
+        "paginated": "Paginering",
+        "infinite": "Oneindig scrollen",
+        "loaded": "{count} van {total} geladen",
+        "loadMore": "Meer laden",
+        "loading": "Rijen laden…",
+        "error": "Rijen laden mislukt.",
+        "retry": "Opnieuw proberen",
         "summary": "Toont {start}–{end} van {total}"
       },
       "search": {

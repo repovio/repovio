@@ -592,6 +592,15 @@
         "visibility": "Przełącz widoczność kolumny"
       },
       "pagination": {
+        "pageSize": "Pozycji na stronę",
+        "mode": "Tryb wczytywania",
+        "paginated": "Paginacja",
+        "infinite": "Przewijanie ciągłe",
+        "loaded": "Wczytano {count} z {total}",
+        "loadMore": "Wczytaj więcej",
+        "loading": "Wczytywanie wierszy…",
+        "error": "Nie udało się wczytać wierszy.",
+        "retry": "Spróbuj ponownie",
         "summary": "Wyświetlanie {start}–{end} z {total}"
       },
       "search": {

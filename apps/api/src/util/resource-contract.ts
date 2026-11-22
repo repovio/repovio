@@ -109,8 +109,19 @@ export class PublicQueryPipe implements PipeTransform {
     const scalar: Record<string, unknown> = {};
     const structured: Record<string, unknown> = {};
     for (const [key, item] of Object.entries(value)) {
+      // Fastify exposes Querry-Kit's indexed array and deep-object keys as literal strings.
+      if (key === 'by[0]') {
+        structured.by = [item];
+        continue;
+      }
+      const groupOption = /^(orderBy)\[(state|status|severity)\]$|^(_count)\[(_all)\]$/.exec(key);
+      if (groupOption) {
+        structured[`${groupOption[1] ?? groupOption[3]}.${groupOption[2] ?? groupOption[4]}`] = item;
+        continue;
+      }
       const root = key.split(/[.[\]]/)[0];
-      if (['where', 'orderBy', 'include', 'select', 'cursor', 'distinct'].includes(root)) structured[key] = item;
+      if (['where', 'orderBy', 'include', 'select', 'cursor', 'distinct', 'by', '_count'].includes(root))
+        structured[key] = item;
       else scalar[key] = item;
     }
     return { ...scalar, ...parseQueryObject(structured) };

@@ -1,13 +1,17 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
+import { tableGroups } from '@repovio/schemas';
 import { ZodSerializerDto } from 'nestjs-zod';
+import type { z } from 'zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
   resourceFields,
+  SchemaResponse,
 } from '../../util/resource-contract.js';
+import { createZodDto } from '../../util/schema-dto.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -28,6 +32,9 @@ const pullRequestInclude = {
   labels: { include: { label: true } },
   repository: { select: { name: true, owner: true, providerAccount: { select: { providerType: true } } } },
 } satisfies Prisma.PullRequestInclude;
+
+/** Validated single-field grouping request for pull-requests. */
+class PullRequestGroupQueryDto extends createZodDto(tableGroups.PullRequest.query) {}
 
 /** Provides permission-aware pull-request overview, detail, summary, and filter data. */
 @ApiTags('pull-requests')
@@ -68,6 +75,24 @@ export class PullRequestsController {
       schema: resourceFields(PullRequestDto),
       service: this.pullRequests,
     });
+  }
+
+  /**
+   * Count matching pull-requests by state within the caller's repository scope.
+   * @param request - Authenticated caller.
+   * @param query - Validated group dimension, filtering, ordering, and batch limits.
+   * @returns Authorized group keys and record counts.
+   */
+  @Get('group-by')
+  @ApiOperation({ summary: 'Count visible pull-requests by state' })
+  @SchemaResponse(tableGroups.PullRequest.result)
+  @ApiErrorResponses({ badRequestDescription: 'Invalid grouping query.' })
+  async groupBy(
+    @Req() request: { user: AuthenticatedUser },
+    @Query() query: PullRequestGroupQueryDto,
+  ): Promise<z.infer<typeof tableGroups.PullRequest.result>> {
+    const ability = await this.pullRequests.getReadAbility(request.user);
+    return this.pullRequests.groupBy(query, ability);
   }
 
   /**

@@ -9,7 +9,7 @@
 
 ## Authorized grouping
 
-- [ ] T003 [US2] Define validated group requests and responses in `libs/schemas/src` and implement read endpoints in
+- [x] T003 [US2] Define validated group requests and responses in `libs/schemas/src` and implement read endpoints in
   `apps/api/src/modules/{workflow-runs,issues,pull-requests,security-alerts}`. Reuse scoped predicates, update OpenAPI
   and Bruno examples, and test filtered counts, leaf consistency, invalid fields, and repository separation.
 

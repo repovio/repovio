@@ -1,13 +1,17 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
+import { tableGroups } from '@repovio/schemas';
 import { ZodSerializerDto } from 'nestjs-zod';
+import type { z } from 'zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
   resourceFields,
+  SchemaResponse,
 } from '../../util/resource-contract.js';
+import { createZodDto } from '../../util/schema-dto.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -23,6 +27,9 @@ const issueInclude = {
   labels: { include: { label: true } },
   repository: { select: { name: true, owner: true, providerAccount: { select: { providerType: true } } } },
 } satisfies Prisma.IssueInclude;
+
+/** Validated single-field grouping request for issues. */
+class IssueGroupQueryDto extends createZodDto(tableGroups.Issue.query) {}
 
 /** Provides permission-aware issue overview, detail, summary, and filter data. */
 @ApiTags('issues')
@@ -63,6 +70,24 @@ export class IssuesController {
       schema: resourceFields(IssueDto),
       service: this.issues,
     });
+  }
+
+  /**
+   * Count matching issues by state within the caller's repository scope.
+   * @param request - Authenticated caller.
+   * @param query - Validated group dimension, filtering, ordering, and batch limits.
+   * @returns Authorized group keys and record counts.
+   */
+  @Get('group-by')
+  @ApiOperation({ summary: 'Count visible issues by state' })
+  @SchemaResponse(tableGroups.Issue.result)
+  @ApiErrorResponses({ badRequestDescription: 'Invalid grouping query.' })
+  async groupBy(
+    @Req() request: { user: AuthenticatedUser },
+    @Query() query: IssueGroupQueryDto,
+  ): Promise<z.infer<typeof tableGroups.Issue.result>> {
+    const ability = await this.issues.getReadAbility(request.user);
+    return this.issues.groupBy(query, ability);
   }
 
   /**

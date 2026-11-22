@@ -1,0 +1,15 @@
+meta {
+  name: Count visible workflow-runs by status
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{host}}/api/v1/workflow-runs/group-by?by[0]=status&orderBy[status]=asc&_count[_all]=true&take=26&skip=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

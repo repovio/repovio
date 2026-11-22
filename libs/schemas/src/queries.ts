@@ -195,6 +195,41 @@ const integer = z
   .union([z.number(), z.string().regex(/^\d+$/)])
   .pipe(z.coerce.number())
   .pipe(z.number().int());
+
+const direction = z.enum(['asc', 'desc']);
+const countAll = z.strictObject({ _all: z.literal(true) });
+const countResult = z.strictObject({ _all: z.number().int().nonnegative() });
+
+/** Limit a group request to one published enum dimension and the existing resource filter. */
+function groupQuery<const F extends string>(model: string, field: F) {
+  return z.strictObject({
+    by: z.tuple([z.literal(field)]),
+    where: resourceWhereFor(model).optional(),
+    _count: countAll,
+    skip: integer.pipe(z.number().nonnegative()).optional(),
+    take: integer.pipe(z.number().min(1).max(1000)).optional(),
+  });
+}
+
+/** Public count-only group requests and responses, keyed by read resource. */
+export const tableGroups = {
+  Issue: {
+    query: groupQuery('Issue', 'state').extend({ orderBy: z.strictObject({ state: direction }) }),
+    result: z.array(z.strictObject({ state: z.enum(queryEnums.IssueState), _count: countResult })),
+  },
+  PullRequest: {
+    query: groupQuery('PullRequest', 'state').extend({ orderBy: z.strictObject({ state: direction }) }),
+    result: z.array(z.strictObject({ state: z.enum(queryEnums.PullRequestState), _count: countResult })),
+  },
+  WorkflowRun: {
+    query: groupQuery('WorkflowRun', 'status').extend({ orderBy: z.strictObject({ status: direction }) }),
+    result: z.array(z.strictObject({ status: z.enum(queryEnums.WorkflowRunStatus), _count: countResult })),
+  },
+  SecurityAlert: {
+    query: groupQuery('SecurityAlert', 'severity').extend({ orderBy: z.strictObject({ severity: direction }) }),
+    result: z.array(z.strictObject({ severity: z.enum(queryEnums.SecurityAlertSeverity), _count: countResult })),
+  },
+};
 /** Public pagination contract; rejects empty strings, booleans and fractional values. */
 const paginationSchema = z.strictObject({
   page: integer.pipe(z.number().min(1)).default(1),

@@ -1,12 +1,16 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
+import { tableGroups } from '@repovio/schemas';
+import type { z } from 'zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
   resourceFields,
+  SchemaResponse,
 } from '../../util/resource-contract.js';
+import { createZodDto } from '../../util/schema-dto.js';
 
 import type { Prisma } from '../../generated/prisma/client.js';
 import { Authenticated } from '../auth/authenticated.decorator.js';
@@ -29,6 +33,9 @@ const workflowRunContextInclude = {
     },
   },
 } satisfies Prisma.WorkflowRunInclude;
+
+/** Validated single-field grouping request for workflow-runs. */
+class WorkflowRunGroupQueryDto extends createZodDto(tableGroups.WorkflowRun.query) {}
 
 /** Provides paginated workflow-run history and needs-attention views for repositories visible to the caller. */
 @ApiTags('workflow-runs')
@@ -66,6 +73,46 @@ export class WorkflowRunsController {
       schema: resourceFields(WorkflowRunDto),
       service: this.workflowRuns,
     });
+  }
+
+  /**
+   * Count matching workflow-runs by status within the caller's repository scope.
+   * @param request - Authenticated caller.
+   * @param query - Validated group dimension, filtering, ordering, and batch limits.
+   * @returns Authorized group keys and record counts.
+   */
+  @Get('group-by')
+  @ApiOperation({ summary: 'Count visible workflow-runs by status' })
+  @SchemaResponse(tableGroups.WorkflowRun.result)
+  @ApiErrorResponses({ badRequestDescription: 'Invalid grouping query.' })
+  async groupBy(
+    @Req() request: { user: AuthenticatedUser },
+    @Query() query: WorkflowRunGroupQueryDto,
+  ): Promise<z.infer<typeof tableGroups.WorkflowRun.result>> {
+    const ability = await this.workflowRuns.getReadAbility(request.user);
+    return this.workflowRuns.groupBy(query, ability);
+  }
+
+  /**
+   * Count matching workflow-runs by status within the caller's repository scope.
+   * @param request - Authenticated caller.
+   * @param query - Validated group dimension, filtering, ordering, and batch limits.
+   * @returns Authorized group keys and record counts.
+   */
+  @Get('needs-attention/group-by')
+  @ApiOperation({ summary: 'Count visible workflow-runs by status' })
+  @SchemaResponse(tableGroups.WorkflowRun.result)
+  @ApiErrorResponses({ badRequestDescription: 'Invalid grouping query.' })
+  async groupNeedsAttention(
+    @Req() request: { user: AuthenticatedUser },
+    @Query() query: WorkflowRunGroupQueryDto,
+  ): Promise<z.infer<typeof tableGroups.WorkflowRun.result>> {
+    const ability = await this.workflowRuns.getReadAbility(request.user);
+    const { where } = await this.workflowRuns.toNeedsAttentionQueryOptions(
+      { where: query.where, page: 1, perPage: 1 },
+      ability,
+    );
+    return this.workflowRuns.groupBy({ ...query, where }, ability);
   }
 
   /**

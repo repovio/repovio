@@ -134,6 +134,21 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     ),
   });
 
+  api.interceptors.request.use(
+    /** Keep the endpoint's timestamp/ID default when Querry-Kit adds only its synthetic infinite-mode ID order. */
+    (request) => {
+      if (table.loadingMode.value === 'infinite' && !table.sorting.value.length && request.url) {
+        const [path, search] = request.url.split('?');
+        const params = new URLSearchParams(search);
+        if (params.get('orderBy') === '[{"id":"asc"}]') {
+          params.delete('orderBy');
+          request.url = `${path}?${params}`;
+        }
+      }
+      return request;
+    },
+  );
+
   watch(
     [columns, table.columnPinning],
     /** Synchronizes use table when the observed state changes. */
@@ -155,7 +170,7 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
   }
   const items = computed(
     /** Never present retained scoped rows as successful results after a failed query. */ () =>
-      options.repositoryId && table.error.value ? [] : table.items.value,
+      options.repositoryId && table.error.value && table.loadingMode.value !== 'infinite' ? [] : table.items.value,
   );
   return { ...table, items, filtering: table.filtering as Ref<Filtering> };
 };

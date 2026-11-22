@@ -1,0 +1,15 @@
+meta {
+  name: Count visible security-alerts by severity
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{host}}/api/v1/security-alerts/group-by?by[0]=severity&orderBy[severity]=asc&_count[_all]=true&take=26&skip=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

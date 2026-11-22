@@ -74,8 +74,109 @@ async function mockShell(page: Page): Promise<void> {
 }
 
 /** Checks full page shell. */
+test('opens a server-counted issue group and keeps issue links', /** Checks group counts independently of the loaded page. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.route(
+    '**/api/v1/issues/filter-options',
+    /** Supply empty filter choices. */ (route) =>
+      route.fulfill({ json: { labels: [], authors: [], assignees: [], milestones: [] } }),
+  );
+  await page.route(
+    '**/api/v1/issues/summary',
+    /** Supply summary metrics. */ (route) =>
+      route.fulfill({ json: { assigned: 0, open: 42, recentlyUpdated: 0, stale: 0 } }),
+  );
+  await page.route(
+    /\/api\/v1\/issues(?:\?.*)?$/,
+    /** Return only one row regardless of total group size. */ (route) =>
+      route.fulfill({ json: { items: [issue], meta: { itemCount: 42, pageCount: 2 } } }),
+  );
+  await page.route(
+    '**/api/v1/issues/group-by?**',
+    /** Supply the complete server count. */ (route) =>
+      route.fulfill({ json: [{ state: 'OPEN', _count: { _all: 42 } }] }),
+  );
+  await page.goto('/issues');
+  await page.getByRole('button', { name: 'Group by', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Select grouping field' }).click();
+  await page.getByRole('option').first().click();
+  await page.getByRole('button', { name: 'Add grouping' }).click();
+  await page.keyboard.press('Escape');
+  const group = page.getByRole('button', { name: /Open.*42 items/i });
+  await expect(group).toHaveAttribute('aria-expanded', 'false');
+  const leaf = page.waitForRequest(
+    /** Match the group-scoped record request. */ (request) =>
+      new URL(request.url()).pathname === '/api/v1/issues' &&
+      (new URL(request.url()).searchParams.get('where') ?? '').includes('"state":"OPEN"'),
+  );
+  await group.press('Enter');
+  await leaf;
+  await expect(page.getByRole('link', { name: issue.title })).toHaveAttribute('href', '/issues/issue-1');
+});
+
+/** Checks full page shell. */
 async function expectFullPageShell(page: Page): Promise<void> {
   await expect(page.locator('#main-content')).toHaveClass(/overflow-hidden/);
+}
+
+for (const locale of ['en', 'de'] as const) {
+  test(`infinite issue rows retry and deduplicate (${locale})`, /** Exercise real scroll and mode controls at two viewport sizes. */ async ({
+    page,
+    baseURL,
+  }) => {
+    const german = locale === 'de';
+    await page.setViewportSize({ width: german ? 390 : 1440, height: 900 });
+    await page.context().addCookies([{ name: 'repovio-locale', value: locale, url: baseURL! }]);
+    await mockShell(page);
+    await page.route(
+      '**/issues/summary',
+      /** Return valid supporting metrics. */ (route) =>
+        route.fulfill({ json: { assigned: 0, open: 26, recentlyUpdated: 0, stale: 0 } }),
+    );
+    await page.route(
+      '**/issues/filter-options',
+      /** Return valid supporting filter choices. */ (route) =>
+        route.fulfill({ json: { authors: [], assignees: [], labels: [], milestones: [] } }),
+    );
+    let attempts = 0;
+    await page.route(
+      /\/api\/v1\/issues(?:\?.*)?$/,
+      /** Overlap one identity on the retried second page. */ async (route) => {
+        const second = new URL(route.request().url()).searchParams.get('page') === '2';
+        if (second && ++attempts === 1) return route.fulfill({ status: 503 });
+        const ids = second
+          ? [24, 25]
+          : Array.from({ length: 25 }, /** Generate stable first-page identities. */ (_, index) => index);
+        return route.fulfill({
+          json: {
+            items: ids.map(
+              /** Build distinguishable leaf rows. */ (id) => ({ ...issue, id: `issue-${id}`, title: `Fixture ${id}` }),
+            ),
+            meta: { itemCount: 26, pageCount: 2 },
+          },
+        });
+      },
+    );
+    await page.goto('/issues');
+    const mode = page.getByRole('combobox', { name: german ? 'Lademodus' : 'Row loading mode' });
+    await mode.click();
+    await page.getByRole('option', { name: german ? 'Endloses Scrollen' : 'Infinite scroll' }).click();
+    await expect(mode).toContainText(german ? 'Endloses Scrollen' : 'Infinite scroll');
+    await page
+      .locator('footer')
+      .filter({ has: mode })
+      .locator(':scope > span[aria-hidden="true"]')
+      .scrollIntoViewIfNeeded();
+    const retry = page.getByRole('button', { name: german ? 'Erneut versuchen' : 'Retry', exact: true });
+    await retry.click();
+    await expect(page.getByRole('link', { name: 'Fixture 25', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Fixture 24', exact: true })).toHaveCount(1);
+    await mode.click();
+    await page.getByRole('option', { name: german ? 'Seitennavigation' : 'Pagination' }).click();
+    await expect(page.getByRole('link', { name: 'Fixture 25', exact: true })).toHaveCount(0);
+  });
 }
 
 test('filters issues by every selected label and updated range, then renders sanitized provider Markdown', /** Verifies filters issues by every selected label and updated range, then renders sanitized provider Markdown. */ async ({

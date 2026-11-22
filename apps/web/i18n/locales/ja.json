@@ -567,6 +567,22 @@
         "remove": "フィルターを削除",
         "title": "フィルター"
       },
+      "grouping": {
+        "title": "グループ化",
+        "field": "グループ化する項目を選択",
+        "noFields": "使用可能な項目がありません",
+        "add": "グループ化を追加",
+        "remove": "グループ化を解除",
+        "clear": "グループ化をクリア",
+        "reorder": "{field} を並べ替え",
+        "moveUp": "グループを上へ",
+        "moveDown": "グループを下へ",
+        "count": "{formattedCount} 件",
+        "loading": "グループを読み込み中…",
+        "error": "グループを読み込めませんでした",
+        "retry": "再試行",
+        "noGroups": "一致するグループはありません"
+      },
       "options": {
         "center": "固定を解除",
         "left": "左",
@@ -576,6 +592,15 @@
         "visibility": "列の表示を切り替え"
       },
       "pagination": {
+        "pageSize": "ページあたりの件数",
+        "mode": "読み込みモード",
+        "paginated": "ページ切り替え",
+        "infinite": "無限スクロール",
+        "loaded": "{total} 件中 {count} 件を読み込み済み",
+        "loadMore": "さらに読み込む",
+        "loading": "行を読み込み中…",
+        "error": "行を読み込めませんでした。",
+        "retry": "再試行",
         "summary": "{total} 件中 {start}～{end} 件を表示"
       },
       "search": {

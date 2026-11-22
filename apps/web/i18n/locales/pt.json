@@ -567,6 +567,22 @@
         "remove": "Remover filtro",
         "title": "Filtrar"
       },
+      "grouping": {
+        "title": "Agrupar por",
+        "field": "Selecionar campo de agrupamento",
+        "noFields": "Sem campos disponíveis",
+        "add": "Adicionar agrupamento",
+        "remove": "Remover agrupamento",
+        "clear": "Limpar agrupamento",
+        "reorder": "Reordenar {field}",
+        "moveUp": "Mover grupo para cima",
+        "moveDown": "Mover grupo para baixo",
+        "count": "{formattedCount} itens",
+        "loading": "A carregar grupos…",
+        "error": "Não foi possível carregar os grupos",
+        "retry": "Tentar novamente",
+        "noGroups": "Nenhum grupo correspondente"
+      },
       "options": {
         "center": "Desafixar",
         "left": "Esquerda",
@@ -576,6 +592,15 @@
         "visibility": "Alternar visibilidade da coluna"
       },
       "pagination": {
+        "pageSize": "Itens por página",
+        "mode": "Modo de carregamento",
+        "paginated": "Paginação",
+        "infinite": "Deslocamento infinito",
+        "loaded": "{count} de {total} carregados",
+        "loadMore": "Carregar mais",
+        "loading": "A carregar linhas…",
+        "error": "Não foi possível carregar as linhas.",
+        "retry": "Tentar novamente",
         "summary": "A mostrar {start}–{end} de {total}"
       },
       "search": {

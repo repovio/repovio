@@ -19,6 +19,10 @@
       />
       <div class="flex flex-wrap items-center gap-2">
         <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
+        <QTableGrouping
+          v-model:grouping="grouping"
+          :fields="[{ value: 'state', label: $t('workItems.columns.state') }]"
+        />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -90,90 +94,111 @@
       variant="subtle"
       :title="$t('workItems.loadError')"
     />
-    <UTable
-      v-if="!repositoryId || !tableError"
-      sticky
-      v-model:column-pinning="columnPinning"
-      class="min-h-0 flex-1 overflow-x-auto"
-      :columns="columns"
-      :data="items"
-      :empty="$t('workItems.empty')"
-      :loading="loading"
-      :ui="{
-        tr: 'data-[selected]:cursor-pointer',
-        th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
-        td: 'first:pl-6 align-top',
-      }"
-      @select="selectRow"
+    <CommonTableGroups
+      label-prefix="workItems.states"
+      :failed="groupsFailed"
+      :grouped="grouped"
+      :groups="groups"
+      :loading="groupsLoading"
+      :selected="selected"
+      @retry="refreshGroups"
+      @toggle="toggleGroup"
     >
-      <template #number-cell="{ row }">
-        <span class="font-mono text-xs">#{{ row.original.number }}</span>
-      </template>
-      <template #title-cell="{ row }">
-        <NuxtLink class="font-medium hover:underline" :to="`/${endpoint}/${row.original.id}`">
-          {{ row.original.title }}
-        </NuxtLink>
-      </template>
-      <template #repositoryName-cell="{ row }">
-        {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
-      </template>
-      <template #providerType-cell="{ row }">
-        <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
-      </template>
-      <template #state-cell="{ row }">
-        <UBadge color="neutral" variant="subtle">
-          {{ $t(`workItems.states.${row.original.state}`) }}
-        </UBadge>
-      </template>
-      <template #author-cell="{ row }">
-        {{ row.original.author?.username ?? '—' }}
-      </template>
-      <template #labels-cell="{ row }">
-        <ModulesWorkItemsLabels :labels="row.original.labels" />
-      </template>
-      <template #providerUpdatedAt-cell="{ row }">
-        <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
-      </template>
-      <template #workflowStatus-cell="{ row }">
-        <UBadge
-          v-if="'workflowStatus' in row.original"
-          variant="subtle"
-          :color="row.original.workflowStatus === 'FAILED' ? 'error' : 'neutral'"
+      <div :class="loadingMode === 'infinite' ? 'min-h-0 flex-1 overflow-auto' : 'contents'">
+        <UTable
+          v-if="!repositoryId || !tableError || (loadingMode === 'infinite' && items.length > 0)"
+          sticky
+          v-model:column-pinning="columnPinning"
+          class="min-h-0 flex-1 overflow-x-auto"
+          :columns="columns"
+          :data="items"
+          :empty="$t('workItems.empty')"
+          :loading="loading"
+          :ui="{
+            tr: 'data-[selected]:cursor-pointer',
+            th: 'first:pl-6 whitespace-nowrap bg-neutral-100 dark:bg-neutral-950/20',
+            td: 'first:pl-6 align-top',
+          }"
+          @select="selectRow"
         >
-          {{ $t(`workItems.workflowStatuses.${row.original.workflowStatus}`) }}
-        </UBadge>
-      </template>
-      <template #workflowApprovalRequired-cell="{ row }">
-        <UBadge
-          v-if="'workflowApprovalRequired' in row.original && row.original.workflowApprovalRequired"
-          color="warning"
-          variant="subtle"
-        >
-          {{ $t('pullRequests.approvalRequired') }}
-        </UBadge>
-        <span v-else>—</span>
-      </template>
-      <template #actions-cell="{ row }">
-        <div class="flex justify-end" data-row-navigation-ignore>
-          <UButton
-            color="neutral"
-            icon="i-tabler-external-link"
-            rel="noreferrer"
-            target="_blank"
-            variant="ghost"
-            :aria-label="$t('dashboard.openProvider')"
-            :to="row.original.url"
-          />
-        </div>
-      </template>
-    </UTable>
-    <QTablePagination
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      class="border-t border-default"
-      :total-items="totalItems"
-      shortcuts
-    />
+          <template #number-cell="{ row }">
+            <span class="font-mono text-xs">#{{ row.original.number }}</span>
+          </template>
+          <template #title-cell="{ row }">
+            <NuxtLink class="font-medium hover:underline" :to="`/${endpoint}/${row.original.id}`">
+              {{ row.original.title }}
+            </NuxtLink>
+          </template>
+          <template #repositoryName-cell="{ row }">
+            {{ row.original.repositoryOwner }}/{{ row.original.repositoryName }}
+          </template>
+          <template #providerType-cell="{ row }">
+            <EnumsProviderTypeBadge variant="subtle" :value="row.original.providerType" />
+          </template>
+          <template #state-cell="{ row }">
+            <UBadge color="neutral" variant="subtle">
+              {{ $t(`workItems.states.${row.original.state}`) }}
+            </UBadge>
+          </template>
+          <template #author-cell="{ row }">
+            {{ row.original.author?.username ?? '—' }}
+          </template>
+          <template #labels-cell="{ row }">
+            <ModulesWorkItemsLabels :labels="row.original.labels" />
+          </template>
+          <template #providerUpdatedAt-cell="{ row }">
+            <span class="whitespace-nowrap text-sm text-muted">
+              {{ formatDateTime(row.original.providerUpdatedAt) }}
+            </span>
+          </template>
+          <template #workflowStatus-cell="{ row }">
+            <UBadge
+              v-if="'workflowStatus' in row.original"
+              variant="subtle"
+              :color="row.original.workflowStatus === 'FAILED' ? 'error' : 'neutral'"
+            >
+              {{ $t(`workItems.workflowStatuses.${row.original.workflowStatus}`) }}
+            </UBadge>
+          </template>
+          <template #workflowApprovalRequired-cell="{ row }">
+            <UBadge
+              v-if="'workflowApprovalRequired' in row.original && row.original.workflowApprovalRequired"
+              color="warning"
+              variant="subtle"
+            >
+              {{ $t('pullRequests.approvalRequired') }}
+            </UBadge>
+            <span v-else>—</span>
+          </template>
+          <template #actions-cell="{ row }">
+            <div class="flex justify-end" data-row-navigation-ignore>
+              <UButton
+                color="neutral"
+                icon="i-tabler-external-link"
+                rel="noreferrer"
+                target="_blank"
+                variant="ghost"
+                :aria-label="$t('dashboard.openProvider')"
+                :to="row.original.url"
+              />
+            </div>
+          </template>
+        </UTable>
+        <QTablePagination
+          v-model:items-per-page="itemsPerPage"
+          v-model:loading-mode="loadingMode"
+          v-model:page="page"
+          class="border-t border-default"
+          :total-items="totalItems"
+          :loaded-items="items.length"
+          :has-more="hasMore"
+          :loading="loading"
+          :error="tableError"
+          @load-more="loadMore"
+          shortcuts
+        />
+      </div>
+    </CommonTableGroups>
   </CommonTablePageFrame>
 </template>
 
@@ -181,8 +206,8 @@
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
 import { defineProps, onScopeDispose } from 'vue';
+import { useMonitoringTable } from '~/composables/api/monitoring-table';
 import { useRepovioApi } from '~/composables/api/repovio-api';
-import { useTable } from '~/composables/api/table';
 import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 import { useProviderType } from '~/composables/enums/provider-type';
@@ -373,7 +398,7 @@ const staticFilter = computed(
     return constraints.length > 0 ? { AND: constraints } : undefined;
   },
 );
-const table = useTable({
+const table = useMonitoringTable({
   serializeReads: true,
   columnDefinition,
   defaultItemsPerPage: 25,
@@ -389,10 +414,21 @@ const {
   columnVisibility,
   columns,
   error: tableError,
+  grouping,
+  grouped,
+  groups,
+  groupsFailed,
+  groupsLoading,
+  selected,
+  refreshGroups,
+  toggleGroup,
   filtering,
   initialize,
   items,
   itemsPerPage,
+  loadingMode,
+  loadMore,
+  hasMore,
   loading,
   page,
   refresh,

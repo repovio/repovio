@@ -567,6 +567,22 @@
         "remove": "Filter verwijderen",
         "title": "Filteren"
       },
+      "grouping": {
+        "title": "Groeperen op",
+        "field": "Groeperingsveld kiezen",
+        "noFields": "Geen velden beschikbaar",
+        "add": "Groepering toevoegen",
+        "remove": "Groepering verwijderen",
+        "clear": "Groepering wissen",
+        "reorder": "{field} verplaatsen",
+        "moveUp": "Groep omhoog",
+        "moveDown": "Groep omlaag",
+        "count": "{formattedCount} items",
+        "loading": "Groepen laden…",
+        "error": "Groepen laden mislukt",
+        "retry": "Opnieuw proberen",
+        "noGroups": "Geen overeenkomende groepen"
+      },
       "options": {
         "center": "Losmaken",
         "left": "Links",
@@ -576,6 +592,15 @@
         "visibility": "Kolomzichtbaarheid wisselen"
       },
       "pagination": {
+        "pageSize": "Items per pagina",
+        "mode": "Laadmodus",
+        "paginated": "Paginering",
+        "infinite": "Oneindig scrollen",
+        "loaded": "{count} van {total} geladen",
+        "loadMore": "Meer laden",
+        "loading": "Rijen laden…",
+        "error": "Rijen laden mislukt.",
+        "retry": "Opnieuw proberen",
         "summary": "Toont {start}–{end} van {total}"
       },
       "search": {

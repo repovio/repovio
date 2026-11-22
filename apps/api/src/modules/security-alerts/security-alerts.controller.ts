@@ -1,13 +1,17 @@
 import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResourceQuery } from '@querry-kit/nest/core';
+import { tableGroups } from '@repovio/schemas';
 import { ZodSerializerDto } from 'nestjs-zod';
+import type { z } from 'zod';
 import {
   ApiErrorResponses,
   ApiPaginatedResponse,
   ApiResourceQuery,
   resourceFields,
+  SchemaResponse,
 } from '../../util/resource-contract.js';
+import { createZodDto } from '../../util/schema-dto.js';
 
 import type { Prisma, SecurityAlertKind, SecurityAlertSeverity } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -25,6 +29,9 @@ import { SecurityAlertsQueryService } from './security-alerts-query.service.js';
 const securityAlertInclude = {
   repository: { select: { name: true, owner: true, providerAccount: { select: { providerType: true } } } },
 } satisfies Prisma.SecurityAlertInclude;
+
+/** Validated single-field grouping request for security-alerts. */
+class SecurityAlertGroupQueryDto extends createZodDto(tableGroups.SecurityAlert.query) {}
 
 /** Provides permission-aware security-alert list, detail, summary, and filter data. */
 @ApiTags('security-alerts')
@@ -65,6 +72,24 @@ export class SecurityAlertsController {
       schema: resourceFields(SecurityAlertDto),
       service: this.alerts,
     });
+  }
+
+  /**
+   * Count matching security-alerts by severity within the caller's repository scope.
+   * @param request - Authenticated caller.
+   * @param query - Validated group dimension, filtering, ordering, and batch limits.
+   * @returns Authorized group keys and record counts.
+   */
+  @Get('group-by')
+  @ApiOperation({ summary: 'Count visible security-alerts by severity' })
+  @SchemaResponse(tableGroups.SecurityAlert.result)
+  @ApiErrorResponses({ badRequestDescription: 'Invalid grouping query.' })
+  async groupBy(
+    @Req() request: { user: AuthenticatedUser },
+    @Query() query: SecurityAlertGroupQueryDto,
+  ): Promise<z.infer<typeof tableGroups.SecurityAlert.result>> {
+    const ability = await this.alerts.getReadAbility(request.user);
+    return this.alerts.groupBy(query, ability);
   }
 
   /**

@@ -125,6 +125,24 @@ describe.each(['direct', 'group'] as const)(
       await expect(alerts.getReadAbility(users.viewer)).rejects.toBeInstanceOf(ForbiddenException);
     });
 
+    it('counts only filtered and authorized alerts in each group', /** Exercises grouped counts against PostgreSQL. */ async () => {
+      const query = {
+        by: ['severity'] as ['severity'],
+        orderBy: { severity: 'asc' as const },
+        _count: { _all: true as const },
+      };
+      await expect(controller.groupBy({ user: users.manager }, query)).resolves.toEqual([
+        { severity: 'HIGH', _count: { _all: 1 } },
+      ]);
+      await expect(controller.groupBy({ user: users.admin }, query)).resolves.toEqual([
+        { severity: 'HIGH', _count: { _all: 2 } },
+      ]);
+      await expect(
+        controller.groupBy({ user: users.manager }, { ...query, where: { title: 'Hidden alert' } }),
+      ).resolves.toEqual([]);
+      await expect(controller.groupBy({ user: users.viewer }, query)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('returns permission-scoped summaries, filters, and safe details', /** Verifies returns permission-scoped summaries, filters, and safe details. */ async () => {
       await expect(controller.summary({ user: users.manager })).resolves.toMatchObject({
         open: { CODE: 0, DEPENDENCY: 1, SECRET: 0 },

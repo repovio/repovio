@@ -2,6 +2,8 @@
 
 The workspace fixes the following advisories through bounded dependency overrides:
 
+- [GHSA-7589-6fvf-x4pw](https://github.com/advisories/GHSA-7589-6fvf-x4pw): `@prisma/config@7.10.1` pins
+  `effect@3.20.0`; resolve this edge to `3.22.1`. Remove the override once Prisma resolves a patched Effect itself.
 - [GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4): `glob` 9 through 14.0.1 resolve to 14.0.2.
 - [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249): `minimatch` 7 through 11.0.0 resolve to 11.0.1.
 

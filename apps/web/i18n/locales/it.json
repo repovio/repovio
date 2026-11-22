@@ -567,6 +567,22 @@
         "remove": "Rimuovi filtro",
         "title": "Filtra"
       },
+      "grouping": {
+        "title": "Raggruppa per",
+        "field": "Seleziona campo di raggruppamento",
+        "noFields": "Nessun campo disponibile",
+        "add": "Aggiungi raggruppamento",
+        "remove": "Rimuovi raggruppamento",
+        "clear": "Cancella raggruppamento",
+        "reorder": "Riordina {field}",
+        "moveUp": "Sposta gruppo in alto",
+        "moveDown": "Sposta gruppo in basso",
+        "count": "{formattedCount} elementi",
+        "loading": "Caricamento gruppi…",
+        "error": "Impossibile caricare i gruppi",
+        "retry": "Riprova",
+        "noGroups": "Nessun gruppo corrispondente"
+      },
       "options": {
         "center": "Sblocca",
         "left": "Sinistra",
@@ -576,6 +592,15 @@
         "visibility": "Cambia visibilità colonna"
       },
       "pagination": {
+        "pageSize": "Elementi per pagina",
+        "mode": "Modalità di caricamento",
+        "paginated": "Paginazione",
+        "infinite": "Scorrimento infinito",
+        "loaded": "{count} di {total} caricati",
+        "loadMore": "Carica altro",
+        "loading": "Caricamento righe…",
+        "error": "Impossibile caricare le righe.",
+        "retry": "Riprova",
         "summary": "Visualizzazione di {start}–{end} di {total}"
       },
       "search": {

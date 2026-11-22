@@ -21,6 +21,14 @@ const nuxtRequire = createRequire(webRequire.resolve('nuxt/package.json'));
 const nitroServerRequire = createRequire(nuxtRequire.resolve('@nuxt/nitro-server/package.json'));
 const nitroRequire = createRequire(nitroServerRequire.resolve('nitropack/package.json'));
 
+test('Prisma configuration loads with patched Effect', /** Checks the actual transitive resolution used by the Prisma CLI. */ () => {
+  const prismaRequire = createRequire(apiRequire.resolve('prisma/package.json'));
+  const configRequire = createRequire(prismaRequire.resolve('@prisma/config'));
+  const [major, minor, patch] = configRequire('effect/package.json').version.split('.').map(Number);
+  assert.ok(major > 3 || (major === 3 && (minor > 22 || (minor === 22 && patch >= 1))));
+  assert.equal(typeof prismaRequire('@prisma/config').defineConfig, 'function');
+});
+
 test('the lockfile excludes the three vulnerable dependency ranges', /** Verifies the lockfile excludes the three vulnerable dependency ranges. */ async () => {
   const lockfile = await readFile(resolve(root, 'pnpm-lock.yaml'), 'utf8');
   assert.doesNotMatch(lockfile, /^ {2}deepmerge@/m);

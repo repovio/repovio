@@ -1,0 +1,15 @@
+meta {
+  name: Count visible pull-requests by state
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{host}}/api/v1/pull-requests/group-by?by[0]=state&orderBy[state]=asc&_count[_all]=true&take=26&skip=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

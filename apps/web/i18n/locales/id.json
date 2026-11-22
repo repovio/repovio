@@ -567,6 +567,22 @@
         "remove": "Hapus filter",
         "title": "Filter"
       },
+      "grouping": {
+        "title": "Kelompokkan menurut",
+        "field": "Pilih kolom pengelompokan",
+        "noFields": "Tidak ada kolom yang tersedia",
+        "add": "Tambah pengelompokan",
+        "remove": "Hapus pengelompokan",
+        "clear": "Bersihkan pengelompokan",
+        "reorder": "Urutkan ulang {field}",
+        "moveUp": "Naikkan grup",
+        "moveDown": "Turunkan grup",
+        "count": "{formattedCount} item",
+        "loading": "Memuat grup…",
+        "error": "Gagal memuat grup",
+        "retry": "Coba lagi",
+        "noGroups": "Tidak ada grup yang cocok"
+      },
       "options": {
         "center": "Lepas sematan",
         "left": "Kiri",
@@ -576,6 +592,15 @@
         "visibility": "Alihkan visibilitas kolom"
       },
       "pagination": {
+        "pageSize": "Item per halaman",
+        "mode": "Mode pemuatan",
+        "paginated": "Paginasi",
+        "infinite": "Gulir tanpa batas",
+        "loaded": "{count} dari {total} dimuat",
+        "loadMore": "Muat lagi",
+        "loading": "Memuat baris…",
+        "error": "Gagal memuat baris.",
+        "retry": "Coba lagi",
         "summary": "Menampilkan {start}–{end} dari {total}"
       },
       "search": {

@@ -567,6 +567,22 @@
         "remove": "移除筛选条件",
         "title": "筛选"
       },
+      "grouping": {
+        "title": "分组依据",
+        "field": "选择分组字段",
+        "noFields": "没有可用的分组字段",
+        "add": "添加分组",
+        "remove": "移除分组",
+        "clear": "清除分组",
+        "reorder": "调整 {field} 的顺序",
+        "moveUp": "上移分组",
+        "moveDown": "下移分组",
+        "count": "{formattedCount} 项",
+        "loading": "正在加载分组…",
+        "error": "无法加载分组",
+        "retry": "重试",
+        "noGroups": "没有匹配的分组"
+      },
       "options": {
         "center": "取消固定",
         "left": "左侧",

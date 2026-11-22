@@ -567,6 +567,22 @@
         "remove": "Rimuovi filtro",
         "title": "Filtra"
       },
+      "grouping": {
+        "title": "Raggruppa per",
+        "field": "Seleziona campo di raggruppamento",
+        "noFields": "Nessun campo disponibile",
+        "add": "Aggiungi raggruppamento",
+        "remove": "Rimuovi raggruppamento",
+        "clear": "Cancella raggruppamento",
+        "reorder": "Riordina {field}",
+        "moveUp": "Sposta gruppo in alto",
+        "moveDown": "Sposta gruppo in basso",
+        "count": "{formattedCount} elementi",
+        "loading": "Caricamento gruppi…",
+        "error": "Impossibile caricare i gruppi",
+        "retry": "Riprova",
+        "noGroups": "Nessun gruppo corrispondente"
+      },
       "options": {
         "center": "Sblocca",
         "left": "Sinistra",

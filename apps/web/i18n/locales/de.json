@@ -567,6 +567,22 @@
         "remove": "Filter entfernen",
         "title": "Filtern"
       },
+      "grouping": {
+        "title": "Gruppieren nach",
+        "field": "Gruppierungsfeld auswählen",
+        "noFields": "Keine Gruppierungsfelder verfügbar",
+        "add": "Gruppierung hinzufügen",
+        "remove": "Gruppierung entfernen",
+        "clear": "Gruppierung löschen",
+        "reorder": "{field} umordnen",
+        "moveUp": "Gruppe nach oben",
+        "moveDown": "Gruppe nach unten",
+        "count": "{formattedCount} Einträge",
+        "loading": "Gruppen werden geladen …",
+        "error": "Gruppen konnten nicht geladen werden",
+        "retry": "Erneut versuchen",
+        "noGroups": "Keine passenden Gruppen"
+      },
       "options": {
         "center": "Fixierung entfernen",
         "left": "Links",

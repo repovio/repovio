@@ -567,6 +567,22 @@
         "remove": "フィルターを削除",
         "title": "フィルター"
       },
+      "grouping": {
+        "title": "グループ化",
+        "field": "グループ化する項目を選択",
+        "noFields": "使用可能な項目がありません",
+        "add": "グループ化を追加",
+        "remove": "グループ化を解除",
+        "clear": "グループ化をクリア",
+        "reorder": "{field} を並べ替え",
+        "moveUp": "グループを上へ",
+        "moveDown": "グループを下へ",
+        "count": "{formattedCount} 件",
+        "loading": "グループを読み込み中…",
+        "error": "グループを読み込めませんでした",
+        "retry": "再試行",
+        "noGroups": "一致するグループはありません"
+      },
       "options": {
         "center": "固定を解除",
         "left": "左",

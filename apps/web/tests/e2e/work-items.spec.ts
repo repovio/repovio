@@ -74,6 +74,49 @@ async function mockShell(page: Page): Promise<void> {
 }
 
 /** Checks full page shell. */
+test('opens a server-counted issue group and keeps issue links', /** Checks group counts independently of the loaded page. */ async ({
+  page,
+}) => {
+  await mockShell(page);
+  await page.route(
+    '**/api/v1/issues/filter-options',
+    /** Supply empty filter choices. */ (route) =>
+      route.fulfill({ json: { labels: [], authors: [], assignees: [], milestones: [] } }),
+  );
+  await page.route(
+    '**/api/v1/issues/summary',
+    /** Supply summary metrics. */ (route) =>
+      route.fulfill({ json: { assigned: 0, open: 42, recentlyUpdated: 0, stale: 0 } }),
+  );
+  await page.route(
+    /\/api\/v1\/issues(?:\?.*)?$/,
+    /** Return only one row regardless of total group size. */ (route) =>
+      route.fulfill({ json: { items: [issue], meta: { itemCount: 42, pageCount: 2 } } }),
+  );
+  await page.route(
+    '**/api/v1/issues/group-by?**',
+    /** Supply the complete server count. */ (route) =>
+      route.fulfill({ json: [{ state: 'OPEN', _count: { _all: 42 } }] }),
+  );
+  await page.goto('/issues');
+  await page.getByRole('button', { name: 'Group by', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Select grouping field' }).click();
+  await page.getByRole('option').first().click();
+  await page.getByRole('button', { name: 'Add grouping' }).click();
+  await page.keyboard.press('Escape');
+  const group = page.getByRole('button', { name: /Open.*42 items/i });
+  await expect(group).toHaveAttribute('aria-expanded', 'false');
+  const leaf = page.waitForRequest(
+    /** Match the group-scoped record request. */ (request) =>
+      new URL(request.url()).pathname === '/api/v1/issues' &&
+      (new URL(request.url()).searchParams.get('where') ?? '').includes('"state":"OPEN"'),
+  );
+  await group.press('Enter');
+  await leaf;
+  await expect(page.getByRole('link', { name: issue.title })).toHaveAttribute('href', '/issues/issue-1');
+});
+
+/** Checks full page shell. */
 async function expectFullPageShell(page: Page): Promise<void> {
   await expect(page.locator('#main-content')).toHaveClass(/overflow-hidden/);
 }

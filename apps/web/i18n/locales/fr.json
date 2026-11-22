@@ -567,6 +567,22 @@
         "remove": "Supprimer le filtre",
         "title": "Filtrer"
       },
+      "grouping": {
+        "title": "Grouper par",
+        "field": "Choisir un champ de regroupement",
+        "noFields": "Aucun champ disponible",
+        "add": "Ajouter un regroupement",
+        "remove": "Retirer le regroupement",
+        "clear": "Effacer le regroupement",
+        "reorder": "Réordonner {field}",
+        "moveUp": "Monter le groupe",
+        "moveDown": "Descendre le groupe",
+        "count": "{formattedCount} éléments",
+        "loading": "Chargement des groupes…",
+        "error": "Impossible de charger les groupes",
+        "retry": "Réessayer",
+        "noGroups": "Aucun groupe correspondant"
+      },
       "options": {
         "center": "Détacher",
         "left": "Gauche",

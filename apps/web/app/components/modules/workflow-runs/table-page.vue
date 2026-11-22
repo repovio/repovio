@@ -11,7 +11,10 @@
       />
       <div class="flex flex-wrap items-center gap-2">
         <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
-        <QTableGrouping v-model:grouping="grouping" :fields="[{ value: 'status', label: $t('workflowRuns.columns.status') }]" />
+        <QTableGrouping
+          v-model:grouping="grouping"
+          :fields="[{ value: 'status', label: $t('workflowRuns.columns.status') }]"
+        />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -108,7 +111,9 @@
             </UBadge>
           </template>
           <template #providerCreatedAt-cell="{ row }">
-            <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.providerCreatedAt) }}</span>
+            <span class="whitespace-nowrap text-sm text-muted">
+              {{ formatTimestamp(row.original.providerCreatedAt) }}
+            </span>
           </template>
           <template #startedAt-cell="{ row }">
             <span class="whitespace-nowrap text-sm text-muted">{{ formatTimestamp(row.original.startedAt) }}</span>
@@ -166,9 +171,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { FilterFieldType, type FilterField, type Filtering, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
 import { defineProps } from 'vue';
+import { useMonitoringTable } from '~/composables/api/monitoring-table';
 import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useSystemStatusState } from '~/composables/api/system-status';
-import { useMonitoringTable } from '~/composables/api/monitoring-table';
 import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useProviderType } from '~/composables/enums/provider-type';
 import { useDateTime } from '~/composables/use-date-time';
@@ -339,7 +344,14 @@ const {
   columnVisibility,
   columns,
   error: tableError,
-  grouping, grouped, groups, groupsFailed, groupsLoading, selected, refreshGroups, toggleGroup,
+  grouping,
+  grouped,
+  groups,
+  groupsFailed,
+  groupsLoading,
+  selected,
+  refreshGroups,
+  toggleGroup,
   filtering: queryFiltering,
   items,
   itemsPerPage,

@@ -19,7 +19,10 @@
       />
       <div class="flex flex-wrap items-center gap-2">
         <CommonRefreshButton :loading="refreshLoading" @refresh="refreshView" />
-        <QTableGrouping v-model:grouping="grouping" :fields="[{ value: 'state', label: $t('workItems.columns.state') }]" />
+        <QTableGrouping
+          v-model:grouping="grouping"
+          :fields="[{ value: 'state', label: $t('workItems.columns.state') }]"
+        />
         <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
           <template #trigger="{ active, open, toggle }">
             <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -144,7 +147,9 @@
             <ModulesWorkItemsLabels :labels="row.original.labels" />
           </template>
           <template #providerUpdatedAt-cell="{ row }">
-            <span class="whitespace-nowrap text-sm text-muted">{{ formatDateTime(row.original.providerUpdatedAt) }}</span>
+            <span class="whitespace-nowrap text-sm text-muted">
+              {{ formatDateTime(row.original.providerUpdatedAt) }}
+            </span>
           </template>
           <template #workflowStatus-cell="{ row }">
             <UBadge
@@ -201,8 +206,8 @@
 import { FilterFieldType, type FilterField, type SortingField } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
 import { defineProps, onScopeDispose } from 'vue';
-import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useMonitoringTable } from '~/composables/api/monitoring-table';
+import { useRepovioApi } from '~/composables/api/repovio-api';
 import { useAutoRefresh } from '~/composables/app/auto-refresh';
 import { useTableRowNavigation } from '~/composables/app/table-row-navigation';
 import { useProviderType } from '~/composables/enums/provider-type';
@@ -409,7 +414,14 @@ const {
   columnVisibility,
   columns,
   error: tableError,
-  grouping, grouped, groups, groupsFailed, groupsLoading, selected, refreshGroups, toggleGroup,
+  grouping,
+  grouped,
+  groups,
+  groupsFailed,
+  groupsLoading,
+  selected,
+  refreshGroups,
+  toggleGroup,
   filtering,
   initialize,
   items,

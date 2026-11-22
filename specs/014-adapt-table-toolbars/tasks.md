@@ -2,7 +2,7 @@
 
 ## Setup and foundation
 
-- [ ] T001 Inventory routes, nested tables, KPI regions, search support, and existing placement assertions in
+- [x] T001 Inventory routes, nested tables, KPI regions, search support, and existing placement assertions in
       `specs/014-adapt-table-toolbars/contracts/layout.md`. Identify which action owner each route should use.
 
 ## US1: Controls adjacent to results

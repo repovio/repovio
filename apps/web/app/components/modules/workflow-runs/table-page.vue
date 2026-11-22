@@ -1,12 +1,9 @@
 <template>
   <CommonTablePageFrame :embedded="embedded" :breadcrumbs="breadcrumbs" :padded="false" :title="title">
     <template #actions>
-      <UInput
-        v-if="searchable"
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('workflowRuns.search')"
+        :label="$t('workflowRuns.search')"
         :placeholder="$t('workflowRuns.searchPlaceholder')"
       />
       <div class="flex flex-wrap items-center gap-2">
@@ -39,25 +36,27 @@
       </div>
     </template>
 
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="loadError"
-    />
-    <div v-if="activeDashboardPreset" class="mx-4 mb-4">
-      <UButton
-        color="primary"
-        icon="i-tabler-filter"
-        trailing-icon="i-lucide-x"
-        variant="soft"
-        :aria-label="$t('dashboard.activeRuns')"
-        :label="$t('dashboard.activeRuns')"
-        @click="clearDashboardPreset"
+    <template v-if="tableError || activeDashboardPreset" #before-table>
+      <UAlert
+        v-if="tableError"
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="loadError"
       />
-    </div>
+      <div v-if="activeDashboardPreset" class="mx-4 mb-4">
+        <UButton
+          color="primary"
+          icon="i-tabler-filter"
+          trailing-icon="i-lucide-x"
+          variant="soft"
+          :aria-label="$t('dashboard.activeRuns')"
+          :label="$t('dashboard.activeRuns')"
+          @click="clearDashboardPreset"
+        />
+      </div>
+    </template>
     <CommonTableGroups
       label-prefix="workflowStatus"
       :failed="groupsFailed"
@@ -210,7 +209,6 @@ const props = defineProps<{
   endpoint: 'workflow-runs' | 'workflow-runs/needs-attention';
   loadError: string;
   name: string;
-  searchable?: boolean;
   title: string;
 }>();
 
@@ -317,7 +315,7 @@ const visibleFilterFields = computed(
 const staticFilter = computed(
   /** Derives static filter from the current reactive dependencies. */ () => {
     const value = debouncedSearch.value.trim();
-    if (!props.searchable || !value) return undefined;
+    if (!value) return undefined;
     const contains = { contains: value, mode: 'insensitive' };
     return {
       OR: [

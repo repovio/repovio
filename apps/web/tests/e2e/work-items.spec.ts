@@ -221,8 +221,8 @@ test('filters issues by every selected label and updated range, then renders san
   await expect(page.getByRole('heading', { name: 'Issues' })).toBeVisible();
   await expect(page.getByText('Track provider issues')).toBeVisible();
   await expectTableHover(page, page.getByRole('table'));
-  await expect(issueBreadcrumbs.getByRole('button', { name: 'Labels' })).toHaveCount(0);
-  await issueBreadcrumbs.getByRole('button', { name: 'Filter', exact: true }).click();
+  await expect(page.locator('[data-table-toolbar]').getByRole('button', { name: 'Labels' })).toHaveCount(0);
+  await page.locator('[data-table-toolbar]').getByRole('button', { name: 'Filter', exact: true }).click();
   await page.getByRole('button', { name: 'Labels' }).click();
   await page.getByRole('option', { name: 'Bug' }).click();
   await page.getByRole('option', { name: 'Priority: High' }).click();
@@ -241,7 +241,7 @@ test('filters issues by every selected label and updated range, then renders san
   expect(where).toContain('2026-09-01T00:00:00.000Z');
   expect(where).toContain('2026-09-13T23:59:59.999Z');
 
-  const filterTrigger = issueBreadcrumbs.getByRole('button', { name: 'Filter', exact: true });
+  const filterTrigger = page.locator('[data-table-toolbar]').getByRole('button', { name: 'Filter', exact: true });
   await page.keyboard.press('Escape');
   await expect(filterTrigger).toBeFocused();
   await expect(filterTrigger).toHaveClass(/text-primary/);

@@ -8,7 +8,8 @@
     :padded="false"
     :title="$t('repositories.title')"
   >
-    <template #actions>
+    <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -35,14 +36,15 @@
       </UButton>
     </template>
 
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('repositories.loadError')"
-    />
+    <template v-if="tableError" #before-table>
+      <UAlert
+        class="m-4"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('repositories.loadError')"
+      />
+    </template>
     <UTable
       sticky
       v-model:column-pinning="columnPinning"
@@ -230,6 +232,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const repositoryTable = useTable({
+  searchMode: 'parameter',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'repositories',
@@ -240,6 +243,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

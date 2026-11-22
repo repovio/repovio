@@ -8,7 +8,8 @@
     :padded="false"
     :title="$t('users.title')"
   >
-    <template #actions>
+    <template #table-actions>
+      <CommonTableSearch v-model="search" />
       <QTableSorting v-model:sorting="sorting" :fields="sortableFields" shortcuts>
         <template #trigger="{ active, open, toggle }">
           <CommonTablePopoverTrigger kind="sorting" :active="active" :open="open" :toggle="toggle" />
@@ -33,14 +34,9 @@
       <UButton icon="i-lucide-plus" :label="$t('users.create')" @click="openAccount(null)" />
     </template>
 
-    <UAlert
-      v-if="tableError"
-      class="m-4"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('users.loadError')"
-    />
+    <template v-if="tableError" #before-table>
+      <UAlert class="m-4" color="error" icon="i-lucide-circle-alert" variant="subtle" :title="$t('users.loadError')" />
+    </template>
     <UTable
       sticky
       v-model:column-pinning="columnPinning"
@@ -212,6 +208,7 @@ const filterFields = computed<FilterField[]>(
   ],
 );
 const userTable = useTable({
+  searchMode: 'user',
   columnDefinition,
   defaultItemsPerPage: 10,
   endpoint: 'users',
@@ -222,6 +219,7 @@ const {
   columnOrder,
   columnVisibility,
   columns,
+  search,
   error: tableError,
   filtering,
   items,

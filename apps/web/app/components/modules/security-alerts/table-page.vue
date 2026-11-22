@@ -11,11 +11,9 @@
     :title="pageTitle"
   >
     <template #actions>
-      <UInput
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('securityAlerts.search')"
+        :label="$t('securityAlerts.search')"
         :placeholder="$t('securityAlerts.search')"
       />
       <div class="flex flex-wrap items-center gap-2">
@@ -69,37 +67,42 @@
       </div>
     </template>
 
-    <div class="space-y-4 p-4 sm:p-6">
-      <UAlert
-        v-if="unavailableCount > 0"
-        color="warning"
-        icon="i-lucide-triangle-alert"
-        variant="subtle"
-        :description="$t('securityAlerts.unavailableDescription', { count: unavailableCount })"
-        :title="$t('securityAlerts.unavailable')"
-      />
-      <UAlert
-        v-if="unknownAvailability"
-        color="neutral"
-        variant="subtle"
-        :title="$t('securityAlerts.unknownAvailability')"
-      />
-      <ModulesWorkItemsSummaryCards
-        v-if="!repositoryId"
-        :loading="supportingLoading"
-        :metrics="summaryMetrics"
-        :title="$t('securityAlerts.openSummary')"
-      />
-    </div>
+    <template v-if="!repositoryId" #summary>
+      <div class="p-4 sm:p-6">
+        <ModulesWorkItemsSummaryCards
+          :loading="supportingLoading"
+          :metrics="summaryMetrics"
+          :title="$t('securityAlerts.openSummary')"
+        />
+      </div>
+    </template>
+    <template v-if="unavailableCount > 0 || unknownAvailability || tableError || supportingError" #before-table>
+      <div v-if="unavailableCount > 0 || unknownAvailability" class="space-y-4 p-4 sm:p-6">
+        <UAlert
+          v-if="unavailableCount > 0"
+          color="warning"
+          icon="i-lucide-triangle-alert"
+          variant="subtle"
+          :description="$t('securityAlerts.unavailableDescription', { count: unavailableCount })"
+          :title="$t('securityAlerts.unavailable')"
+        />
+        <UAlert
+          v-if="unknownAvailability"
+          color="neutral"
+          variant="subtle"
+          :title="$t('securityAlerts.unknownAvailability')"
+        />
+      </div>
 
-    <UAlert
-      v-if="tableError || supportingError"
-      class="mx-4 mb-4 sm:mx-6"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('securityAlerts.loadError')"
-    />
+      <UAlert
+        v-if="tableError || supportingError"
+        class="mx-4 mb-4 sm:mx-6"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('securityAlerts.loadError')"
+      />
+    </template>
     <CommonTableGroups
       label-prefix="securityAlerts.severities"
       :failed="groupsFailed"

@@ -42,6 +42,9 @@ against implementation and tests. Documentation fixtures embedded in strings are
   additional script/custom blocks. Keep script/style bodies unindented; templates use two spaces per nesting level.
 - Keep route pages focused on metadata, loading, and composition. Use the existing layout/common/module components,
   typed props/events/models, composables, stores, API contracts, and utility locations documented in `AGENTS.md`.
+- Put Querry-Kit controls in the shared table toolbar directly above results. Each toolbar has a working search field
+  focusable with Ctrl+F. Use the page summary slot for KPI sections so the rightmost breadcrumb chevron can collapse
+  them. The layout merges adjacent toolbars only when their controls fit.
 - Attribute groups: definition, list rendering, conditionals, render modifiers, identity, two-way binding, remaining
   directives, global attributes, static attributes, dynamic attributes, events, content. Preserve within-group order.
 - Short tags may remain on one line when they fit within 120 characters. Multiline tags close with `>` or `/>` on a

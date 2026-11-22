@@ -1,8 +1,10 @@
 import type { Filtering } from '@querry-kit/nuxt-ui/types';
 import { useTable as useQueryKitTable } from '@querry-kit/nuxt/table';
 import type { TableColumn as QueryKitTableColumn } from '@querry-kit/nuxt/types';
+import { refDebounced } from '@vueuse/core';
 import { useRouteQuery } from '@vueuse/router';
-import { computed, onScopeDispose, type Ref, watch } from 'vue';
+import { computed, onScopeDispose, ref, type Ref, watch } from 'vue';
+import { userSearchWhere } from '../../util/user-search';
 
 import type { Endpoint, Endpoints } from '~/types/api/endpoints';
 import type { ColumnDefinition } from '~/types/table';
@@ -19,6 +21,8 @@ export interface UseTableOptions<TEndpoint extends Endpoint> {
   name: string;
   repositoryId?: string;
   scopeKind?: string;
+  /** Use the endpoint's text search parameter or its authorized User filter contract. */
+  searchMode?: 'parameter' | 'user';
   /** Serialize transport only for explicitly participating monitoring views. */
   serializeReads?: boolean;
   staticFields?: string[];
@@ -115,6 +119,8 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
       toQueryKitColumns(options.columnDefinition.value),
   );
   const api = useApi();
+  const search = ref('');
+  const debounced = refDebounced(search, 250);
   if (options.serializeReads) {
     const controller = new AbortController();
     serializeApiReads(api, controller.signal);
@@ -129,14 +135,22 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     routePage,
     staticFields: options.staticFields,
     staticFilter: computed(
-      /** Compose server-side fixed scope with existing search constraints. */ () =>
-        withRepositoryScope(options.staticFilter?.value, options.repositoryId),
+      /** Keep fixed filters and repository scope when narrowing a user search. */ () => {
+        const fixed = options.staticFilter?.value;
+        if (options.searchMode !== 'user' || !debounced.value.trim())
+          return withRepositoryScope(fixed, options.repositoryId);
+        const match = userSearchWhere(debounced.value);
+        return withRepositoryScope(fixed ? { AND: [fixed, match] } : match, options.repositoryId);
+      },
     ),
   });
 
   api.interceptors.request.use(
     /** Keep the endpoint's timestamp/ID default when Querry-Kit adds only its synthetic infinite-mode ID order. */
     (request) => {
+      if (options.searchMode === 'parameter' && debounced.value.trim()) {
+        request.params = { ...request.params, search: debounced.value.trim() };
+      }
       if (table.loadingMode.value === 'infinite' && !table.sorting.value.length && request.url) {
         const [path, search] = request.url.split('?');
         const params = new URLSearchParams(search);
@@ -148,6 +162,16 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
       return request;
     },
   );
+  if (options.searchMode) {
+    watch(
+      debounced,
+      /** Start a new query on the first page; page and filter watchers refresh automatically. */ () => {
+        if (table.page.value !== 1) table.page.value = 1;
+        else if (options.searchMode === 'parameter') void table.refresh();
+      },
+      { flush: 'sync' },
+    );
+  }
 
   watch(
     [columns, table.columnPinning],
@@ -172,5 +196,5 @@ export const useTable = <TEndpoint extends Endpoint>(options: UseTableOptions<TE
     /** Never present retained scoped rows as successful results after a failed query. */ () =>
       options.repositoryId && table.error.value && table.loadingMode.value !== 'infinite' ? [] : table.items.value,
   );
-  return { ...table, items, filtering: table.filtering as Ref<Filtering> };
+  return { ...table, items, search, filtering: table.filtering as Ref<Filtering> };
 };

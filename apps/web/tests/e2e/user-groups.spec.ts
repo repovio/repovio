@@ -152,7 +152,7 @@ for (const locale of ['en', 'de']) {
       },
     );
     await page.goto('/admin/user-groups');
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     await expect(toolbar.getByRole('button', { name: de ? 'Neue Gruppe' : 'New group', exact: true })).toBeVisible();
     await expect(page.locator('[data-page-toolbar]')).toHaveCount(1);
     await expect(toolbar.getByRole('textbox', { name: de ? 'Suchen' : 'Search', exact: true })).toBeVisible();

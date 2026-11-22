@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "显示或隐藏汇总指标",
     "administration": "管理",
     "copyright": "版权所有 {year} Repovio",
     "dashboard": "仪表盘",

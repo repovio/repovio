@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Toggle summary metrics",
     "administration": "Administration",
     "copyright": "Copyright {year} Repovio",
     "dashboard": "Dashboard",

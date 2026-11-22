@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Kerncijfers tonen of verbergen",
     "issues": "Issues",
     "jobs": "Taken",
     "pullRequests": "Pull requests",

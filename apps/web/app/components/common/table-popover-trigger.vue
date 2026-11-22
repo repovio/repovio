@@ -1,5 +1,5 @@
 <template>
-  <UTooltip :disabled="kind !== 'options'" :text="label">
+  <UTooltip :disabled="kind !== 'options' || open" :text="label">
     <UButton
       ref="trigger"
       aria-haspopup="dialog"
@@ -8,7 +8,7 @@
       :aria-label="label"
       :color="active ? 'primary' : 'neutral'"
       :icon="icons[kind]"
-      @click="toggle"
+      @click="openPopover"
     />
   </UTooltip>
 </template>
@@ -34,6 +34,10 @@ const icons = {
   options: 'i-tabler-adjustments',
 };
 const trigger = ref<{ $el: HTMLButtonElement } | null>(null);
+/** The mobile Querry-Kit modal provides its own trigger; only toggle a standalone popover here. */
+function openPopover(): void {
+  if (!window.matchMedia('(width < 640px)').matches) props.toggle();
+}
 let restoreFocusOnClose = false;
 
 // Query Kit owns the popover but supplies no Reka trigger to receive focus on Escape.
@@ -42,6 +46,19 @@ useEventListener(
   /** Records Escape dismissal so the popover trigger can regain focus. */
   (event) => {
     if (props.open) restoreFocusOnClose = event.key === 'Escape';
+    // The initially focused Reset button opens a tooltip that otherwise consumes the first Escape.
+    if (
+      props.open &&
+      props.kind === 'options' &&
+      event.key === 'Escape' &&
+      event.target instanceof HTMLElement &&
+      event.target.closest('[role="dialog"]')?.matches('.qk-table-options-popover, .qk-table-toolbar-dialog') &&
+      !event.target.closest('[role="menu"], [role="listbox"], [aria-expanded="true"]')
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      props.toggle();
+    }
   },
   { capture: true },
 );

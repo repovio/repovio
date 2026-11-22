@@ -513,11 +513,11 @@ for (const locale of ['en', 'de']) {
         await expect(page.locator('[data-page-toolbar]')).toBeVisible({ timeout: 15_000 });
         await expectToolbarControls(page, width);
         if (path === '/issues') {
-          const actions = page.locator('[data-page-toolbar] [data-slot="right"]');
+          const actions = page.locator('[data-table-toolbar]');
           const search = actions.locator('input').first();
           if (width < 640) {
             expect((await search.boundingBox())!.width).toBeGreaterThanOrEqual(
-              (await actions.boundingBox())!.width - 2,
+              (await actions.boundingBox())!.width - 34,
             );
           }
           for (const theme of ['light', 'dark']) {
@@ -568,7 +568,7 @@ test('operates wrapped filters and preserves refresh loading until every request
     },
   );
   await page.goto('/issues');
-  const toolbar = page.locator('[data-page-toolbar]');
+  const toolbar = page.locator('[data-table-toolbar]');
   const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
   await expect(refresh).toBeEnabled();
   await toolbar.getByRole('textbox', { name: 'Search work items' }).fill('mobile');
@@ -630,10 +630,10 @@ test('operates wrapped filters and preserves refresh loading until every request
   await expect(combinedFilters.getByRole('button', { name: 'Remove filter' })).toHaveCount(0);
   await expect(combinedFilters.getByLabel('Updated from', { exact: true })).toHaveValue('');
   await expect(combinedFilters.getByLabel('Updated to', { exact: true })).toHaveValue('');
-  await expect(toolbar.getByRole('textbox', { name: 'Search work items' })).toHaveValue('mobile');
   await combinedFilters.getByRole('button', { name: 'Toggle filter mode', exact: true }).focus();
   await page.keyboard.press('Escape');
   await expect(combinedFilters).toBeHidden();
+  await expect(toolbar.getByRole('textbox', { name: 'Search work items' })).toHaveValue('mobile');
   await expect(toolbar.getByRole('button', { name: 'Filter', exact: true })).toBeFocused();
   holdSummary = true;
   await refresh.click();
@@ -654,7 +654,7 @@ for (const width of [320, 1440]) {
     await mockApplication(page);
     await page.setViewportSize({ height: 900, width });
     await page.goto('/workflow-runs/needs-attention');
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     const refresh = toolbar.getByRole('button', { name: 'Refresh', exact: true });
     await expect(refresh).toBeEnabled();
     const outside = toolbar.getByRole('textbox', { name: 'Search workflow runs', exact: true });
@@ -668,16 +668,21 @@ for (const width of [320, 1440]) {
       await page.keyboard.press(shortcut!);
       const popover = page.getByRole('dialog', { name, exact: true });
       await expect(popover).toBeVisible();
-      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      if (width < 640) {
+        await expect(popover).toHaveAttribute('aria-modal', 'true');
+      } else {
+        await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      }
       await page.keyboard.press('Escape');
       await expect(popover).toBeHidden();
       await expect(trigger).toBeFocused();
       await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await trigger.click();
       await expect(popover).toBeVisible();
-      await outside.click();
+      if (width < 640) await popover.getByRole('button', { name: 'Close' }).click();
+      else await outside.click();
       await expect(popover).toBeHidden();
-      await expect(outside).toBeFocused();
+      await expect(width < 640 ? trigger : outside).toBeFocused();
     }
 
     const filter = toolbar.getByRole('button', { name: 'Filter', exact: true });
@@ -690,9 +695,10 @@ for (const width of [320, 1440]) {
     await expect(page.getByRole('listbox')).toBeHidden();
     await expect(popover).toBeVisible();
     await expect(field).toBeFocused();
-    await outside.click();
+    if (width < 640) await popover.getByRole('button', { name: 'Close' }).click();
+    else await outside.click();
     await expect(popover).toBeHidden();
-    await expect(outside).toBeFocused();
+    await expect(width < 640 ? filter : outside).toBeFocused();
   });
 }
 
@@ -880,7 +886,7 @@ for (const locale of ['en', 'de']) {
           '/admin/user-groups',
         ]) {
           await page.goto(path);
-          const toolbar = page.locator('[data-page-toolbar]');
+          const toolbar = page.locator('[data-table-toolbar]');
           await expect(toolbar).toBeVisible({ timeout: 15_000 });
           await expect(toolbar).toHaveCount(1);
           await expect(page.locator('html')).toHaveClass(new RegExp(theme));
@@ -927,3 +933,112 @@ for (const locale of ['en', 'de']) {
     });
   }
 }
+
+test('collapses and restores Issues metrics from the breadcrumb without losing the query', /** Check the annotated desktop layout and keyboard disclosure. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.setViewportSize({ width: 1118, height: 1273 });
+  await page.goto('/issues');
+  const toggle = page.locator('[data-page-toolbar]').getByRole('button', { name: 'Toggle summary metrics' });
+  const metrics = page.locator('[data-page-summary]');
+  const search = page.locator('[data-table-toolbar]').getByRole('textbox');
+  await expect(metrics).toBeVisible();
+  expect((await metrics.boundingBox())!.y).toBeLessThan((await search.boundingBox())!.y);
+  await search.fill('example');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(metrics).toBeHidden();
+  await page.keyboard.press('Space');
+  await expect(metrics).toBeVisible();
+  await expect(toggle).toBeFocused();
+  await expect(search).toHaveValue('example');
+});
+
+test('Ctrl+F searches the current resource on the server from page one', /** Check active focus and paginated search on an administrative table. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.route(
+    /\/api\/v1\/repositories(?:\?.*)?$/,
+    /** Return a distinct match only when the server receives the expected search. */ (route) => {
+      const matching = new URL(route.request().url()).searchParams.get('search') === 'example';
+      return route.fulfill({
+        json: {
+          items: matching ? [{ ...testRepository(), name: 'example-match' }] : [],
+          meta: { ...emptyPage.meta, itemCount: Number(matching), pageCount: Number(matching) },
+        },
+      });
+    },
+  );
+  await page.goto('/repositories?page=3');
+  const input = page.locator('[data-table-toolbar]').getByRole('textbox');
+  await expect(input).toBeVisible();
+  await page.keyboard.press('Control+f');
+  await expect(input).toBeFocused();
+  const request = page.waitForRequest(
+    /** Match the actual resource search before checking its page. */ (request) => {
+      const url = new URL(request.url());
+      return url.pathname.endsWith('/api/v1/repositories') && url.searchParams.get('search') === 'example';
+    },
+  );
+  await input.fill('example');
+  expect(new URL((await request).url()).searchParams.get('page')).toBe('1');
+  await expect(page.getByRole('table').getByText('example-match', { exact: false })).toBeVisible();
+  await input.clear();
+  await expect(page.getByRole('table').getByText('example-match', { exact: false })).toHaveCount(0);
+});
+
+test('keeps browser find available outside the active table', /** Follow client navigation and verify listener cleanup. */ async ({
+  page,
+}) => {
+  await mockToolbarPages(page);
+  await page.goto('/issues');
+  const header = page.locator('[data-page-toolbar]');
+  await header.getByRole('link', { name: 'Dashboard' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('[data-table-toolbar]')).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      /** Check whether any inactive table consumed native browser find. */ () =>
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, cancelable: true })),
+    ),
+  ).toBe(true);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const toggle = header.getByRole('button', { name: 'Toggle summary metrics' });
+  await toggle.click();
+  await expect(page.locator('[data-page-summary]')).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+test('merges only adjacent toolbars that fit without replacing the active input', /** Check geometry and DOM identity across disclosure and resize. */ async ({
+  page,
+}, testInfo) => {
+  await mockToolbarPages(page);
+  await page.setViewportSize({ width: 1118, height: 1273 });
+  await page.goto('/issues');
+  const header = page.locator('[data-page-toolbar]');
+  const controls = page.locator('[data-table-toolbar]');
+  const search = controls.getByRole('textbox');
+  const toggle = header.getByRole('button', { name: 'Toggle summary metrics' });
+  await expect(search).toBeVisible();
+  await expect(header.getByRole('textbox')).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('issues-expanded.png') });
+  await search.fill('retained');
+  await toggle.click();
+  await expect(header.getByRole('textbox')).toHaveValue('retained');
+  await expect(page.locator('[data-page-summary]')).toBeHidden();
+  expect((await toggle.boundingBox())!.x).toBeGreaterThan((await search.boundingBox())!.x);
+  await page.screenshot({ path: testInfo.outputPath('issues-merged.png') });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(header.getByRole('textbox')).toHaveCount(0);
+  await expect(search).toHaveValue('retained');
+  await page.keyboard.press('Control+f');
+  await expect(search).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath('issues-narrow.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/workflows/awaiting-approval');
+  await expect(controls).toBeVisible();
+  await expect(header.getByRole('textbox')).toHaveCount(0);
+});

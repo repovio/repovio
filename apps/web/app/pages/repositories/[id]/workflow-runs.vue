@@ -4,7 +4,6 @@
     embedded
     endpoint="workflow-runs"
     name="workflow-runs"
-    searchable
     :repository-id="repositoryId"
     :breadcrumbs="[]"
     :title="$t('workflowRuns.title')"

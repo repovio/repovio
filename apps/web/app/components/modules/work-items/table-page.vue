@@ -10,11 +10,9 @@
     :title="pageTitle"
   >
     <template #actions>
-      <UInput
+      <CommonTableSearch
         v-model="search"
-        class="w-full sm:w-56"
-        icon="i-lucide-search"
-        :aria-label="$t('workItems.search')"
+        :label="$t('workItems.search')"
         :placeholder="$t('workItems.searchPlaceholder')"
       />
       <div class="flex flex-wrap items-center gap-2">
@@ -68,32 +66,37 @@
       </div>
     </template>
 
-    <div v-if="!repositoryId" class="p-4 sm:p-6">
-      <UButton
-        v-if="activeDashboardPreset"
-        class="mb-4"
-        color="primary"
-        icon="i-tabler-filter"
-        trailing-icon="i-lucide-x"
-        variant="soft"
-        :aria-label="activeDashboardPresetLabel"
-        :label="activeDashboardPresetLabel"
-        @click="clearDashboardPreset"
+    <template v-if="!repositoryId" #summary>
+      <div class="p-4 sm:p-6">
+        <ModulesWorkItemsSummaryCards
+          :loading="summaryLoading"
+          :metrics="summaryMetrics"
+          :title="$t('workItems.summary')"
+        />
+      </div>
+    </template>
+    <template v-if="(!repositoryId && activeDashboardPreset) || tableError || summaryError" #before-table>
+      <div v-if="!repositoryId && activeDashboardPreset" class="p-4 sm:p-6">
+        <UButton
+          class="mb-4"
+          color="primary"
+          icon="i-tabler-filter"
+          trailing-icon="i-lucide-x"
+          variant="soft"
+          :aria-label="activeDashboardPresetLabel"
+          :label="activeDashboardPresetLabel"
+          @click="clearDashboardPreset"
+        />
+      </div>
+      <UAlert
+        v-if="tableError || summaryError"
+        class="mx-4 mb-4 sm:mx-6"
+        color="error"
+        icon="i-lucide-circle-alert"
+        variant="subtle"
+        :title="$t('workItems.loadError')"
       />
-      <ModulesWorkItemsSummaryCards
-        :loading="summaryLoading"
-        :metrics="summaryMetrics"
-        :title="$t('workItems.summary')"
-      />
-    </div>
-    <UAlert
-      v-if="tableError || summaryError"
-      class="mx-4 mb-4 sm:mx-6"
-      color="error"
-      icon="i-lucide-circle-alert"
-      variant="subtle"
-      :title="$t('workItems.loadError')"
-    />
+    </template>
     <CommonTableGroups
       label-prefix="workItems.states"
       :failed="groupsFailed"

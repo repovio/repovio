@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Tampilkan atau sembunyikan metrik ringkasan",
     "administration": "Administrasi",
     "copyright": "Hak cipta {year} Repovio",
     "dashboard": "Dasbor",

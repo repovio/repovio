@@ -245,7 +245,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.locator('tbody').getByText('Build on main', { exact: true })).toBeVisible();
     await expect(page.locator('tbody').getByText('Build', { exact: true })).toBeVisible();
     await expect(page.getByPlaceholder('Search workflows or repositories')).toBeVisible();
-    const toolbar = page.locator('[data-page-toolbar]');
+    const toolbar = page.locator('[data-table-toolbar]');
     await expect(toolbar.getByRole('button', { name: 'Refresh', exact: true })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Sort' })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: 'Filter' })).toBeVisible();
@@ -255,7 +255,7 @@ for (const theme of ['light', 'dark'] as const) {
         /** Reads the observable state until the browser assertion settles. */ () =>
           toolbar.evaluate(
             /** Reads or updates browser state for the needs attention scenario. */ (element) => {
-              const actions = element.querySelector(':scope > [data-slot="right"]')?.getBoundingClientRect();
+              const actions = element.getBoundingClientRect();
               return Boolean(actions && actions.left >= 0 && actions.right <= document.documentElement.clientWidth);
             },
           ),

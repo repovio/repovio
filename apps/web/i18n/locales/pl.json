@@ -260,6 +260,7 @@
     }
   },
   "layout": {
+    "toggleMetrics": "Pokaż lub ukryj wskaźniki",
     "issues": "Zgłoszenia",
     "jobs": "Zadania",
     "pullRequests": "Pull requesty",

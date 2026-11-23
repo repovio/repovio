@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18-alpine
+    image: postgres:19-alpine
     entrypoint: ['/bin/sh', '/usr/local/bin/repovio-postgres-entrypoint.sh']
     command: ['postgres']
     restart: unless-stopped
